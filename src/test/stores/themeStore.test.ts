@@ -26,7 +26,19 @@ function resetStore() {
   if (typeof document !== "undefined") {
     delete document.documentElement.dataset.theme;
     delete document.documentElement.dataset.accent;
+    delete document.documentElement.dataset.themeSwitching;
   }
+}
+
+function spyAnimationFrames() {
+  const frames: FrameRequestCallback[] = [];
+  const spy = vi
+    .spyOn(window, "requestAnimationFrame")
+    .mockImplementation((callback: FrameRequestCallback) => {
+      frames.push(callback);
+      return frames.length;
+    });
+  return { frames, spy };
 }
 
 // ─── Tests ────────────────────────────────────────────────────────────────────
@@ -39,6 +51,7 @@ describe("themeStore", () => {
 
   afterEach(() => {
     resetStore();
+    vi.restoreAllMocks();
   });
 
   it("classifies every flavor into its shared font theme mode", () => {
@@ -250,6 +263,84 @@ describe("themeStore", () => {
     useThemeStore.getState().init();
     expect(useThemeStore.getState().accent).toBe("lavender");
     spy.mockRestore();
+  });
+
+  // ── Theme-switch transition suppression ───────────────────────────────────
+
+  it("setFlavor keeps data-theme-switching until the captured animation frame", () => {
+    const { frames } = spyAnimationFrames();
+    const html = document.documentElement;
+    let flushedWhileMarked = false;
+    vi.spyOn(html, "offsetWidth", "get").mockImplementation(() => {
+      flushedWhileMarked = html.dataset.themeSwitching === "";
+      return 0;
+    });
+
+    useThemeStore.getState().setFlavor("latte");
+
+    expect(html.dataset.themeSwitching).toBe("");
+    expect(flushedWhileMarked).toBe(true);
+    expect(html.dataset.theme).toBe("latte");
+    expect(localStorage.getItem("catppuccin-flavor")).toBe("latte");
+    expect(frames).toHaveLength(1);
+
+    frames[0]?.(0);
+    expect(html.dataset.themeSwitching).toBeUndefined();
+    expect(html.dataset.theme).toBe("latte");
+  });
+
+  it("setAccent keeps data-theme-switching until the captured animation frame", () => {
+    const { frames } = spyAnimationFrames();
+    const html = document.documentElement;
+    let flushedWhileMarked = false;
+    vi.spyOn(html, "offsetWidth", "get").mockImplementation(() => {
+      flushedWhileMarked = html.dataset.themeSwitching === "";
+      return 0;
+    });
+
+    useThemeStore.getState().setAccent("green");
+
+    expect(html.dataset.themeSwitching).toBe("");
+    expect(flushedWhileMarked).toBe(true);
+    expect(html.dataset.accent).toBe("green");
+    expect(localStorage.getItem("catppuccin-accent")).toBe("green");
+    expect(frames).toHaveLength(1);
+
+    frames[0]?.(0);
+    expect(html.dataset.themeSwitching).toBeUndefined();
+    expect(html.dataset.accent).toBe("green");
+  });
+
+  it("keeps suppression until the second setFlavor frame", () => {
+    const { frames } = spyAnimationFrames();
+
+    useThemeStore.getState().setFlavor("latte");
+    useThemeStore.getState().setFlavor("mocha");
+
+    expect(document.documentElement.dataset.theme).toBe("mocha");
+    expect(document.documentElement.dataset.themeSwitching).toBe("");
+    expect(frames).toHaveLength(2);
+
+    frames[0]?.(0);
+    expect(document.documentElement.dataset.themeSwitching).toBe("");
+    expect(document.documentElement.dataset.theme).toBe("mocha");
+
+    frames[1]?.(0);
+    expect(document.documentElement.dataset.themeSwitching).toBeUndefined();
+    expect(document.documentElement.dataset.theme).toBe("mocha");
+  });
+
+  it("init does not set data-theme-switching", () => {
+    const animationFrame = vi.spyOn(window, "requestAnimationFrame");
+    localStorage.setItem("catppuccin-flavor", "frappe");
+    localStorage.setItem("catppuccin-accent", "sky");
+
+    useThemeStore.getState().init();
+
+    expect(document.documentElement.dataset.theme).toBe("frappe");
+    expect(document.documentElement.dataset.accent).toBe("sky");
+    expect(document.documentElement.dataset.themeSwitching).toBeUndefined();
+    expect(animationFrame).not.toHaveBeenCalled();
   });
 
   // ── ACCENT_NAMES constant ────────────────────────────────────────────────

@@ -105,6 +105,30 @@ function readStoredAccent(): CatppuccinAccent | null {
   return null;
 }
 
+let themeSwitchEpoch = 0;
+
+/**
+ * Commit a theme DOM write while color and shadow transitions are off.
+ * offsetWidth flushes that commit before the marker is removed; a same-turn
+ * clear would let the browser interpolate the new tokens. A newer commit
+ * bumps the epoch so the older frame callback leaves the marker in place.
+ */
+function applyThemeDom(mutate: () => void): void {
+  if (typeof document === "undefined") {
+    mutate();
+    return;
+  }
+  const html = document.documentElement;
+  const epoch = ++themeSwitchEpoch;
+  html.dataset.themeSwitching = "";
+  mutate();
+  void html.offsetWidth;
+  requestAnimationFrame(() => {
+    if (epoch !== themeSwitchEpoch) return;
+    delete html.dataset.themeSwitching;
+  });
+}
+
 /** Apply flavor to the DOM — sets data-theme on <html> and persists to localStorage. */
 function applyFlavor(flavor: ThemeFlavor): void {
   if (typeof document !== "undefined") {
@@ -149,18 +173,23 @@ export const useThemeStore = create<ThemeState>((set) => ({
   accent: "lavender", // safe default; init() overrides
 
   setFlavor: (flavor) => {
-    applyFlavor(flavor);
+    applyThemeDom(() => {
+      applyFlavor(flavor);
+    });
     set({ flavor });
   },
 
   setAccent: (accent) => {
-    applyAccent(accent);
+    applyThemeDom(() => {
+      applyAccent(accent);
+    });
     set({ accent });
   },
 
   init: () => {
     const flavor = readStoredFlavor() ?? systemFlavor();
     const accent = readStoredAccent() ?? "lavender";
+    // Direct writes: startup has no previous frame, so do not suppress transitions.
     applyFlavor(flavor);
     applyAccent(accent);
     set({ flavor, accent });

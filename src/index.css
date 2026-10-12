@@ -177,6 +177,16 @@
   }
 }
 
+/* Theme commits drop color and shadow interpolation for one frame.
+   Unlayered so this beats @layer components and utilities.
+   Animations stay untouched so spinners are not restarted. */
+html[data-theme-switching],
+html[data-theme-switching] *,
+html[data-theme-switching] *::before,
+html[data-theme-switching] *::after {
+  transition: none !important;
+}
+
 @theme inline {
   --font-heading: var(--font-display);
   --font-sans: var(--font-body);
