@@ -1810,3 +1810,24 @@ SSH/WSL Platform leftover apply now validates paths, deletes unique POSIX paths 
 
 - 改动尚未推送。需要时再开向 dev 的 PR。
 - Rules 的原生交互、安装流程、真实用户导入和 provider 行为仍待验证。
+
+
+## Session 117: 主侧栏 Global 与 Project Workspaces
+
+**Date**: 2026-10-12
+**Task**: 主侧栏 Global 与 Project Workspaces
+**Branch**: `feat/sidebar-global-project-workspaces`
+
+### Summary
+
+主侧栏只保留 Global Workspace 与 Project Workspaces，列出已登记项目并支持折叠和本地排序，去掉龙虾分组。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `69401b1ab1b3c0319e0884ba3f6b3d9e98336ce8` | (see git log) |
+
+### Status
+
+[OK] **Completed**
