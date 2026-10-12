@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-2.md`
-- **Total Sessions**: 117
+- **Total Sessions**: 118
 - **Last Active**: 2026-10-12
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-2.md` | ~1833 | Active |
+| `journal-2.md` | ~1855 | Active |
 | `journal-1.md` | ~1994 | Archived |
 <!-- @@@/auto:active-documents -->
 
@@ -30,6 +30,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 118 | 2026-10-12 | 主题切换去掉误触发的颜色插值 | `fd78ce5c`, `6f2df388` | `dev` |
 | 117 | 2026-10-12 | 主侧栏 Global 与 Project Workspaces | `69401b1ab1b3c0319e0884ba3f6b3d9e98336ce8` | `feat/sidebar-global-project-workspaces` |
 | 116 | 2026-10-08 | 提交 Rules 管理并归档已完成任务 | `a03951e1`, `d7e57ac4` | `dev` |
 | 115 | 2026-10-08 | 小文件性能优化提交与归档 | `112120cb130c31e195f3fdf497f33fd13eb514e7`, `48d983e0e30edfdf27c9fbc908c2e3b747be5fda` | `dev` |

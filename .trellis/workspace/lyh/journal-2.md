@@ -1831,3 +1831,25 @@ SSH/WSL Platform leftover apply now validates paths, deletes unique POSIX paths 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 118: 主题切换去掉误触发的颜色插值
+
+**Date**: 2026-10-12
+**Task**: 主题切换去掉误触发的颜色插值
+**Branch**: `dev`
+
+### Summary
+
+右上角主题切换改为提交时抑制颜色和阴影过渡，避免发灰中段与卡片阴影逐帧重算。规格写入 theme-switch.md。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `fd78ce5c` | (see git log) |
+| `6f2df388` | (see git log) |
+
+### Status
+
+[OK] **Completed**
