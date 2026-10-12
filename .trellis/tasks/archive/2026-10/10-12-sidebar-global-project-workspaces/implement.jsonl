@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/frontend/module-boundaries.md", "reason": "侧栏只读 store，不在组件里 invoke；项目刷新留在 AppShell 和 install slice。"}
+{"file": ".trellis/spec/frontend/icon-control-hit-area.md", "reason": "分组标题是整行按钮，排序用 select，避免小于 40px 的图标按钮热区重叠。"}
+{"file": ".trellis/spec/frontend/typography-tokens.md", "reason": "工作区标题去掉 uppercase 后仍用现有字号 token，不新增字号。"}
+{"file": ".trellis/tasks/10-12-sidebar-global-project-workspaces/research/skills-manager-sidebar.md", "reason": "上游只借鉴折叠标题和扁平项目行，不移植拖拽排序。"}
