@@ -37,9 +37,11 @@ interface ProjectsState {
   setCurrentProjectId: (id: string | null) => void;
   clearError: () => void;
   ensureEventListener: () => Promise<void>;
+  resetForTargetChange: () => void;
 }
 
 let unlistenScanned: UnlistenFn | null = null;
+let projectsLoadGeneration = 0;
 
 async function refreshProjectSkills(
   projectId: string,
@@ -108,16 +110,33 @@ export const useProjectsStore = create<ProjectsState>((set) => ({
   },
 
   loadProjects: async () => {
+    const generation = ++projectsLoadGeneration;
     set({ isLoading: true, error: null });
     if (!isTauriRuntime()) {
+      if (generation !== projectsLoadGeneration) {
+        return;
+      }
       set({ projects: [], isLoading: false });
       return;
     }
     try {
       await setupScannedListener(set);
       const list = await invoke("list_projects");
+      if (generation !== projectsLoadGeneration) {
+        return;
+      }
+      if (!Array.isArray(list)) {
+        set({
+          isLoading: false,
+          error: "list_projects returned a non-array",
+        });
+        return;
+      }
       set({ projects: list, isLoading: false });
     } catch (err) {
+      if (generation !== projectsLoadGeneration) {
+        return;
+      }
       set({ error: String(err), isLoading: false });
     }
   },
@@ -271,6 +290,18 @@ export const useProjectsStore = create<ProjectsState>((set) => ({
 
   clearError: () => set({ error: null }),
 
+  resetForTargetChange: () => {
+    projectsLoadGeneration += 1;
+    set({
+      projects: [],
+      currentProjectId: null,
+      skillsByProject: {},
+      scanningProjectIds: new Set<string>(),
+      isLoading: false,
+      error: null,
+    });
+  },
+
   installSkillToProject: async (projectId, skillId, agentId, method) => {
     if (!isTauriRuntime()) return;
     try {
@@ -314,6 +345,7 @@ export const useProjectsStore = create<ProjectsState>((set) => ({
 }));
 
 export function _resetProjectsStoreForTests(): void {
+  projectsLoadGeneration = 0;
   if (unlistenScanned) {
     void Promise.resolve(unlistenScanned()).catch(() => undefined);
     unlistenScanned = null;

@@ -2,6 +2,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { useProjectsStore } from "@/stores/projectsStore";
+import { SIDEBAR_WORKSPACE_SECTIONS_KEY } from "@/lib/sidebarWorkspacePrefs";
+import type { Project } from "@/types";
 
 vi.mock("@/stores/platformStore", () => ({
   usePlatformStore: vi.fn(),
@@ -113,9 +116,25 @@ function LocationProbe() {
   return <div data-testid="location">{location.pathname}</div>;
 }
 
+function sampleProject(overrides: Partial<Project> & Pick<Project, "id" | "name">): Project {
+  return {
+    path: `D:/work/${overrides.name}`,
+    pinned: false,
+    addedAt: "2026-01-01T00:00:00Z",
+    lastScannedAt: null,
+    skillCount: 0,
+    ...overrides,
+  };
+}
+
 describe("Sidebar", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    window.localStorage.removeItem(SIDEBAR_WORKSPACE_SECTIONS_KEY);
+    useProjectsStore.setState({
+      projects: [],
+      scanningProjectIds: new Set(),
+    });
   });
 
   it("renders expanded sidebar by default", () => {
@@ -173,7 +192,9 @@ describe("Sidebar", () => {
     expect(screen.getByRole("button", { name: /操作日志/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Claude Code/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Universal/ })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /OpenClaw/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /收起全局工作区/ })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /OpenClaw/ })).not.toBeInTheDocument();
+    expect(screen.queryByText("龙虾类")).not.toBeInTheDocument();
   });
 
   it("renders Skill Usage entry below Operation Logs and routes to /usage", () => {
@@ -284,6 +305,29 @@ describe("Sidebar", () => {
     expect(within(universalButton).queryByText("10")).not.toBeInTheDocument();
   });
 
+  it("keeps lobster platforms out of the sidebar when the lobster group is enabled", () => {
+    vi.mocked(usePlatformStore).mockImplementation((selector?: unknown) => {
+      const state = buildPlatformStoreState({
+        categoryVisibility: {
+          coding: true,
+          lobster: true,
+        },
+      });
+      if (typeof selector === "function") return selector(state);
+      return state;
+    });
+
+    render(
+      <MemoryRouter>
+        <Sidebar />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("button", { name: /Claude Code/ })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /OpenClaw/ })).not.toBeInTheDocument();
+    expect(screen.queryByText("龙虾类")).not.toBeInTheDocument();
+  });
+
   it("hides lobster platforms when the lobster group is disabled", () => {
     vi.mocked(usePlatformStore).mockImplementation((selector?: unknown) => {
       const state = buildPlatformStoreState({
@@ -359,5 +403,91 @@ describe("Sidebar", () => {
     renderSidebar();
     fireEvent.click(screen.getByRole("button", { name: /中央技能库/ }));
     fireEvent.click(screen.getByRole("button", { name: /Claude Code/ }));
+  });
+
+  it("lists registered projects and opens the project route", () => {
+    useProjectsStore.setState({
+      projects: [
+        sampleProject({
+          id: "alpha",
+          name: "Alpha",
+          path: "D:/work/Alpha",
+          skillCount: 0,
+          pinned: true,
+        }),
+      ],
+      scanningProjectIds: new Set(),
+    });
+
+    renderSidebar();
+
+    const projectButton = screen.getByRole("button", { name: "Alpha" });
+    expect(projectButton).toHaveAttribute("title", "D:\\work\\Alpha");
+    expect(within(projectButton).getByText("0")).toBeInTheDocument();
+    expect(within(projectButton).getByTitle("置顶")).toBeInTheDocument();
+    fireEvent.click(projectButton);
+    expect(screen.getByTestId("location")).toHaveTextContent("/projects/alpha");
+  });
+
+  it("collapses project rows and restores that choice after remount", () => {
+    useProjectsStore.setState({
+      projects: [sampleProject({ id: "alpha", name: "Alpha" })],
+      scanningProjectIds: new Set(),
+    });
+
+    const first = renderSidebar();
+    fireEvent.click(screen.getByRole("button", { name: "收起项目工作区" }));
+    expect(screen.queryByRole("button", { name: "Alpha" })).not.toBeInTheDocument();
+    first.unmount();
+
+    renderSidebar();
+    expect(screen.queryByRole("button", { name: "Alpha" })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "展开项目工作区" }));
+    expect(screen.getByRole("button", { name: "Alpha" })).toBeInTheDocument();
+  });
+
+  it("reorders projects from the sort control and keeps the choice", () => {
+    useProjectsStore.setState({
+      projects: [
+        sampleProject({ id: "alpha", name: "Alpha", skillCount: 1 }),
+        sampleProject({ id: "coda", name: "Coda", skillCount: 4 }),
+      ],
+      scanningProjectIds: new Set(),
+    });
+
+    const view = renderSidebar();
+    fireEvent.change(screen.getByRole("combobox", { name: "项目排序" }), {
+      target: { value: "skillCount" },
+    });
+
+    const names = screen.getAllByRole("button").map((button) => button.getAttribute("aria-label"));
+    expect(names.indexOf("Coda")).toBeLessThan(names.indexOf("Alpha"));
+
+    view.unmount();
+    renderSidebar();
+    const restored = screen.getAllByRole("button").map((button) => button.getAttribute("aria-label"));
+    expect(restored.indexOf("Coda")).toBeLessThan(restored.indexOf("Alpha"));
+  });
+
+  it("still shows project icons when the sidebar rail is collapsed", () => {
+    window.localStorage.setItem(
+      SIDEBAR_WORKSPACE_SECTIONS_KEY,
+      JSON.stringify({
+        globalWorkspace: false,
+        projectWorkspace: false,
+        projectSort: "name",
+      }),
+    );
+    useProjectsStore.setState({
+      projects: [sampleProject({ id: "alpha", name: "Alpha" })],
+      scanningProjectIds: new Set(),
+    });
+
+    renderSidebar();
+    fireEvent.click(screen.getByRole("button", { name: "折叠侧边栏" }));
+
+    expect(screen.getByRole("button", { name: "Alpha" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Claude Code/ })).toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: "项目排序" })).not.toBeInTheDocument();
   });
 });

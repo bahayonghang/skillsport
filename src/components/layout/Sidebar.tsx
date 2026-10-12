@@ -1,11 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Loader2,
   Blocks,
+  Folder,
   FolderOpen,
   LayoutDashboard,
   Layers,
+  Pin,
   ScrollText,
   Settings,
   Store,
@@ -26,7 +28,17 @@ import {
 } from "@/lib/platformTargetGroups";
 import { cn } from "@/lib/utils";
 import { markAppPerformance } from "@/lib/performance";
+import { SidebarSection } from "@/components/layout/SidebarSection";
 import { useResizableWidth } from "@/hooks/useResizableWidth";
+import { formatPathForDisplay } from "@/lib/path";
+import { sortSidebarProjects } from "@/lib/sidebarProjectOrder";
+import {
+  readSidebarWorkspaceSections,
+  writeSidebarWorkspaceSections,
+  type SidebarProjectSort,
+  type SidebarWorkspaceSections,
+} from "@/lib/sidebarWorkspacePrefs";
+import { useProjectsStore } from "@/stores/projectsStore";
 
 const EXPANDED_SIDEBAR_WIDTH = 208;
 const COLLAPSED_SIDEBAR_WIDTH = 56;
@@ -37,24 +49,32 @@ const MAX_SIDEBAR_WIDTH = 360;
 
 function NavItem({
   label,
+  title,
   isActive,
   onClick,
   icon,
   expanded,
   count,
+  showZeroCount = false,
+  countPending = false,
+  detail,
 }: {
   label: string;
+  title?: string;
   isActive: boolean;
   onClick: () => void;
   icon: React.ReactNode;
   expanded: boolean;
   count?: number;
+  showZeroCount?: boolean;
+  countPending?: boolean;
+  detail?: ReactNode;
 }) {
   return (
     <div className="relative">
       <button
         onClick={onClick}
-        title={label}
+        title={title ?? label}
         aria-label={label}
         aria-current={isActive ? "page" : undefined}
         className={cn(
@@ -72,7 +92,16 @@ function NavItem({
         {expanded && (
           <>
             <span className="truncate flex-1 text-left">{label}</span>
-            {count !== undefined && count > 0 && (
+            {detail}
+            {countPending ? (
+              <Loader2
+                className="size-3.5 shrink-0 animate-spin"
+                aria-hidden="true"
+              />
+            ) : null}
+            {!countPending &&
+            count !== undefined &&
+            (showZeroCount || count > 0) ? (
               <span
                 className={cn(
                   "text-ui-micro font-mono tabular-nums px-1.5 py-0.5 rounded-full shrink-0",
@@ -83,7 +112,7 @@ function NavItem({
               >
                 {count}
               </span>
-            )}
+            ) : null}
           </>
         )}
       </button>
@@ -112,6 +141,10 @@ export function Sidebar() {
   const categoryVisibility =
     usePlatformStore((s) => s.categoryVisibility) ??
     DEFAULT_PLATFORM_CATEGORY_VISIBILITY;
+  const projects = useProjectsStore((s) => s.projects);
+  const scanningProjectIds = useProjectsStore((s) => s.scanningProjectIds);
+  const [workspaceSections, setWorkspaceSections] =
+    useState<SidebarWorkspaceSections>(() => readSidebarWorkspaceSections());
 
   const [expanded, setExpanded] = useState(() =>
     typeof window === "undefined" ? true : window.innerWidth >= 768,
@@ -136,8 +169,20 @@ export function Sidebar() {
   }, [agents.length, isLoading]);
 
   const platformAgents = getPlatformTargetGroups(agents, categoryVisibility);
-  const lobsterAgents = platformAgents.filter((a) => a.category === "lobster");
   const codingAgents = platformAgents.filter((a) => a.category !== "lobster");
+  const orderedProjects = sortSidebarProjects(
+    projects,
+    workspaceSections.projectSort,
+  );
+
+  function updateWorkspaceSections(next: SidebarWorkspaceSections) {
+    setWorkspaceSections(next);
+    writeSidebarWorkspaceSections(next);
+  }
+
+  function setProjectSort(projectSort: SidebarProjectSort) {
+    updateWorkspaceSections({ ...workspaceSections, projectSort });
+  }
 
   const isDashboardActive = pathname === "/dashboard" || pathname === "/";
   const isCollectionActive = pathname === "/collections";
@@ -314,61 +359,112 @@ export function Sidebar() {
             <Loader2 className="size-4 animate-spin shrink-0" />
             {expanded && <span>{t("sidebar.scanning")}</span>}
           </div>
-        ) : (
-          <>
-            {/* Lobster agents */}
-            {lobsterAgents.length > 0 && (
-              <>
-                {expanded ? (
-                  <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-2.5 pt-2 pb-1">
-                    {t("sidebar.categoryLobster")}
-                  </div>
-                ) : (
-                  <div className="border-t border-sidebar-border/40 my-1.5" />
-                )}
-                {lobsterAgents.map((agent) => (
-                  <NavItem
-                    key={agent.id}
-                    label={getPlatformTargetLabel(agent, t, "short")}
-                    isActive={pathname === platformRoute(agent)}
-                    onClick={() => navigate(platformRoute(agent))}
-                    icon={
-                      <PlatformIcon agentId={agent.id} className="size-4" />
-                    }
-                    expanded={expanded}
-                    count={platformCount(agent)}
-                  />
-                ))}
-              </>
-            )}
+        ) : codingAgents.length > 0 ? (
+          expanded ? (
+            <SidebarSection
+              label={t("sidebar.globalWorkspace")}
+              open={workspaceSections.globalWorkspace}
+              onToggle={() =>
+                updateWorkspaceSections({
+                  ...workspaceSections,
+                  globalWorkspace: !workspaceSections.globalWorkspace,
+                })
+              }
+            >
+              {codingAgents.map((agent) => (
+                <NavItem
+                  key={agent.id}
+                  label={getPlatformTargetLabel(agent, t, "short")}
+                  isActive={pathname === platformRoute(agent)}
+                  onClick={() => navigate(platformRoute(agent))}
+                  icon={<PlatformIcon agentId={agent.id} className="size-4" />}
+                  expanded={expanded}
+                  count={platformCount(agent)}
+                />
+              ))}
+            </SidebarSection>
+          ) : (
+            <>
+              <div className="border-t border-sidebar-border/40 my-1.5" />
+              {codingAgents.map((agent) => (
+                <NavItem
+                  key={agent.id}
+                  label={getPlatformTargetLabel(agent, t, "short")}
+                  isActive={pathname === platformRoute(agent)}
+                  onClick={() => navigate(platformRoute(agent))}
+                  icon={<PlatformIcon agentId={agent.id} className="size-4" />}
+                  expanded={expanded}
+                  count={platformCount(agent)}
+                />
+              ))}
+            </>
+          )
+        ) : null}
 
-            {/* Coding agents */}
-            {codingAgents.length > 0 && (
-              <>
-                {expanded ? (
-                  <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-2.5 pt-2 pb-1">
-                    {t("sidebar.categoryCoding")}
-                  </div>
-                ) : (
-                  <div className="border-t border-sidebar-border/40 my-1.5" />
-                )}
-                {codingAgents.map((agent) => (
-                  <NavItem
-                    key={agent.id}
-                    label={getPlatformTargetLabel(agent, t, "short")}
-                    isActive={pathname === platformRoute(agent)}
-                    onClick={() => navigate(platformRoute(agent))}
-                    icon={
-                      <PlatformIcon agentId={agent.id} className="size-4" />
-                    }
-                    expanded={expanded}
-                    count={platformCount(agent)}
-                  />
-                ))}
-              </>
-            )}
-          </>
-        )}
+        {orderedProjects.length > 0 &&
+          (expanded ? (
+            <SidebarSection
+              label={t("sidebar.projectWorkspace")}
+              open={workspaceSections.projectWorkspace}
+              onToggle={() =>
+                updateWorkspaceSections({
+                  ...workspaceSections,
+                  projectWorkspace: !workspaceSections.projectWorkspace,
+                })
+              }
+              sort={{
+                value: workspaceSections.projectSort,
+                onChange: setProjectSort,
+              }}
+            >
+              {orderedProjects.map((project) => (
+                <NavItem
+                  key={project.id}
+                  label={project.name}
+                  title={formatPathForDisplay(project.path)}
+                  isActive={
+                    pathname === `/projects/${encodeURIComponent(project.id)}`
+                  }
+                  onClick={() =>
+                    navigate(`/projects/${encodeURIComponent(project.id)}`)
+                  }
+                  icon={<Folder className="size-4" />}
+                  expanded={expanded}
+                  count={project.skillCount}
+                  showZeroCount
+                  countPending={scanningProjectIds.has(project.id)}
+                  detail={
+                    project.pinned ? (
+                      <span title={t("projects.menuPin")} className="inline-flex shrink-0">
+                        <Pin className="size-3 text-warning" aria-hidden="true" />
+                      </span>
+                    ) : undefined
+                  }
+                />
+              ))}
+            </SidebarSection>
+          ) : (
+            <>
+              <div className="border-t border-sidebar-border/40 my-1.5" />
+              {orderedProjects.map((project) => (
+                <NavItem
+                  key={project.id}
+                  label={project.name}
+                  title={formatPathForDisplay(project.path)}
+                  isActive={
+                    pathname === `/projects/${encodeURIComponent(project.id)}`
+                  }
+                  onClick={() =>
+                    navigate(`/projects/${encodeURIComponent(project.id)}`)
+                  }
+                  icon={<Folder className="size-4" />}
+                  expanded={expanded}
+                  count={project.skillCount}
+                  showZeroCount
+                />
+              ))}
+            </>
+          ))}
 
         {!isLoading && (isRefreshing || scanState === "refreshing") && (
           <div

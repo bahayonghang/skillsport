@@ -20,6 +20,10 @@ import { invoke } from "@tauri-apps/api/core";
 import { listen } from "@tauri-apps/api/event";
 import { useCentralSkillsStore } from "@/stores/centralSkillsStore";
 import { usePlatformStore } from "@/stores/platformStore";
+import {
+  useProjectsStore,
+  _resetProjectsStoreForTests,
+} from "@/stores/projectsStore";
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -836,6 +840,7 @@ describe("centralSkillsStore", () => {
       .installSkill("frontend-design", ["cursor"], "symlink");
 
     expect(result).toEqual({ ...batchResult, skipped: [] });
+    expect(invoke).not.toHaveBeenCalledWith("list_projects");
   });
 
   it("uses batch_install_central_skills for single-skill project installs", async () => {
@@ -866,7 +871,8 @@ describe("centralSkillsStore", () => {
     vi.mocked(invoke)
       .mockResolvedValueOnce(batchResult)
       .mockResolvedValueOnce(mockSkills)
-      .mockResolvedValueOnce(mockRepositories);
+      .mockResolvedValueOnce(mockRepositories)
+      .mockResolvedValueOnce([]);
 
     const result = await useCentralSkillsStore
       .getState()
@@ -891,6 +897,7 @@ describe("centralSkillsStore", () => {
     });
     expect(invoke).toHaveBeenCalledWith("get_central_skills");
     expect(invoke).toHaveBeenCalledWith("get_skill_repositories");
+    expect(invoke).toHaveBeenCalledWith("list_projects");
   });
 
   it("calls batch_install_central_skills then refreshes skills", async () => {
@@ -908,7 +915,8 @@ describe("centralSkillsStore", () => {
     vi.mocked(invoke)
       .mockResolvedValueOnce(batchResult)
       .mockResolvedValueOnce(mockSkills)
-      .mockResolvedValueOnce(mockRepositories);
+      .mockResolvedValueOnce(mockRepositories)
+      .mockResolvedValueOnce([{ id: "proj-demo", name: "demo" }]);
 
     const result = await useCentralSkillsStore
       .getState()
@@ -925,6 +933,9 @@ describe("centralSkillsStore", () => {
     expect(invoke).toHaveBeenCalledWith("get_skill_repositories");
     expect(useCentralSkillsStore.getState().skills).toEqual(mockSkills);
     expect(useCentralSkillsStore.getState().isInstalling).toBe(false);
+    expect(useProjectsStore.getState().projects).toEqual([
+      { id: "proj-demo", name: "demo" },
+    ]);
   });
 
   it("stores linked_projects from the post-install Central refresh", async () => {
@@ -952,7 +963,8 @@ describe("centralSkillsStore", () => {
         failed: [],
       })
       .mockResolvedValueOnce(refreshed)
-      .mockResolvedValueOnce(mockRepositories);
+      .mockResolvedValueOnce(mockRepositories)
+      .mockResolvedValueOnce([]);
 
     await useCentralSkillsStore
       .getState()
@@ -965,6 +977,36 @@ describe("centralSkillsStore", () => {
         path: "D:\\Documents\\Code\\Rust\\Exp\\PromptHub",
       },
     ]);
+    expect(invoke).toHaveBeenCalledWith("list_projects");
+  });
+
+  it("keeps a successful project install when the project list refresh fails", async () => {
+    _resetProjectsStoreForTests();
+    const batchResult = {
+      succeeded: [
+        {
+          skill_id: "frontend-design",
+          agent_id: "cursor",
+          target_path: "D:\\work\\demo\\.cursor\\skills\\frontend-design",
+        },
+      ],
+      skipped: [],
+      failed: [],
+    };
+    vi.mocked(invoke)
+      .mockResolvedValueOnce(batchResult)
+      .mockResolvedValueOnce(mockSkills)
+      .mockResolvedValueOnce(mockRepositories)
+      .mockRejectedValueOnce(new Error("list failed"));
+
+    const result = await useCentralSkillsStore
+      .getState()
+      .installSkill("frontend-design", ["cursor"], "copy", "D:\\work\\demo");
+
+    expect(result.succeeded).toEqual(["cursor"]);
+    expect(useCentralSkillsStore.getState().isInstalling).toBe(false);
+    expect(useCentralSkillsStore.getState().error).toBeNull();
+    expect(useProjectsStore.getState().error).toBeTruthy();
   });
 
   it("sets error and re-throws when installSkill fails", async () => {

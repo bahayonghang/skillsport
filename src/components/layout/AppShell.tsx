@@ -14,6 +14,7 @@ import { useTargetStore } from "@/stores/targetStore";
 import { useSkillStore } from "@/stores/skillStore";
 import { useMarketplaceStore } from "@/stores/marketplaceStore";
 import { useImportIntentStore } from "@/stores/importIntentStore";
+import { useProjectsStore } from "@/stores/projectsStore";
 import { useSkillsCliStore } from "@/stores/skillsCliStore";
 import { isTauriRuntime, listen } from "@/lib/ipc";
 
@@ -62,12 +63,16 @@ export function AppShell() {
   const clearGitHubBranchForTargetChange = useImportIntentStore(
     (s) => s.setGitHubBranch,
   );
+  const loadProjects = useProjectsStore((s) => s.loadProjects);
+  const resetProjectsForTargetChange = useProjectsStore(
+    (s) => s.resetForTargetChange,
+  );
   const loadTargets = useTargetStore((s) => s.loadTargets);
   const activeTargetId = useTargetStore((s) => s.activeTarget.id);
   const [hasLoadedTargets, setHasLoadedTargets] = useState(false);
   const lastTargetIdRef = useRef<string | null>(null);
   const isInitialTargetLoadRef = useRef(true);
-  const startupActionsRef = useRef({ initialize, loadTargets });
+  const startupActionsRef = useRef({ initialize, loadTargets, loadProjects });
   const handleGlobalRescan = useCallback(async () => {
     await rescan();
     await loadCentralSkills();
@@ -76,12 +81,18 @@ export function AppShell() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const { initialize: initialInitialize, loadTargets: initialLoadTargets } =
-        startupActionsRef.current;
+      const {
+        initialize: initialInitialize,
+        loadTargets: initialLoadTargets,
+        loadProjects: initialLoadProjects,
+      } = startupActionsRef.current;
       await initialLoadTargets().catch(() => undefined);
       if (cancelled) return;
       setHasLoadedTargets(true);
-      await initialInitialize().catch(() => undefined);
+      await Promise.all([
+        initialInitialize().catch(() => undefined),
+        initialLoadProjects().catch(() => undefined),
+      ]);
     })();
     return () => {
       cancelled = true;
@@ -112,16 +123,20 @@ export function AppShell() {
     resetSkillsForTargetChange();
     resetMarketplaceForTargetChange();
     resetSkillsCliForTargetChange();
+    resetProjectsForTargetChange();
     clearGitHubBranchForTargetChange("");
     void handleGlobalRescan();
+    void loadProjects();
   }, [
     activeTargetId,
     clearGitHubBranchForTargetChange,
     handleGlobalRescan,
     hasLoadedTargets,
+    loadProjects,
     resetCentralForTargetChange,
     resetMarketplaceForTargetChange,
     resetPlatformForTargetChange,
+    resetProjectsForTargetChange,
     resetSkillsCliForTargetChange,
     resetSkillsForTargetChange,
   ]);

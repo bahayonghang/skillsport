@@ -7,7 +7,17 @@ import {
 } from "@/types";
 import { indexUpdateStates } from "./centralSkillsStore.shared";
 import type { CentralSkillsState, CentralStoreContext } from "./centralSkillsStore.types";
+import { useProjectsStore } from "./projectsStore";
 import { useUpdateCenterStore } from "./updateCenterStore";
+
+async function refreshRegisteredProjects(
+  projectPath?: string | null,
+): Promise<void> {
+  if (!projectPath?.trim()) {
+    return;
+  }
+  await useProjectsStore.getState().loadProjects();
+}
 
 function normalizeBatchInstallResult(result: BatchInstallResult): Required<BatchInstallResult> {
   return {
@@ -81,6 +91,7 @@ export function createCentralInstallSlice({ set, get }: CentralStoreContext): Pi
       throw err;
     }
 
+    let centralRefreshError: unknown = null;
     try {
       const skills = await invoke("get_central_skills");
       const repositories = await invoke("get_skill_repositories");
@@ -96,7 +107,13 @@ export function createCentralInstallSlice({ set, get }: CentralStoreContext): Pi
         isInstalling: false,
         requiresCentralReload: true,
       });
-      throw refreshErr;
+      centralRefreshError = refreshErr;
+    }
+
+    await refreshRegisteredProjects(trimmedProjectPath);
+
+    if (centralRefreshError) {
+      throw centralRefreshError;
     }
 
     return normalizeBatchInstallResult(result);
@@ -117,6 +134,7 @@ export function createCentralInstallSlice({ set, get }: CentralStoreContext): Pi
       throw err;
     }
 
+    let centralRefreshError: unknown = null;
     try {
       const skills = await invoke("get_central_skills");
       const repositories = await invoke("get_skill_repositories");
@@ -132,7 +150,13 @@ export function createCentralInstallSlice({ set, get }: CentralStoreContext): Pi
         isInstalling: false,
         requiresCentralReload: true,
       });
-      throw refreshErr;
+      centralRefreshError = refreshErr;
+    }
+
+    await refreshRegisteredProjects(projectPath);
+
+    if (centralRefreshError) {
+      throw centralRefreshError;
     }
 
     return result;
