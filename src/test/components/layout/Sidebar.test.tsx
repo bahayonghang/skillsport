@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, within } from "@testing-library/react";
+import { render, screen, fireEvent, within, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { useProjectsStore } from "@/stores/projectsStore";
@@ -446,27 +447,82 @@ describe("Sidebar", () => {
     expect(screen.getByRole("button", { name: "Alpha" })).toBeInTheDocument();
   });
 
-  it("reorders projects from the sort control and keeps the choice", () => {
+  it.each([
+    { label: "名称", value: "name", order: ["Pinned", "Alpha", "Beta", "Coda"] },
+    { label: "技能数", value: "skillCount", order: ["Pinned", "Coda", "Beta", "Alpha"] },
+    { label: "最近扫描", value: "recent", order: ["Pinned", "Beta", "Alpha", "Coda"] },
+  ])("sorts by $value and restores the selection after remount", async ({ label, value, order }) => {
+    const user = userEvent.setup();
     useProjectsStore.setState({
       projects: [
-        sampleProject({ id: "alpha", name: "Alpha", skillCount: 1 }),
+        sampleProject({ id: "alpha", name: "Alpha", skillCount: 1, lastScannedAt: "2026-02-01T00:00:00Z" }),
+        sampleProject({ id: "beta", name: "Beta", skillCount: 2, lastScannedAt: "2026-03-01T00:00:00Z" }),
         sampleProject({ id: "coda", name: "Coda", skillCount: 4 }),
+        sampleProject({ id: "pinned", name: "Pinned", pinned: true }),
       ],
       scanningProjectIds: new Set(),
     });
 
+    const projectNames = () => screen.getAllByRole("button")
+      .map((button) => button.getAttribute("aria-label"))
+      .filter((name) => order.includes(name ?? ""));
     const view = renderSidebar();
-    fireEvent.change(screen.getByRole("combobox", { name: "项目排序" }), {
-      target: { value: "skillCount" },
-    });
-
-    const names = screen.getAllByRole("button").map((button) => button.getAttribute("aria-label"));
-    expect(names.indexOf("Coda")).toBeLessThan(names.indexOf("Alpha"));
+    await user.click(screen.getByRole("button", { name: "项目排序" }));
+    let menu = await screen.findByRole("menu", { name: "项目排序" }, { timeout: 5_000 });
+    expect(within(menu).getByRole("menuitemradio", { name: "名称" })).toHaveAttribute("aria-checked", "true");
+    if (value === "name") {
+      await user.click(within(menu).getByRole("menuitemradio", { name: "技能数" }));
+      await waitFor(() => expect(screen.queryByRole("menu")).not.toBeInTheDocument());
+      await user.click(screen.getByRole("button", { name: "项目排序" }));
+      menu = await screen.findByRole("menu", { name: "项目排序" }, { timeout: 5_000 });
+    }
+    await user.click(within(menu).getByRole("menuitemradio", { name: label }));
+    await waitFor(() => expect(screen.queryByRole("menu")).not.toBeInTheDocument());
+    expect(projectNames()).toEqual(order);
+    expect(screen.getByRole("button", { name: "收起项目工作区" })).toHaveAttribute("aria-expanded", "true");
+    expect(JSON.parse(window.localStorage.getItem(SIDEBAR_WORKSPACE_SECTIONS_KEY)!)).toMatchObject({ projectSort: value });
 
     view.unmount();
     renderSidebar();
-    const restored = screen.getAllByRole("button").map((button) => button.getAttribute("aria-label"));
-    expect(restored.indexOf("Coda")).toBeLessThan(restored.indexOf("Alpha"));
+    expect(projectNames()).toEqual(order);
+    expect(screen.getByRole("button", { name: "项目排序" })).toHaveAccessibleDescription(`当前排序：${label}`);
+    await user.click(screen.getByRole("button", { name: "项目排序" }));
+    const restoredMenu = await screen.findByRole("menu", { name: "项目排序" }, { timeout: 5_000 });
+    expect(within(restoredMenu).getByRole("menuitemradio", { name: label })).toHaveAttribute("aria-checked", "true");
+  });
+
+  it("supports keyboard selection and Escape returns focus without collapsing the section", async () => {
+    const user = userEvent.setup();
+    useProjectsStore.setState({ projects: [sampleProject({ id: "alpha", name: "Alpha" })] });
+    renderSidebar();
+    const trigger = screen.getByRole("button", { name: "项目排序" });
+    trigger.focus();
+    await user.keyboard("{Enter}");
+    const menu = await screen.findByRole("menu", { name: "项目排序" }, { timeout: 5_000 });
+    await waitFor(() => expect(within(menu).getByRole("menuitemradio", { name: "名称" })).toHaveFocus());
+    await user.keyboard("{ArrowDown}{Enter}");
+    await waitFor(() => expect(trigger).toHaveFocus());
+    expect(trigger).toHaveAccessibleDescription("当前排序：技能数");
+    await user.keyboard(" ");
+    await screen.findByRole("menu", { name: "项目排序" }, { timeout: 5_000 });
+    await user.keyboard("{Escape}");
+    await waitFor(() => expect(screen.queryByRole("menu")).not.toBeInTheDocument());
+    expect(trigger).toHaveFocus();
+    expect(screen.getByRole("button", { name: "收起项目工作区" })).toHaveAttribute("aria-expanded", "true");
+    expect(screen.getByRole("button", { name: "Alpha" })).toBeInTheDocument();
+  });
+
+  it.each(["收起项目工作区", "折叠侧边栏"])("removes an open sort menu when clicking %s", async (name) => {
+    const user = userEvent.setup();
+    useProjectsStore.setState({ projects: [sampleProject({ id: "alpha", name: "Alpha" })] });
+    renderSidebar();
+    await user.click(screen.getByRole("button", { name: "项目排序" }));
+    await screen.findByRole("menu", { name: "项目排序" }, { timeout: 5_000 });
+    await user.click(screen.getByRole("button", { name }));
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "项目排序" })).not.toBeInTheDocument();
+    expect(document.activeElement).not.toBe(document.body);
+    expect(document.activeElement).toBeVisible();
   });
 
   it("still shows project icons when the sidebar rail is collapsed", () => {
@@ -488,6 +544,6 @@ describe("Sidebar", () => {
 
     expect(screen.getByRole("button", { name: "Alpha" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Claude Code/ })).toBeInTheDocument();
-    expect(screen.queryByRole("combobox", { name: "项目排序" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "项目排序" })).not.toBeInTheDocument();
   });
 });

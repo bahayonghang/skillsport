@@ -451,6 +451,7 @@
     "collapseSection": "收起{{name}}",
     "expandSection": "展开{{name}}",
     "projectSortLabel": "项目排序",
+    "projectSortCurrent": "当前排序：{{sort}}",
     "projectSortName": "名称",
     "projectSortSkillCount": "技能数",
     "projectSortRecent": "最近扫描",
