@@ -24,6 +24,7 @@ export function RecentCallsFeed({
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const list = calls.slice(0, limit);
+  const occurrences = new Map<string, number>();
 
   if (list.length === 0) {
     return (
@@ -35,11 +36,15 @@ export function RecentCallsFeed({
 
   return (
     <ul data-testid="recent-feed" className={cn("divide-y divide-border/60", className)}>
-      {list.map((call) => (
+      {list.map((call) => {
+        const factKey = JSON.stringify([call.skill, call.timestampMs, call.sessionId, call.source, call.project]);
+        const occurrence = occurrences.get(factKey) ?? 0;
+        occurrences.set(factKey, occurrence + 1);
+        return (
         <li
-          key={`${call.skill}-${call.timestampMs}-${call.sessionId}`}
+          key={`${factKey}-${occurrence}`}
           data-testid={`recent-row-${call.skill}-${call.timestampMs}`}
-          className="grid grid-cols-[4rem_minmax(0,1fr)_minmax(5rem,0.8fr)_2rem] items-center gap-2 px-3 py-2"
+          className="grid grid-cols-[3.5rem_minmax(0,1fr)_minmax(3rem,0.65fr)_minmax(40px,2.5rem)] items-center gap-2 px-3 py-1 hover:bg-muted/20"
         >
           <span
             className="text-xs tabular-nums text-muted-foreground"
@@ -50,9 +55,9 @@ export function RecentCallsFeed({
           <button
             type="button"
             onClick={(event) => onSelect(call.skill, event.currentTarget)}
-            className="min-w-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="min-h-[40px] min-w-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           >
-            <span className="block truncate text-sm text-foreground hover:text-primary">
+            <span className="block truncate text-sm font-medium text-foreground hover:text-primary-text">
               {call.skill}
             </span>
             <span className="block truncate text-ui-meta text-muted-foreground">
@@ -67,6 +72,7 @@ export function RecentCallsFeed({
               type="button"
               size="icon-sm"
               variant="ghost"
+              className="size-10 min-h-[40px] min-w-[40px] md:size-10"
               title={t("skillUsage.openSkill")}
               aria-label={t("skillUsage.openSkillNamed", { skill: call.skill })}
               onClick={() =>
@@ -79,7 +85,8 @@ export function RecentCallsFeed({
             <span aria-hidden />
           )}
         </li>
-      ))}
+        );
+      })}
     </ul>
   );
 }

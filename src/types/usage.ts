@@ -59,6 +59,13 @@ export interface ProviderHealth {
   scannedAtMs: number;
 }
 
+/** 一个只读 generation 的页面快照，不探测远程 transport 可达性。 */
+export interface UsagePageSnapshot {
+  overview: UsageOverview;
+  recent: RecentSkillCall[];
+  providers: ProviderHealth[];
+}
+
 export interface RefreshSummary {
   cached: boolean;
   callsWritten: number;

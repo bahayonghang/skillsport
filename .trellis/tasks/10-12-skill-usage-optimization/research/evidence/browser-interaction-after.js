@@ -1,0 +1,67 @@
+await page.reload({waitUntil:"domcontentloaded"}); await page.locator("[data-testid=usage-ranking-viewport]").waitFor({state:"visible",timeout:15000});
+const errors = [];
+const onError = error => errors.push(error.message);
+page.on('pageerror', onError);
+await page.setViewportSize({width:1440,height:900});
+const original = await page.evaluate(async () => {
+  const urls = performance.getEntriesByType('resource').filter(e=>e.name.includes('/src/stores/usageStore.ts')).map(e=>e.name).reverse();
+  let store;
+  for (const url of urls) { const module = await import(url); if (module.useUsageStore.getState().overview) { store=module.useUsageStore; break; } }
+  if (!store) throw Error('Rendered usage fixture not ready');
+  window.__usageEvidenceStore = store;
+  window.__usageEvidenceOriginal = store.getState();
+  const overview = store.getState().overview;
+  const topSkills = Array.from({length:10000}, (_,index)=>({...overview.topSkills[index%overview.topSkills.length],skill:`fixture-${String(index).padStart(5,'0')}`,count:10000-index,lastUsedMs:1700000000000+index,matchStatus:index%2===0?'matched':'unmatched',resolvedSkillId:null}));
+  store.setState({overview:{...overview,kpis:{...overview.kpis,uniqueSkills:10000},topSkills},selectedSkill:null,detail:null,error:null,detailLoading:false});
+  return {skills:topSkills.length};
+});
+const results = {fixture:original,errors};
+const selectAt = index => page.locator(`button[data-usage-action="select"][data-usage-index="${index}"]`);
+try {
+  await expect(page.locator('[data-testid="usage-ranking-viewport"]')).toHaveAttribute('data-virtualized','true');
+  await selectAt(0).focus();
+  await selectAt(0).press('End');
+  await expect(selectAt(9999)).toBeFocused();
+  results.end = await page.evaluate(()=>({index:document.activeElement.dataset.usageIndex,rows:document.querySelectorAll('[data-testid^="usage-row-"]').length,scrollTop:document.querySelector('[data-testid="usage-ranking-viewport"]').scrollTop}));
+  await selectAt(9999).press('Home');
+  await expect(selectAt(0)).toBeFocused();
+  await selectAt(0).press('Tab');
+  await expect(selectAt(1)).toBeFocused();
+  await selectAt(1).press('Shift+Tab');
+  await expect(selectAt(0)).toBeFocused();
+  results.tab = true;
+  await selectAt(0).press('End');
+  await selectAt(9999).click();
+  await expect(page.getByRole('button',{name:'Close usage detail',exact:true})).toBeVisible();
+  await page.locator('[data-testid="usage-ranking-viewport"]').evaluate(node=>{node.scrollTop=0;node.dispatchEvent(new Event('scroll'));});
+  await page.getByRole('button',{name:'Close usage detail',exact:true}).click();
+  await expect(selectAt(9999)).toBeFocused();
+  results.detailFocus = true;
+  await selectAt(9999).click();
+  await page.getByRole('button',{name:'recent',exact:true}).click();
+  await page.getByRole('button',{name:'Close usage detail',exact:true}).click();
+  await expect(selectAt(0)).toBeFocused();
+  results.sortRestore = await selectAt(0).innerText();
+  await selectAt(0).click();
+  await page.getByRole('button',{name:'Installed',exact:true}).click();
+  await page.getByRole('button',{name:'Close usage detail',exact:true}).click();
+  await expect(page.getByRole('group',{name:'Top skills',exact:true})).toBeFocused();
+  results.filteredFocus = await page.locator('[data-testid="usage-ranking-viewport"] li').first().getAttribute('aria-setsize');
+  await page.getByRole('group',{name:'Top skills',exact:true}).getByRole('button',{name:'All',exact:true}).click();
+  await page.getByRole('button',{name:'by count',exact:true}).click();
+  await page.evaluate(()=>window.__usageEvidenceStore.setState({error:'Synthetic source error',selectedSkill:null,detail:null,detailLoading:false}));
+  results.sourceError = {alerts:await page.getByRole('alert').allTextContents(),rankingVisible:await selectAt(0).isVisible()};
+  await page.evaluate(()=>window.__usageEvidenceStore.setState({error:null,selectedSkill:'fixture-00000',detail:null,detailLoading:true}));
+  await expect(page.locator('[data-testid="usage-detail-loading"]')).toBeVisible();
+  results.loadingClose = await page.getByRole('button',{name:'Close usage detail',exact:true}).isEnabled();
+  await page.getByRole('button',{name:'Close usage detail',exact:true}).click();
+  await page.evaluate(()=>window.__usageEvidenceStore.setState({error:'Synthetic detail error',selectedSkill:'fixture-00000',detail:null,detailLoading:false}));
+  await expect(page.locator('[data-testid="usage-detail-error"]')).toBeVisible();
+  results.failedClose = await page.getByRole('button',{name:'Close usage detail',exact:true}).isEnabled();
+  await page.getByRole('button',{name:'Close usage detail',exact:true}).click();
+  results.final = await page.evaluate(()=>({rows:document.querySelectorAll('[data-testid^="usage-row-"]').length,pageWidth:document.documentElement.clientWidth,scrollWidth:document.documentElement.scrollWidth}));
+} catch (error) { results.failure=error.message; results.ui=await tabbit.observe({frames:"none",maxChars:4500}); } finally {
+  await page.evaluate(()=>{window.__usageEvidenceStore.setState(window.__usageEvidenceOriginal);delete window.__usageEvidenceStore;delete window.__usageEvidenceOriginal;});
+  page.off('pageerror',onError);
+}
+return results;

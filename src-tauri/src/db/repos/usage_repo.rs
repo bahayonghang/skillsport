@@ -246,10 +246,13 @@ pub async fn list_usage_skill_candidates(
     builder.build_query_as::<Skill>().fetch_all(pool).await
 }
 
-pub async fn list_usage_metadata(
-    pool: &DbPool,
+pub async fn list_usage_metadata<'e, E>(
+    pool: E,
     target_id: &str,
-) -> Result<Vec<SkillUsageMetadataRow>, sqlx::Error> {
+) -> Result<Vec<SkillUsageMetadataRow>, sqlx::Error>
+where
+    E: sqlx::Executor<'e, Database = Sqlite>,
+{
     sqlx::query_as::<_, SkillUsageMetadataRow>(
         "SELECT target_id, skill, match_status, resolved_skill_id,
                 static_token_estimate, static_byte_count, scanned_at_ms
@@ -281,7 +284,10 @@ pub async fn get_usage_metadata_for_skill(
 
 /// 读取指定 target 的最近一次扫描时间戳，给 5 分钟缓存判定用。
 /// 没扫过返回 None。
-pub async fn get_last_scan_ms(pool: &DbPool, target_id: &str) -> Result<Option<i64>, sqlx::Error> {
+pub async fn get_last_scan_ms<'e, E>(pool: E, target_id: &str) -> Result<Option<i64>, sqlx::Error>
+where
+    E: sqlx::Executor<'e, Database = Sqlite>,
+{
     let row: Option<(i64,)> =
         sqlx::query_as("SELECT last_full_scan_ms FROM skill_call_scan_state WHERE target_id = ?")
             .bind(target_id)
@@ -291,10 +297,13 @@ pub async fn get_last_scan_ms(pool: &DbPool, target_id: &str) -> Result<Option<i
 }
 
 /// 列出指定 target 的所有 provider 健康状态行。stub provider 也会出现在结果里。
-pub async fn list_provider_rows(
-    pool: &DbPool,
+pub async fn list_provider_rows<'e, E>(
+    pool: E,
     target_id: &str,
-) -> Result<Vec<SkillCallProviderRow>, sqlx::Error> {
+) -> Result<Vec<SkillCallProviderRow>, sqlx::Error>
+where
+    E: sqlx::Executor<'e, Database = Sqlite>,
+{
     sqlx::query_as::<_, SkillCallProviderRow>(
         "SELECT target_id, provider_id, display_name, available, call_count, scanned_at
          FROM skill_call_providers
@@ -323,12 +332,15 @@ pub async fn list_calls_for_target(
 }
 
 /// 列出最近 N 条调用，按时间倒序。给 RecentCallsFeed 直接用。
-pub async fn list_recent_calls(
-    pool: &DbPool,
+pub async fn list_recent_calls<'e, E>(
+    pool: E,
     target_id: &str,
     source: Option<&str>,
     limit: i64,
-) -> Result<Vec<SkillCallRow>, sqlx::Error> {
+) -> Result<Vec<SkillCallRow>, sqlx::Error>
+where
+    E: sqlx::Executor<'e, Database = Sqlite>,
+{
     sqlx::query_as::<_, SkillCallRow>(
         "SELECT id, target_id, skill, timestamp_ms, project, session_id, source
          FROM skill_calls
@@ -345,11 +357,14 @@ pub async fn list_recent_calls(
     .await
 }
 
-pub async fn get_usage_kpis(
-    pool: &DbPool,
+pub async fn get_usage_kpis<'e, E>(
+    pool: E,
     target_id: &str,
     source: Option<&str>,
-) -> Result<UsageKpisRow, sqlx::Error> {
+) -> Result<UsageKpisRow, sqlx::Error>
+where
+    E: sqlx::Executor<'e, Database = Sqlite>,
+{
     sqlx::query_as::<_, UsageKpisRow>(
         "SELECT
             COUNT(*) AS total_calls,
@@ -368,12 +383,15 @@ pub async fn get_usage_kpis(
     .await
 }
 
-pub async fn list_top_skills(
-    pool: &DbPool,
+pub async fn list_top_skills<'e, E>(
+    pool: E,
     target_id: &str,
     source: Option<&str>,
     limit: usize,
-) -> Result<Vec<SkillCountRow>, sqlx::Error> {
+) -> Result<Vec<SkillCountRow>, sqlx::Error>
+where
+    E: sqlx::Executor<'e, Database = Sqlite>,
+{
     let limit = if limit == 0 { i64::MAX } else { limit as i64 };
     sqlx::query_as::<_, SkillCountRow>(
         "SELECT
@@ -397,12 +415,15 @@ pub async fn list_top_skills(
     .await
 }
 
-pub async fn list_timestamps_since(
-    pool: &DbPool,
+pub async fn list_timestamps_since<'e, E>(
+    pool: E,
     target_id: &str,
     source: Option<&str>,
     cutoff_ms: i64,
-) -> Result<Vec<i64>, sqlx::Error> {
+) -> Result<Vec<i64>, sqlx::Error>
+where
+    E: sqlx::Executor<'e, Database = Sqlite>,
+{
     let rows = sqlx::query_as::<_, (i64,)>(
         "SELECT timestamp_ms
          FROM skill_calls

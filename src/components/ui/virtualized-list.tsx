@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type Key, type ReactNode, type RefObject } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState, type Key, type ReactNode, type RefObject } from "react";
 
 interface VirtualizedListProps<T> {
   items: T[];
@@ -9,6 +9,10 @@ interface VirtualizedListProps<T> {
   scrollContainerRef: RefObject<HTMLElement | null>;
   itemKey: (item: T, index: number) => Key;
   renderItem: (item: T, index: number) => ReactNode;
+  as?: "div" | "ul";
+  /** 单个详情来源可在可视窗口之外保留，以便关闭后恢复焦点。 */
+  pinnedIndex?: number;
+  revealItem?: { index: number } | null;
 }
 
 export function VirtualizedList<T>({
@@ -20,6 +24,9 @@ export function VirtualizedList<T>({
   scrollContainerRef,
   itemKey,
   renderItem,
+  as: Root = "div",
+  pinnedIndex,
+  revealItem,
 }: VirtualizedListProps<T>) {
   const [scrollTop, setScrollTop] = useState(0);
   const [viewportHeight, setViewportHeight] = useState(fallbackHeight);
@@ -59,6 +66,21 @@ export function VirtualizedList<T>({
     };
   }, [fallbackHeight, scrollContainerRef]);
 
+  useLayoutEffect(() => {
+    const scrollNode = scrollContainerRef.current;
+    if (!scrollNode || !revealItem || revealItem.index < 0 || revealItem.index >= items.length) return;
+    const height = scrollNode.clientHeight || fallbackHeight;
+    const top = revealItem.index * rowStride;
+    const bottom = top + itemHeight;
+    const next = top < scrollNode.scrollTop
+      ? top
+      : bottom > scrollNode.scrollTop + height
+        ? bottom - height
+        : scrollNode.scrollTop;
+    scrollNode.scrollTop = next;
+    setScrollTop(next);
+  }, [revealItem, fallbackHeight, itemHeight, items.length, rowStride, scrollContainerRef]);
+
   const visibleRange = useMemo(() => {
     if (items.length === 0) {
       return { start: 0, end: 0 };
@@ -79,16 +101,27 @@ export function VirtualizedList<T>({
   }, [items.length, overscan, rowStride, scrollTop, viewportHeight]);
 
   const totalHeight = items.length > 0 ? items.length * rowStride - itemGap : 0;
-  const visibleItems = items.slice(visibleRange.start, visibleRange.end);
+  const visibleIndices = Array.from(
+    { length: visibleRange.end - visibleRange.start },
+    (_, offset) => visibleRange.start + offset,
+  );
+  if (pinnedIndex != null && pinnedIndex >= 0 && pinnedIndex < items.length &&
+    (pinnedIndex < visibleRange.start || pinnedIndex >= visibleRange.end)) {
+    visibleIndices.push(pinnedIndex);
+    visibleIndices.sort((a, b) => a - b);
+  }
+  const Item = Root === "ul" ? "li" : "div";
 
   return (
-    <div role="list" className="relative w-full" style={{ height: totalHeight }}>
-      {visibleItems.map((item, visibleIndex) => {
-        const index = visibleRange.start + visibleIndex;
+    <Root role="list" className="relative w-full" style={{ height: totalHeight }}>
+      {visibleIndices.map((index) => {
+        const item = items[index];
         return (
-          <div
+          <Item
             key={itemKey(item, index)}
             role="listitem"
+            aria-posinset={index + 1}
+            aria-setsize={items.length}
             className="absolute left-0 right-0"
             style={{
               top: index * rowStride,
@@ -96,9 +129,9 @@ export function VirtualizedList<T>({
             }}
           >
             {renderItem(item, index)}
-          </div>
+          </Item>
         );
       })}
-    </div>
+    </Root>
   );
 }

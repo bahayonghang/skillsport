@@ -45,7 +45,7 @@ export function ProviderHealthList({
   }
 
   const rowClass =
-    "flex w-full items-center justify-between px-3 py-2 text-left";
+    "flex min-h-[40px] w-full items-center justify-between px-3 py-2 text-left";
 
   return (
     <ul className={cn("divide-y divide-border/60", className)}>
@@ -102,10 +102,11 @@ export function ProviderHealthList({
             {interactive ? (
               <button
                 type="button"
+                aria-pressed={active}
                 onClick={() => onSelect?.(p.displayName)}
                 className={cn(
                   rowClass,
-                  "transition-colors hover:bg-muted/40",
+                  "transition-colors hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
                   active && "text-primary",
                 )}
               >

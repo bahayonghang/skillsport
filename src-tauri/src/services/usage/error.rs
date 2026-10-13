@@ -48,6 +48,8 @@ impl UsageRemoteKind {
 /// Failure categories for skill-usage scanning and aggregation.
 #[derive(Debug, thiserror::Error)]
 pub enum UsageError {
+    #[error("{0}")]
+    SharedScan(#[source] std::sync::Arc<UsageError>),
     /// IO failure with an operation-context prefix (e.g. "local read x:
     /// <io error>").
     #[error("{context}: {source}")]
@@ -122,6 +124,7 @@ impl UsageError {
 
     pub fn stable_code(&self) -> &'static str {
         match self {
+            Self::SharedScan(error) => error.stable_code(),
             Self::TargetFatalRemote { kind, .. } => kind.stable_code(),
             Self::Io { .. } => "usage.io",
             Self::Db(_) => "usage.db",
@@ -133,6 +136,7 @@ impl UsageError {
 
     pub fn public_message(&self) -> &'static str {
         match self {
+            Self::SharedScan(error) => error.public_message(),
             Self::TargetFatalRemote { kind, .. } => kind.public_message(),
             _ => "The operation failed. See runtime logs for details.",
         }
@@ -140,6 +144,7 @@ impl UsageError {
 
     pub fn retryable(&self) -> bool {
         match self {
+            Self::SharedScan(error) => error.retryable(),
             Self::TargetFatalRemote { retryable, .. } => *retryable,
             Self::Io { .. } => true,
             Self::Db(_)
@@ -151,7 +156,10 @@ impl UsageError {
     }
 
     pub fn is_target_fatal(&self) -> bool {
-        matches!(self, Self::TargetFatalRemote { .. })
+        match self {
+            Self::SharedScan(error) => error.is_target_fatal(),
+            _ => matches!(self, Self::TargetFatalRemote { .. }),
+        }
     }
 }
 

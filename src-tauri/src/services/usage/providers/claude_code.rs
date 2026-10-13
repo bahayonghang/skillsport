@@ -110,6 +110,9 @@ impl ClaudeCodeProvider {
 
 #[async_trait]
 impl UsageProvider for ClaudeCodeProvider {
+    fn supports_file_delta(&self) -> bool {
+        true
+    }
     fn id(&self) -> &'static str {
         "claude-code"
     }
@@ -167,8 +170,7 @@ fn scan_local(
             let content = std::fs::read_to_string(&history_path)
                 .map_err(|e| UsageError::io("local read history.jsonl", e))?;
             let parsed = parse_history_calls(&content, &builtins);
-            cache.record(history_string, mtime_ms, size, parsed.clone());
-            parsed
+            cache.record_or_replay(history_string, mtime_ms, size, parsed)
         }
     };
     merge_calls(history_raw, &mut seen, &mut calls);
@@ -193,8 +195,7 @@ fn scan_local(
                         continue;
                     };
                     let parsed = parse_session_file_calls(&content, &path_string, &builtins);
-                    cache.record(path_string, mtime_ms, size, parsed.clone());
-                    parsed
+                    cache.record_or_replay(path_string, mtime_ms, size, parsed)
                 }
             };
             merge_calls(raw, &mut seen, &mut calls);

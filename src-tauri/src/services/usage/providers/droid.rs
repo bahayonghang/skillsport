@@ -58,6 +58,9 @@ impl DroidProvider {
 
 #[async_trait]
 impl UsageProvider for DroidProvider {
+    fn supports_file_delta(&self) -> bool {
+        true
+    }
     fn id(&self) -> &'static str {
         "droid"
     }
@@ -116,8 +119,7 @@ fn scan_local(
             continue;
         };
         let file_calls = parse_session_calls(&content, re);
-        cache.record(path_string, mtime_ms, size, file_calls.clone());
-        calls.extend(file_calls);
+        calls.extend(cache.record_or_replay(path_string, mtime_ms, size, file_calls));
     }
 
     (cache, calls)

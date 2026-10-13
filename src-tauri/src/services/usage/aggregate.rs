@@ -19,24 +19,33 @@ pub struct SkillCount {
     pub last_used_ms: i64,
 }
 
+#[cfg_attr(feature = "ipc-codegen", derive(specta::Type))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SkillUsageSummary {
     pub skill: String,
+    #[cfg_attr(feature = "ipc-codegen", specta(type = i32))]
     pub count: i64,
+    #[cfg_attr(feature = "ipc-codegen", specta(type = i32))]
     pub projects: i64,
+    #[cfg_attr(feature = "ipc-codegen", specta(type = i32))]
     pub sessions: i64,
+    #[cfg_attr(feature = "ipc-codegen", specta(type = i32))]
     pub last_used_ms: i64,
     pub match_status: UsageSkillMatchStatus,
     pub resolved_skill_id: Option<String>,
+    #[cfg_attr(feature = "ipc-codegen", specta(type = Option<i32>))]
     pub static_token_estimate: Option<i64>,
+    #[cfg_attr(feature = "ipc-codegen", specta(type = Option<i32>))]
     pub static_byte_count: Option<i64>,
 }
 
+#[cfg_attr(feature = "ipc-codegen", derive(specta::Type))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RecentSkillCall {
     pub skill: String,
+    #[cfg_attr(feature = "ipc-codegen", specta(type = i32))]
     pub timestamp_ms: i64,
     pub project: String,
     pub session_id: String,
@@ -71,31 +80,41 @@ pub struct SkillUsageDetail {
 }
 
 /// 一日的调用数（用于 16 周热力图与每日趋势）。`date` 为 ISO `YYYY-MM-DD`。
+#[cfg_attr(feature = "ipc-codegen", derive(specta::Type))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DayCount {
     pub date: String,
+    #[cfg_attr(feature = "ipc-codegen", specta(type = i32))]
     pub count: i64,
 }
 
 /// 顶部 KPI 行的 4 个数字。
+#[cfg_attr(feature = "ipc-codegen", derive(specta::Type))]
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct UsageKpis {
+    #[cfg_attr(feature = "ipc-codegen", specta(type = i32))]
     pub total_calls: i64,
+    #[cfg_attr(feature = "ipc-codegen", specta(type = i32))]
     pub unique_skills: i64,
+    #[cfg_attr(feature = "ipc-codegen", specta(type = i32))]
     pub unique_projects: i64,
+    #[cfg_attr(feature = "ipc-codegen", specta(type = i32))]
     pub unique_sources: i64,
+    #[cfg_attr(feature = "ipc-codegen", specta(type = i32))]
     pub unique_sessions: i64,
 }
 
 /// `usage_get_overview` 的返回包。
+#[cfg_attr(feature = "ipc-codegen", derive(specta::Type))]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UsageOverview {
     pub kpis: UsageKpis,
     pub top_skills: Vec<SkillUsageSummary>,
     pub heatmap: Vec<DayCount>,
+    #[cfg_attr(feature = "ipc-codegen", specta(type = Option<i32>))]
     pub last_scan_ms: Option<i64>,
 }
 

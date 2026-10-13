@@ -1,0 +1,159 @@
+node scripts/check/sync-version.mjs
+[version] already synced to 1.0.2
+node scripts/build/build.mjs
+[build] preparing output directory
+[build] running Tauri build for win32: nsis
+        Info Looking up installed tauri packages to check mismatched versions...
+     Running beforeBuildCommand `pnpm build`
+$ tsc && vite build
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 2851 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                                                     1.76 kB │ gzip:   0.59 kB
+dist/assets/hermes-M_AXJzst.png                                     4.10 kB
+dist/assets/codex-BRzJLNbo.png                                      4.79 kB
+dist/assets/qclaw-Cw2wnvcj.png                                      4.88 kB
+dist/assets/autoclaw-B52yYWtn.png                                   5.25 kB
+dist/assets/workbuddy-C0z-hW93.png                                  5.45 kB
+dist/assets/easyclaw-D-1sNGUU.png                                   6.53 kB
+dist/assets/geist-cyrillic-ext-wght-normal-DjL33-gN.woff2           7.42 kB
+dist/assets/jetbrains-mono-vietnamese-wght-normal-Bt-aOZkq.woff2    7.50 kB
+dist/assets/geist-vietnamese-wght-normal-6IgcOCM7.woff2             8.00 kB
+dist/assets/jetbrains-mono-greek-wght-normal-Bw9x6K1M.woff2         9.00 kB
+dist/assets/instrument-serif-latin-ext-400-normal-CFCUzsTy.woff     9.86 kB
+dist/assets/inter-vietnamese-wght-normal-CBcvBZtf.woff2            10.25 kB
+dist/assets/inter-greek-ext-wght-normal-DlzME5K_.woff2             11.23 kB
+dist/assets/instrument-serif-latin-ext-400-normal-C2je3j2s.woff2   11.60 kB
+dist/assets/jetbrains-mono-cyrillic-wght-normal-D73BlboJ.woff2     12.10 kB
+dist/assets/geist-cyrillic-wght-normal-BEAKL7Jp.woff2              15.08 kB
+dist/assets/jetbrains-mono-latin-ext-wght-normal-DBQx-q_a.woff2    15.19 kB
+dist/assets/geist-latin-ext-wght-normal-DC-KSUi6.woff2             16.51 kB
+dist/assets/instrument-serif-latin-400-normal-BVbkICAY.woff        18.33 kB
+dist/assets/inter-cyrillic-wght-normal-DqGufNeO.woff2              18.74 kB
+dist/assets/inter-greek-wght-normal-CkhJZR-_.woff2                 18.99 kB
+dist/assets/instrument-serif-latin-400-normal-DnYpCC2O.woff2       21.03 kB
+dist/assets/inter-cyrillic-ext-wght-normal-BOeWTOD4.woff2          25.96 kB
+dist/assets/geist-latin-wght-normal-BgDaEnEv.woff2                 29.40 kB
+dist/assets/jetbrains-mono-latin-wght-normal-B9CIFXIH.woff2        40.40 kB
+dist/assets/inter-latin-wght-normal-Dx4kXJAl.woff2                 48.25 kB
+dist/assets/inter-latin-ext-wght-normal-DO1Apj_S.woff2             85.06 kB
+dist/assets/index-BMyB2XiP.css                                    210.61 kB │ gzip:  33.53 kB
+dist/assets/scrollRestoration-BIFQFLXk.js                           0.29 kB │ gzip:   0.18 kB
+dist/assets/statusTone-DRPRUfqk.js                                  0.50 kB │ gzip:   0.18 kB
+dist/assets/useSkillExplanationSummaries-DFMYHhBA.js                0.69 kB │ gzip:   0.44 kB
+dist/assets/backendError-B_-7pHwP.js                                0.70 kB │ gzip:   0.41 kB
+dist/assets/rolldown-runtime-hePW80VL.js                            0.71 kB │ gzip:   0.42 kB
+dist/assets/radio-group-DIMHdLJ_.js                                 0.90 kB │ gzip:   0.49 kB
+dist/assets/switch-BuIvLGES.js                                      0.98 kB │ gzip:   0.54 kB
+dist/assets/SkillMarkdownRenderer-Bht5tMel.js                       1.31 kB │ gzip:   0.54 kB
+dist/assets/virtualized-list-CqIuS7nJ.js                            1.75 kB │ gzip:   0.93 kB
+dist/assets/SkillDetailPage-kMHlqX_2.js                             1.76 kB │ gzip:   0.78 kB
+dist/assets/inline-confirm-action-zxSxiIL6.js                       1.94 kB │ gzip:   0.85 kB
+dist/assets/SkillDetailDrawer-C5MyFL1v.js                           1.99 kB │ gzip:   0.95 kB
+dist/assets/logsUtils-CXtj6cFi.js                                   1.99 kB │ gzip:   0.92 kB
+dist/assets/CentralPlatformManageDrawer-Cy5Y7Yx2.js                 3.24 kB │ gzip:   1.41 kB
+dist/assets/ipc-BG7Duw69.js                                         3.63 kB │ gzip:   1.40 kB
+dist/assets/GitHubImportFileTree-B5RGnb1Q.js                        7.13 kB │ gzip:   2.70 kB
+dist/assets/SkillDetailModalShell-YWerPOjD.js                       9.05 kB │ gzip:   3.01 kB
+dist/assets/useSkillCallCounts-DEGoNzP3.js                          9.60 kB │ gzip:   3.41 kB
+dist/assets/ObsidianVaultView-C6ro1rF4.js                           9.62 kB │ gzip:   3.30 kB
+dist/assets/dashboardUtils-KHcPGhMk.js                             11.21 kB │ gzip:   3.42 kB
+dist/assets/SkillDetailFileTree-CdKVGT4q.js                        11.80 kB │ gzip:   3.73 kB
+dist/assets/settingsStore-BkWtFrKJ.js                              13.23 kB │ gzip:   3.51 kB
+dist/assets/button-CuJkgUAb.js                                     15.31 kB │ gzip:   4.49 kB
+dist/assets/CollectionsListView-CfTxdhJF.js                        16.37 kB │ gzip:   4.72 kB
+dist/assets/CentralStatePortabilityDialog-C4UhQ1xT.js              16.76 kB │ gzip:   4.42 kB
+dist/assets/tauri-vendor-hUBz4vX7.js                               17.36 kB │ gzip:   4.54 kB
+dist/assets/platformManagementActions-BBiBk9Hg.js                  18.48 kB │ gzip:   5.39 kB
+dist/assets/RulesView-BK6y9AGA.js                                  20.90 kB │ gzip:   5.67 kB
+dist/assets/ProjectsView-CGzZXb2E.js                               25.13 kB │ gzip:   6.40 kB
+dist/assets/DashboardView-e9gE9Gol.js                              26.55 kB │ gzip:   7.28 kB
+dist/assets/PlatformView-CXeBi8oD.js                               30.96 kB │ gzip:   9.59 kB
+dist/assets/UnifiedSkillCard-BYZ8L2s1.js                           31.60 kB │ gzip:   8.64 kB
+dist/assets/platformTargetGroups-BcbRFJ6B.js                       46.95 kB │ gzip:  28.45 kB
+dist/assets/SkillDetailView-DxoxoNxH.js                            51.65 kB │ gzip:  12.64 kB
+dist/assets/SkillUsageView-C_GKQfHR.js                             52.01 kB │ gzip:  13.34 kB
+dist/assets/GitHubRepoImportWizard-BSZBuEXV.js                     52.55 kB │ gzip:  11.72 kB
+dist/assets/MarketplaceView-Bmqj5O-P.js                            53.10 kB │ gzip:  13.29 kB
+dist/assets/OperationLogsView-IUJvsu8c.js                          53.12 kB │ gzip:  12.53 kB
+dist/assets/icon-vendor-DY1PJ5aT.js                                59.21 kB │ gzip:  15.62 kB
+dist/assets/i18n-vendor-CSLNQJXP.js                                63.04 kB │ gzip:  20.60 kB
+dist/assets/SkillsCliView-By46H9bK.js                              74.51 kB │ gzip:  18.87 kB
+dist/assets/SettingsView-FColvqs6.js                              102.45 kB │ gzip:  22.97 kB
+dist/assets/react-vendor-38Wm4cSu.js                              181.75 kB │ gzip:  57.16 kB
+dist/assets/CentralSkillsView-TAB98a87.js                         221.18 kB │ gzip:  51.92 kB
+dist/assets/ui-vendor-BO9lCvP2.js                                 458.42 kB │ gzip: 144.90 kB
+dist/assets/index-BBohcqu5.js                                     502.88 kB │ gzip: 142.98 kB
+
+✓ built in 4.84s
+[plugin builtin:vite-reporter]
+(!) Some chunks are larger than 500 kB after minification. Consider:
+- Using dynamic import() to code-split the application
+- Use build.rolldownOptions.output.codeSplitting to improve chunking: https://rolldown.rs/reference/OutputOptions.codeSplitting
+- Adjust chunk size limit for this warning via build.chunkSizeWarningLimit.
+[PLUGIN_TIMINGS] Your build spent 96% of 4.8s inside plugin hooks (4.6s).
+Measured inside the callback, so queue time is excluded and time the callback itself awaited is not:
+  - @tailwindcss/vite:generate:build transform (92%, 4.5s, 1 call)
+Those rows are 92% of the build; the rest of the 96% is below.
+Not measurable — 1 hook whose calls overlap, so elapsed time covers work other calls were doing. Profile with `node --cpu-prof`:
+  - vite:asset load (14 calls)
+See https://rolldown.rs/reference/InputOptions.checks#plugintimings for more details.
+
+   Compiling windows-sys v0.61.2
+   Compiling tauri v2.11.5
+   Compiling tauri-macros v2.6.3
+   Compiling tauri-plugin-fs v2.5.1
+   Compiling tauri-plugin-shell v2.3.5
+   Compiling tauri-plugin-process v2.3.1
+   Compiling tauri-plugin-sql v2.4.0
+   Compiling tauri-plugin-updater v2.10.1
+   Compiling tauri-plugin-deep-link v2.4.9
+   Compiling tauri-plugin-dialog v2.7.2
+   Compiling skillport v1.0.2 (D:\Documents\Code\Agents\skills-manage-windows\src-tauri)
+   Compiling mio v1.2.0
+   Compiling softbuffer v0.4.8
+   Compiling schannel v0.1.29
+   Compiling tauri-runtime-wry v2.11.4
+   Compiling native-tls v0.2.18
+   Compiling tokio v1.53.1
+   Compiling tokio-util v0.7.18
+   Compiling tokio-stream v0.1.18
+   Compiling tokio-rustls v0.26.4
+   Compiling tower v0.5.3
+   Compiling tokio-native-tls v0.3.1
+   Compiling sqlx-core v0.8.6
+   Compiling tower-http v0.6.8
+   Compiling h2 v0.4.19
+   Compiling sqlx-sqlite v0.8.6
+   Compiling hyper v1.9.0
+   Compiling sqlx v0.8.6
+   Compiling hyper-util v0.1.20
+   Compiling tauri-plugin-single-instance v2.4.3
+   Compiling hyper-rustls v0.27.8
+   Compiling hyper-tls v0.6.0
+   Compiling reqwest v0.13.2
+   Compiling reqwest v0.12.28
+    Finished `release` profile [optimized] target(s) in 4m 33s
+       Built application at: D:\Documents\Code\Agents\skills-manage-windows\src-tauri\target\release\skillport.exe
+     Running beforeBundleCommand `pnpm build:cli`
+$ cargo build --manifest-path src-tauri/Cargo.toml --release --bin skillport-cli --locked
+   Compiling tauri v2.11.5
+   Compiling tauri-plugin-fs v2.5.1
+   Compiling tauri-plugin-updater v2.10.1
+   Compiling tauri-plugin-shell v2.3.5
+   Compiling tauri-plugin-single-instance v2.4.3
+   Compiling tauri-plugin-process v2.3.1
+   Compiling tauri-plugin-sql v2.4.0
+   Compiling tauri-plugin-deep-link v2.4.9
+   Compiling tauri-plugin-dialog v2.7.2
+   Compiling skillport v1.0.2 (D:\Documents\Code\Agents\skills-manage-windows\src-tauri)
+    Finished `release` profile [optimized] target(s) in 4m 26s
+        Info Patching D:\Documents\Code\Agents\skills-manage-windows\src-tauri\target\release\skillport.exe with bundle type information: nsis
+        Info Target: x64
+     Running makensis to produce D:\Documents\Code\Agents\skills-manage-windows\src-tauri\target\release\bundle\nsis\SkillPort_1.0.2_x64-setup.exe
+    Finished 1 bundle at:
+        D:\Documents\Code\Agents\skills-manage-windows\src-tauri\target\release\bundle\nsis\SkillPort_1.0.2_x64-setup.exe
+
+[build] copied outputs\SkillPort_1.0.2_x64-setup.exe

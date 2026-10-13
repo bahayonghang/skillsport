@@ -184,6 +184,7 @@ fn migration_sources_are_checksum_locked() {
         descriptor_checksum(5).unwrap(),
         descriptor_checksum(6).unwrap(),
         descriptor_checksum(7).unwrap(),
+        descriptor_checksum(8).unwrap(),
     ];
     assert_eq!(
         checksums,
@@ -195,9 +196,44 @@ fn migration_sources_are_checksum_locked() {
             "1d7efcd9c5d218f4ccf4f3c4d59a286129e8e4090e6786a4fa7075313bec2ba3",
             "1144ab4443ad86e574690ad1c7ebe2e15b9b546031a63ddf596a5e9aba6c502d",
             "739c87f61d50e40dc06a4e2fdc3a7f7bcd3643067ec15e951f0a3fda04e977d2",
+            "6c2e9684a9d991e689f40686bbd1bf27d7a26dc33fb9426351db4718b5d714de",
         ]
     );
     assert_eq!(checksums.len(), versions::MIGRATIONS.len());
+}
+
+#[tokio::test]
+async fn usage_migration_eight_retains_legacy_facts_and_marks_provenance_unready() {
+    let directory = TempDir::new().unwrap();
+    let path = directory.path().join("usage-v7.sqlite");
+    let pool = crate::db::pool::create_pool(&path).await.unwrap();
+    for version in 1..=7 {
+        apply_migration(&pool, version).await.unwrap();
+    }
+    sqlx::query("INSERT INTO skill_calls(target_id,skill,timestamp_ms,project,session_id,source) VALUES('local','legacy',1,'p','s','Codex CLI')").execute(&pool).await.unwrap();
+    sqlx::query("INSERT INTO skill_call_scan_state(target_id,last_full_scan_ms) VALUES('local',1)")
+        .execute(&pool)
+        .await
+        .unwrap();
+    sqlx::query("INSERT INTO skill_call_file_cache(target_id,provider,file_path,mtime_ms,size,calls_json,scanned_at_ms) VALUES('local','codex','opaque-fixture-path',1,1,'[]',1)").execute(&pool).await.unwrap();
+    apply_migration(&pool, 8).await.unwrap();
+    let facts: Vec<(String,)> = sqlx::query_as("SELECT skill FROM skill_calls")
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+    assert_eq!(facts, vec![("legacy".into(),)]);
+    let readiness: (i64,) =
+        sqlx::query_as("SELECT local_provenance_version FROM skill_call_scan_state")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(readiness.0, 0);
+    let keys: Vec<(Option<String>,)> = sqlx::query_as("SELECT file_key FROM skill_call_file_cache")
+        .fetch_all(&pool)
+        .await
+        .unwrap();
+    assert_eq!(keys, vec![(None,)]);
+    super::validate_foreign_keys(&pool).await.unwrap();
 }
 
 #[tokio::test]
@@ -307,7 +343,7 @@ async fn migration_seven_creates_skills_cli_update_tables_and_reopens() {
         .fetch_all(&reopened)
         .await
         .unwrap();
-    assert_eq!(reopened_versions.len(), 7);
+    assert_eq!(reopened_versions.len(), 8);
     reopened.close().await;
 }
 
@@ -334,7 +370,7 @@ async fn selected_release_fixtures_upgrade_with_backup_and_cascades() {
                 .fetch_all(&pool)
                 .await
                 .unwrap();
-        assert_eq!(versions.len(), 7);
+        assert_eq!(versions.len(), 8);
         for (index, row) in versions.iter().enumerate() {
             let version = i64::try_from(index + 1).unwrap();
             assert_eq!(row.try_get::<i64, _>("version").unwrap(), version);
@@ -554,7 +590,7 @@ async fn preflight_rejects_checksum_gap_and_future_versions_without_backup() {
     )
     .await;
     assert_preflight_rejection(
-        "INSERT INTO schema_migrations (version, checksum, applied_at) VALUES (8, 'future', 'now')",
+        "INSERT INTO schema_migrations (version, checksum, applied_at) VALUES (9, 'future', 'now')",
         "newer than supported",
     )
     .await;

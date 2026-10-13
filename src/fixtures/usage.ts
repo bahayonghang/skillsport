@@ -7,6 +7,7 @@ import type {
   UnusedSkillEntry,
   UnusedSkillsReport,
   UsageOverview,
+  UsagePageSnapshot,
   UsageScopeInfo,
 } from "@/types/usage";
 
@@ -390,23 +391,32 @@ function overviewFor(source: string | null): UsageOverview {
   };
 }
 
+function pageFor(source: string | null): UsagePageSnapshot {
+  return {
+    overview: overviewFor(source),
+    recent: source
+      ? BROWSER_FIXTURE_RECENT.filter((call) => call.source === source)
+      : BROWSER_FIXTURE_RECENT,
+    providers: BROWSER_FIXTURE_PROVIDERS,
+  };
+}
+
 export function registerUsageFixtures(): void {
   registerIpcFixtures({
-    usage_refresh: () => ({
+    usage_refresh: ({ source }) => ({
       summary: {
         cached: false,
         callsWritten: 88,
         providersAvailable: 5,
         scannedAtMs: now,
       },
-      overview: BROWSER_FIXTURE_OVERVIEW,
-      recent: BROWSER_FIXTURE_RECENT,
-      providers: BROWSER_FIXTURE_PROVIDERS,
+      ...pageFor(source ?? null),
       scope: BROWSER_FIXTURE_SCOPE,
       usedCachedData: false,
       scanning: false,
       refreshError: null,
     }),
+    usage_get_page: ({ source }) => pageFor(source),
     usage_get_overview: ({ source }) => overviewFor(source),
     usage_get_recent: ({ source }) =>
       source

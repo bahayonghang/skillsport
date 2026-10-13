@@ -18,7 +18,17 @@ skill_usage_metadata(
 )
 PRIMARY KEY (target_id, skill)
 
+skill_call_file_cache(..., file_key?, observed_order)
+skill_call_scan_state(..., local_provenance_version)
+skill_call_candidates(
+  target_id, provider, file_key, occurrence_ordinal, group_key,
+  skill, timestamp_ms, project, session_id, source, fact_id?
+)
+PRIMARY KEY (target_id, provider, file_key, occurrence_ordinal)
+
 usage_get_overview(topSkillsLimit?, source?) -> UsageOverview
+usage_get_page(source?) -> { overview, recent, providers }
+usage_refresh(force, source?) -> UsageRefreshResult
 usage_get_recent(limit?, source?) -> RecentSkillCall[]
 usage_get_skill_detail(skill, source?) -> SkillUsageDetail
 usage_resolve_skill_id(skillName) -> string?
@@ -35,14 +45,51 @@ UnusedPlatformInstall {
 }
 ```
 
-`replace_calls_for_target` receives calls, provider outcomes, metadata, and the
-scan timestamp; it replaces all four target-scoped cache families in one SQL
-transaction.
+`replace_calls_for_target` remains the full-replacement boundary for Remote and
+compatibility fixtures. Local `publish_local_scan` publishes file fingerprints,
+opaque occurrence candidates, facts, provider outcomes, metadata and scan state
+in one transaction. Neither provider preparation nor file-cache lookup writes.
 
 ## 3. Contracts
 
+- Application SQL stays in explicit `db::repos` owners. Use `usage_stats_repo`
+  for distinct fact names and `usage_repo` / `usage_delta_repo` for page and
+  publication queries; do not grow historical wide `db::<repo_fn>` calls.
+- Generated usage DTO integer metadata uses feature-gated `specta(type = i32)`
+  or `Option<i32>` while runtime fields stay `i64`. This is the existing TS
+  number contract, not runtime narrowing. `f64` metadata incorrectly exports
+  mandatory integers as nullable because JSON floats may be non-finite.
 - `skill_calls` stores only facts proven by logs. Never add a resolved skill id,
   file path, static Token estimate, or current Central-library interpretation.
+- Local readiness is v8 `local_provenance_version=1`, set only after a complete
+  successful target publication. A migrated target starts unready with legacy
+  facts intact; its first successful Local scan rebuilds the complete target.
+  Later provider failure/recovery affects that provider only and keeps readiness.
+- Fingerprint reads select only path/key/mtime/size/observed order, never JSON
+  payload. Manifest set/order/fingerprints unchanged means no log-content reads,
+  raw-call materialization, candidate payload queries, or fact writes. Changed
+  files are parsed in full; no append-byte complexity guarantee is made.
+- Candidates retain every raw occurrence and loser. Claude groups by exact
+  skill+timestamp, Grok by opaque full project/session directory+skill; both keep
+  the current observed file-order/occurrence first winner. Codex/Droid/OpenCode
+  preserve multiplicity. Reconcile changed/deleted/reordered groups only; equal
+  business facts and unrelated groups retain their fact IDs.
+- File-cache UPSERT uses `ON CONFLICT DO UPDATE` to preserve opaque ownership;
+  `OR REPLACE` must not cascade surviving candidates. Cache/candidate/fact/health/
+  metadata/scan-state SQL failure rolls back the complete publication.
+- All actual scans share a pool/target single-flight, including force, cold,
+  background and Remote. Force joins an in-flight scan. A detached owner keeps
+  the flight until publication ends even if a caller is dropped; error/panic
+  releases it. TTL-only reads do not own a scan flight. Cross-target scans may run
+  concurrently; this lease is independent of Central mutation locking.
+- `usage_get_page` and the page portion of refresh use the same read transaction
+  and connection for KPI, complete ranking, metadata, local-date heatmap, recent,
+  provider health and freshness. Page limit is always 0 (all skills); an explicit
+  source filters every facts panel. Compatibility getters remain callable and
+  read-only, with no additional remote connection.
+- `RefreshSummary.calls_written` keeps its complete available-call count meaning
+  for actual scans (and 0 for TTL hits). Actual fact writes are separate counters;
+  a warm zero-write scan still reports all historical calls.
 - Resolve metadata against `skills.is_central = 1`: normalized exact id first,
   then a unique normalized name. Multiple normalized matches are `ambiguous`;
   no match is `unmatched`. Only `matched` rows have `resolved_skill_id`.
@@ -126,6 +173,15 @@ transaction.
 
 ## 6. Tests Required
 
+- Delta publication: fingerprint hits perform no content reads/JSON parses or
+  fact writes; append/rewrite/delete/rotation preserve the oracle multiset and
+  unrelated IDs; failure at cache/candidate/fact/metadata stages rolls back all.
+- Cold SQL expansion: complex text, control characters, integer extremes,
+  duplicate occurrences, empty files and cross-target/provider ownership.
+- Single-flight: same target coalesces, distinct targets overlap, caller drop
+  and error/panic release correctly; WAL barriers prove one page generation.
+- Generated DTO parity: mandatory integer fields remain `number`, nullable
+  static metrics remain nullable, and no handwritten command overlaps the map.
 - Schema/repo: table creation, target isolation, CHECK constraints, and rollback
   preserving old calls + metadata.
 - Enrichment: exact id, unique name, ambiguous name, unmatched, trim/case, ASCII,
@@ -157,7 +213,7 @@ SELECT id FROM skills WHERE LOWER(name) = LOWER(?) LIMIT 1;
 
 // Correct: raw facts -> per-event local resolver; unique metadata only.
 usage_get_skill_usage_stats(skills, None);
-let timestamps = db::list_timestamps_since(...).await?;
+let timestamps = db::repos::usage_repo::list_timestamps_since(...).await?;
 let heatmap = heatmap_grid_16w_from_timestamps(
     &timestamps,
     now_ms,

@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
 import type { DayCount } from "@/types/usage";
+import { buildHeatmapScale, heatLevelFor } from "@/components/usage/usageHeatmapScale";
 
 interface ActivityHeatmapProps {
   days: DayCount[];
@@ -14,11 +15,11 @@ const LABELED_WEEKDAY_ROWS = new Set([0, 2, 4]);
 
 /** 固定轨道：格子边长不随容器宽度变化，避免 maximize 时 aspect-ratio 回传高度。 */
 const CELL_TRACK_CLASS = {
-  default: "auto-cols-[0.75rem]",
+  default: "auto-cols-[1rem]",
   compact: "auto-cols-[0.625rem]",
 } as const;
 const CELL_SIZE_CLASS = {
-  default: "size-3",
+  default: "size-4",
   compact: "size-2.5",
 } as const;
 
@@ -30,8 +31,8 @@ export function ActivityHeatmap({
   const { t, i18n } = useTranslation();
   const [focusIndex, setFocusIndex] = useState(0);
   const cells = useRef<Array<HTMLButtonElement | null>>([]);
-  const nonZeroCounts = useMemo(
-    () => days.map((day) => day.count).filter((count) => count > 0),
+  const heatmapScale = useMemo(
+    () => buildHeatmapScale(days.map((day) => day.count)),
     [days],
   );
   const weekdayLabels = useMemo(() => {
@@ -76,20 +77,22 @@ export function ActivityHeatmap({
   return (
     <div
       data-testid="heatmap-shell"
-      className={cn("min-w-0", compact ? "py-1" : "py-3", className)}
+      className={cn("min-w-0", compact ? "py-1" : "px-3 py-3", className)}
     >
       <div className="overflow-x-auto pb-1">
-        <div className={cn("min-w-[22rem]", !compact && "px-1")}>
+        <div data-testid="heatmap-plot" className="w-max">
           <div
+            data-testid="heatmap-months"
             className={cn(
               "ml-9 grid grid-flow-col gap-1 text-ui-micro text-muted-foreground",
               cellTrackClass,
             )}
           >
-            {monthLabels.map((label, index) => (
+            {monthLabels.map(({ key, label, startWeek, weekSpan }) => (
               <span
-                key={`${label}-${index}`}
-                className="whitespace-nowrap overflow-visible"
+                key={key}
+                style={{ gridColumn: `${startWeek + 1} / span ${weekSpan}` }}
+                className="overflow-hidden whitespace-nowrap"
               >
                 {label}
               </span>
@@ -111,7 +114,7 @@ export function ActivityHeatmap({
               )}
             >
               {days.map((day, index) => {
-                const level = heatLevelFor(day.count, nonZeroCounts);
+                const level = heatLevelFor(day.count, heatmapScale);
                 const label = t("skillUsage.heatmap.cellLabel", {
                   date: day.date,
                   count: day.count,
@@ -156,71 +159,58 @@ export function ActivityHeatmap({
               })}
             </div>
           </div>
+          <div
+            data-testid="heatmap-legend"
+            className="mt-2 flex items-center justify-end gap-1.5 text-ui-micro text-muted-foreground"
+          >
+            <span>{t("skillUsage.heatmap.less")}</span>
+            {([0, 1, 2, 3, 4, 5] as const).map((level) => (
+              <span
+                key={level}
+                aria-hidden
+                className={cn(
+                  "size-2.5 rounded-[2px] border border-transparent",
+                  CELL_LEVEL_CLASS[level],
+                )}
+              />
+            ))}
+            <span>{t("skillUsage.heatmap.more")}</span>
+          </div>
         </div>
-      </div>
-      <div className="mt-2 flex items-center justify-end gap-1.5 text-ui-micro text-muted-foreground">
-        <span>{t("skillUsage.heatmap.less")}</span>
-        {([0, 1, 2, 3, 4, 5] as const).map((level) => (
-          <span
-            key={level}
-            aria-hidden
-            className={cn(
-              "size-2.5 rounded-[2px] border border-transparent",
-              CELL_LEVEL_CLASS[level],
-            )}
-          />
-        ))}
-        <span>{t("skillUsage.heatmap.more")}</span>
       </div>
     </div>
   );
 }
 
-function buildMonthLabels(days: DayCount[], locale: string): string[] {
+function buildMonthLabels(days: DayCount[], locale: string) {
   const formatter = new Intl.DateTimeFormat(locale || undefined, {
     month: "short",
   });
-  let previousMonth = "";
-  return Array.from({ length: 16 }, (_, week) => {
+  const months: Array<{
+    key: string;
+    label: string;
+    startWeek: number;
+    weekSpan: number;
+  }> = [];
+  for (let week = 0; week < Math.ceil(days.length / 7); week += 1) {
     const day = days[week * 7];
-    if (!day) return "";
+    if (!day) continue;
     const date = new Date(`${day.date}T12:00:00`);
     const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
-    if (monthKey === previousMonth) return "";
-    previousMonth = monthKey;
-    return formatter.format(date);
-  });
-}
-
-function heatLevelFor(
-  count: number,
-  nonZeroCounts: number[],
-): 0 | 1 | 2 | 3 | 4 | 5 {
-  if (count <= 0) return 0;
-  if (nonZeroCounts.length < 5) {
-    const max = Math.max(1, ...nonZeroCounts);
-    return Math.max(1, Math.min(5, Math.ceil((count / max) * 5))) as
-      | 1
-      | 2
-      | 3
-      | 4
-      | 5;
+    const previous = months[months.length - 1];
+    if (previous?.key === monthKey) {
+      previous.weekSpan += 1;
+    } else {
+      months.push({
+        key: monthKey,
+        label: formatter.format(date),
+        startWeek: week,
+        weekSpan: 1,
+      });
+    }
   }
-
-  const sorted = [...nonZeroCounts].sort((a, b) => a - b);
-  const quantile = (value: number) => {
-    const position = (sorted.length - 1) * value;
-    const lower = Math.floor(position);
-    const upper = Math.ceil(position);
-    const lowerValue = sorted[lower] ?? 0;
-    const upperValue = sorted[upper] ?? lowerValue;
-    return lowerValue + (upperValue - lowerValue) * (position - lower);
-  };
-  if (count <= quantile(0.25)) return 1;
-  if (count <= quantile(0.5)) return 2;
-  if (count <= quantile(0.75)) return 3;
-  if (count <= quantile(0.9)) return 4;
-  return 5;
+  // 单周残月无法容纳月份全文；仅略过标签，日期格子全部保留。
+  return months.filter((month) => month.weekSpan >= 2);
 }
 
 const CELL_LEVEL_CLASS: Record<0 | 1 | 2 | 3 | 4 | 5, string> = {

@@ -142,6 +142,7 @@ export const GENERATED_IPC_COMMANDS = {
   unassign_skill_tags: command<{ skillId: string; tagIds: string[] }, null>(),
   uninstall_skill_from_project: command<{ projectId: string; skillId: string; agentId: string }, null>(),
   update_collection: command<{ collectionId: string; name: string; description: string | null }, Collection>(),
+  usage_get_page: command<{ source: string | null }, UsagePageSnapshot>(),
 } as const;
 
 export const GENERATED_IPC_COMMAND_NAMES = [
@@ -266,6 +267,7 @@ export const GENERATED_IPC_COMMAND_NAMES = [
   "unassign_skill_tags",
   "uninstall_skill_from_project",
   "update_collection",
+  "usage_get_page",
 ] as const;
 
 export const GENERATED_REVIEWED_IPC_ERROR_CODES = [
@@ -670,6 +672,12 @@ export type CollectionDetail = {
 	updated_at: string,
 	/**  All skills that are members of this collection. */
 	skills: Skill[],
+};
+
+/**  一日的调用数（用于 16 周热力图与每日趋势）。`date` 为 ISO `YYYY-MM-DD`。 */
+export type DayCount = {
+	date: string,
+	count: number,
 };
 
 export type DeleteCentralSkillPreview = DeleteCentralSkillPreview_Serialize | DeleteCentralSkillPreview_Deserialize;
@@ -1135,6 +1143,25 @@ export type ProjectUsingSkillDto = {
 	linkType: string,
 };
 
+/**  `skill_call_providers` 行 + 是否最近扫描过的派生标记。 */
+export type ProviderHealth = {
+	providerId: string,
+	displayName: string,
+	available: boolean,
+	callCount: number,
+	scannedAtMs: number,
+};
+
+export type RecentSkillCall = {
+	skill: string,
+	timestampMs: number,
+	project: string,
+	sessionId: string,
+	source: string,
+	matchStatus: UsageSkillMatchStatus,
+	resolvedSkillId: string | null,
+};
+
 export type RemoteAddedSkill = {
 	repositoryId: string,
 	sourcePath: string,
@@ -1466,6 +1493,18 @@ export type SkillUpdateState = {
 
 export type SkillUpdateStatus = "up_to_date" | "update_available" | "unsupported" | "remote_missing" | "error" | "cancelled";
 
+export type SkillUsageSummary = {
+	skill: string,
+	count: number,
+	projects: number,
+	sessions: number,
+	lastUsedMs: number,
+	matchStatus: UsageSkillMatchStatus,
+	resolvedSkillId: string | null,
+	staticTokenEstimate: number | null,
+	staticByteCount: number | null,
+};
+
 /**  Summary of a completed global install. */
 export type SkillsCliAddResult = {
 	installedSkills: number,
@@ -1722,3 +1761,28 @@ export type UpdatableSkill = {
 	repositoryId: string | null,
 	diagnostics?: SkillUpdateDiagnostic | null,
 };
+
+/**  顶部 KPI 行的 4 个数字。 */
+export type UsageKpis = {
+	totalCalls: number,
+	uniqueSkills: number,
+	uniqueProjects: number,
+	uniqueSources: number,
+	uniqueSessions: number,
+};
+
+/**  `usage_get_overview` 的返回包。 */
+export type UsageOverview = {
+	kpis: UsageKpis,
+	topSkills: SkillUsageSummary[],
+	heatmap: DayCount[],
+	lastScanMs: number | null,
+};
+
+export type UsagePageSnapshot = {
+	overview: UsageOverview,
+	recent: RecentSkillCall[],
+	providers: ProviderHealth[],
+};
+
+export type UsageSkillMatchStatus = "matched" | "ambiguous" | "unmatched";

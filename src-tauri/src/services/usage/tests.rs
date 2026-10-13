@@ -160,6 +160,8 @@ struct TargetSnapshot {
     providers: Vec<db::SkillCallProviderRow>,
     metadata: Vec<db::SkillUsageMetadataRow>,
     last_scan_ms: Option<i64>,
+    provenance_version: Option<i64>,
+    candidates: String,
     file_cache: Vec<(String, i64, i64, String, i64)>,
 }
 
@@ -188,6 +190,8 @@ async fn snapshot_target(
         providers: db::list_provider_rows(pool, target_id).await.unwrap(),
         metadata: db::list_usage_metadata(pool, target_id).await.unwrap(),
         last_scan_ms: db::get_last_scan_ms(pool, target_id).await.unwrap(),
+        provenance_version: sqlx::query_scalar("SELECT local_provenance_version FROM skill_call_scan_state WHERE target_id=?").bind(target_id).fetch_optional(pool).await.unwrap(),
+        candidates: sqlx::query_scalar("SELECT json_group_array(json_array(provider,file_key,occurrence_ordinal,group_key,skill,timestamp_ms,project,session_id,source,fact_id)) FROM (SELECT * FROM skill_call_candidates WHERE target_id=? ORDER BY provider,file_key,occurrence_ordinal)").bind(target_id).fetch_one(pool).await.unwrap(),
         file_cache,
     }
 }

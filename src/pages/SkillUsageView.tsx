@@ -30,6 +30,7 @@ import type { UsageScopeInfo } from "@/types/usage";
 export function SkillUsageView() {
   const { t, i18n } = useTranslation();
   const detailTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const detailFocusRestoreRef = useRef<(() => void) | null>(null);
   useUsageBootstrap();
   const {
     overview,
@@ -66,25 +67,31 @@ export function SkillUsageView() {
     uniqueSessions: 0,
   };
   const initialLoading = overview === null && error === null;
+  const detailError =
+    selectedSkill !== null && !detailLoading && detail === null ? error : null;
   const availableProviders = providers.filter(
     (provider) => provider.available,
   ).length;
 
-  const selectSkill = (skill: string, trigger: HTMLButtonElement) => {
+  const selectSkill = (skill: string, trigger: HTMLButtonElement, restoreFocus?: () => void) => {
     detailTriggerRef.current = trigger;
+    detailFocusRestoreRef.current = restoreFocus ?? null;
     void loadDetail(skill);
   };
   const closeDetail = () => {
     clearDetail();
-    requestAnimationFrame(() => detailTriggerRef.current?.focus());
+    requestAnimationFrame(() => {
+      if (detailFocusRestoreRef.current) detailFocusRestoreRef.current();
+      else detailTriggerRef.current?.focus();
+    });
   };
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-background">
-      <header className="border-b border-border px-4 py-3 sm:px-5">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+      <header className="border-b border-border px-4 py-2 sm:px-5">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
           <div className="flex min-w-0 items-center gap-3">
-            <BarChart3 className="size-5 shrink-0 text-primary" />
+            <BarChart3 className="size-5 shrink-0 text-primary-text" />
             <div className="min-w-0">
               <h1 className="truncate text-base font-semibold text-foreground">
                 {t("skillUsage.title")}
@@ -95,7 +102,15 @@ export function SkillUsageView() {
             </div>
             {scope && <ScopeBadge scope={scope} />}
           </div>
-          <div className="flex items-center gap-2">
+          {initialLoading ? (
+            <UsageMetricSkeleton />
+          ) : overview ? (
+            <UsageMetricStrip
+              kpis={kpis}
+              singlePlatform={selectedSource !== null}
+            />
+          ) : null}
+          <div className="ml-auto flex items-center gap-2">
             {backgroundScanning && (
               <span
                 data-testid="background-scan-hint"
@@ -119,6 +134,7 @@ export function SkillUsageView() {
               type="button"
               size="icon-sm"
               variant="outline"
+              className="size-10 min-h-[40px] min-w-[40px] md:size-10"
               onClick={() => void refresh(true)}
               disabled={refreshing}
               title={t("skillUsage.refresh")}
@@ -137,15 +153,15 @@ export function SkillUsageView() {
           providers={providers}
           selected={selectedSource}
           onSelect={(source) => void selectSource(source)}
-          className="mt-3"
+          className="mt-2"
         />
       </header>
 
       <main
         data-testid="skill-usage-scroll-region"
-        className="scrollbar-subtle flex-1 overflow-y-auto px-4 py-4 sm:px-5"
+        className="scrollbar-subtle min-w-0 flex-1 overflow-y-auto px-4 py-3 sm:px-5"
       >
-        {error && !overview && (
+        {error && !detailError && (
           <StatusBanner tone="error">{error}</StatusBanner>
         )}
         {refreshError && usedCachedData && (
@@ -169,21 +185,13 @@ export function SkillUsageView() {
           </StatusBanner>
         )}
 
-        {!initialLoading && (
-          <UsageMetricStrip
-            kpis={kpis}
-            singlePlatform={selectedSource !== null}
-            className="mb-4"
-          />
-        )}
-
         {initialLoading ? (
           <UsageSkeleton />
         ) : (
           <div
             aria-busy={loading}
             className={cn(
-              "grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(22rem,0.85fr)]",
+              "grid min-w-0 items-start gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]",
               loading && "opacity-70",
             )}
           >
@@ -206,11 +214,13 @@ export function SkillUsageView() {
                   <SkillUsageDetailPanel
                     detail={detail}
                     loading={detailLoading}
+                    error={detailError}
                     onClose={closeDetail}
                   />
                 </UsageSection>
               ) : (
                 <UsageSection
+                  key="recent"
                   title={t("skillUsage.panels.recent")}
                   range={t("skillUsage.range.latestCalls", { count: 20 })}
                 >
@@ -223,13 +233,14 @@ export function SkillUsageView() {
               <UsageSection
                 title={t("skillUsage.panels.heatmap")}
                 range={t("skillUsage.range.lastWeeks", { count: 16 })}
-                className="contain-layout"
+                className="w-full max-w-[24rem] contain-layout"
               >
                 <ActivityHeatmap days={overview?.heatmap ?? []} />
               </UsageSection>
 
               {selectedSkill && (
                 <UsageSection
+                  key="recent"
                   title={t("skillUsage.panels.recent")}
                   range={t("skillUsage.range.latestCalls", { count: 20 })}
                 >
@@ -258,7 +269,7 @@ export function SkillUsageView() {
         )}
 
         <details className="group mt-4 border-y border-border bg-muted/10">
-          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-3 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
+          <summary className="flex min-h-[40px] cursor-pointer list-none items-center justify-between gap-3 px-3 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring">
             <span className="font-medium text-foreground">
               {t("skillUsage.panels.providers")}
             </span>
@@ -348,7 +359,7 @@ function ScopeBadge({ scope }: { scope: UsageScopeInfo }) {
     <span
       data-testid="scope-badge"
       data-scope-kind={scope.isRemote ? "remote" : "local"}
-      className="hidden max-w-56 items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2 py-1 text-xs text-muted-foreground md:inline-flex"
+      className="inline-flex max-w-56 items-center gap-1.5 rounded-md border border-border bg-muted/40 px-2 py-1 text-xs text-muted-foreground"
       title={scope.label}
     >
       <Icon className="size-3 shrink-0" />
@@ -366,16 +377,7 @@ function UsageSkeleton() {
   return (
     <div className="relative">
       <div className="animate-pulse motion-reduce:animate-none">
-        {/* KPI 条形态骨架：占位与 UsageMetricStrip 同形，避免真实组件渲染 0 值 */}
-        <div className="mb-4 flex flex-wrap gap-x-10 gap-y-2 border-y border-border bg-muted/15 px-4 py-3">
-          {[0, 1, 2, 3].map((index) => (
-            <div key={index} className="space-y-1.5">
-              <div className="h-3 w-14 rounded bg-muted/40" />
-              <div className="h-6 w-20 rounded bg-muted/50" />
-            </div>
-          ))}
-        </div>
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.55fr)_minmax(22rem,0.85fr)]">
+        <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1fr)_24rem]">
           <div className="h-[34rem] rounded-md border border-border bg-muted/30" />
           <div className="flex min-w-0 flex-col gap-4">
             <div className="h-56 rounded-md border border-border bg-muted/25" />
@@ -395,6 +397,25 @@ function UsageSkeleton() {
           {t("skillUsage.scanning")}
         </span>
       </div>
+    </div>
+  );
+}
+
+function UsageMetricSkeleton() {
+  return (
+    <div
+      aria-hidden
+      className="flex animate-pulse flex-wrap items-center gap-x-5 gap-y-2 motion-reduce:animate-none"
+    >
+      {[0, 1, 2, 3].map((index) => (
+        <div
+          key={index}
+          className={cn("min-w-14", index > 0 && "border-l border-border pl-5")}
+        >
+          <div className="h-4 w-14 rounded bg-muted/40" />
+          <div className="mt-0.5 h-5 w-14 rounded bg-muted/50" />
+        </div>
+      ))}
     </div>
   );
 }

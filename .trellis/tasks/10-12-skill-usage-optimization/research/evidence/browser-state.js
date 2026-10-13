@@ -1,0 +1,1 @@
+return {ui:await tabbit.observe({frames:"none",maxChars:8500}), store:await page.evaluate(async()=>{const {useUsageStore}=await import("/src/stores/usageStore.ts"); const s=useUsageStore.getState();return {overview:s.overview,loading:s.loading,error:s.error,refreshError:s.refreshError,refreshing:s.refreshing};})};

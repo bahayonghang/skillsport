@@ -28,26 +28,26 @@ export function UsageMetricStrip({
   return (
     <section
       aria-label={t("skillUsage.range.allRecorded")}
-      className={cn("border-y border-border bg-muted/15 px-4 py-3", className)}
+      className={cn("min-w-0", className)}
     >
-      <div className="flex flex-wrap gap-y-2">
+      <dl className="flex flex-wrap items-center gap-x-5 gap-y-2">
         {metrics.map(([label, value], index) => (
           <div
             key={label}
             className={cn(
-              "min-w-0 px-5 first:pl-0",
-              index > 0 && "border-l border-border",
+              "min-w-14",
+              index > 0 && "border-l border-border pl-5",
             )}
           >
-            <div className="truncate text-xs text-muted-foreground">
+            <dt className="text-xs text-muted-foreground">
               {label}
-            </div>
-            <div className="mt-0.5 text-xl font-semibold tabular-nums text-foreground">
+            </dt>
+            <dd className="mt-0.5 text-right text-xl font-semibold leading-none tabular-nums text-foreground">
               {value.toLocaleString()}
-            </div>
+            </dd>
           </div>
         ))}
-      </div>
+      </dl>
     </section>
   );
 }

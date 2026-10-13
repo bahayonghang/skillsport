@@ -59,7 +59,7 @@ impl OpenCodeProvider {
             return Ok((cache, cached));
         }
         let calls = query_calls(scope, &db_path).await?;
-        cache.record(db_path, mtime_ms, size, calls.clone());
+        let calls = cache.record_or_replay(db_path, mtime_ms, size, calls);
         Ok((cache, calls))
     }
 }
@@ -145,6 +145,9 @@ async fn query_calls(scope: &Scope, db_path: &str) -> Result<Vec<SkillCall>, Usa
 
 #[async_trait]
 impl UsageProvider for OpenCodeProvider {
+    fn supports_file_delta(&self) -> bool {
+        true
+    }
     fn id(&self) -> &'static str {
         "opencode"
     }
@@ -359,6 +362,89 @@ mod tests {
             assert_eq!(third.len(), 2);
             assert!(third.iter().any(|c| c.skill == "facts"));
             assert_eq!(cache.upserts().len(), 1, "changed db re-queried");
+        });
+    }
+
+    #[test]
+    fn delta_open_code_wal_only_change_preserves_other_provider_facts() {
+        with_fake_home(|dir| {
+            block(async {
+                use crate::services::usage::{
+                    refresh_with_providers,
+                    synthetic_bench::{generate, SyntheticFiles},
+                };
+                let source_path = fixture_db_path(dir);
+                make_fixture_db(&source_path).await;
+                let options = SqliteConnectOptions::new()
+                    .filename(&source_path)
+                    .journal_mode(sqlx::sqlite::SqliteJournalMode::Wal);
+                let writer = SqlitePoolOptions::new()
+                    .max_connections(1)
+                    .connect_with(options)
+                    .await
+                    .unwrap();
+                sqlx::query("PRAGMA wal_autocheckpoint=0")
+                    .execute(&writer)
+                    .await
+                    .unwrap();
+                let root = dir.path().join("synthetic-codex");
+                generate(&root, 1, 1, 1);
+                let reads = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
+                let parsed = std::sync::Arc::new(std::sync::atomic::AtomicUsize::new(0));
+                let providers = || {
+                    vec![
+                        Box::new(OpenCodeProvider) as Box<dyn UsageProvider>,
+                        Box::new(SyntheticFiles {
+                            root: root.clone(),
+                            reads: reads.clone(),
+                            parsed: parsed.clone(),
+                        }),
+                    ]
+                };
+                let pool = crate::test_support::mem_pool().await;
+                refresh_with_providers(&pool, &Scope::Local, true, providers())
+                    .await
+                    .unwrap();
+                let before = crate::db::list_calls_for_target(&pool, "local")
+                    .await
+                    .unwrap();
+                let sentinel = before
+                    .iter()
+                    .find(|c| c.source == "Codex CLI")
+                    .unwrap()
+                    .clone();
+                sqlx::query("UPDATE skill_call_file_cache SET calls_json='invalid' WHERE provider='opencode'").execute(&pool).await.unwrap();
+                refresh_with_providers(&pool, &Scope::Local, true, providers())
+                    .await
+                    .unwrap();
+                assert_eq!(
+                    crate::db::list_calls_for_target(&pool, "local")
+                        .await
+                        .unwrap(),
+                    before
+                );
+                let main_before = fingerprint_from_metadata(std::fs::metadata(&source_path));
+                let composite_before = local_db_fingerprint(source_path.to_str().unwrap());
+                sqlx::query("INSERT INTO part(id,session_id,data) VALUES('wal-only','sess1',?)").bind(r#"{"type":"tool","tool":"skill","state":{"status":"completed","input":{"name":"new-wal-skill"},"time":{"start":1790000000000}}}"#).execute(&writer).await.unwrap();
+                assert_eq!(
+                    fingerprint_from_metadata(std::fs::metadata(&source_path)),
+                    main_before
+                );
+                assert_ne!(
+                    local_db_fingerprint(source_path.to_str().unwrap()),
+                    composite_before
+                );
+                refresh_with_providers(&pool, &Scope::Local, true, providers())
+                    .await
+                    .unwrap();
+                let after = crate::db::list_calls_for_target(&pool, "local")
+                    .await
+                    .unwrap();
+                assert_eq!(after.len(), 3);
+                assert!(after.contains(&sentinel));
+                assert!(after.iter().any(|c| c.skill == "new-wal-skill"));
+                writer.close().await;
+            })
         });
     }
 }

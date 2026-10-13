@@ -429,7 +429,7 @@ describe("UnusedSkillsPanel", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders one unlink trigger at the row right with a 40px hit area", () => {
+  it("renders open and unlink actions in separate visible 40px slots", () => {
     render(
       wrap(
         <UnusedSkillsPanel
@@ -444,7 +444,11 @@ describe("UnusedSkillsPanel", () => {
     const trigger = within(row).getByTestId(
       "unused-unlink-trigger-central-legacy-cleanup",
     );
-    expect(trigger).toHaveClass("after:size-10");
+    expect(trigger).toHaveClass("size-10", "md:size-10", "min-w-[40px]", "min-h-[40px]");
+    expect(trigger.parentElement).toHaveClass("min-w-[40px]", "min-h-[40px]");
+    const open = within(row).getByRole("button", { name: /打开技能.*legacy-cleanup|Open skill.*legacy-cleanup/ });
+    expect(open).toHaveClass("size-10", "md:size-10", "min-w-[40px]", "min-h-[40px]");
+    expect(open.parentElement).toHaveClass("min-w-[40px]", "min-h-[40px]");
     // 行内不再出现任何内联 unlink 按钮（打开按钮之后只有 unlink 入口）
     expect(
       within(row).queryByTestId(/^unlink-chip-/),

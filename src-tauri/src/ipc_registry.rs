@@ -197,6 +197,7 @@ macro_rules! __skillport_runtime_commands {
             reorder_tag_groups => (commands::tag_groups::reorder_tag_groups, operation(Catalog, Database, TerminalOnly)),
             set_tag_group => (commands::tag_groups::set_tag_group, operation(Catalog, Database, TerminalOnly)),
             usage_refresh => (commands::usage::usage_refresh, operation(Usage, Database, TerminalOnly)),
+            usage_get_page => (commands::usage::usage_get_page, runtime_only(ReadOnly)),
             usage_get_overview => (commands::usage::usage_get_overview, runtime_only(ReadOnly)),
             usage_get_recent => (commands::usage::usage_get_recent, runtime_only(ReadOnly)),
             usage_get_providers => (commands::usage::usage_get_providers, runtime_only(ReadOnly)),
@@ -235,6 +236,7 @@ macro_rules! __skillport_runtime_commands {
 macro_rules! __skillport_generated_commands {
     ($callback:ident) => {
         $callback! {
+            usage_get_page => commands::usage::usage_get_page,
             list_rules => commands::rules::list_rules,
             read_rule => commands::rules::read_rule,
             preview_rules_import => commands::rules::preview_rules_import,
