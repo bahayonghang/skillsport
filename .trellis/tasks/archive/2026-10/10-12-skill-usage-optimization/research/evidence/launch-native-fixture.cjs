@@ -2,7 +2,12 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
 
-const repo = path.resolve(__dirname, '../../../../..');
+let repo = __dirname;
+while (!fs.existsSync(path.join(repo, 'package.json'))) {
+  const parent = path.dirname(repo);
+  if (parent === repo) throw new Error('Repository root not found');
+  repo = parent;
+}
 const fixture = path.join(repo, 'outputs', 'usage-native-smoke-profile');
 const release = process.argv.includes('--release');
 const executable = path.join(repo, 'src-tauri', 'target', release ? 'release' : 'debug', 'skillport.exe');

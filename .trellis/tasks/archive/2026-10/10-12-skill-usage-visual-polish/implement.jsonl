@@ -4,4 +4,4 @@
 {"file": ".trellis/spec/frontend/typography-tokens.md", "reason": "字号角色、根scale与对比度"}
 {"file": ".trellis/spec/frontend/font-preferences.md", "reason": "保留用户字体profile"}
 {"file": ".trellis/spec/frontend/icon-control-hit-area.md", "reason": "动作热区与可见焦点"}
-{"file": ".trellis/tasks/10-12-skill-usage-optimization/research/ui-analysis.md", "reason": "截图诊断、代码锚点、几何与视觉矩阵"}
+{"file": ".trellis/tasks/archive/2026-10/10-12-skill-usage-optimization/research/ui-analysis.md", "reason": "截图诊断、代码锚点、几何与视觉矩阵"}

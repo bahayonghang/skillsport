@@ -5,7 +5,12 @@ param(
     [int]$Rows = 100
 )
 $ErrorActionPreference = 'Stop'
-$workspace = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '../../../..')).Path
+$workspace = $PSScriptRoot
+while (!(Test-Path -LiteralPath (Join-Path $workspace 'package.json'))) {
+    $taskParent = Split-Path -Parent $workspace
+    if (!$taskParent -or $taskParent -eq $workspace) { throw 'Repository root not found.' }
+    $workspace = $taskParent
+}
 $executables = Get-ChildItem -LiteralPath (Join-Path $workspace 'src-tauri/target/release/deps') -Filter 'skillport_lib-*.exe'
 $executable = $executables | Sort-Object LastWriteTime -Descending | Select-Object -First 1
 if (!$executable) { throw 'Compile the offline harness using the documented locked release cargo command first.' }

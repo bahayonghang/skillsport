@@ -2,7 +2,7 @@ import json
 import time
 from pathlib import Path
 
-repo = Path(__file__).resolve().parents[5]
+repo = next(p for p in Path(__file__).resolve().parents if (p / 'package.json').is_file())
 fixture = repo / 'outputs' / 'usage-native-smoke-profile'
 assert fixture.is_relative_to(repo / 'outputs')
 app_data = fixture / '.skillsmanage'

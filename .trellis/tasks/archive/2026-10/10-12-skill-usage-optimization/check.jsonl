@@ -1,6 +1,6 @@
 {"file": ".trellis/spec/frontend/skill-usage-state.md", "reason": "target/source状态、全历史范围、固定热力图与交互"}
 {"file": ".trellis/spec/quality/index.md", "reason": "质量规则索引"}
-{"file": ".trellis/tasks/10-12-skill-usage-optimization/research/ui-analysis.md", "reason": "视觉问题和集成矩阵"}
-{"file": ".trellis/tasks/10-12-skill-usage-optimization/research/performance-analysis.md", "reason": "性能问题、兼容与发布前置"}
+{"file": ".trellis/tasks/archive/2026-10/10-12-skill-usage-optimization/research/ui-analysis.md", "reason": "视觉问题和集成矩阵"}
+{"file": ".trellis/tasks/archive/2026-10/10-12-skill-usage-optimization/research/performance-analysis.md", "reason": "性能问题、兼容与发布前置"}
 {"file": ".trellis/spec/quality/test-suite-layout.md", "reason": "测试发现与验证层次"}
 {"file": ".trellis/spec/quality/ci-quality-gate.md", "reason": "just ci完成门与证据边界"}

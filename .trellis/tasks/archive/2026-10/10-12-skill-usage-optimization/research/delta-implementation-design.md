@@ -3,7 +3,7 @@
 - Query: 基于现有 provider/cache API，为 PA5/PA6 给出可实施的 fingerprint-only 暖扫、provenance、winner 回退与原子发布设计。
 - Scope: internal；只读现有代码与已批准规划，不实施、不跑真实日志或测试。
 - Date: 2026-10-12
-- Context: `.trellis/tasks/10-12-skill-usage-performance/prd.md:27`、`:28`。本文件补充窄范围 Rust handoff，不替代已有 `performance-analysis.md`。
+- Context: `.trellis/tasks/archive/2026-10/10-12-skill-usage-performance/prd.md:27`、`:28`。本文件补充窄范围 Rust handoff，不替代已有 `performance-analysis.md`。
 
 ## Findings
 

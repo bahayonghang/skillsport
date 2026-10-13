@@ -8,5 +8,5 @@
 {"file": ".trellis/spec/backend/transactional-mutations.md", "reason": "共同事务与失败原子性"}
 {"file": ".trellis/spec/backend/redaction-policy.md", "reason": "路径和敏感内容不进入日志"}
 {"file": ".trellis/spec/frontend/ipc-adapter.md", "reason": "typed IPC与离线fixture seam"}
-{"file": ".trellis/tasks/10-12-skill-usage-optimization/research/performance-analysis.md", "reason": "复杂度、增量前置、provider差异、基准方法"}
-{"file": ".trellis/tasks/10-12-skill-usage-optimization/research/delta-implementation-design.md", "reason": "指纹瘦读、observed order、candidate/winner、共同发布与v8迁移实施接口"}
+{"file": ".trellis/tasks/archive/2026-10/10-12-skill-usage-optimization/research/performance-analysis.md", "reason": "复杂度、增量前置、provider差异、基准方法"}
+{"file": ".trellis/tasks/archive/2026-10/10-12-skill-usage-optimization/research/delta-implementation-design.md", "reason": "指纹瘦读、observed order、candidate/winner、共同发布与v8迁移实施接口"}
