@@ -49,3 +49,11 @@ dashboardCentralSummary）。
   （描边/纹理 + `aria-current`）。
 - viewModel 字段必须全部被 Shell 消费；新增字段先确认消费者，删除区块时
   同步删除其数据加载与订阅。
+
+## 契约 5：Local Skills CLI 库存展示
+
+- `DashboardView` 的 `LocalSkillsCliCensus` 是独立 Local-only 库存面板，数据来自 `useSkillsCliStore`，不属于 Central summary，也不得覆盖其计数。非 Local 不加载、不展示该面板。
+- 已装技能为 `skills.length`；linked 为至少有一个 agent 的技能数；来源种类为已出现的 source bucket 数。平台计数按 `target.displayName` 与 `skill.agents` 匹配，完整保留 targets 顺序及零值。
+- 面板只有一层外壳，沿用 `Card` / `PanelHeader`；来源和平台区域同排时顶部对齐。平台条形随容器可用宽度伸展，标签与计数使用 HTML 语义字号，不用固定 9px SVG 文字或整体缩放图表塞内容。
+- 宽屏平台分栏只改变布局，按连续序列先左后右阅读；所有列共享全量最大值和计数列宽。SVG 仍提供 `role="img"`、可访问名称和每点 `<title>`，不得用删零值或 Top N 掩盖空间问题。
+- 验证：`InventoryCensus.test.tsx` 覆盖 KPI、零值、完整顺序、跨列共同尺度、长名称、大计数和空库存；`DashboardView.test.tsx` 保留 Local-only 与 Central summary 隔离。实际浏览器另验容器断点、字体缩放和最小窗口底部可达性。

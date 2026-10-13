@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 import { DashboardShell } from "@/components/dashboard/DashboardShell";
+import { PanelHeader } from "@/components/dashboard/DashboardPanels";
 import { InventoryCensus } from "@/components/skillsCli/InventoryCensus";
+import { Card, CardContent } from "@/components/ui/card";
 import { isLocalTarget } from "@/lib/targetKind";
 import { useDashboardBindings, useDashboardBootstrap } from "@/pages/dashboardBindings";
 import { RECENT_LOG_LIMIT } from "@/pages/dashboardUtils";
@@ -31,10 +33,15 @@ function LocalSkillsCliCensus() {
   }
 
   return (
-    <section data-testid="dashboard-skills-cli-census" className="space-y-2">
-      <h2 className="text-sm font-medium">{t("skillsCli.dashboardHeading")}</h2>
-      <InventoryCensus skills={skills} targets={targets} />
-    </section>
+    <Card
+      data-testid="dashboard-skills-cli-census"
+      className="surface-glass overflow-hidden rounded-2xl border-0 bg-transparent p-0 shadow-none"
+    >
+      <PanelHeader title={t("skillsCli.dashboardHeading")} />
+      <CardContent className="px-4 pb-4">
+        <InventoryCensus skills={skills} targets={targets} />
+      </CardContent>
+    </Card>
   );
 }
 
