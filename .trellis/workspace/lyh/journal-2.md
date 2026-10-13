@@ -1875,3 +1875,37 @@ SSH/WSL Platform leftover apply now validates paths, deletes unique POSIX paths 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 120: Skill Usage 界面与增量扫描优化收尾
+
+**Date**: 2026-10-13
+**Task**: Skill Usage 界面与增量扫描优化收尾
+**Branch**: `codex/skill-usage-optimization`
+
+### Summary
+
+完成紧凑概要、控件/热力图、Local delta、一致page与有界排行；用户人工验证并接受现状收尾。
+
+### Main Changes
+
+- 已归档一个父任务与两个子任务，证据与规范完整保留。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `98502384` | (see git log) |
+
+### Testing
+
+- [OK] just ci全门通过：frontend2190；Rust library1595及其他目标；Trellis Python54。
+- [OK] Windows x64 NSIS构建成功；18组浏览器矩阵、10k键盘/焦点与原生冷首屏/最大化通过。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- memory stress冷扫median回退19.2%及生产paint/source/unused完整计时缺口已按用户接受的限制记录，未来优化需新授权。

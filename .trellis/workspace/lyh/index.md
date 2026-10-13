@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-2.md`
-- **Total Sessions**: 119
-- **Last Active**: 2026-10-12
+- **Total Sessions**: 120
+- **Last Active**: 2026-10-13
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-2.md` | ~1877 | Active |
+| `journal-2.md` | ~1911 | Active |
 | `journal-1.md` | ~1994 | Archived |
 <!-- @@@/auto:active-documents -->
 
@@ -30,6 +30,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 120 | 2026-10-13 | Skill Usage 界面与增量扫描优化收尾 | `98502384` | `codex/skill-usage-optimization` |
 | 119 | 2026-10-12 | 侧栏排序与首页库存布局优化 | `e2a83f44`, `9205fd7b` | `dev` |
 | 118 | 2026-10-12 | 主题切换去掉误触发的颜色插值 | `fd78ce5c`, `6f2df388` | `dev` |
 | 117 | 2026-10-12 | 主侧栏 Global 与 Project Workspaces | `69401b1ab1b3c0319e0884ba3f6b3d9e98336ce8` | `feat/sidebar-global-project-workspaces` |
