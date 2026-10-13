@@ -1853,3 +1853,25 @@ SSH/WSL Platform leftover apply now validates paths, deletes unique POSIX paths 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 119: 侧栏排序与首页库存布局优化
+
+**Date**: 2026-10-12
+**Task**: 侧栏排序与首页库存布局优化
+**Branch**: `dev`
+
+### Summary
+
+完成轻量排序菜单与至少40px热区；统一首页库存卡片、语义字号和响应式平台分栏。Trellis独立复核及浏览器窗口/语言/主题/字号/压力矩阵通过；just ci在RUST_TEST_THREADS=4环境通过（前端2131项、Rust lib1579项）；默认高并发曾出现Central锁竞争超时。已归档两个子任务与父任务。原生WebView2、真实库存及安装器未验证，未推送远端。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e2a83f44` | (see git log) |
+| `9205fd7b` | (see git log) |
+
+### Status
+
+[OK] **Completed**
