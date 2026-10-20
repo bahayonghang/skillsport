@@ -1909,3 +1909,26 @@ SSH/WSL Platform leftover apply now validates paths, deletes unique POSIX paths 
 ### Next Steps
 
 - memory stress冷扫median回退19.2%及生产paint/source/unused完整计时缺口已按用户接受的限制记录，未来优化需新授权。
+
+
+## Session 121: GitHub 导入：缺失分支误报修复、失败审计与输入卡片优化
+
+**Date**: 2026-10-20
+**Task**: GitHub 导入：缺失分支误报修复、失败审计与输入卡片优化
+**Branch**: `fix/github-import-branch-default`
+
+### Summary
+
+定位 Preview 误报无法连接 GitHub 的根因：向导默认提交 main 覆盖仓库 default_branch（master），commits/main 返回 422 被包成 Http→transport_failed。新增 HttpStatus/BranchNotFound，422→branch_not_found、其它 4xx→request_rejected；新增 FailureOnly 生命周期，preview 失败按阶段写入 Operation Log（failureStage/httpStatus）；向导默认仓库默认分支，错误框给出改用默认分支/重试动作，输入步加宽至 60rem、控件等高对齐、徽章与步骤条样式修正。just ci 通过；原生 Tauri 截图、真实网络手动验收与 SSH/WSL 实测未执行。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `b5d53bc6` | (see git log) |
+| `09ec111b` | (see git log) |
+| `fe3f1160` | (see git log) |
+
+### Status
+
+[OK] **Completed**
