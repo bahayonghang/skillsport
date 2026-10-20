@@ -274,7 +274,9 @@ function renderMarkdown(groups, includePolicies) {
       if (includePolicies) {
         const policy = cmd.policy;
         const auditEvidence =
-          policy.kind === "operation"
+          policy.kind === "operation" && policy.lifecycle === "FailureOnly"
+            ? "failure only; typed target; reviewed code; safe fields"
+            : policy.kind === "operation"
             ? "success + failure; conditional partial/cancel; typed target; reviewed code; safe fields"
             : policy.kind === "runtime-only"
               ? "safe backend rejection only"

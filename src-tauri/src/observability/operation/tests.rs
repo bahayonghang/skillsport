@@ -487,3 +487,89 @@ fn runtime_failure_reuses_the_operation_row_id() {
 
     assert_eq!(error.correlation_id.as_deref(), Some(operation_id.as_str()));
 }
+
+#[tokio::test]
+async fn failure_only_lifecycle_records_failures_but_never_successes() {
+    let pool = crate::test_support::mem_pool().await;
+    let state = test_app_state(pool.clone());
+    let failure_only = definition(OperationLifecycle::FailureOnly);
+
+    let value = run_operation(
+        &state,
+        failure_only,
+        OperationTarget::local(),
+        |_| SafeOperationResult::succeeded("Operation completed."),
+        || async { Ok::<_, ReviewedFailure>(42) },
+    )
+    .await
+    .unwrap();
+    assert_eq!(value, 42);
+    let page = db::list_operation_logs(&pool, db::OperationLogFilter::default())
+        .await
+        .unwrap();
+    assert_eq!(page.entries.len(), 0, "success must not be audited");
+
+    let error = run_operation(
+        &state,
+        failure_only,
+        OperationTarget::local(),
+        |_| SafeOperationResult::succeeded("Operation completed."),
+        || async {
+            Err::<(), _>(ReviewedFailure::new(
+                ReviewedDiagnostic::new(
+                    "github_import.branch_not_found",
+                    "github_import.branch_not_found",
+                    OperationPhase::Network,
+                    "The selected branch was not found in the GitHub repository.",
+                    false,
+                )
+                .with_failure_stage("commit_resolve")
+                .with_http_status(Some(422)),
+            ))
+        },
+    )
+    .await
+    .unwrap_err();
+    assert_eq!(error.code, "github_import.branch_not_found");
+    let correlation = error.correlation_id.clone().expect("correlation id");
+
+    let page = db::list_operation_logs(&pool, db::OperationLogFilter::default())
+        .await
+        .unwrap();
+    assert_eq!(page.entries.len(), 1);
+    let entry = &page.entries[0];
+    assert_eq!(entry.status, "failed");
+    assert_eq!(entry.id, correlation);
+    let details: Value = serde_json::from_str(entry.details_json.as_deref().unwrap()).unwrap();
+    assert_eq!(details["errorCode"], "github_import.branch_not_found");
+    assert_eq!(details["failureStage"], "commit_resolve");
+    assert_eq!(details["httpStatus"], 422);
+    assert_eq!(details["retryable"], false);
+}
+
+#[tokio::test]
+async fn diagnostics_without_stage_or_status_omit_the_optional_keys() {
+    let pool = crate::test_support::mem_pool().await;
+    let state = test_app_state(pool.clone());
+    let terminal = definition(OperationLifecycle::TerminalOnly);
+    run_operation(
+        &state,
+        terminal,
+        OperationTarget::local(),
+        |_| SafeOperationResult::succeeded("Operation completed."),
+        || async {
+            Err::<(), _>(ReviewedFailure::new(ReviewedDiagnostic::unexpected(
+                terminal,
+            )))
+        },
+    )
+    .await
+    .unwrap_err();
+    let page = db::list_operation_logs(&pool, db::OperationLogFilter::default())
+        .await
+        .unwrap();
+    let details: Value =
+        serde_json::from_str(page.entries[0].details_json.as_deref().unwrap()).unwrap();
+    assert!(details.get("failureStage").is_none());
+    assert!(details.get("httpStatus").is_none());
+}

@@ -85,8 +85,9 @@ pub(crate) use pat::{
 #[cfg(test)]
 use pat::{GITHUB_PAT_MIGRATION_SETTING_KEY, LEGACY_GITHUB_PAT_SETTING_KEY};
 pub(crate) use preview::{
-    acquire_pinned_repo_snapshot, preview_github_repo_import_remote_with_auth,
-    preview_github_repo_import_with_auth, preview_github_repo_import_with_branch_and_auth,
+    acquire_pinned_repo_snapshot, preview_github_repo_import_remote_staged,
+    preview_github_repo_import_staged, preview_github_repo_import_with_auth, PreviewFailure,
+    PreviewStage,
 };
 pub(crate) use raw_http::fetch_raw_text;
 pub(crate) use remote::discard_preview_snapshot_for_target;

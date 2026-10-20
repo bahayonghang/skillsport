@@ -78,6 +78,10 @@ impl OperationPhase {
 pub enum OperationLifecycle {
     TerminalOnly,
     StartedThenTerminal,
+    /// Read-only commands whose failures are worth auditing (for example a
+    /// repository preview): success writes no Operation Log row, failure
+    /// writes one terminal row with the reviewed diagnostic.
+    FailureOnly,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]

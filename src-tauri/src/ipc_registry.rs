@@ -144,7 +144,7 @@ macro_rules! __skillport_runtime_commands {
             open_obsidian_path => (commands::obsidian::open_obsidian_path, operation(Obsidian, Filesystem, TerminalOnly)),
             import_obsidian_skill_to_central => (commands::obsidian::import_obsidian_skill_to_central, operation(Obsidian, Filesystem, StartedThenTerminal)),
             import_obsidian_skill_to_platform => (commands::obsidian::import_obsidian_skill_to_platform, operation(Obsidian, Filesystem, StartedThenTerminal)),
-            preview_github_repo_import => (commands::github_import::preview_github_repo_import, runtime_only(Preview)),
+            preview_github_repo_import => (commands::github_import::preview_github_repo_import, operation(Import, Network, FailureOnly)),
             import_github_repo_skills => (commands::github_import::import_github_repo_skills, operation(Import, Network, StartedThenTerminal)),
             fetch_github_skill_markdown => (commands::github_import::fetch_github_skill_markdown, runtime_only(ReadOnly)),
             discard_github_repo_preview_snapshot => (commands::github_import::discard_github_repo_preview_snapshot, runtime_only(InternalRefresh)),
@@ -486,10 +486,12 @@ mod tests {
             command_policy("get_central_skills").unwrap().policy,
             CommandLogPolicy::RuntimeOnly(RuntimeOnlyReason::ReadOnly)
         ));
-        assert!(matches!(
-            command_policy("preview_github_repo_import").unwrap().policy,
-            CommandLogPolicy::RuntimeOnly(RuntimeOnlyReason::Preview)
-        ));
+        let policy = command_policy("preview_github_repo_import").unwrap().policy;
+        let CommandLogPolicy::Operation(definition) = policy else {
+            panic!("GitHub preview failures must be auditable");
+        };
+        assert_eq!(definition.category(), OperationCategory::Import);
+        assert_eq!(definition.lifecycle(), OperationLifecycle::FailureOnly);
         let policy = command_policy("update_central_skills").unwrap().policy;
         let CommandLogPolicy::Operation(definition) = policy else {
             panic!("update command must be auditable");

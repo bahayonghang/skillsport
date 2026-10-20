@@ -359,18 +359,64 @@ pub(crate) async fn preview_github_repo_import_with_auth(
     repo_url: &str,
     auth: Option<&str>,
 ) -> Result<GitHubRepoPreview, GithubImportError> {
-    preview_github_repo_import_with_branch_and_auth(pool, repo_url, None, auth).await
+    preview_github_repo_import_staged(pool, repo_url, None, auth)
+        .await
+        .map_err(|failure| failure.error)
 }
 
-pub(crate) async fn preview_github_repo_import_with_branch_and_auth(
+/// The preview step that failed. Static labels only; they feed the Operation
+/// Log `failureStage` diagnostic and never carry repository data.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum PreviewStage {
+    RepoInspect,
+    CommitResolve,
+    SnapshotAcquire,
+    CandidateBuild,
+    SnapshotRegister,
+}
+
+impl PreviewStage {
+    pub const fn as_str(self) -> &'static str {
+        match self {
+            Self::RepoInspect => "repo_inspect",
+            Self::CommitResolve => "commit_resolve",
+            Self::SnapshotAcquire => "snapshot_acquire",
+            Self::CandidateBuild => "candidate_build",
+            Self::SnapshotRegister => "snapshot_register",
+        }
+    }
+}
+
+/// A preview failure tagged with the step that produced it.
+#[derive(Debug)]
+pub struct PreviewFailure {
+    pub stage: PreviewStage,
+    pub error: GithubImportError,
+}
+
+trait AtPreviewStage<T> {
+    fn at(self, stage: PreviewStage) -> Result<T, PreviewFailure>;
+}
+
+impl<T> AtPreviewStage<T> for Result<T, GithubImportError> {
+    fn at(self, stage: PreviewStage) -> Result<T, PreviewFailure> {
+        self.map_err(|error| PreviewFailure { stage, error })
+    }
+}
+
+pub(crate) async fn preview_github_repo_import_staged(
     pool: &DbPool,
     repo_url: &str,
     branch: Option<&str>,
     auth: Option<&str>,
-) -> Result<GitHubRepoPreview, GithubImportError> {
-    let resolved = resolve_repo_source_with_branch(repo_url, branch, auth).await?;
-    let client = github_client()?;
-    let resolved_commit_sha = resolve_commit_sha(&client, &resolved.repo, auth).await?;
+) -> Result<GitHubRepoPreview, PreviewFailure> {
+    let resolved = resolve_repo_source_with_branch(repo_url, branch, auth)
+        .await
+        .at(PreviewStage::RepoInspect)?;
+    let client = github_client().at(PreviewStage::RepoInspect)?;
+    let resolved_commit_sha = resolve_commit_sha(&client, &resolved.repo, auth)
+        .await
+        .at(PreviewStage::CommitResolve)?;
     let pinned_repo = pinned_repo_ref(&resolved.repo, &resolved_commit_sha);
 
     let (snapshot, candidates) = acquire_pinned_preview_snapshot(
@@ -380,14 +426,18 @@ pub(crate) async fn preview_github_repo_import_with_branch_and_auth(
         resolved.source_path.as_deref(),
         auth,
     )
-    .await?;
+    .await
+    .at(PreviewStage::SnapshotAcquire)?;
 
-    let mut skills = build_preview_skills(pool, &candidates).await?;
+    let mut skills = build_preview_skills(pool, &candidates)
+        .await
+        .at(PreviewStage::CandidateBuild)?;
     if skills.is_empty() {
-        return Err(GithubImportError::NoImportableSkills);
+        return Err(GithubImportError::NoImportableSkills).at(PreviewStage::CandidateBuild);
     }
     let repository_files = snapshot_preview_repository_files(&snapshot);
-    let snapshot_candidates = attach_preview_file_manifests(&mut skills, &repository_files)?;
+    let snapshot_candidates = attach_preview_file_manifests(&mut skills, &repository_files)
+        .at(PreviewStage::CandidateBuild)?;
 
     let now = Utc::now();
     let snapshot = PreviewSnapshot {
@@ -405,41 +455,55 @@ pub(crate) async fn preview_github_repo_import_with_branch_and_auth(
         storage: PreviewSnapshotStorage::Local(Arc::new(snapshot)),
     };
     let preview = preview_dto_from_snapshot(&snapshot, skills);
-    register_preview_snapshot(snapshot)?;
+    register_preview_snapshot(snapshot).at(PreviewStage::SnapshotRegister)?;
     Ok(preview)
 }
 
-pub(crate) async fn preview_github_repo_import_remote_with_auth(
+pub(crate) async fn preview_github_repo_import_remote_staged(
     pool: &DbPool,
     active_target: &ActiveTarget,
     repo_url: &str,
     branch: Option<&str>,
     auth: Option<&str>,
-) -> Result<GitHubRepoPreview, GithubImportError> {
-    let resolved = resolve_repo_source_with_branch(repo_url, branch, auth).await?;
-    let client = github_client()?;
-    let resolved_commit_sha = resolve_commit_sha(&client, &resolved.repo, auth).await?;
+) -> Result<GitHubRepoPreview, PreviewFailure> {
+    use PreviewStage::{CandidateBuild, SnapshotAcquire, SnapshotRegister};
+
+    let resolved = resolve_repo_source_with_branch(repo_url, branch, auth)
+        .await
+        .at(PreviewStage::RepoInspect)?;
+    let client = github_client().at(PreviewStage::RepoInspect)?;
+    let resolved_commit_sha = resolve_commit_sha(&client, &resolved.repo, auth)
+        .await
+        .at(PreviewStage::CommitResolve)?;
     let pinned_repo = pinned_repo_ref(&resolved.repo, &resolved_commit_sha);
 
     let connection = connect_remote_target(active_target)
         .await
-        .map_err(|e| GithubImportError::Remote(e.to_string()))?;
+        .map_err(|e| GithubImportError::Remote(e.to_string()))
+        .at(SnapshotAcquire)?;
     cleanup_expired_preview_snapshots_for_connection(&connection).await;
     let mut reservation = loop {
-        match reserve_remote_preview_snapshot(active_target.id(), active_target.kind(), Utc::now())?
+        match reserve_remote_preview_snapshot(active_target.id(), active_target.kind(), Utc::now())
+            .at(SnapshotAcquire)?
         {
             RemoteReservationAttempt::Reserved(reservation) => break reservation,
             RemoteReservationAttempt::CleanupRequired(tickets) => {
                 if !cleanup_preview_tickets_for_connection(&connection, tickets).await {
-                    return Err(GithubImportError::PreviewCleanupPending);
+                    return Err(GithubImportError::PreviewCleanupPending).at(SnapshotAcquire);
                 }
             }
-            RemoteReservationAttempt::Capacity => return Err(GithubImportError::PreviewCapacity),
+            RemoteReservationAttempt::Capacity => {
+                return Err(GithubImportError::PreviewCapacity).at(SnapshotAcquire)
+            }
         }
     };
 
-    let workspace = create_remote_preview_workspace(&connection, &pinned_repo, auth).await?;
-    reservation.claim_workspace(&workspace)?;
+    let workspace = create_remote_preview_workspace(&connection, &pinned_repo, auth)
+        .await
+        .at(SnapshotAcquire)?;
+    reservation
+        .claim_workspace(&workspace)
+        .at(SnapshotAcquire)?;
     let preview_result = async {
         let candidates = build_remote_repo_skill_candidates_from_workspace(
             &connection,
@@ -484,10 +548,10 @@ pub(crate) async fn preview_github_repo_import_remote_with_auth(
                     .is_err()
                 {
                     let _ = reservation.retain_cleanup_pending(workspace);
-                    return Err(GithubImportError::PreviewCleanupPending);
+                    return Err(GithubImportError::PreviewCleanupPending).at(SnapshotRegister);
                 }
                 reservation.release_after_cleanup();
-                return Err(error);
+                return Err(error).at(SnapshotRegister);
             }
             Ok(preview)
         }
@@ -498,10 +562,10 @@ pub(crate) async fn preview_github_repo_import_remote_with_auth(
                 .is_err()
             {
                 let _ = reservation.retain_cleanup_pending(workspace);
-                return Err(GithubImportError::PreviewCleanupPending);
+                return Err(GithubImportError::PreviewCleanupPending).at(CandidateBuild);
             }
             reservation.release_after_cleanup();
-            Err(error)
+            Err(error).at(CandidateBuild)
         }
     }
 }
