@@ -25,7 +25,6 @@ import { cn } from "@/lib/utils";
 import {
   type WizardStep,
 } from "@/components/marketplace/githubImportWizardUtils";
-import { GitHubRepoImportUrlInputBlock } from "@/components/marketplace/GitHubRepoImportWizardInput";
 import { isRemoteLikeTarget, isSshTarget } from "@/lib/targetKind";
 
 /**
@@ -52,16 +51,14 @@ interface GitHubRepoImportWizardHeaderProps {
   showRepoToolbar: boolean;
   repoUrl: string;
   branch: string;
-  previewError: string | null;
   isPreviewLoading: boolean;
-  browserMode: boolean;
   previewToolbarRepoHref: string | null;
   selectedSkillsCount: number;
   activeTarget: TargetSummary;
-  onRepoUrlChange: (value: string) => void;
-  onBranchChange: (value: string) => void;
   onPreviewSubmit: (branch: string) => void;
 }
+
+const WIZARD_STEPS: WizardStep[] = ["input", "preview", "confirm", "result"];
 
 export function GitHubRepoImportWizardHeader({
   launcherLabel,
@@ -70,98 +67,90 @@ export function GitHubRepoImportWizardHeader({
   showRepoToolbar,
   repoUrl,
   branch,
-  previewError,
   isPreviewLoading,
-  browserMode,
   previewToolbarRepoHref,
   selectedSkillsCount,
   activeTarget,
-  onRepoUrlChange,
-  onBranchChange,
   onPreviewSubmit,
 }: GitHubRepoImportWizardHeaderProps) {
   const { t } = useTranslation();
+  const currentIndex = WIZARD_STEPS.indexOf(step);
 
   return (
     <div
-      className="shrink-0 border-b border-border/70 px-6 pb-2.5 pt-4"
+      className="shrink-0 border-b border-border/70 px-6 pb-3 pt-4"
       data-testid="github-import-compact-header"
     >
-      <DialogHeader>
-        <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 pr-10">
-          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2 gap-y-0.5">
-            <DialogTitle className="flex items-center gap-2 text-base">
-              <GitBranch className="size-5" />
-              <span>{t("marketplace.githubImportTitle")}</span>
-            </DialogTitle>
-            <DialogDescription className="text-xs leading-5 text-muted-foreground">
-              {t("marketplace.githubImportDesc", {
-                launcher: launcherLabel,
-              })}
-            </DialogDescription>
-          </div>
-          <div className="flex shrink-0 items-center gap-2 text-ui-meta text-muted-foreground">
-            <span className="rounded-full border border-border/70 bg-muted/20 px-2.5 py-1 font-medium">
-              {t("marketplace.githubImportHeaderLauncher", {
-                launcher: launcherLabel,
-              })}
-            </span>
-          </div>
+      <DialogHeader className="gap-1">
+        <div className="flex min-w-0 items-center justify-between gap-3 pr-10">
+          <DialogTitle className="flex min-w-0 items-center gap-2 text-base">
+            <GitBranch className="size-5 shrink-0" aria-hidden="true" />
+            <span className="truncate">{t("marketplace.githubImportTitle")}</span>
+          </DialogTitle>
+          <span
+            className="inline-flex h-6 shrink-0 items-center rounded-full border border-border/70 bg-muted/30 px-2.5 text-xs text-muted-foreground"
+            data-testid="github-import-launcher-badge"
+          >
+            {t("marketplace.githubImportHeaderLauncher", {
+              launcher: launcherLabel,
+            })}
+          </span>
         </div>
+        <DialogDescription className="text-xs leading-5 text-muted-foreground">
+          {t("marketplace.githubImportDesc")}
+        </DialogDescription>
       </DialogHeader>
 
-      <div
-        className="mt-2 flex items-center gap-1.5 overflow-x-auto pb-1 text-ui-meta text-muted-foreground"
+      <ol
+        className="mt-3 flex items-center gap-1.5 overflow-x-auto pb-0.5 text-xs text-muted-foreground"
         data-testid="github-import-flat-stepper"
       >
-        {(["input", "preview", "confirm", "result"] as WizardStep[]).map(
-          (item, index) => {
-            const isActive =
-              step === item || (item === "preview" && step === "confirm");
-            const isComplete =
-              (
-                ["input", "preview", "confirm", "result"] as WizardStep[]
-              ).indexOf(step) > index;
+        {WIZARD_STEPS.map((item, index) => {
+          const isActive =
+            step === item || (item === "preview" && step === "confirm");
+          const isComplete = currentIndex > index;
 
-            return (
-              <Fragment key={item}>
-                <div
+          return (
+            <Fragment key={item}>
+              <li
+                aria-current={isActive ? "step" : undefined}
+                className={cn(
+                  "flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5",
+                  isActive
+                    ? "border-primary/40 bg-primary/10 text-primary-text"
+                    : isComplete
+                      ? "border-primary/20 bg-primary/5 text-primary-text"
+                      : "border-border/70 text-muted-foreground",
+                )}
+              >
+                <span
+                  aria-hidden="true"
                   className={cn(
-                    "flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 shadow-sm",
-                    isActive
-                      ? "border-primary/40 bg-primary/10 text-primary"
-                      : isComplete
-                        ? "border-primary/20 bg-primary/5 text-primary-text"
-                        : "border-border/70 bg-muted/20 text-muted-foreground",
+                    "flex size-4 shrink-0 items-center justify-center rounded-full text-ui-micro font-semibold",
+                    isActive || isComplete
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-foreground/70 ring-1 ring-border",
                   )}
                 >
-                  <span
-                    className={cn(
-                      "flex size-4 shrink-0 items-center justify-center rounded-full text-ui-micro font-semibold",
-                      isActive || isComplete
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-background text-muted-foreground",
-                    )}
-                  >
-                    {index + 1}
-                  </span>
-                  <span className="font-medium">
-                    {t(`marketplace.githubImportStep.${item}`)}
-                  </span>
-                </div>
-                {index < 3 ? (
-                  <div
-                    className={cn(
-                      "h-px min-w-4 flex-1",
-                      isComplete ? "bg-primary/40" : "bg-border/80",
-                    )}
-                  />
-                ) : null}
-              </Fragment>
-            );
-          },
-        )}
-      </div>
+                  {index + 1}
+                </span>
+                <span className="font-medium">
+                  {t(`marketplace.githubImportStep.${item}`)}
+                </span>
+              </li>
+              {index < WIZARD_STEPS.length - 1 ? (
+                <li
+                  aria-hidden="true"
+                  className={cn(
+                    "h-px min-w-4 max-w-20 flex-1",
+                    isComplete ? "bg-primary/40" : "bg-border/80",
+                  )}
+                />
+              ) : null}
+            </Fragment>
+          );
+        })}
+      </ol>
 
       {showRepoToolbar && preview ? (
         <GitHubRepoImportPreviewToolbar
@@ -171,18 +160,7 @@ export function GitHubRepoImportWizardHeader({
           previewToolbarRepoHref={previewToolbarRepoHref}
           selectedSkillsCount={selectedSkillsCount}
           activeTarget={activeTarget}
-          onPreviewSubmit={() => onPreviewSubmit(branch || "main")}
-        />
-      ) : step === "input" ? (
-        <GitHubRepoImportUrlInputBlock
-          repoUrl={repoUrl}
-          branch={branch}
-          previewError={previewError}
-          isPreviewLoading={isPreviewLoading}
-          browserMode={browserMode}
-          onRepoUrlChange={onRepoUrlChange}
-          onBranchChange={onBranchChange}
-          onPreviewSubmit={onPreviewSubmit}
+          onPreviewSubmit={() => onPreviewSubmit(branch)}
         />
       ) : null}
     </div>

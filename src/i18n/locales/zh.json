@@ -2995,7 +2995,7 @@
     "githubImportCta": "导入 GitHub 仓库",
     "githubImportSecondaryCta": "从 GitHub 导入",
     "githubImportTitle": "GitHub 仓库导入",
-    "githubImportDesc": "从 {{launcher}} 启动共享的 GitHub 仓库导入向导。",
+    "githubImportDesc": "预览仓库中的技能；确认导入前不会写入任何内容。",
     "githubImportHeaderLauncher": "来自 {{launcher}}",
     "githubImportStep": {
       "input": "仓库地址",
@@ -3006,16 +3006,28 @@
     "githubRepoUrl": "GitHub 仓库 URL",
     "githubBranchLabel": "分支",
     "githubBranchOption": {
+      "default": "仓库默认",
       "main": "main",
       "dev": "dev",
       "custom": "自定义"
     },
     "githubCustomBranchLabel": "自定义分支",
     "githubCustomBranchPlaceholder": "feature/my-branch",
-    "githubBranchDefaultHint": "默认选择 main，也可以切换到 dev 或输入自定义分支。",
+    "githubBranchDefaultHint": "使用仓库在 GitHub 上设置的默认分支，例如 main 或 master。",
+    "githubBranchExplicitHint": "只预览这个分支；如果仓库中没有该分支，会明确提示。",
     "githubCustomBranchHint": "请输入要预览的完整分支名称。",
     "previewImport": "预览导入",
-    "githubImportNoWriteHint": "预览为只读操作，在你确认导入前不会执行任何写入。",
+    "githubPreviewError": {
+      "title": {
+        "branchNotFound": "找不到分支",
+        "requestRejected": "GitHub 拒绝了请求",
+        "transportFailed": "无法连接 GitHub",
+        "generic": "预览失败"
+      },
+      "branchNotFoundBody": "仓库 {{repo}} 中没有名为 {{branch}} 的分支。请改用仓库默认分支，或检查分支名。",
+      "useDefaultBranch": "改用仓库默认分支",
+      "retry": "重试"
+    },
     "githubImportDesktopOnlyHint": "当前版本仅桌面应用支持 GitHub 仓库预览与导入。",
     "githubImportDesktopOnlyState": "该共享向导在浏览器中会展示引导说明，但预览/导入操作只会在启用了 Tauri bridge 的桌面应用里执行。",
     "githubImportSshPasswordTitle": "保存当前 SSH 密码",

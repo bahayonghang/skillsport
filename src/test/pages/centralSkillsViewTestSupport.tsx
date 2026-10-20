@@ -189,19 +189,23 @@ vi.mock("@/components/marketplace/GitHubRepoImportWizard", async () => {
         <div role="dialog" aria-label="GitHub import wizard">
           {step === "input" ? (
             <div role="radiogroup" aria-label="Branch">
-              {["main", "dev", "custom"].map((option) => (
+              {["default", "main", "dev", "custom"].map((option) => (
                 <button
                   key={option}
                   type="button"
                   role="radio"
                   aria-checked={
-                    option === "main"
-                      ? branch === "" || branch === "main"
-                      : branch === option
+                    option === "default" ? branch === "" : branch === option
                   }
-                  onClick={() => onBranchChange(option)}
+                  onClick={() =>
+                    onBranchChange(option === "default" ? "" : option)
+                  }
                 >
-                  {option === "custom" ? "Custom" : option}
+                  {option === "custom"
+                    ? "Custom"
+                    : option === "default"
+                      ? "Repo default"
+                      : option}
                 </button>
               ))}
             </div>

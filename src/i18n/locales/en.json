@@ -2995,7 +2995,7 @@
     "githubImportCta": "Import GitHub repo",
     "githubImportSecondaryCta": "Import from GitHub",
     "githubImportTitle": "GitHub repo import",
-    "githubImportDesc": "Launch the shared GitHub repo import wizard from {{launcher}}.",
+    "githubImportDesc": "Preview the skills in a repository. Nothing is written until you confirm the import.",
     "githubImportHeaderLauncher": "From {{launcher}}",
     "githubImportStep": {
       "input": "Repo URL",
@@ -3006,16 +3006,28 @@
     "githubRepoUrl": "GitHub repository URL",
     "githubBranchLabel": "Branch",
     "githubBranchOption": {
+      "default": "Repo default",
       "main": "main",
       "dev": "dev",
       "custom": "Custom"
     },
     "githubCustomBranchLabel": "Custom branch",
     "githubCustomBranchPlaceholder": "feature/my-branch",
-    "githubBranchDefaultHint": "main is selected by default. Choose dev or enter a custom branch.",
+    "githubBranchDefaultHint": "Uses the default branch set on GitHub, such as main or master.",
+    "githubBranchExplicitHint": "Previews exactly this branch. If the repository has no such branch, the preview says so.",
     "githubCustomBranchHint": "Enter the exact branch name to preview.",
     "previewImport": "Preview import",
-    "githubImportNoWriteHint": "Preview is read-only and performs no write before you confirm import.",
+    "githubPreviewError": {
+      "title": {
+        "branchNotFound": "Branch not found",
+        "requestRejected": "GitHub rejected the request",
+        "transportFailed": "Cannot reach GitHub",
+        "generic": "Preview failed"
+      },
+      "branchNotFoundBody": "{{repo}} has no branch named {{branch}}. Use the repository default branch or check the branch name.",
+      "useDefaultBranch": "Use repo default branch",
+      "retry": "Retry"
+    },
     "githubImportDesktopOnlyHint": "GitHub repo preview and import are desktop-only actions in this release.",
     "githubImportDesktopOnlyState": "This shared wizard is available in the browser for guidance, but preview/import actions only run in the desktop app with the Tauri bridge enabled.",
     "githubImportSshPasswordTitle": "Save the active SSH password",
