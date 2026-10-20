@@ -245,6 +245,8 @@
       "branch_conflict": "The branch in the repository URL differs from the branch field. Make them match, then preview again.",
       "archive_redirect_rejected": "GitHub returned an unsafe or unexpected repository archive redirect. Try checking for updates again.",
       "transport_failed": "GitHub could not be reached. Check the network connection, then try again.",
+      "branch_not_found": "This branch does not exist in the repository. Use the repository default branch or check the branch name.",
+      "request_rejected": "GitHub rejected the request. Check the repository URL and branch, then try again.",
       "rate_limited": "GitHub rate limited the request. Wait for the limit to reset, then try again.",
       "access_denied": "GitHub denied anonymous access to this repository. Configure a token if the repository requires authentication.",
       "configured_token_failed": "GitHub denied the authenticated request. Check that the token owner can read this repository and that the token has the required permissions.",

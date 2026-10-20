@@ -245,6 +245,8 @@
       "branch_conflict": "仓库 URL 中的分支与分支输入框不一致，请调整一致后重新预览。",
       "archive_redirect_rejected": "GitHub 返回了不安全或异常的仓库压缩包跳转，已停止检查更新。请重试。",
       "transport_failed": "无法连接 GitHub。请检查网络后重试。",
+      "branch_not_found": "仓库中不存在该分支。请改用仓库默认分支，或检查分支名。",
+      "request_rejected": "GitHub 拒绝了本次请求。请检查仓库地址和分支后重试。",
       "rate_limited": "GitHub 限流了本次请求。请等待配额重置后重试。",
       "access_denied": "GitHub 拒绝匿名访问该仓库。如果仓库需要认证，请配置 GitHub 令牌。",
       "configured_token_failed": "GitHub 拒绝了已认证请求。请确认令牌所属账号可以读取该仓库，并且令牌具备所需权限。",

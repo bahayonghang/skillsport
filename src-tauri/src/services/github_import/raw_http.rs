@@ -95,9 +95,13 @@ async fn fetch_raw_bytes_with_budget(
         return Err(GithubImportError::RepoFileGone(file_path));
     }
     if !response.status().is_success() {
+        let status = response.status();
         return Err(classify_github_denial_response(response, operation)
             .await
-            .unwrap_or_else(|| GithubImportError::Http(format!("{}.", failure_prefix))));
+            .unwrap_or_else(|| GithubImportError::HttpStatus {
+                message: format!("{}.", failure_prefix),
+                status: status.as_u16(),
+            }));
     }
 
     read_raw_response_with_budget(
@@ -516,8 +520,9 @@ where
 
                     return Err(denial
                         .map(GithubImportError::from_denial)
-                        .unwrap_or_else(|| {
-                            GithubImportError::Http(format!("{}: HTTP {}", failure_prefix, status))
+                        .unwrap_or_else(|| GithubImportError::HttpStatus {
+                            message: format!("{}: HTTP {}", failure_prefix, status),
+                            status: status.as_u16(),
                         }));
                 }
 
@@ -565,10 +570,10 @@ where
                     continue;
                 }
 
-                return Err(GithubImportError::Http(format!(
-                    "{}: HTTP {}",
-                    failure_prefix, status
-                )));
+                return Err(GithubImportError::HttpStatus {
+                    message: format!("{}: HTTP {}", failure_prefix, status),
+                    status: status.as_u16(),
+                });
             }
             Err(error) => {
                 let archive_error = matches!(

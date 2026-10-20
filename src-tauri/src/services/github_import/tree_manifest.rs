@@ -311,11 +311,9 @@ pub(super) async fn try_fetch_tree_manifest(
         return Err(
             classify_github_denial_response(response, "fetching the repository tree")
                 .await
-                .unwrap_or_else(|| {
-                    GithubImportError::Http(format!(
-                        "Failed to fetch GitHub repository tree: HTTP {}",
-                        status
-                    ))
+                .unwrap_or_else(|| GithubImportError::HttpStatus {
+                    message: format!("Failed to fetch GitHub repository tree: HTTP {}", status),
+                    status: status.as_u16(),
                 }),
         );
     }
@@ -359,9 +357,10 @@ pub(super) fn fallback_reason_for(error: &GithubImportError) -> Option<FallbackR
         GithubImportError::RateLimited(_)
         | GithubImportError::AccessDenied(_)
         | GithubImportError::ConfiguredTokenAccessDenied(_) => Some(FallbackReason::Denied),
-        GithubImportError::Http(_) | GithubImportError::RepoNotFound => {
-            Some(FallbackReason::Transport)
-        }
+        GithubImportError::Http(_)
+        | GithubImportError::HttpStatus { .. }
+        | GithubImportError::BranchNotFound
+        | GithubImportError::RepoNotFound => Some(FallbackReason::Transport),
         GithubImportError::Budget(_)
         | GithubImportError::TreeManifestEntryBudgetExceeded(_)
         | GithubImportError::TreeManifestSizeOverflow => Some(FallbackReason::Budget),

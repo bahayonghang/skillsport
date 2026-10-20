@@ -36,10 +36,18 @@ pub enum GithubImportError {
     CentralApply(Box<crate::services::central_updates::CentralUpdatesError>),
 
     // ── HTTP categories (parent design.md 1.2 Http-variant convention) ──────
-    /// HTTP transport/protocol failure (connect, timeout, non-2xx status,
-    /// mirror-fallback summaries). Message preformatted at the call site.
+    /// HTTP transport/protocol failure without a usable response status
+    /// (client build, connect, timeout, body read, mirror-fallback summaries).
+    /// Message preformatted at the call site.
     #[error("{0}")]
     Http(String),
+
+    /// GitHub answered with a non-success status that no denial, 404 or
+    /// mirror-retry rule claimed. `message` keeps the historical Display text;
+    /// `status` drives the stable code (4xx → `request_rejected`, 5xx →
+    /// `transport_failed`) and the numeric diagnostic.
+    #[error("{message}")]
+    HttpStatus { message: String, status: u16 },
 
     /// GitHub rate-limit denial (429 / x-ratelimit classification). Message
     /// is the denial classifier's Display output.
@@ -123,6 +131,11 @@ pub enum GithubImportError {
 
     #[error("GitHub repository not found.")]
     RepoNotFound,
+
+    /// The commits API rejected the requested branch (HTTP 422 "No commit
+    /// found"). The branch name never enters the error value.
+    #[error("GitHub repository branch was not found.")]
+    BranchNotFound,
 
     // ── Archive download / extraction ────────────────────────────────────────
     #[error("GitHub repository archive is unavailable.")]
@@ -398,7 +411,12 @@ impl GithubImportError {
 
             // ── Network / archive acquisition ───────────────────────────────
             Self::ArchiveRedirectRejected => "github_import.archive_redirect_rejected",
+            Self::HttpStatus { status, .. } if (400..500).contains(status) => {
+                "github_import.request_rejected"
+            }
+            Self::BranchNotFound => "github_import.branch_not_found",
             Self::Http(_)
+            | Self::HttpStatus { .. }
             | Self::ArchiveTimeout
             | Self::ArchiveRequest
             | Self::ArchiveResponseBody
@@ -452,6 +470,17 @@ impl GithubImportError {
             Self::Remote(_) => "github_import.remote",
             Self::TaskJoin { .. } => "github_import.task_join",
             _ => "github_import.other",
+        }
+    }
+
+    /// Numeric HTTP status GitHub returned, when the failure carries one.
+    /// A bare number is a safe static diagnostic; it never identifies a
+    /// repository, branch or credential.
+    pub fn http_status(&self) -> Option<u16> {
+        match self {
+            Self::HttpStatus { status, .. } => Some(*status),
+            Self::BranchNotFound => Some(422),
+            _ => None,
         }
     }
 
@@ -538,6 +567,15 @@ impl GithubImportError {
             Self::Http(_) => {
                 SnapshotFailureClassification::terminal("github_import.transport_unknown")
             }
+            Self::HttpStatus { status, .. } if (400..500).contains(status) => {
+                SnapshotFailureClassification::terminal("github_import.http_client_error")
+            }
+            Self::HttpStatus { .. } => {
+                SnapshotFailureClassification::terminal("github_import.http_server_error")
+            }
+            Self::BranchNotFound => {
+                SnapshotFailureClassification::terminal("github_import.branch_not_found")
+            }
             _ => return None,
         };
         Some(classification)
@@ -587,182 +625,4 @@ impl SnapshotFailureClassification {
 }
 
 #[cfg(test)]
-mod snapshot_failure_tests {
-    use super::*;
-
-    #[test]
-    fn snapshot_retryability_and_diagnostic_category_share_one_typed_classifier() {
-        let retryable = [
-            (
-                GithubImportError::ArchiveTimeout,
-                "github_import.archive_timeout",
-            ),
-            (
-                GithubImportError::ArchiveRequest,
-                "github_import.archive_request",
-            ),
-            (
-                GithubImportError::ArchiveResponseBody,
-                "github_import.archive_response_body",
-            ),
-            (
-                GithubImportError::ArchiveStatusExhausted,
-                "github_import.archive_status_exhausted",
-            ),
-        ];
-        for (error, category) in retryable {
-            assert!(error.is_snapshot_retryable());
-            assert_eq!(error.snapshot_diagnostic_category(), category);
-        }
-
-        let not_retryable = [
-            GithubImportError::InvalidBranchSelection,
-            GithubImportError::ArchiveRedirectRejected,
-            GithubImportError::AccessDenied("token=secret".to_string()),
-            GithubImportError::ConfiguredTokenAccessDenied("token=secret".to_string()),
-            GithubImportError::RepoNotFound,
-            GithubImportError::Parse("response body".to_string()),
-            GithubImportError::Budget(crate::services::resource_budget::BudgetExceeded::new(
-                "archive", 2, 1,
-            )),
-            GithubImportError::PreviewSnapshotIntegrity,
-        ];
-        for error in not_retryable {
-            assert!(!error.is_snapshot_retryable(), "{error:?}");
-        }
-    }
-}
-
-#[cfg(test)]
-mod ipc_error_code_tests {
-    use super::*;
-    use crate::ipc_error::{public_message_for_code, IpcError};
-    use crate::services::central_updates::CentralUpdatesError;
-
-    #[test]
-    fn configured_github_denial_keeps_auth_context_in_the_typed_code() {
-        let configured = GithubImportError::from_denial(GitHubAccessDenial {
-            kind: GitHubAccessDenialKind::AuthenticationOrPermission,
-            operation: "reading the repository",
-            status: reqwest::StatusCode::FORBIDDEN,
-            used_auth: true,
-        });
-        let anonymous = GithubImportError::from_denial(GitHubAccessDenial {
-            kind: GitHubAccessDenialKind::AuthenticationOrPermission,
-            operation: "reading the repository",
-            status: reqwest::StatusCode::FORBIDDEN,
-            used_auth: false,
-        });
-
-        assert_eq!(
-            configured.ipc_error_code(),
-            Some("github_import.configured_token_failed")
-        );
-        assert_eq!(
-            configured.diagnostic_category(),
-            "github_import.configured_token_failed"
-        );
-        assert_eq!(
-            anonymous.ipc_error_code(),
-            Some("github_import.access_denied")
-        );
-        assert_eq!(
-            anonymous.diagnostic_category(),
-            "github_import.access_denied"
-        );
-    }
-
-    fn locale_github_import_keys(json: &str) -> serde_json::Value {
-        serde_json::from_str::<serde_json::Value>(json).unwrap()["backendErrors"]["github_import"]
-            .clone()
-    }
-
-    #[test]
-    fn apply_path_codes_align_across_ipc_public_message_and_i18n() {
-        let en = locale_github_import_keys(include_str!("../../../../src/i18n/locales/en.json"));
-        let zh = locale_github_import_keys(include_str!("../../../../src/i18n/locales/zh.json"));
-        let seeds = "token=secret https://example.invalid C:/Users/private";
-        let cases = [
-            (
-                GithubImportError::SelectionUnavailable(seeds.to_string()),
-                "github_import.selection_unavailable",
-            ),
-            (
-                GithubImportError::InvalidCandidate(seeds.to_string()),
-                "github_import.invalid_candidate",
-            ),
-            (
-                GithubImportError::RepoPathGone(seeds.to_string()),
-                "github_import.source_path_missing",
-            ),
-            (
-                GithubImportError::TargetDirExists(seeds.to_string()),
-                "github_import.target_exists",
-            ),
-            (
-                GithubImportError::DuplicateSelection(seeds.to_string()),
-                "github_import.duplicate_selection",
-            ),
-            (
-                GithubImportError::RenameIdInUse(seeds.to_string()),
-                "github_import.rename_conflict",
-            ),
-            (
-                GithubImportError::RenameIdRequired(seeds.to_string()),
-                "github_import.rename_conflict",
-            ),
-            (
-                GithubImportError::NoSelections,
-                "github_import.no_importable_skills",
-            ),
-            (
-                GithubImportError::NoValidOperations,
-                "github_import.no_importable_skills",
-            ),
-        ];
-
-        for (error, code) in cases {
-            assert_eq!(error.ipc_error_code(), Some(code), "{error:?}");
-            assert_eq!(error.diagnostic_category(), code, "{error:?}");
-            let message = public_message_for_code(code).unwrap_or_else(|| {
-                panic!("missing public_message_for_code for {code}");
-            });
-            assert!(!message.contains(seeds), "{code} leaked Display seeds");
-            assert!(!message.contains("token=secret"));
-            assert!(!message.contains("example.invalid"));
-            assert!(!message.contains("Users/private"));
-            assert_ne!(message, error.to_string(), "{code} used Display text");
-
-            let suffix = code.strip_prefix("github_import.").expect(code);
-            assert!(
-                en.get(suffix).and_then(|value| value.as_str()).is_some(),
-                "missing en backendErrors.github_import.{suffix}"
-            );
-            assert!(
-                zh.get(suffix).and_then(|value| value.as_str()).is_some(),
-                "missing zh backendErrors.github_import.{suffix}"
-            );
-        }
-    }
-
-    #[test]
-    fn central_apply_ipc_does_not_leak_paths_or_file_contents() {
-        let secret = r"C:\Users\alice\private\skill.md token=ghp_super_secret";
-        let error = GithubImportError::CentralApply(Box::new(CentralUpdatesError::Batch(
-            secret.to_string(),
-        )));
-        assert_eq!(error.diagnostic_category(), "central_updates.batch");
-        let ipc = IpcError::from(error.to_ipc_error());
-        let serialized = serde_json::to_string(&ipc).expect("serialize");
-        assert!(!error.to_ipc_error().contains("alice"));
-        assert!(!error.to_ipc_error().contains("ghp_super_secret"));
-        assert!(!ipc.message.contains("alice"));
-        assert!(!ipc.message.contains("ghp_"));
-        assert!(!serialized.contains("alice"));
-        assert!(!serialized.contains("ghp_"));
-        assert_eq!(
-            ipc.message,
-            "The operation failed. See runtime logs for details."
-        );
-    }
-}
+mod tests;

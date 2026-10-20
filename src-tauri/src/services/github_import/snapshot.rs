@@ -31,7 +31,8 @@ pub(crate) async fn resolve_commit_sha(
         "Failed to resolve GitHub repository commit",
         auth_token,
     )
-    .await?;
+    .await
+    .map_err(branch_not_found_from_commit_status)?;
 
     if response.status() == reqwest::StatusCode::NOT_FOUND {
         return Err(GithubImportError::RepoNotFound);
@@ -42,10 +43,13 @@ pub(crate) async fn resolve_commit_sha(
             classify_github_denial_response(response, "resolving the repository commit")
                 .await
                 .unwrap_or_else(|| {
-                    GithubImportError::Http(format!(
-                        "Failed to resolve GitHub repository commit: HTTP {}",
-                        status
-                    ))
+                    branch_not_found_from_commit_status(GithubImportError::HttpStatus {
+                        message: format!(
+                            "Failed to resolve GitHub repository commit: HTTP {}",
+                            status
+                        ),
+                        status: status.as_u16(),
+                    })
                 }),
         );
     }
@@ -61,6 +65,16 @@ pub(crate) async fn resolve_commit_sha(
         .to_string();
     validate_commit_sha(&sha)?;
     Ok(sha)
+}
+
+/// The commits API answers an unknown branch or ref with HTTP 422
+/// ("No commit found for SHA"), not 404. Surface it as a typed branch failure
+/// so the user is not told to check the network.
+pub(super) fn branch_not_found_from_commit_status(error: GithubImportError) -> GithubImportError {
+    match error {
+        GithubImportError::HttpStatus { status: 422, .. } => GithubImportError::BranchNotFound,
+        other => other,
+    }
 }
 
 /// Accept only a full 40-character lowercase-hex commit SHA. The value becomes
