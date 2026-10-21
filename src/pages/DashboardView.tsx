@@ -35,7 +35,7 @@ function LocalSkillsCliCensus() {
   return (
     <Card
       data-testid="dashboard-skills-cli-census"
-      className="surface-glass overflow-hidden rounded-2xl border-0 bg-transparent p-0 shadow-none"
+      className="p-0"
     >
       <PanelHeader title={t("skillsCli.dashboardHeading")} />
       <CardContent className="px-4 pb-4">

@@ -3,8 +3,10 @@ import { useTranslation } from "react-i18next";
 import {
   ChartStateRow,
   PanelHeader,
+  PanelNotice,
   ProgressRow,
 } from "@/components/dashboard/DashboardPanels";
+import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import type { CentralTopTag } from "@/types";
 
@@ -25,7 +27,7 @@ export function TopTagsPanel({
   const maxCount = Math.max(1, ...topTags.map((tag) => tag.count));
 
   return (
-    <Card className="surface-glass overflow-hidden rounded-2xl border-0 bg-transparent p-0 shadow-none">
+    <Card className="p-0">
       <PanelHeader
         title={t("dashboard.topTags.title")}
         description={t("dashboard.topTags.description")}
@@ -39,15 +41,18 @@ export function TopTagsPanel({
           topTags.map((tag) => (
             <ProgressRow
               key={tag.id}
-              label={tag.name}
+              label={
+                <Badge tone="neutral" size="sm" title={tag.name}>
+                  {tag.name}
+                </Badge>
+              }
               count={tag.count}
               total={maxCount}
+              tone="secondary"
             />
           ))
         ) : (
-          <div className="rounded-md border border-border/80 bg-background px-3 py-3 text-sm text-muted-foreground">
-            {t("dashboard.topTags.empty")}
-          </div>
+          <PanelNotice>{t("dashboard.topTags.empty")}</PanelNotice>
         )}
       </CardContent>
     </Card>

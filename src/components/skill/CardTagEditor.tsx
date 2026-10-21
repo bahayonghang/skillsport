@@ -51,7 +51,7 @@ export function CardTagEditor({
             key={tag.id}
             style={color.style}
             className={cn(
-              "group/tag inline-flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-xs font-medium",
+              "group/tag inline-flex h-5 items-center gap-1 rounded-pill border px-2 text-xs font-medium",
               color.className,
             )}
           >
@@ -63,7 +63,7 @@ export function CardTagEditor({
                 stop(e);
                 onRemove(tag.id);
               }}
-              className="opacity-0 transition-opacity group-hover/tag:opacity-100 focus-visible:opacity-100"
+              className="focus-ring rounded-pill opacity-0 transition-opacity duration-150 group-hover/tag:opacity-100 focus-visible:opacity-100"
             >
               <X className="size-2.5" />
             </button>
@@ -81,9 +81,9 @@ export function CardTagEditor({
             setOpen((v) => !v);
           }}
           className={cn(
-            "relative grid size-6 place-items-center rounded-full border border-dashed border-border/70 text-muted-foreground",
+            "focus-ring relative grid size-6 place-items-center rounded-pill border border-dashed border-input text-muted-foreground",
             "after:absolute after:left-1/2 after:top-1/2 after:size-10 after:-translate-x-1/2 after:-translate-y-1/2 after:content-['']",
-            "opacity-60 transition-opacity hover:border-primary/40 hover:text-primary",
+            "opacity-60 transition-[opacity,border-color,color] duration-150 hover:border-primary-stroke hover:text-primary-text focus-visible:opacity-100",
             "group-hover/skill-card:opacity-100 group-focus-within/skill-card:opacity-100",
           )}
         >
@@ -91,7 +91,7 @@ export function CardTagEditor({
         </button>
         {open && (
           <div
-            className="absolute z-40 mt-1 w-48 rounded-lg border border-border bg-popover p-1.5 shadow-md"
+            className="glass-overlay absolute z-40 mt-1 w-48 rounded-card p-1.5 text-popover-foreground"
             onMouseDown={(e) => e.preventDefault()}
           >
             <input
@@ -99,7 +99,7 @@ export function CardTagEditor({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t("central.cardTagSearchPlaceholder")}
-              className="mb-1 w-full rounded-md border border-border/70 bg-background px-2 py-1 text-xs"
+              className="mb-1 w-full rounded-control border border-input bg-input-surface px-2.5 py-1 text-xs placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none"
             />
             <div className="max-h-40 overflow-y-auto">
               {candidates.map((tg) => (
@@ -112,7 +112,7 @@ export function CardTagEditor({
                     setQuery("");
                     setOpen(false);
                   }}
-                  className="block w-full truncate rounded-md px-2 py-1 text-left text-xs hover:bg-accent"
+                  className="block w-full truncate rounded-control px-2.5 py-1 text-left text-xs hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
                 >
                   {tg.name}
                 </button>
@@ -126,7 +126,7 @@ export function CardTagEditor({
                     setQuery("");
                     setOpen(false);
                   }}
-                  className="block w-full truncate rounded-md px-2 py-1 text-left text-xs text-primary hover:bg-accent"
+                  className="block w-full truncate rounded-control px-2.5 py-1 text-left text-xs text-primary-text hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
                 >
                   {t("central.cardTagCreate", { name: query.trim() })}
                 </button>

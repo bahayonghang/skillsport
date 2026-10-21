@@ -99,7 +99,6 @@ const PENDING_BACKDROP_UTILITY: readonly string[] = [
 // (rounded-control / inner / card / shell / pill) instead.
 const PENDING_ARBITRARY_ROUNDED: readonly string[] = [
   "src/components/central/CentralSidebar.tsx",
-  "src/components/usage/ActivityHeatmap.tsx",
 ];
 
 // Files with raw bg-white/<n> or bg-black/<n> washes. Use surface tokens.
@@ -120,13 +119,11 @@ const PENDING_HANDWRITTEN_SURFACE: readonly string[] = [
   "src/components/central/repositorySyncPanelControls.tsx",
   "src/components/central/updateCenter/OrphansTabPanel.tsx",
   "src/components/central/updateCenter/PlatformDuplicatesTabPanel.tsx",
-  "src/components/logs/RuntimeLogsPanel.tsx",
   "src/components/platform/BatchDeletePlatformSkillsDialog.tsx",
   "src/components/settings/AboutSettingsSection.tsx",
   "src/components/settings/LocalRemoteSyncDialog.tsx",
   "src/components/settings/RemoteTargetsSettingsSection.tsx",
   "src/components/skill/SkillDetailModalShell.tsx",
-  "src/pages/OperationLogsView.tsx",
 ];
 
 // Files importing @base-ui/react/menu|dialog outside src/components/ui.
@@ -138,7 +135,6 @@ const PENDING_DIRECT_BASE_UI: readonly string[] = [
   "src/components/central/SkillImportLauncher.tsx",
   "src/components/central/TaskCenterDrawer.tsx",
   "src/components/platform/PlatformSkillToolbarMenus.tsx",
-  "src/components/skill/CompactCardMoreMenu.tsx",
   "src/components/skill/SkillDetailModalShell.tsx",
   "src/components/skillsCli/SkillsCliBatchBar.tsx",
   "src/components/skillsCli/SkillsCliDetailDrawer.tsx",
@@ -148,12 +144,14 @@ const PENDING_DIRECT_BASE_UI: readonly string[] = [
 // Initial sizes when the contract landed (C4, 2026-10-21). Never raise these;
 // lower them as entries are migrated. C9 sets every ceiling to 0.
 // C5 (app shell): SidebarSection migrated → legacy card 20→19, base-ui 12→11.
+// C6 (signature surfaces): ActivityHeatmap, RuntimeLogsPanel, OperationLogsView,
+// CompactCardMoreMenu migrated → rounded 2→1, legacy card 19→17, base-ui 11→10.
 const PENDING_CEILING: Record<string, number> = {
   "backdrop-* utility": 6,
-  "arbitrary rounded-[...]": 2,
+  "arbitrary rounded-[...]": 1,
   "raw bg-white/ or bg-black/": 0,
-  "legacy card recipe": 19,
-  "direct @base-ui/react/menu|dialog import": 11,
+  "legacy card recipe": 17,
+  "direct @base-ui/react/menu|dialog import": 10,
 };
 
 const RULES: Rule[] = [

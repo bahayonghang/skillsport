@@ -41,9 +41,11 @@ dashboardCentralSummary）。
 
 ## 契约 4：Dashboard 视觉与性能
 
-- `.surface-glass` 不使用 `backdrop-filter`（8 卡 × blur(22px) 是 Windows
-  WebView2 滚动掉帧主因）；新增 Dashboard 卡片沿用该 token，不得回退加
-  blur。装饰性光斑（blur-3xl）禁止出现在常驻面板。
+- Dashboard 面板一律是 L2 `<Card>`（`.glass-panel`，无 `backdrop-filter`；
+  8 卡 × blur(22px) 曾是 Windows WebView2 滚动掉帧主因），不得回退加 blur。
+  1.1.0 C6 已删除页面专属的 `.surface-glass` / `.bg-orbit` / `.readiness-*`
+  规则；页面标题用 `PageHeader`，就绪度评分与计数用 `StatTile`（只读
+  `dashboardCentralSummary`）。装饰性光斑（blur-3xl）禁止出现在常驻面板。
 - 图表一律纯 SVG 手绘（不引入 recharts/d3）；SVG 必须 `role="img"` +
   aria 概述 + 数据点文本等价（`<title>`），「今日」类高亮不得只靠颜色
   （描边/纹理 + `aria-current`）。

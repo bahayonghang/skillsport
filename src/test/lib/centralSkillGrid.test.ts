@@ -24,9 +24,9 @@ describe("Central skill card grid sizing", () => {
     expect(centralVirtualItemHeight("list", "comfortable", 0.875)).toBe(172);
     expect(centralVirtualItemHeight("list", "comfortable", 1)).toBe(196);
     expect(centralVirtualItemHeight("list", "comfortable", 1.125)).toBe(221);
-    expect(centralVirtualItemHeight("list", "compact", 0.875)).toBe(147);
-    expect(centralVirtualItemHeight("list", "compact", 1)).toBe(168);
-    expect(centralVirtualItemHeight("list", "compact", 1.125)).toBe(189);
+    expect(centralVirtualItemHeight("list", "compact", 0.875)).toBe(161);
+    expect(centralVirtualItemHeight("list", "compact", 1)).toBe(184);
+    expect(centralVirtualItemHeight("list", "compact", 1.125)).toBe(207);
     expect(centralVirtualItemHeight("grid", "comfortable", 0.875)).toBe(210);
     expect(centralVirtualItemHeight("grid", "comfortable", 1)).toBe(240);
     expect(centralVirtualItemHeight("grid", "comfortable", 1.125)).toBe(270);

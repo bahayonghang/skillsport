@@ -20,7 +20,16 @@ import {
   formatLogUiError,
   safeCorrelationId,
 } from "@/components/logs/logDiagnostics";
+import { logLevelBadge } from "@/components/logs/logStatusBadge";
+import {
+  LOG_FILTER_SELECT_CLASS,
+  LOG_TABLE_HEAD_CLASS,
+  LOG_TEXT_BUTTON_CLASS,
+} from "@/components/logs/logViewUtils";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import { InlineConfirmAction } from "@/components/ui/inline-confirm-action";
 import { Input } from "@/components/ui/input";
 import { useRuntimeLogStore } from "@/stores/runtimeLogStore";
@@ -56,20 +65,6 @@ function formatRuntimeDate(value?: string | null): string {
   return date.toLocaleString();
 }
 
-function runtimeLevelClass(level?: string | null): string {
-  switch (level) {
-    case "error":
-      return "border-destructive/30 bg-destructive/10 text-destructive-text";
-    case "warn":
-      return "border-warning/30 bg-warning/10 text-warning-foreground";
-    case "debug":
-    case "trace":
-      return "border-info/30 bg-info/10 text-info-foreground";
-    default:
-      return "border-success/25 bg-success/10 text-success-foreground";
-  }
-}
-
 function RuntimeLineRow({
   line,
   selected,
@@ -87,29 +82,27 @@ function RuntimeLineRow({
       : sourceKind === "frontend"
         ? MonitorSmartphone
         : FileText;
+  const level = logLevelBadge(line.level ?? "");
   return (
     <button
       type="button"
+      aria-pressed={selected}
       onClick={() => onSelect(line)}
-      className={`grid w-full grid-cols-[4.5rem_5rem_minmax(8rem,0.7fr)_minmax(0,1.6fr)] gap-3 border-b border-border/70 px-3 py-2 text-left text-xs transition-colors hover:bg-muted/40 ${
-        selected ? "bg-primary/10" : "bg-background"
-      }`}
+      className={cn(
+        "grid w-full grid-cols-[4.5rem_5rem_minmax(8rem,0.7fr)_minmax(0,1.6fr)] gap-3 border-b border-border px-3 py-2 text-left text-xs transition-colors duration-150 last:border-b-0 hover:bg-accent focus-visible:bg-accent focus-visible:outline-none",
+        selected && "bg-primary-tint hover:bg-primary-tint focus-visible:bg-primary-tint",
+      )}
     >
       <div className="font-mono text-muted-foreground">#{line.lineNumber}</div>
       <div>
-        <span
-          className={`inline-flex rounded-full border px-2 py-0.5 font-mono text-xs uppercase ${runtimeLevelClass(
-            line.level,
-          )}`}
-        >
+        <Badge tone={level.tone} size="sm" icon={level.icon} className="font-mono">
           {line.level ?? "log"}
-        </span>
+        </Badge>
       </div>
       <div className="min-w-0">
-        <span className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 px-2 py-0.5 text-ui-meta text-muted-foreground">
-          <SourceIcon className="size-3" />
+        <Badge tone="neutral" size="sm" icon={<SourceIcon />}>
           {t(`logs.runtime.sources.${sourceKind}`)}
-        </span>
+        </Badge>
         <div className="mt-1 truncate font-mono text-muted-foreground">
           {line.source}
         </div>
@@ -274,191 +267,197 @@ export function RuntimeLogsPanel({
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="shrink-0 border-b border-border px-5 py-4">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
-          <div>
-            <h2 className="text-xl font-semibold tracking-tight">
-              {t("logs.runtime.title")}
-            </h2>
-            <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
-              {t("logs.runtime.description")}
-            </p>
+      <div className="shrink-0 px-4 pb-4 lg:px-6">
+        <Card className="gap-0 p-4">
+          <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
+            <div>
+              <h2 className="text-base font-semibold">
+                {t("logs.runtime.title")}
+              </h2>
+              <p className="mt-1 max-w-3xl text-xs text-muted-foreground">
+                {t("logs.runtime.description")}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  loadFiles()
+                    .then((nextFiles) => {
+                      const nextFileName =
+                        selectedFileName ?? nextFiles[0]?.fileName;
+                      if (nextFileName) {
+                        return readFile({
+                          fileName: nextFileName,
+                          tail: true,
+                          offset: 0,
+                        });
+                      }
+                      return undefined;
+                    })
+                    .catch((err) =>
+                      toast.error(
+                        t("logs.runtime.loadError", {
+                          error: formatLogUiError(err, t),
+                        }),
+                      ),
+                    );
+                }}
+                disabled={isLoadingFiles || isLoadingLines}
+              >
+                {isLoadingFiles || isLoadingLines ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="size-4" />
+                )}
+                {t("common.refresh")}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleRuntimeExport}
+                disabled={!selectedFileName || isExporting || isLoadingLines}
+              >
+                {isExporting ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Download className="size-4" />
+                )}
+                {t("common.export")}
+              </Button>
+              <InlineConfirmAction
+                idleAriaLabel={t("logs.runtime.clearSelected")}
+                idleTitle={t("logs.runtime.clearSelected")}
+                confirmLabel={t("logs.runtime.confirmClearSelected")}
+                onConfirm={handleRuntimeClear}
+                icon={<Trash2 className="size-4" />}
+                disabled={!selectedFileName || isClearing || isLoadingLines}
+                isLoading={isClearing}
+              />
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                loadFiles()
-                  .then((nextFiles) => {
-                    const nextFileName =
-                      selectedFileName ?? nextFiles[0]?.fileName;
-                    if (nextFileName) {
-                      return readFile({
-                        fileName: nextFileName,
-                        tail: true,
-                        offset: 0,
-                      });
-                    }
-                    return undefined;
-                  })
-                  .catch((err) =>
-                    toast.error(
-                      t("logs.runtime.loadError", {
-                        error: formatLogUiError(err, t),
-                      }),
-                    ),
-                  );
-              }}
-              disabled={isLoadingFiles || isLoadingLines}
-            >
-              {isLoadingFiles || isLoadingLines ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <RefreshCw className="size-4" />
-              )}
-              {t("common.refresh")}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleRuntimeExport}
-              disabled={!selectedFileName || isExporting || isLoadingLines}
-            >
-              {isExporting ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Download className="size-4" />
-              )}
-              {t("common.export")}
-            </Button>
-            <InlineConfirmAction
-              idleAriaLabel={t("logs.runtime.clearSelected")}
-              idleTitle={t("logs.runtime.clearSelected")}
-              confirmLabel={t("logs.runtime.confirmClearSelected")}
-              onConfirm={handleRuntimeClear}
-              icon={<Trash2 className="size-4" />}
-              disabled={!selectedFileName || isClearing || isLoadingLines}
-              isLoading={isClearing}
-            />
-          </div>
-        </div>
 
-        <form
-          onSubmit={handleRuntimeSearch}
-          className="mt-4 grid gap-2 sm:grid-cols-2 2xl:grid-cols-[minmax(13rem,1.1fr)_8rem_minmax(9rem,0.7fr)_minmax(13rem,1fr)_9rem_auto]"
-        >
-          <div className="relative sm:col-span-2 2xl:col-span-1">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <form
+            onSubmit={handleRuntimeSearch}
+            className="mt-4 grid gap-2 sm:grid-cols-2 2xl:grid-cols-[minmax(13rem,1.1fr)_8rem_minmax(9rem,0.7fr)_minmax(13rem,1fr)_9rem_auto]"
+          >
+            <div className="relative sm:col-span-2 2xl:col-span-1">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={t("logs.runtime.searchPlaceholder")}
+                className="pl-8"
+              />
+            </div>
+            <select
+              value={filter.level ?? ""}
+              onChange={(event) =>
+                updateRuntimeFilter({ level: event.target.value as never })
+              }
+              aria-label={t("logs.filters.level")}
+              className={LOG_FILTER_SELECT_CLASS}
+            >
+              <option value="">{t("logs.filters.allLevels")}</option>
+              <option value="error">error</option>
+              <option value="warn">warn</option>
+              <option value="info">info</option>
+              <option value="debug">debug</option>
+              <option value="trace">trace</option>
+            </select>
             <Input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={t("logs.runtime.searchPlaceholder")}
-              className="pl-8"
+              value={filter.source ?? ""}
+              onChange={(event) =>
+                updateRuntimeFilter({ source: event.target.value })
+              }
+              placeholder={t("logs.runtime.sourcePlaceholder")}
+              aria-label={t("logs.runtime.sourceLabel")}
             />
-          </div>
-          <select
-            value={filter.level ?? ""}
-            onChange={(event) =>
-              updateRuntimeFilter({ level: event.target.value as never })
-            }
-            aria-label={t("logs.filters.level")}
-            className="h-8 rounded-lg border border-input bg-background px-2 text-sm"
-          >
-            <option value="">{t("logs.filters.allLevels")}</option>
-            <option value="error">error</option>
-            <option value="warn">warn</option>
-            <option value="info">info</option>
-            <option value="debug">debug</option>
-            <option value="trace">trace</option>
-          </select>
-          <Input
-            value={filter.source ?? ""}
-            onChange={(event) =>
-              updateRuntimeFilter({ source: event.target.value })
-            }
-            placeholder={t("logs.runtime.sourcePlaceholder")}
-            aria-label={t("logs.runtime.sourceLabel")}
-          />
-          <Input
-            value={operationIdDraft}
-            onChange={(event) => setOperationIdDraft(event.target.value)}
-            placeholder={t("logs.runtime.operationIdPlaceholder")}
-            aria-label={t("logs.runtime.operationIdLabel")}
-            className="font-mono"
-          />
-          <select
-            value={filter.eventSource ?? ""}
-            onChange={(event) =>
-              updateRuntimeFilter({
-                eventSource: event.target.value as "backend" | "frontend" | "",
-              })
-            }
-            aria-label={t("logs.runtime.eventSourceLabel")}
-            className="h-8 rounded-lg border border-input bg-background px-2 text-sm"
-          >
-            <option value="">{t("logs.runtime.allEventSources")}</option>
-            <option value="backend">{t("logs.runtime.sources.backend")}</option>
-            <option value="frontend">
-              {t("logs.runtime.sources.frontend")}
-            </option>
-          </select>
-          <Button
-            type="submit"
-            size="sm"
-            disabled={isLoadingLines || !selectedFileName}
-          >
-            {t("common.search")}
-          </Button>
-        </form>
-
-        <div className="mt-2 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
-          <span>
-            {selectedFile
-              ? t("logs.runtime.fileMeta", {
-                  date: selectedFile.date,
-                  size: formatBytes(selectedFile.sizeBytes),
+            <Input
+              value={operationIdDraft}
+              onChange={(event) => setOperationIdDraft(event.target.value)}
+              placeholder={t("logs.runtime.operationIdPlaceholder")}
+              aria-label={t("logs.runtime.operationIdLabel")}
+              className="font-mono"
+            />
+            <select
+              value={filter.eventSource ?? ""}
+              onChange={(event) =>
+                updateRuntimeFilter({
+                  eventSource: event.target.value as "backend" | "frontend" | "",
                 })
-              : t("logs.runtime.noFileSelected")}
-          </span>
-          <button
-            type="button"
-            onClick={handleRuntimeResetFilters}
-            disabled={!selectedFileName}
-            className="inline-flex items-center gap-1 rounded px-2 py-1 hover:bg-muted disabled:opacity-50"
-          >
-            <RotateCcw className="size-3" />
-            {t("logs.resetFilters")}
-          </button>
-        </div>
+              }
+              aria-label={t("logs.runtime.eventSourceLabel")}
+              className={LOG_FILTER_SELECT_CLASS}
+            >
+              <option value="">{t("logs.runtime.allEventSources")}</option>
+              <option value="backend">{t("logs.runtime.sources.backend")}</option>
+              <option value="frontend">
+                {t("logs.runtime.sources.frontend")}
+              </option>
+            </select>
+            <Button
+              type="submit"
+              size="sm"
+              className="h-8 justify-self-start px-4"
+              disabled={isLoadingLines || !selectedFileName}
+            >
+              {t("common.search")}
+            </Button>
+          </form>
+
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
+            <span>
+              {selectedFile
+                ? t("logs.runtime.fileMeta", {
+                    date: selectedFile.date,
+                    size: formatBytes(selectedFile.sizeBytes),
+                  })
+                : t("logs.runtime.noFileSelected")}
+            </span>
+            <button
+              type="button"
+              onClick={handleRuntimeResetFilters}
+              disabled={!selectedFileName}
+              className={LOG_TEXT_BUTTON_CLASS}
+            >
+              <RotateCcw className="size-3" />
+              {t("logs.resetFilters")}
+            </button>
+          </div>
+        </Card>
       </div>
 
       {error && (
-        <div className="mx-5 mt-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive-text">
+        <div
+          role="alert"
+          className="glass-panel tint-destructive mx-4 mb-4 rounded-card px-4 py-2.5 text-sm text-destructive-text lg:mx-6"
+        >
           {t("logs.runtime.loadError", {
             error: formatLogUiError(error, t),
           })}
         </div>
       )}
 
-      <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden p-5 xl:grid-cols-[16rem_minmax(0,1fr)_minmax(18rem,0.65fr)]">
-        <aside className="min-h-0 overflow-hidden rounded-xl border border-border bg-card/80">
+      <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 overflow-hidden px-4 pb-4 lg:px-6 lg:pb-6 xl:grid-cols-[16rem_minmax(0,1fr)_minmax(18rem,0.65fr)]">
+        <aside className="glass-panel min-h-0 overflow-hidden rounded-card">
           <div className="flex items-center justify-between border-b border-border px-3 py-2">
-            <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <div className="text-xs font-semibold text-muted-foreground">
               {t("logs.runtime.files")}
             </div>
-            <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+            <Badge tone="neutral" size="sm" className="tabular-nums">
               {files.length}
-            </span>
+            </Badge>
           </div>
           <div className="max-h-full overflow-auto p-2">
             {isLoadingFiles && files.length === 0 ? (
-              <div className="flex items-center gap-2 rounded-lg px-2 py-3 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 rounded-control px-2 py-3 text-sm text-muted-foreground">
                 <Loader2 className="size-4 animate-spin" />
                 {t("logs.runtime.loadingFiles")}
               </div>
             ) : files.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+              <div className="rounded-inner bg-accent p-4 text-sm text-muted-foreground">
                 {t("logs.runtime.emptyFiles")}
               </div>
             ) : (
@@ -476,11 +475,13 @@ export function RuntimeLogsPanel({
                         ),
                       )
                     }
-                    className={`w-full rounded-lg border px-3 py-2 text-left transition-colors ${
+                    aria-pressed={file.fileName === selectedFileName}
+                    className={cn(
+                      "focus-ring w-full rounded-control border px-3 py-2 text-left transition-colors duration-150",
                       file.fileName === selectedFileName
-                        ? "border-primary/40 bg-primary/10 text-foreground"
-                        : "border-transparent hover:border-border hover:bg-muted/50"
-                    }`}
+                        ? "border-primary-stroke bg-primary-tint text-foreground"
+                        : "border-transparent hover:bg-accent",
+                    )}
                   >
                     <div className="font-mono text-sm font-semibold">
                       {file.date}
@@ -496,14 +497,19 @@ export function RuntimeLogsPanel({
           </div>
         </aside>
 
-        <section className="min-h-0 overflow-hidden rounded-xl border border-border bg-card/80">
-          <div className="grid grid-cols-[4.5rem_5rem_minmax(8rem,0.7fr)_minmax(0,1.6fr)] gap-3 border-b border-border bg-muted/40 px-3 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <section className="glass-panel flex min-h-0 flex-col overflow-hidden rounded-card">
+          <div
+            className={cn(
+              "grid grid-cols-[4.5rem_5rem_minmax(8rem,0.7fr)_minmax(0,1.6fr)] gap-3",
+              LOG_TABLE_HEAD_CLASS,
+            )}
+          >
             <div>{t("logs.runtime.columns.line")}</div>
             <div>{t("logs.columns.level")}</div>
             <div>{t("logs.runtime.columns.source")}</div>
             <div>{t("logs.runtime.columns.message")}</div>
           </div>
-          <div className="min-h-0 max-h-full overflow-auto">
+          <div className="min-h-0 flex-1 overflow-auto">
             {isLoadingLines && lines.length === 0 ? (
               <div className="flex items-center gap-2 p-4 text-sm text-muted-foreground">
                 <Loader2 className="size-4 animate-spin" />
@@ -530,7 +536,7 @@ export function RuntimeLogsPanel({
             )}
           </div>
           {readResult && readResult.total > lines.length && (
-            <div className="border-t border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+            <div className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
               {t("logs.runtime.loadedWindow", {
                 loaded: lines.length,
                 total: readResult.total,
@@ -540,9 +546,9 @@ export function RuntimeLogsPanel({
           )}
         </section>
 
-        <aside className="min-h-0 overflow-hidden rounded-xl border border-border bg-card/80">
+        <aside className="glass-panel min-h-0 overflow-hidden rounded-card">
           <div className="flex items-center justify-between border-b border-border px-3 py-2">
-            <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <div className="inline-flex items-center gap-2 text-xs font-semibold text-muted-foreground">
               <FileText className="size-3.5" />
               {t("logs.runtime.lineDetail")}
             </div>
@@ -614,7 +620,7 @@ export function RuntimeLogsPanel({
               {selectedCorrelationId && onInspectOperation ? (
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="glass"
                   size="sm"
                   className="mt-3"
                   onClick={() => onInspectOperation(selectedCorrelationId)}
@@ -623,7 +629,7 @@ export function RuntimeLogsPanel({
                   {t("logs.runtime.viewOperation")}
                 </Button>
               ) : null}
-              <pre className="mt-4 min-h-0 flex-1 overflow-auto rounded-lg border border-border bg-muted/30 p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap">
+              <pre className="mt-4 min-h-0 flex-1 overflow-auto rounded-inner bg-accent p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap">
                 {selectedLine.raw}
               </pre>
             </div>

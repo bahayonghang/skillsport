@@ -942,6 +942,8 @@
       "ariaLabel": "技能库就绪度 {{score}} 分（满分 100）",
       "description": "分数由分类、描述、来源映射和安装健康度组成，优先暴露真正阻塞下一步的质量问题。",
       "scoreUnit": "/100",
+      "scoreLabel": "就绪度评分",
+      "scoreHint": "满分 100",
       "status": {
         "ready": "已就绪",
         "review": "复核关口",
@@ -981,7 +983,9 @@
       "uncategorized": "未分类技能",
       "uncategorizedDesc": "在中央分类面板中分配标签。",
       "unassigned": "未知来源",
-      "unassignedDesc": "来源明确后关联到对应仓库。"
+      "unassignedDesc": "来源明确后关联到对应仓库。",
+      "centralTotal": "中央库技能",
+      "sources": "来源仓库"
     },
     "activeJobs": "运行中任务",
     "jobProgress": "已完成 {{completed}} / {{total}}",

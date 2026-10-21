@@ -334,11 +334,6 @@ html[data-theme-switching] *::after {
      and tabular-nums at the call site; size only, no line-height. */
   --text-display-stat: 1.75rem;
 
-  /* Dashboard display tokens. Owned by the dashboard surface, kept rem so
-     they inherit --font-scale. Not part of the general type ladder. */
-  --text-display-hero: 2.35rem;
-  --text-display-hero-xl: 3.25rem;
-  --text-display-score: 3.35rem;
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
@@ -749,33 +744,6 @@ html[data-window-material="mica"] .glass-canvas {
 }
 /* ─── end Window material ─────────────────────────────────────────────────── */
 
-/* ─── Central Skills polish primitives ────────────────────────────────────── */
-@layer components {
-  .central-skill-card-surface {
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--border) 70%, transparent),
-      0 1px 2px -1px color-mix(in srgb, var(--foreground) 10%, transparent),
-      0 14px 30px -22px color-mix(in srgb, var(--foreground) 34%, transparent);
-    transition-property: background-color, box-shadow, scale;
-    transition-duration: 150ms;
-    transition-timing-function: ease-out;
-  }
-
-  .central-skill-card-surface:hover {
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--primary) 30%, var(--border)),
-      0 2px 4px -2px color-mix(in srgb, var(--foreground) 13%, transparent),
-      0 20px 42px -24px color-mix(in srgb, var(--primary) 34%, transparent);
-  }
-
-  .central-skill-card-surface.central-skill-card-selected {
-    box-shadow:
-      0 0 0 1px color-mix(in srgb, var(--primary) 54%, transparent),
-      0 2px 4px -2px color-mix(in srgb, var(--foreground) 13%, transparent),
-      0 18px 36px -24px color-mix(in srgb, var(--primary) 42%, transparent);
-  }
-}
-
 /* ─── Skill markdown surfaces ─────────────────────────────────────────────── */
 .skill-markdown-panel {
   border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
@@ -1098,13 +1066,11 @@ html[data-window-material="mica"] .glass-canvas {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   Font preferences + Dashboard transitional aliases
+   Font preferences
    ═══════════════════════════════════════════════════════════════════════════
    - --font-display / --font-body：用户可在 Settings 切换的字体（默认 Geist / Geist）
    - --font-scale：基础字号缩放（0.875 / 1 / 1.125）
    - html[data-display-font='...']：按 key 切换字体族；自定义走内联 style 注入
-   - .surface-glass / .bg-orbit：1.1.0 过渡别名（C2 D-T4），C6 迁移消费者后删除
-   - .readiness-card / .readiness-score-plaque：Dashboard 质量控制面板
    ═══════════════════════════════════════════════════════════════════════════ */
 
 :root {
@@ -1151,43 +1117,4 @@ html[data-body-font="system"] {
 
 .font-body {
   font-family: var(--font-body);
-}
-
-/* ── Dashboard transitional aliases (C2 D-T4) ───────────────────────────────
-   .surface-glass carries the .glass-panel declarations; it stays unlayered so
-   it still wins over the `bg-transparent border-0 shadow-none` utilities its
-   Card consumers pass. .bg-orbit is transparent because the canvas now lives
-   on the AppShell root. C6 migrates the consumers and deletes both aliases.
-   Still no real blur (07-20 WebView2 scroll finding). */
-
-.surface-glass {
-  background-color: var(--card);
-  border: 1px solid var(--glass-stroke);
-  box-shadow: var(--shadow-glass);
-}
-
-.bg-orbit {
-  background: transparent;
-}
-
-/* ── Dashboard readiness control panel ───────────────────────────────────── */
-
-.readiness-card {
-  position: relative;
-  min-height: 100%;
-  overflow: hidden;
-}
-
-.readiness-score-plaque {
-  position: relative;
-  overflow: hidden;
-  background:
-    linear-gradient(var(--primary-tint), var(--primary-tint)),
-    conic-gradient(
-      from 215deg,
-      color-mix(in srgb, var(--primary) 14%, transparent) 0
-        var(--score-angle, 0deg),
-      transparent var(--score-angle, 0deg) 360deg
-    );
-  border: 1px solid var(--glass-stroke);
 }

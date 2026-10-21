@@ -1,16 +1,22 @@
 import { Folder, FolderOpen, Globe, Link2, Lock } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-import { statusChipClass } from "@/lib/statusTone";
-import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import type { ClaudeSourceKind } from "@/types";
 
-const skillCardChipClassName =
-  "inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium";
+// Skill-card source / origin capsules (DESIGN.md pill-status). Every chip is a
+// <Badge>: 12% semantic tint + semantic text + leading line icon, so the origin
+// never relies on colour alone. Central / Skills CLI links = lavender (info,
+// "secondary data"), plugin = amber (locked / read-only source), standalone and
+// read-only = neutral.
 
 export function SourceChip({ label }: { label: string }) {
+  // Publisher / repo id is a machine-readable value → mono (DESIGN.md Sans-Body).
   return (
-    <span className="inline-flex max-w-full items-center rounded-md border border-border/60 bg-muted/35 px-1.5 py-0.5 font-mono text-xs leading-none text-muted-foreground">
+    <span
+      title={label}
+      className="inline-flex h-5 max-w-full shrink-0 items-center rounded-pill bg-accent px-2 font-mono text-ui-meta leading-none text-muted-foreground"
+    >
       <span className="truncate">{label}</span>
     </span>
   );
@@ -45,23 +51,14 @@ export function SourceIndicator({
         : t("platform.sourceCopyLabel");
 
   return (
-    <span
+    <Badge
+      tone={isCli || isCentral ? "info" : "neutral"}
+      size="sm"
+      icon={isCli || isCentral ? <Link2 /> : <FolderOpen />}
       title={`${primaryLabel} — ${secondaryLabel}`}
-      className={cn(
-        skillCardChipClassName,
-        "border",
-        isCli || isCentral
-          ? statusChipClass.info
-          : "border-border bg-muted/40 text-muted-foreground",
-      )}
     >
-      {isCli || isCentral ? (
-        <Link2 className="size-3 shrink-0" />
-      ) : (
-        <FolderOpen className="size-3 shrink-0" />
-      )}
       {primaryLabel}
-    </span>
+    </Badge>
   );
 }
 
@@ -69,16 +66,13 @@ export function PluginSourceChip() {
   const { t, i18n } = useTranslation();
 
   return (
-    <span
-      className={cn(skillCardChipClassName, "border", statusChipClass.warning)}
-    >
-      <Lock className="size-3 shrink-0" />
+    <Badge tone="warning" size="sm" icon={<Lock />}>
       {t("platform.originPlugin", {
         defaultValue: i18n.language.startsWith("zh")
           ? "插件来源"
           : "Plugin source",
       })}
-    </span>
+    </Badge>
   );
 }
 
@@ -91,13 +85,10 @@ export function SourceOriginBadge({
   const isPlugin = originKind === "plugin";
 
   return (
-    <span
-      className={cn(
-        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium ring-1",
-        isPlugin
-          ? "bg-warning/10 text-warning-foreground ring-warning/20"
-          : "bg-info/10 text-info-foreground ring-info/20",
-      )}
+    <Badge
+      tone={isPlugin ? "warning" : "info"}
+      size="sm"
+      icon={isPlugin ? <Lock /> : <Folder />}
     >
       {isPlugin
         ? t("platform.originPlugin", {
@@ -110,7 +101,7 @@ export function SourceOriginBadge({
               ? "用户来源"
               : "User source",
           })}
-    </span>
+    </Badge>
   );
 }
 
@@ -118,17 +109,11 @@ export function ReadOnlyBadge() {
   const { t, i18n } = useTranslation();
 
   return (
-    <span
-      className={cn(
-        skillCardChipClassName,
-        "border border-border bg-muted/40 text-muted-foreground",
-      )}
-    >
-      <Lock className="size-3 shrink-0" />
+    <Badge tone="neutral" size="sm" icon={<Lock />}>
       {t("platform.readOnly", {
         defaultValue: i18n.language.startsWith("zh") ? "只读" : "Read-only",
       })}
-    </span>
+    </Badge>
   );
 }
 
@@ -140,20 +125,12 @@ export function ProjectSourceBadge({
   const isCentral = originBadge.kind === "central";
 
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ring-1",
-        isCentral
-          ? "bg-info/10 text-info-foreground ring-info/20"
-          : "bg-muted text-muted-foreground ring-border/70",
-      )}
+    <Badge
+      tone={isCentral ? "info" : "neutral"}
+      size="sm"
+      icon={isCentral ? <Globe /> : <Folder />}
     >
-      {isCentral ? (
-        <Globe className="size-3 shrink-0" />
-      ) : (
-        <Folder className="size-3 shrink-0" />
-      )}
       {originBadge.label}
-    </span>
+    </Badge>
   );
 }

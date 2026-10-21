@@ -8,7 +8,10 @@ import { cn } from "@/lib/utils"
 // panel. The single `<h1>` of the page lives here.
 // Responsive: a container query on the header itself; below 900px of header
 // width (the "compact" window band once the sidebar is subtracted) the meta
-// and actions wrap under the title.
+// and actions wrap under the title. At or above 900px the title keeps its
+// width and the aside takes the remaining space and wraps internally, so a
+// long meta line or the 1.125 font scale cannot push actions off-screen or
+// collapse the title under the meta.
 
 interface PageHeaderProps
   extends Omit<React.ComponentProps<"header">, "title"> {
@@ -38,14 +41,14 @@ function PageHeader({
       <div className="flex min-w-0 flex-col gap-2 @min-[900px]/page-header:flex-row @min-[900px]/page-header:items-center @min-[900px]/page-header:justify-between @min-[900px]/page-header:gap-6">
         <h1
           id={titleId}
-          className="min-w-0 font-display text-2xl leading-tight font-semibold tracking-tight text-foreground"
+          className="min-w-0 font-display text-2xl @min-[900px]/page-header:shrink-0 leading-tight font-semibold tracking-tight text-foreground"
         >
           {title}
         </h1>
         {meta || actions ? (
           <div
             data-slot="page-header-aside"
-            className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 @min-[900px]/page-header:shrink-0 @min-[900px]/page-header:justify-end"
+            className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-2 @min-[900px]/page-header:flex-1 @min-[900px]/page-header:justify-end"
           >
             {meta ? (
               <p
