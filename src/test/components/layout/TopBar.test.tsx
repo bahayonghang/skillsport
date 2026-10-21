@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -40,6 +40,16 @@ const mockUseThemeStore = vi.mocked(useThemeStore);
 
 let restorePlatform: (() => void) | undefined;
 
+function mockTheme(flavor: "glass-light" | "glass-dark") {
+  const toggleFlavor = vi.fn();
+  mockUseThemeStore.mockImplementation((selector?: unknown) => {
+    const state = { flavor, setFlavor: vi.fn(), toggleFlavor };
+    if (typeof selector === "function") return selector(state);
+    return state;
+  });
+  return toggleFlavor;
+}
+
 function setPlatform(platform: string) {
   restorePlatform?.();
   restorePlatform = setNavigatorPlatform(platform);
@@ -65,14 +75,7 @@ describe("TopBar shortcut hint", () => {
       if (typeof selector === "function") return selector(state);
       return state;
     });
-    mockUseThemeStore.mockImplementation((selector?: unknown) => {
-      const state = {
-        flavor: "mocha",
-        setFlavor: vi.fn(),
-      };
-      if (typeof selector === "function") return selector(state);
-      return state;
-    });
+    mockTheme("glass-dark");
   });
 
   afterEach(() => {
@@ -95,5 +98,23 @@ describe("TopBar shortcut hint", () => {
     renderTopBar();
 
     expect(screen.getByLabelText("Command+K")).toHaveTextContent("⌘K");
+  });
+
+  it("toggles glass dark to light through the store", () => {
+    const toggleFlavor = mockTheme("glass-dark");
+    renderTopBar();
+
+    const button = screen.getByRole("button", { name: "切换到浅色主题" });
+    fireEvent.click(button);
+    expect(toggleFlavor).toHaveBeenCalledTimes(1);
+  });
+
+  it("offers the dark theme while glass light is active", () => {
+    mockTheme("glass-light");
+    renderTopBar();
+
+    expect(
+      screen.getByRole("button", { name: "切换到深色主题" }),
+    ).toBeInTheDocument();
   });
 });

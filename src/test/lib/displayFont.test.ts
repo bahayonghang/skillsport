@@ -20,6 +20,7 @@ import {
   loadThemedFontPreferences,
   resolveBodyFontFamily,
   resolveDisplayFontFamily,
+  saveBodyFont,
   saveDisplayFont,
 } from "@/lib/displayFont";
 
@@ -144,10 +145,17 @@ describe("displayFont", () => {
       display: "geist",
       displayChineseFallback: "system",
       displayChineseFallbackCustom: "",
-      body: "jetbrains",
+      body: "geist",
       bodyChineseFallback: "system",
       bodyChineseFallbackCustom: "",
     });
+  });
+
+  it("falls back to geist when custom body font has an empty family", () => {
+    applyBodyFont("custom", "   ");
+    expect(document.documentElement.dataset.bodyFont).toBe("geist");
+    expect(resolveBodyFontFamily({ ...DEFAULT_FONT_PREFERENCES, body: "custom" }))
+      .toContain("Geist Variable");
   });
 
   it("resolves specimen families through the same safe chains as DOM apply", () => {
@@ -340,5 +348,163 @@ describe("displayFont", () => {
 
     expect(preferences.dark.display).toBe("inter");
     expect(persisted.get("display_font_dark_v2")).toBe("inter");
+  });
+
+  // ── D-F1: one-time 1.1.0 body default migration ─────────────────────────
+
+  const MARKER_KEY = "font_defaults_v1_1_applied";
+
+  function fullV2Profile(mode: "light" | "dark", body: string, bodyCustom = "") {
+    return [
+      [`display_font_${mode}_v2`, "geist"],
+      [`display_font_custom_${mode}_v2`, ""],
+      [`display_chinese_fallback_${mode}_v2`, "system"],
+      [`display_chinese_fallback_custom_${mode}_v2`, ""],
+      [`body_font_${mode}_v2`, body],
+      [`body_font_custom_${mode}_v2`, bodyCustom],
+      [`body_chinese_fallback_${mode}_v2`, "system"],
+      [`body_chinese_fallback_custom_${mode}_v2`, ""],
+    ] as const;
+  }
+
+  function mockPersistedSettings(initial: Iterable<readonly [string, string]>) {
+    const persisted = new Map<string, string>(initial);
+    vi.mocked(invoke).mockImplementation(async (command, args) => {
+      const { key, value } = args as { key: string; value?: string };
+      if (command === "get_setting") return persisted.get(key) ?? null;
+      if (command === "set_setting") persisted.set(key, value ?? "");
+      return undefined;
+    });
+    return persisted;
+  }
+
+  it("rewrites the persisted old jetbrains body default to geist once", async () => {
+    const persisted = mockPersistedSettings([
+      ...fullV2Profile("light", "jetbrains"),
+      ...fullV2Profile("dark", "jetbrains"),
+    ]);
+
+    const preferences = await loadThemedFontPreferences();
+
+    expect(preferences.light.body).toBe("geist");
+    expect(preferences.dark.body).toBe("geist");
+    expect(persisted.get("body_font_light_v2")).toBe("geist");
+    expect(persisted.get("body_font_dark_v2")).toBe("geist");
+    expect(persisted.get(MARKER_KEY)).toBe("1");
+    // Only the body key is rewritten for an otherwise complete v2 profile.
+    expect(invoke).not.toHaveBeenCalledWith("set_setting", {
+      key: "display_font_light_v2",
+      value: "geist",
+    });
+  });
+
+  it("migrates a v1-only jetbrains body into geist v2 profiles", async () => {
+    const persisted = mockPersistedSettings([["body_font_v1", "jetbrains"]]);
+
+    const preferences = await loadThemedFontPreferences();
+
+    expect(preferences.light.body).toBe("geist");
+    expect(preferences.dark.body).toBe("geist");
+    expect(persisted.get("body_font_light_v2")).toBe("geist");
+    expect(persisted.get(MARKER_KEY)).toBe("1");
+  });
+
+  it("keeps jetbrains when a custom body family is recorded", async () => {
+    const persisted = mockPersistedSettings([
+      ...fullV2Profile("light", "jetbrains", "Iosevka"),
+      ...fullV2Profile("dark", "jetbrains"),
+    ]);
+
+    const preferences = await loadThemedFontPreferences();
+
+    expect(preferences.light.body).toBe("jetbrains");
+    expect(preferences.light.bodyCustom).toBe("Iosevka");
+    expect(persisted.get("body_font_light_v2")).toBe("jetbrains");
+    expect(preferences.dark.body).toBe("geist");
+  });
+
+  it("does not run again once the marker is set", async () => {
+    const persisted = mockPersistedSettings([
+      ...fullV2Profile("light", "jetbrains"),
+      ...fullV2Profile("dark", "jetbrains"),
+      [MARKER_KEY, "1"],
+    ]);
+
+    const preferences = await loadThemedFontPreferences();
+
+    expect(preferences.light.body).toBe("jetbrains");
+    expect(preferences.dark.body).toBe("jetbrains");
+    expect(persisted.get("body_font_dark_v2")).toBe("jetbrains");
+    expect(invoke).not.toHaveBeenCalledWith(
+      "set_setting",
+      expect.objectContaining({ key: MARKER_KEY }),
+    );
+  });
+
+  it("lets a body save made during migration reads win", async () => {
+    let releaseReads!: () => void;
+    const readsReleased = new Promise<void>((resolve) => {
+      releaseReads = resolve;
+    });
+    const persisted = new Map<string, string>([
+      ...fullV2Profile("light", "jetbrains"),
+      ...fullV2Profile("dark", "jetbrains"),
+    ]);
+    vi.mocked(invoke).mockImplementation(async (command, args) => {
+      const { key, value } = args as { key: string; value?: string };
+      if (command === "get_setting") {
+        await readsReleased;
+        return persisted.get(key) ?? null;
+      }
+      persisted.set(key, value ?? "");
+      return undefined;
+    });
+
+    const loading = loadThemedFontPreferences();
+    await saveBodyFont("dark", "jetbrains");
+    releaseReads();
+    const preferences = await loading;
+
+    expect(preferences.dark.body).toBe("jetbrains");
+    expect(persisted.get("body_font_dark_v2")).toBe("jetbrains");
+    expect(preferences.light.body).toBe("geist");
+    expect(persisted.get("body_font_light_v2")).toBe("geist");
+  });
+
+  it("serializes the migration rewrite before a newer body save", async () => {
+    const persisted = new Map<string, string>([
+      ...fullV2Profile("light", "jetbrains"),
+      ...fullV2Profile("dark", "jetbrains"),
+    ]);
+    let markRewriteStarted!: () => void;
+    let releaseRewrite!: () => void;
+    const rewriteStarted = new Promise<void>((resolve) => {
+      markRewriteStarted = resolve;
+    });
+    const rewriteReleased = new Promise<void>((resolve) => {
+      releaseRewrite = resolve;
+    });
+    let blocked = false;
+    vi.mocked(invoke).mockImplementation(async (command, args) => {
+      const { key, value } = args as { key: string; value?: string };
+      if (command === "get_setting") return persisted.get(key) ?? null;
+      if (key === "body_font_dark_v2" && value === "geist" && !blocked) {
+        blocked = true;
+        markRewriteStarted();
+        await rewriteReleased;
+      }
+      persisted.set(key, value ?? "");
+      return undefined;
+    });
+
+    const loading = loadThemedFontPreferences();
+    await rewriteStarted;
+    const saving = saveBodyFont("dark", "inter");
+    releaseRewrite();
+    const [preferences] = await Promise.all([loading, saving]);
+
+    expect(preferences.dark.body).toBe("inter");
+    expect(persisted.get("body_font_dark_v2")).toBe("inter");
+    expect(persisted.get(MARKER_KEY)).toBe("1");
   });
 });

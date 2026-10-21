@@ -2453,7 +2453,12 @@
       "title": "Appearance",
       "description": "Adjust theme, language, font fallbacks, and type scale.",
       "themeGroup": "Theme",
-      "themeGroupDesc": "Choose the interface flavor and accent.",
+      "themeGroupDesc": "Switch between the light and dark glass themes.",
+      "themeMode": "Appearance mode",
+      "themeOption": {
+        "glass-light": "Glass Light",
+        "glass-dark": "Glass Dark"
+      },
       "languageGroup": "Language",
       "languageGroupDesc": "Set the interface language.",
       "typographyGroup": "Typography",
@@ -2655,30 +2660,6 @@
     "appVersion": "App Version",
     "dbPath": "Database Path",
     "repoUrl": "Repository URL",
-    "flavor": "Flavor",
-    "mocha": "Mocha",
-    "macchiato": "Macchiato",
-    "frappe": "Frappé",
-    "latte": "Latte",
-    "claude-light": "Claude Light",
-    "claude-dark": "Claude Dark",
-    "accentColor": "Accent Color",
-    "accent": {
-      "rosewater": "Rosewater",
-      "flamingo": "Flamingo",
-      "pink": "Pink",
-      "mauve": "Mauve",
-      "red": "Red",
-      "maroon": "Maroon",
-      "peach": "Peach",
-      "yellow": "Yellow",
-      "green": "Green",
-      "teal": "Teal",
-      "sky": "Sky",
-      "sapphire": "Sapphire",
-      "blue": "Blue",
-      "lavender": "Lavender"
-    },
     "language": "Language",
     "chinese": "中文",
     "english": "English",
@@ -2691,7 +2672,7 @@
       "legacyFallback": "This old settings link was redirected to the default page.",
       "appearance": {
         "title": "Appearance",
-        "description": "Adjust theme, language, accent color, fonts, and display density."
+        "description": "Adjust light/dark theme, language, fonts, and display density."
       },
       "connections": {
         "title": "Connections & Sync",

@@ -1,6 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
-  ACCENT_NAMES,
   THEME_FLAVORS,
   fontThemeModeForFlavor,
   type ThemeFlavor,
@@ -9,25 +8,31 @@ import {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+const THEME_KEY = "skillport-theme";
+const LEGACY_FLAVOR_KEY = "catppuccin-flavor";
+const LEGACY_ACCENT_KEY = "catppuccin-accent";
+
 /** Reset the store to default state and clear localStorage. */
 function resetStore() {
-  useThemeStore.setState({ flavor: "mocha", accent: "lavender" });
-  try {
-    localStorage.removeItem("catppuccin-flavor");
-  } catch {
-    // ignore
+  useThemeStore.setState({ flavor: "glass-dark" });
+  for (const key of [THEME_KEY, LEGACY_FLAVOR_KEY, LEGACY_ACCENT_KEY]) {
+    try {
+      localStorage.removeItem(key);
+    } catch {
+      // ignore
+    }
   }
-  try {
-    localStorage.removeItem("catppuccin-accent");
-  } catch {
-    // ignore
-  }
-  // Remove data-theme and data-accent from document if present
   if (typeof document !== "undefined") {
     delete document.documentElement.dataset.theme;
     delete document.documentElement.dataset.accent;
     delete document.documentElement.dataset.themeSwitching;
   }
+}
+
+function mockSystemPrefersLight(prefersLight: boolean) {
+  return vi
+    .spyOn(window, "matchMedia")
+    .mockReturnValue({ matches: prefersLight } as MediaQueryList);
 }
 
 function spyAnimationFrames() {
@@ -54,215 +59,161 @@ describe("themeStore", () => {
     vi.restoreAllMocks();
   });
 
+  it("only exposes the two Light Glass themes", () => {
+    expect(THEME_FLAVORS).toEqual(["glass-light", "glass-dark"]);
+  });
+
   it("classifies every flavor into its shared font theme mode", () => {
     expect(
       Object.fromEntries(
-        THEME_FLAVORS.map((flavor) => [
-          flavor,
-          fontThemeModeForFlavor(flavor),
-        ]),
+        THEME_FLAVORS.map((flavor) => [flavor, fontThemeModeForFlavor(flavor)]),
       ),
-    ).toEqual({
-      mocha: "dark",
-      macchiato: "dark",
-      frappe: "dark",
-      latte: "light",
-      "claude-light": "light",
-      "claude-dark": "dark",
-    });
+    ).toEqual({ "glass-light": "light", "glass-dark": "dark" });
   });
 
-  // ── Initial State ─────────────────────────────────────────────────────────
-
-  it("has mocha as the default flavor before init", () => {
-    const state = useThemeStore.getState();
-    expect(state.flavor).toBe("mocha");
+  it("has glass-dark as the default flavor before init", () => {
+    expect(useThemeStore.getState().flavor).toBe("glass-dark");
   });
 
-  it("has lavender as the default accent before init", () => {
-    const state = useThemeStore.getState();
-    expect(state.accent).toBe("lavender");
+  it("no longer carries accent state or actions", () => {
+    const state = useThemeStore.getState() as unknown as Record<string, unknown>;
+    expect(state).not.toHaveProperty("accent");
+    expect(state).not.toHaveProperty("setAccent");
   });
 
-  // ── setFlavor ─────────────────────────────────────────────────────────────
+  // ── setFlavor / toggleFlavor ─────────────────────────────────────────────
 
-  it("setFlavor updates the store flavor", () => {
-    useThemeStore.getState().setFlavor("latte");
-    expect(useThemeStore.getState().flavor).toBe("latte");
-  });
-
-  it("setFlavor sets data-theme on document.documentElement", () => {
-    useThemeStore.getState().setFlavor("frappe");
-    expect(document.documentElement.dataset.theme).toBe("frappe");
-  });
-
-  it("setFlavor persists flavor to localStorage", () => {
-    useThemeStore.getState().setFlavor("macchiato");
-    expect(localStorage.getItem("catppuccin-flavor")).toBe("macchiato");
-  });
-
-  it("setFlavor works for all themes", () => {
+  it("setFlavor updates store, data-theme, and the new storage key", () => {
     const flavors: ThemeFlavor[] = THEME_FLAVORS;
     for (const flavor of flavors) {
       useThemeStore.getState().setFlavor(flavor);
       expect(useThemeStore.getState().flavor).toBe(flavor);
       expect(document.documentElement.dataset.theme).toBe(flavor);
-      expect(localStorage.getItem("catppuccin-flavor")).toBe(flavor);
+      expect(localStorage.getItem(THEME_KEY)).toBe(flavor);
     }
+    expect(localStorage.getItem(LEGACY_FLAVOR_KEY)).toBeNull();
   });
 
-  // ── setAccent ─────────────────────────────────────────────────────────────
+  it("toggleFlavor flips between glass-light and glass-dark", () => {
+    useThemeStore.getState().setFlavor("glass-dark");
+    useThemeStore.getState().toggleFlavor();
+    expect(useThemeStore.getState().flavor).toBe("glass-light");
+    expect(document.documentElement.dataset.theme).toBe("glass-light");
 
-  it("setAccent updates the store accent", () => {
-    useThemeStore.getState().setAccent("green");
-    expect(useThemeStore.getState().accent).toBe("green");
+    useThemeStore.getState().toggleFlavor();
+    expect(useThemeStore.getState().flavor).toBe("glass-dark");
+    expect(document.documentElement.dataset.theme).toBe("glass-dark");
+    expect(localStorage.getItem(THEME_KEY)).toBe("glass-dark");
   });
 
-  it("setAccent sets data-accent on document.documentElement", () => {
-    useThemeStore.getState().setAccent("mauve");
-    expect(document.documentElement.dataset.accent).toBe("mauve");
-  });
+  // ── init: stored value, migration, system fallback ────────────────────────
 
-  it("setAccent persists accent to localStorage", () => {
-    useThemeStore.getState().setAccent("peach");
-    expect(localStorage.getItem("catppuccin-accent")).toBe("peach");
-  });
-
-  it("setAccent works for all 14 accent colors", () => {
-    for (const accent of ACCENT_NAMES) {
-      useThemeStore.getState().setAccent(accent);
-      expect(useThemeStore.getState().accent).toBe(accent);
-      expect(document.documentElement.dataset.accent).toBe(accent);
-      expect(localStorage.getItem("catppuccin-accent")).toBe(accent);
-    }
-  });
-
-  // ── init ──────────────────────────────────────────────────────────────────
-
-  it("init applies stored flavor from localStorage", () => {
-    localStorage.setItem("catppuccin-flavor", "macchiato");
+  it.each(THEME_FLAVORS)("init restores stored %s", (flavor) => {
+    localStorage.setItem(THEME_KEY, flavor);
     useThemeStore.getState().init();
-    expect(useThemeStore.getState().flavor).toBe("macchiato");
-    expect(document.documentElement.dataset.theme).toBe("macchiato");
+    expect(useThemeStore.getState().flavor).toBe(flavor);
+    expect(document.documentElement.dataset.theme).toBe(flavor);
   });
 
-  it("init accepts stored Claude themes", () => {
-    localStorage.setItem("catppuccin-flavor", "claude-dark");
-    useThemeStore.getState().init();
-    expect(useThemeStore.getState().flavor).toBe("claude-dark");
-    expect(document.documentElement.dataset.theme).toBe("claude-dark");
-  });
+  it.each([
+    ["latte", "glass-light"],
+    ["claude-light", "glass-light"],
+    ["mocha", "glass-dark"],
+    ["macchiato", "glass-dark"],
+    ["frappe", "glass-dark"],
+    ["claude-dark", "glass-dark"],
+  ] as const)(
+    "migrates legacy flavor %s to %s and removes the 1.0.x keys",
+    (legacy, expected) => {
+      // System preference must not win over a migrated legacy choice.
+      mockSystemPrefersLight(expected === "glass-dark");
+      localStorage.setItem(LEGACY_FLAVOR_KEY, legacy);
+      localStorage.setItem(LEGACY_ACCENT_KEY, "green");
+      document.documentElement.dataset.accent = "green";
 
-  it("init applies stored accent from localStorage", () => {
-    localStorage.setItem("catppuccin-accent", "green");
-    const spy = vi.spyOn(window, "matchMedia");
-    spy.mockReturnValue({ matches: false } as MediaQueryList);
-    useThemeStore.getState().init();
-    expect(useThemeStore.getState().accent).toBe("green");
-    expect(document.documentElement.dataset.accent).toBe("green");
-    spy.mockRestore();
-  });
+      useThemeStore.getState().init();
 
-  it("init falls back to lavender accent when no stored accent", () => {
-    const spy = vi.spyOn(window, "matchMedia");
-    spy.mockReturnValue({ matches: false } as MediaQueryList);
-    useThemeStore.getState().init();
-    expect(useThemeStore.getState().accent).toBe("lavender");
-    expect(document.documentElement.dataset.accent).toBe("lavender");
-    spy.mockRestore();
-  });
+      expect(useThemeStore.getState().flavor).toBe(expected);
+      expect(document.documentElement.dataset.theme).toBe(expected);
+      expect(localStorage.getItem(THEME_KEY)).toBe(expected);
+      expect(localStorage.getItem(LEGACY_FLAVOR_KEY)).toBeNull();
+      expect(localStorage.getItem(LEGACY_ACCENT_KEY)).toBeNull();
+      expect(document.documentElement.dataset.accent).toBeUndefined();
+    },
+  );
 
-  it("init falls back to system preference when no stored flavor", () => {
-    // No localStorage value set — should use system preference
-    const spy = vi.spyOn(window, "matchMedia");
-    spy.mockReturnValue({ matches: true } as MediaQueryList);
-    useThemeStore.getState().init();
-    // light preference → latte
-    expect(useThemeStore.getState().flavor).toBe("latte");
-
-    spy.mockRestore();
-  });
-
-  it("init defaults to mocha for dark system preference", () => {
-    const spy = vi.spyOn(window, "matchMedia");
-    spy.mockReturnValue({ matches: false } as MediaQueryList);
-    useThemeStore.getState().init();
-    // dark preference → mocha
-    expect(useThemeStore.getState().flavor).toBe("mocha");
-
-    spy.mockRestore();
-  });
-
-  it("init writes flavor to localStorage", () => {
-    // Mock matchMedia for jsdom
-    const spy = vi.spyOn(window, "matchMedia");
-    spy.mockReturnValue({ matches: false } as MediaQueryList);
+  it("prefers the new key over a leftover legacy flavor", () => {
+    localStorage.setItem(THEME_KEY, "glass-light");
+    localStorage.setItem(LEGACY_FLAVOR_KEY, "mocha");
 
     useThemeStore.getState().init();
-    const stored = localStorage.getItem("catppuccin-flavor");
-    expect(stored).toBeTruthy();
-    expect(THEME_FLAVORS).toContain(stored as ThemeFlavor);
 
-    spy.mockRestore();
+    expect(useThemeStore.getState().flavor).toBe("glass-light");
+    expect(localStorage.getItem(LEGACY_FLAVOR_KEY)).toBeNull();
   });
 
-  it("init writes accent to localStorage", () => {
-    const spy = vi.spyOn(window, "matchMedia");
-    spy.mockReturnValue({ matches: false } as MediaQueryList);
+  it.each([
+    [true, "glass-light"],
+    [false, "glass-dark"],
+  ] as const)(
+    "follows the system (prefers light: %s) when nothing is stored",
+    (prefersLight, expected) => {
+      mockSystemPrefersLight(prefersLight);
+      useThemeStore.getState().init();
+      expect(useThemeStore.getState().flavor).toBe(expected);
+      expect(localStorage.getItem(THEME_KEY)).toBe(expected);
+    },
+  );
+
+  it("falls back to the system for invalid stored and legacy values", () => {
+    mockSystemPrefersLight(true);
+    localStorage.setItem(THEME_KEY, "mocha");
+    localStorage.setItem(LEGACY_FLAVOR_KEY, "invalid-flavor");
 
     useThemeStore.getState().init();
-    const stored = localStorage.getItem("catppuccin-accent");
-    expect(stored).toBe("lavender");
 
-    spy.mockRestore();
+    expect(useThemeStore.getState().flavor).toBe("glass-light");
+    expect(localStorage.getItem(THEME_KEY)).toBe("glass-light");
+    expect(localStorage.getItem(LEGACY_FLAVOR_KEY)).toBeNull();
   });
 
-  it("init sets data-theme on document.documentElement", () => {
-    localStorage.setItem("catppuccin-flavor", "frappe");
-    useThemeStore.getState().init();
-    expect(document.documentElement.dataset.theme).toBe("frappe");
+  it("keeps legacy keys when the new key cannot be written", () => {
+    localStorage.setItem(LEGACY_FLAVOR_KEY, "latte");
+    localStorage.setItem(LEGACY_ACCENT_KEY, "sky");
+    const setItem = vi
+      .spyOn(localStorage, "setItem")
+      .mockImplementation(() => {
+        throw new Error("quota");
+      });
+
+    expect(() => useThemeStore.getState().init()).not.toThrow();
+
+    setItem.mockRestore();
+    expect(useThemeStore.getState().flavor).toBe("glass-light");
+    expect(document.documentElement.dataset.theme).toBe("glass-light");
+    expect(localStorage.getItem(LEGACY_FLAVOR_KEY)).toBe("latte");
+    expect(localStorage.getItem(LEGACY_ACCENT_KEY)).toBe("sky");
   });
 
-  it("init sets data-accent on document.documentElement", () => {
-    localStorage.setItem("catppuccin-accent", "sky");
-    const spy = vi.spyOn(window, "matchMedia");
-    spy.mockReturnValue({ matches: false } as MediaQueryList);
-    useThemeStore.getState().init();
-    expect(document.documentElement.dataset.accent).toBe("sky");
-    spy.mockRestore();
+  it("degrades silently when localStorage reads throw", () => {
+    mockSystemPrefersLight(false);
+    vi.spyOn(localStorage, "getItem").mockImplementation(() => {
+      throw new Error("denied");
+    });
+
+    expect(() => useThemeStore.getState().init()).not.toThrow();
+    expect(useThemeStore.getState().flavor).toBe("glass-dark");
+    expect(document.documentElement.dataset.theme).toBe("glass-dark");
   });
 
-  it("stored flavor takes priority over system preference", () => {
-    // System prefers light (→ latte), but stored is macchiato
-    localStorage.setItem("catppuccin-flavor", "macchiato");
-    const spy = vi.spyOn(window, "matchMedia");
-    spy.mockReturnValue({ matches: true } as MediaQueryList);
+  it("setFlavor still updates the DOM when storage writes throw", () => {
+    vi.spyOn(localStorage, "setItem").mockImplementation(() => {
+      throw new Error("quota");
+    });
 
-    useThemeStore.getState().init();
-    expect(useThemeStore.getState().flavor).toBe("macchiato");
-
-    spy.mockRestore();
-  });
-
-  it("invalid localStorage flavor is ignored, falls back to system preference", () => {
-    localStorage.setItem("catppuccin-flavor", "invalid-flavor");
-    const spy = vi.spyOn(window, "matchMedia");
-    spy.mockReturnValue({ matches: false } as MediaQueryList);
-
-    useThemeStore.getState().init();
-    // Falls back to system: dark → mocha
-    expect(useThemeStore.getState().flavor).toBe("mocha");
-
-    spy.mockRestore();
-  });
-
-  it("invalid localStorage accent is ignored, falls back to lavender", () => {
-    localStorage.setItem("catppuccin-accent", "invalid-accent");
-    const spy = vi.spyOn(window, "matchMedia");
-    spy.mockReturnValue({ matches: false } as MediaQueryList);
-    useThemeStore.getState().init();
-    expect(useThemeStore.getState().accent).toBe("lavender");
-    spy.mockRestore();
+    expect(() => useThemeStore.getState().setFlavor("glass-light")).not.toThrow();
+    expect(document.documentElement.dataset.theme).toBe("glass-light");
+    expect(useThemeStore.getState().flavor).toBe("glass-light");
   });
 
   // ── Theme-switch transition suppression ───────────────────────────────────
@@ -276,20 +227,20 @@ describe("themeStore", () => {
       return 0;
     });
 
-    useThemeStore.getState().setFlavor("latte");
+    useThemeStore.getState().setFlavor("glass-light");
 
     expect(html.dataset.themeSwitching).toBe("");
     expect(flushedWhileMarked).toBe(true);
-    expect(html.dataset.theme).toBe("latte");
-    expect(localStorage.getItem("catppuccin-flavor")).toBe("latte");
+    expect(html.dataset.theme).toBe("glass-light");
+    expect(localStorage.getItem(THEME_KEY)).toBe("glass-light");
     expect(frames).toHaveLength(1);
 
     frames[0]?.(0);
     expect(html.dataset.themeSwitching).toBeUndefined();
-    expect(html.dataset.theme).toBe("latte");
+    expect(html.dataset.theme).toBe("glass-light");
   });
 
-  it("setAccent keeps data-theme-switching until the captured animation frame", () => {
+  it("toggleFlavor goes through the same suppressed commit", () => {
     const { frames } = spyAnimationFrames();
     const html = document.documentElement;
     let flushedWhileMarked = false;
@@ -298,68 +249,42 @@ describe("themeStore", () => {
       return 0;
     });
 
-    useThemeStore.getState().setAccent("green");
+    useThemeStore.getState().toggleFlavor();
 
-    expect(html.dataset.themeSwitching).toBe("");
     expect(flushedWhileMarked).toBe(true);
-    expect(html.dataset.accent).toBe("green");
-    expect(localStorage.getItem("catppuccin-accent")).toBe("green");
+    expect(html.dataset.themeSwitching).toBe("");
     expect(frames).toHaveLength(1);
-
     frames[0]?.(0);
     expect(html.dataset.themeSwitching).toBeUndefined();
-    expect(html.dataset.accent).toBe("green");
   });
 
   it("keeps suppression until the second setFlavor frame", () => {
     const { frames } = spyAnimationFrames();
 
-    useThemeStore.getState().setFlavor("latte");
-    useThemeStore.getState().setFlavor("mocha");
+    useThemeStore.getState().setFlavor("glass-light");
+    useThemeStore.getState().setFlavor("glass-dark");
 
-    expect(document.documentElement.dataset.theme).toBe("mocha");
+    expect(document.documentElement.dataset.theme).toBe("glass-dark");
     expect(document.documentElement.dataset.themeSwitching).toBe("");
     expect(frames).toHaveLength(2);
 
     frames[0]?.(0);
     expect(document.documentElement.dataset.themeSwitching).toBe("");
-    expect(document.documentElement.dataset.theme).toBe("mocha");
+    expect(document.documentElement.dataset.theme).toBe("glass-dark");
 
     frames[1]?.(0);
     expect(document.documentElement.dataset.themeSwitching).toBeUndefined();
-    expect(document.documentElement.dataset.theme).toBe("mocha");
+    expect(document.documentElement.dataset.theme).toBe("glass-dark");
   });
 
   it("init does not set data-theme-switching", () => {
     const animationFrame = vi.spyOn(window, "requestAnimationFrame");
-    localStorage.setItem("catppuccin-flavor", "frappe");
-    localStorage.setItem("catppuccin-accent", "sky");
+    localStorage.setItem(LEGACY_FLAVOR_KEY, "frappe");
 
     useThemeStore.getState().init();
 
-    expect(document.documentElement.dataset.theme).toBe("frappe");
-    expect(document.documentElement.dataset.accent).toBe("sky");
+    expect(document.documentElement.dataset.theme).toBe("glass-dark");
     expect(document.documentElement.dataset.themeSwitching).toBeUndefined();
     expect(animationFrame).not.toHaveBeenCalled();
-  });
-
-  // ── ACCENT_NAMES constant ────────────────────────────────────────────────
-
-  it("ACCENT_NAMES contains all 14 accent color names", () => {
-    expect(ACCENT_NAMES).toHaveLength(14);
-    expect(ACCENT_NAMES).toContain("rosewater");
-    expect(ACCENT_NAMES).toContain("flamingo");
-    expect(ACCENT_NAMES).toContain("pink");
-    expect(ACCENT_NAMES).toContain("mauve");
-    expect(ACCENT_NAMES).toContain("red");
-    expect(ACCENT_NAMES).toContain("maroon");
-    expect(ACCENT_NAMES).toContain("peach");
-    expect(ACCENT_NAMES).toContain("yellow");
-    expect(ACCENT_NAMES).toContain("green");
-    expect(ACCENT_NAMES).toContain("teal");
-    expect(ACCENT_NAMES).toContain("sky");
-    expect(ACCENT_NAMES).toContain("sapphire");
-    expect(ACCENT_NAMES).toContain("blue");
-    expect(ACCENT_NAMES).toContain("lavender");
   });
 });

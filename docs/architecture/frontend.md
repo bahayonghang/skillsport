@@ -44,7 +44,7 @@ Zustand stores in `src/stores/` are the only place that calls `invoke()`. Each s
 │ operationLogStore            │ Operation Log paging + filters  │
 │ runtimeLogStore              │ Runtime Log files + tail reads  │
 │ settingsStore                │ Key/value settings + scan dirs  │
-│ themeStore                   │ Catppuccin variant + accent     │
+│ themeStore                   │ Glass light / dark theme        │
 └──────────────────────────────┴─────────────────────────────────┘
 ```
 

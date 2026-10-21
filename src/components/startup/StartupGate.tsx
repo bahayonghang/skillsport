@@ -9,7 +9,7 @@ function StartupLoadingView() {
   const { t } = useTranslation();
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-6 text-foreground">
+    <main className="glass-canvas flex min-h-screen items-center justify-center px-6 text-foreground">
       <div role="status" aria-live="polite" className="w-full max-w-lg">
         <div className="mb-5 flex items-center gap-2" aria-hidden="true">
           <span className="h-8 w-1.5 animate-pulse rounded-full bg-primary" />

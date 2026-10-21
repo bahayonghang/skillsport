@@ -3,279 +3,406 @@ import { resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-const INDEX_CSS = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
-const MIN_NORMAL_TEXT_CONTRAST = 4.5;
-const THEMES = [
-  "mocha",
-  "macchiato",
-  "frappe",
-  "latte",
-  "claude-light",
-  "claude-dark",
-] as const;
-const ACCENTS = [
-  "rosewater",
-  "flamingo",
-  "pink",
-  "mauve",
-  "red",
-  "maroon",
-  "peach",
-  "yellow",
-  "green",
-  "teal",
-  "sky",
-  "sapphire",
-  "blue",
-  "lavender",
-] as const;
+/**
+ * Light Glass contrast contract (DESIGN.md "Known Gaps", C2 design D-T3).
+ *
+ * Surfaces are translucent, so every pair is measured on the colour the
+ * browser actually paints: sRGB source-over compositing, the same model
+ * Chromium / WebView2 uses for `rgb(r g b / a)` fills.
+ *
+ *   canvas samples = canvas-from, canvas-to, and each blob (its own alpha)
+ *                    over BOTH gradient ends (lavender blob over canvas-to is
+ *                    the darkest light-theme point)
+ *   surfaces       = card (panel) / sidebar / popover (overlay) over every
+ *                    canvas sample
+ *   tints          = each 12% tint over every panel, sidebar and overlay
+ *                    composite
+ *
+ * Light themes take the minimum ratio over all composites (darkest point is
+ * worst for dark ink); dark themes do the same (brightest point is worst for
+ * light ink). Tints are explicit rgb() tokens, so no oklch approximation is
+ * involved.
+ */
 
+const ROOT = process.cwd();
+const INDEX_CSS = readFileSync(resolve(ROOT, "src/index.css"), "utf8");
+const TAURI_CONF = JSON.parse(
+  readFileSync(resolve(ROOT, "src-tauri/tauri.conf.json"), "utf8"),
+) as { app: { windows: Array<{ backgroundColor?: string }> } };
+
+const MIN_TEXT = 4.5;
+const MIN_NON_TEXT = 3;
+const THEMES = ["glass-light", "glass-dark"] as const;
 type ThemeName = (typeof THEMES)[number];
-type AccentName = (typeof ACCENTS)[number];
 
-function cssBlock(selector: string) {
-  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const match = INDEX_CSS.match(new RegExp(`${escaped}\\s*\\{(?<body>[^}]*)\\}`, "m"));
+type Rgb = readonly [number, number, number];
+interface Rgba {
+  rgb: Rgb;
+  alpha: number;
+}
+
+// ─── CSS parsing ─────────────────────────────────────────────────────────────
+
+function escapeRegExp(value: string) {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function cssBlock(selector: string, css = INDEX_CSS) {
+  const match = css.match(
+    new RegExp(`${escapeRegExp(selector)}\\s*\\{(?<body>[^}]*)\\}`, "m"),
+  );
   if (!match?.groups?.body) {
     throw new Error(`Missing CSS selector: ${selector}`);
   }
   return match.groups.body;
 }
 
-function optionalCssBlock(selector: string) {
-  const escaped = selector.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  return INDEX_CSS.match(
-    new RegExp(`${escaped}\\s*\\{(?<body>[^}]*)\\}`, "m"),
-  )?.groups?.body;
-}
-
-function cssVariable(block: string, name: string) {
+function declaration(block: string, name: string): string {
   const match = block.match(
-    new RegExp(`${name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*:\\s*(#[0-9a-fA-F]{6})\\s*;`)
+    new RegExp(`(?:^|[;\\s])${escapeRegExp(name)}\\s*:\\s*([^;]+);`),
   );
-  if (!match?.[1]) {
-    throw new Error(`Missing hex variable ${name}`);
-  }
-  return match[1].toLowerCase();
-}
-
-function resolvedCssVariable(block: string, name: string): string {
-  const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const match = block.match(new RegExp(`${escaped}\\s*:\\s*([^;]+)\\s*;`));
   const value = match?.[1]?.trim();
-  if (!value) {
-    throw new Error(`Missing variable ${name}`);
-  }
-  if (/^#[0-9a-fA-F]{6}$/.test(value)) {
-    return value.toLowerCase();
-  }
-  const reference = value.match(/^var\((--[^)]+)\)$/)?.[1];
-  if (!reference) {
-    throw new Error(`Unsupported variable value ${name}: ${value}`);
-  }
-  return resolvedCssVariable(block, reference);
+  if (!value) throw new Error(`Missing declaration ${name}`);
+  return value;
 }
 
-function hexToRgb(hex: string) {
-  return [0, 2, 4].map((index) =>
-    Number.parseInt(hex.slice(1 + index, 3 + index), 16) / 255
-  ) as [number, number, number];
+function parseColor(value: string): Rgba {
+  const normalized = value.trim().toLowerCase();
+  const hex = normalized.match(/^#([0-9a-f]{6})$/);
+  if (hex?.[1]) {
+    const digits = hex[1];
+    return {
+      rgb: [0, 2, 4].map((index) =>
+        Number.parseInt(digits.slice(index, index + 2), 16),
+      ) as unknown as Rgb,
+      alpha: 1,
+    };
+  }
+  const rgb = normalized.match(
+    /^rgba?\(\s*([\d.]+)[\s,]+([\d.]+)[\s,]+([\d.]+)\s*(?:[/,]\s*([\d.]+)\s*)?\)$/,
+  );
+  if (rgb) {
+    return {
+      rgb: [Number(rgb[1]), Number(rgb[2]), Number(rgb[3])],
+      alpha: rgb[4] === undefined ? 1 : Number(rgb[4]),
+    };
+  }
+  throw new Error(`Unsupported colour value: ${value}`);
+}
+
+function themeColor(block: string, name: string): Rgba {
+  const value = declaration(block, name);
+  const reference = value.match(/^var\((--[\w-]+)\)$/)?.[1];
+  return reference ? themeColor(block, reference) : parseColor(value);
+}
+
+// ─── Colour math ─────────────────────────────────────────────────────────────
+
+function over(top: Rgba, bottom: Rgb): Rgb {
+  return top.rgb.map(
+    (channel, index) => top.alpha * channel + (1 - top.alpha) * bottom[index]!,
+  ) as unknown as Rgb;
 }
 
 function linearize(channel: number) {
-  return channel <= 0.04045
-    ? channel / 12.92
-    : ((channel + 0.055) / 1.055) ** 2.4;
+  const value = channel / 255;
+  return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
 }
 
-function relativeLuminance(hex: string) {
-  const [red, green, blue] = hexToRgb(hex).map(linearize);
+function luminance(rgb: Rgb) {
+  const [red, green, blue] = rgb.map(linearize) as [number, number, number];
   return red * 0.2126 + green * 0.7152 + blue * 0.0722;
 }
 
-function contrastRatio(foreground: string, background: string) {
-  const lighter = Math.max(
-    relativeLuminance(foreground),
-    relativeLuminance(background)
-  );
-  const darker = Math.min(
-    relativeLuminance(foreground),
-    relativeLuminance(background)
-  );
-  return (lighter + 0.05) / (darker + 0.05);
+function contrast(a: Rgb, b: Rgb) {
+  const la = luminance(a);
+  const lb = luminance(b);
+  return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05);
 }
 
-function expectContrast(
-  foreground: string,
-  background: string,
-  label: string,
-  min = MIN_NORMAL_TEXT_CONTRAST
-) {
-  expect(contrastRatio(foreground, background), label).toBeGreaterThanOrEqual(
-    min
-  );
+function minContrast(foreground: Rgb, backgrounds: readonly Rgb[]) {
+  return Math.min(...backgrounds.map((bg) => contrast(foreground, bg)));
 }
 
-function themeTokens(theme: ThemeName) {
+function opaque(color: Rgba, label: string): Rgb {
+  expect(color.alpha, `${label} must be opaque`).toBe(1);
+  return color.rgb;
+}
+
+// ─── Theme model ─────────────────────────────────────────────────────────────
+
+function themeModel(theme: ThemeName) {
   const block = cssBlock(`[data-theme="${theme}"]`);
+  const color = (name: string) => themeColor(block, name);
+  const solid = (name: string) => opaque(color(name), `${theme} ${name}`);
+
+  const ends = [solid("--canvas-from"), solid("--canvas-to")];
+  const blobs = ["--canvas-blob-1", "--canvas-blob-2", "--canvas-blob-3"].map(
+    color,
+  );
+  const canvas: Rgb[] = [
+    ...ends,
+    ...blobs.flatMap((blob) => ends.map((end) => over(blob, end))),
+  ];
+  const compose = (name: string, beneath: readonly Rgb[]) =>
+    beneath.map((rgb) => over(color(name), rgb));
+
+  const panel = compose("--card", canvas);
+  const sidebar = compose("--sidebar", canvas);
+  const overlay = compose("--popover", canvas);
+  const tintNames = {
+    mint: "--primary-tint",
+    lavender: "--secondary-accent-tint",
+    amber: "--warning-tint",
+    rose: "--destructive-tint",
+  } as const;
+  const tints = Object.fromEntries(
+    Object.entries(tintNames).map(([key, name]) => [
+      key,
+      compose(name, [...panel, ...sidebar, ...overlay]),
+    ]),
+  ) as Record<keyof typeof tintNames, Rgb[]>;
+
   return {
-    background: cssVariable(block, "--background"),
-    foreground: cssVariable(block, "--foreground"),
-    card: cssVariable(block, "--card"),
-    cardForeground: cssVariable(block, "--card-foreground"),
-    popover: cssVariable(block, "--popover"),
-    popoverForeground: cssVariable(block, "--popover-foreground"),
-    muted: cssVariable(block, "--muted"),
-    mutedForeground: cssVariable(block, "--muted-foreground"),
-    sidebar: cssVariable(block, "--sidebar"),
-    sidebarForeground: cssVariable(block, "--sidebar-foreground"),
-    primary: cssVariable(block, "--primary"),
-    primaryText: cssVariable(block, "--primary-text"),
-    primaryForeground: cssVariable(block, "--primary-foreground"),
-    destructive: cssVariable(block, "--destructive"),
-    destructiveForeground: cssVariable(block, "--destructive-foreground"),
-    destructiveText: resolvedCssVariable(
-      block,
-      "--destructive-text",
-    ),
-    successForeground: resolvedCssVariable(block, "--success-foreground"),
-    warningForeground: resolvedCssVariable(block, "--warning-foreground"),
-    infoForeground: resolvedCssVariable(block, "--info-foreground"),
+    block,
+    color,
+    solid,
+    canvas,
+    surfaces: {
+      canvas,
+      panel,
+      sidebar,
+      overlay,
+      "panel+hover": compose("--muted", panel),
+      "sidebar+hover": compose("--sidebar-accent", sidebar),
+      "overlay+hover": compose("--accent", overlay),
+      "mint-tint": tints.mint,
+      "lavender-tint": tints.lavender,
+      "amber-tint": tints.amber,
+      "rose-tint": tints.rose,
+    },
+    panel,
+    overlay,
+    inputWell: compose("--input-surface", [...panel, ...overlay]),
   };
 }
 
-function accentPrimaryText(theme: ThemeName, accent: AccentName) {
-  const override = optionalCssBlock(
-    `[data-theme="${theme}"][data-accent="${accent}"]`,
-  );
-  if (override?.includes("--primary-text")) {
-    return cssVariable(override, "--primary-text");
-  }
+const TEXT_ROLES = [
+  "--foreground",
+  "--card-foreground",
+  "--popover-foreground",
+  "--sidebar-foreground",
+  "--muted-foreground",
+  "--primary-text",
+  "--success-foreground",
+  "--secondary-accent-text",
+  "--info-foreground",
+  "--warning-foreground",
+  "--destructive-text",
+] as const;
 
-  // Dark themes use the global accent rule, whose --primary-text resolves to
-  // the theme-local Catppuccin token. Light themes provide explicit readable
-  // overrides above; this fallback models the real CSS cascade for all 6x14.
-  return resolvedCssVariable(
-    cssBlock(`[data-theme="${theme}"]`),
-    `--ctp-${accent}`,
-  );
-}
+// ─── Tests ───────────────────────────────────────────────────────────────────
 
-describe("theme contrast tokens", () => {
-  it("maps the readable primary text token into Tailwind", () => {
-    expect(cssBlock("@theme inline")).toContain(
-      "--color-primary-text: var(--primary-text);"
+describe("theme token surface", () => {
+  it("ships exactly the two Light Glass theme blocks", () => {
+    const themeSelectors = [
+      ...INDEX_CSS.matchAll(/\[data-theme="([\w-]+)"\]\s*\{/g),
+    ].map((match) => match[1]);
+    expect(themeSelectors).toEqual(["glass-light", "glass-dark"]);
+    expect(INDEX_CSS).not.toMatch(/data-accent|--ctp-/);
+  });
+
+  it("routes the dark variant to glass-dark only", () => {
+    expect(INDEX_CSS).toContain(
+      "@custom-variant dark (&:is([data-theme='glass-dark'] *));",
     );
   });
 
-  it.each(THEMES)(
-    "%s keeps inspector labels and semantic states readable",
-    (theme) => {
-      const tokens = themeTokens(theme);
-
-      expectContrast(
-        tokens.foreground,
-        tokens.background,
-        `${theme} foreground on background`
-      );
-      expectContrast(
-        tokens.cardForeground,
-        tokens.card,
-        `${theme} card foreground on card`
-      );
-      expectContrast(
-        tokens.mutedForeground,
-        tokens.background,
-        `${theme} muted foreground on background`
-      );
-      expectContrast(
-        tokens.mutedForeground,
-        tokens.card,
-        `${theme} muted foreground on card`
-      );
-      expectContrast(
-        tokens.primaryText,
-        tokens.background,
-        `${theme} primary text on background`
-      );
-      expectContrast(
-        tokens.primaryText,
-        tokens.card,
-        `${theme} primary text on card`
-      );
-      expectContrast(
-        tokens.primaryForeground,
-        tokens.primary,
-        `${theme} primary foreground on primary`
-      );
-      expectContrast(
-        tokens.destructiveForeground,
-        tokens.destructive,
-        `${theme} destructive foreground on destructive`
-      );
-      for (const [name, color] of [
-        ["destructive", tokens.destructiveText],
-        ["success", tokens.successForeground],
-        ["warning", tokens.warningForeground],
-        ["info", tokens.infoForeground],
-      ] as const) {
-        expectContrast(color, tokens.background, `${theme} ${name} on background`);
-        expectContrast(color, tokens.card, `${theme} ${name} on card`);
-        expectContrast(color, tokens.popover, `${theme} ${name} on popover`);
-        expectContrast(color, tokens.sidebar, `${theme} ${name} on sidebar`);
-      }
+  it("registers the glass utilities on the Tailwind theme boundary", () => {
+    const themeInline = cssBlock("@theme inline");
+    for (const line of [
+      "--color-primary-text: var(--primary-text);",
+      "--color-primary-tint: var(--primary-tint);",
+      "--color-primary-hover: var(--primary-hover);",
+      "--color-primary-stroke: var(--primary-stroke);",
+      "--color-secondary-accent: var(--secondary-accent);",
+      "--color-secondary-accent-text: var(--secondary-accent-text);",
+      "--color-secondary-accent-tint: var(--secondary-accent-tint);",
+      "--color-warning-tint: var(--warning-tint);",
+      "--color-destructive-tint: var(--destructive-tint);",
+      "--color-glass-stroke: var(--glass-stroke);",
+      "--color-glass-hairline: var(--glass-hairline);",
+      "--color-input-surface: var(--input-surface);",
+      "--radius-control: var(--radius-control);",
+      "--radius-inner: var(--radius-inner);",
+      "--radius-card: var(--radius-card);",
+      "--radius-shell: var(--radius-shell);",
+      "--radius-pill: var(--radius-pill);",
+      "--shadow-glass: var(--shadow-glass);",
+      "--shadow-glass-hover: var(--shadow-glass-hover);",
+      "--shadow-overlay: var(--shadow-overlay);",
+      "--text-display-stat: 1.75rem;",
+    ]) {
+      expect(themeInline).toContain(line);
     }
-  );
+  });
 
-  it.each(THEMES)(
-    "%s composes alpha foregrounds over real surfaces at AA",
-    (theme) => {
-      const tokens = themeTokens(theme);
-      // After the dense-typography migration, small labels must no longer use
-      // alpha-prefixed foregrounds. These assertions compose the historical
-      // alpha values over their real surfaces to prove the full tokens satisfy
-      // AA, and to prevent re-introducing /60 /70 /80 alpha as a "fix".
-      const alphaCases: Array<[string, string, string]> = [
-        [tokens.mutedForeground, tokens.background, "muted-foreground/80 on background"],
-        [tokens.mutedForeground, tokens.card, "muted-foreground/80 on card"],
-        [tokens.mutedForeground, tokens.popover, "muted-foreground/80 on popover"],
-        [tokens.mutedForeground, tokens.sidebar, "muted-foreground/80 on sidebar"],
-        [tokens.foreground, tokens.background, "foreground/80 on background"],
-        [tokens.foreground, tokens.card, "foreground/80 on card"],
-      ];
-      for (const [fg, bg, label] of alphaCases) {
-        // Full token (no alpha) must already pass; this is the post-migration
-        // contract. Composing 0.8 alpha would also pass for most pairs, but we
-        // assert the full token to lock the remediation target.
-        expectContrast(fg, bg, `${theme} ${label}`);
-      }
+  it("keeps the DESIGN.md radius ladder concentric", () => {
+    const root = cssBlock(":root");
+    const px = (name: string) => Number.parseFloat(declaration(root, name));
+    expect(px("--radius-control")).toBe(12);
+    expect(px("--radius-inner")).toBe(14);
+    expect(px("--radius-card")).toBe(18);
+    expect(px("--radius-shell")).toBe(20);
+    expect(px("--radius-pill")).toBe(9999);
+  });
+
+  it("limits backdrop-filter to the .glass-overlay and .glass-sticky blocks", () => {
+    const owners = [...INDEX_CSS.matchAll(/([^{}]+)\{[^}]*backdrop-filter[^}]*\}/g)]
+      .map((match) => match[1]!.trim());
+    expect(owners).toEqual([".glass-overlay", ".glass-sticky"]);
+    expect(INDEX_CSS).not.toMatch(/(?<!backdrop-)filter:\s*blur/);
+  });
+
+  it.each(THEMES)("%s keeps the canvas, background and fills opaque", (theme) => {
+    const model = themeModel(theme);
+    for (const name of [
+      "--canvas-from",
+      "--canvas-to",
+      "--background",
+      "--primary",
+      "--ring",
+    ]) {
+      model.solid(name);
     }
-  );
+  });
+});
 
-  it.each(THEMES)(
-    "%s accent overrides keep readable primary text on application surfaces",
-    (theme) => {
-      const { background, card, popover, sidebar } = themeTokens(theme);
-      const failures: string[] = [];
-
-      for (const accent of ACCENTS) {
-        const primaryText = accentPrimaryText(theme, accent);
-        for (const [surfaceName, surfaceColor] of [
-          ["background", background],
-          ["card", card],
-          ["popover", popover],
-          ["sidebar", sidebar],
-        ] as const) {
-          const ratio = contrastRatio(primaryText, surfaceColor);
-          if (ratio < MIN_NORMAL_TEXT_CONTRAST) {
-            failures.push(
-              `${theme}/${accent} primary text on ${surfaceName}: ${ratio.toFixed(3)}:1`,
-            );
-          }
+describe("theme contrast (composited)", () => {
+  it.each(THEMES)("%s text roles reach AA on every composited surface", (theme) => {
+    const model = themeModel(theme);
+    const failures: string[] = [];
+    for (const role of TEXT_ROLES) {
+      const fg = model.solid(role);
+      for (const [surface, backgrounds] of Object.entries(model.surfaces)) {
+        const ratio = minContrast(fg, backgrounds);
+        if (ratio < MIN_TEXT) {
+          failures.push(`${theme} ${role} on ${surface}: ${ratio.toFixed(2)}:1`);
         }
       }
-
-      expect(failures, failures.join("\n")).toEqual([]);
     }
-  );
+    expect(failures, failures.join("\n")).toEqual([]);
+  });
+
+  it.each(THEMES)("%s placeholders stay readable inside input wells", (theme) => {
+    const model = themeModel(theme);
+    expect(
+      minContrast(model.solid("--muted-foreground"), model.inputWell),
+    ).toBeGreaterThanOrEqual(MIN_TEXT);
+  });
+
+  it.each(THEMES)("%s fills carry readable foregrounds", (theme) => {
+    const model = themeModel(theme);
+    const pairs: Array<[string, string]> = [
+      ["--primary-foreground", "--primary"],
+      ["--primary-foreground", "--primary-hover"],
+      ["--sidebar-primary-foreground", "--sidebar-primary"],
+      ["--destructive-foreground", "--destructive"],
+    ];
+    for (const [fg, bg] of pairs) {
+      expect(
+        contrast(model.solid(fg), model.solid(bg)),
+        `${theme} ${fg} on ${bg}`,
+      ).toBeGreaterThanOrEqual(MIN_TEXT);
+    }
+    // Startup splash and no-gradient fallback sit on the opaque background.
+    for (const role of ["--foreground", "--muted-foreground"]) {
+      expect(
+        contrast(model.solid(role), model.solid("--background")),
+        `${theme} ${role} on background`,
+      ).toBeGreaterThanOrEqual(MIN_TEXT);
+    }
+  });
+
+  it.each(THEMES)("%s focus ring, input stroke and charts reach 3:1", (theme) => {
+    const model = themeModel(theme);
+    const ring = model.solid("--ring");
+    expect(minContrast(ring, model.panel)).toBeGreaterThanOrEqual(MIN_NON_TEXT);
+    expect(minContrast(ring, model.overlay)).toBeGreaterThanOrEqual(MIN_NON_TEXT);
+
+    const input = model.color("--input");
+    for (const well of model.inputWell) {
+      expect(contrast(over(input, well), well)).toBeGreaterThanOrEqual(
+        MIN_NON_TEXT,
+      );
+    }
+
+    for (const chart of ["--chart-1", "--chart-2", "--chart-3", "--chart-4", "--chart-5"]) {
+      expect(
+        minContrast(model.solid(chart), model.panel),
+        `${theme} ${chart} on panel`,
+      ).toBeGreaterThanOrEqual(MIN_NON_TEXT);
+    }
+  });
+});
+
+describe("startup splash literals", () => {
+  function startupBlocks() {
+    const darkMedia = INDEX_CSS.indexOf("@media (prefers-color-scheme: dark)");
+    expect(darkMedia).toBeGreaterThan(-1);
+    const light = INDEX_CSS.slice(0, darkMedia);
+    const dark = INDEX_CSS.slice(darkMedia);
+    return {
+      "glass-light": {
+        shell: cssBlock(".startup-shell", light),
+        card: cssBlock(".startup-card", light),
+      },
+      "glass-dark": {
+        shell: cssBlock(".startup-shell", dark),
+        card: cssBlock(".startup-card", dark),
+      },
+    } as const;
+  }
+
+  function colorsIn(value: string): Rgba[] {
+    return [...value.matchAll(/#[0-9a-fA-F]{6}|rgba?\([^)]*\)/g)].map((match) =>
+      parseColor(match[0]),
+    );
+  }
+
+  it.each(THEMES)("%s splash literals equal the theme tokens", (theme) => {
+    const { block } = themeModel(theme);
+    const token = (name: string) => themeColor(block, name);
+    const { shell, card } = startupBlocks()[theme];
+
+    expect(parseColor(declaration(shell, "background-color"))).toEqual(
+      token("--background"),
+    );
+    expect(parseColor(declaration(shell, "color"))).toEqual(token("--foreground"));
+    expect(colorsIn(declaration(shell, "background-image"))).toEqual([
+      token("--canvas-blob-1"),
+      token("--canvas-blob-2"),
+      token("--canvas-blob-3"),
+      token("--canvas-from"),
+      token("--canvas-to"),
+    ]);
+    expect(parseColor(declaration(card, "background"))).toEqual(token("--card"));
+    const border = declaration(card, theme === "glass-light" ? "border" : "border-color");
+    expect(colorsIn(border)).toEqual([token("--glass-stroke")]);
+  });
+
+  it("uses the same blob geometry for the splash and .glass-canvas", () => {
+    const geometry = (value: string) =>
+      [...value.matchAll(/radial-gradient\(([^,]+),/g)].map((match) => match[1]!.trim());
+    const canvas = geometry(declaration(cssBlock(".glass-canvas"), "background-image"));
+    expect(canvas).toHaveLength(3);
+    expect(geometry(declaration(startupBlocks()["glass-light"].shell, "background-image")))
+      .toEqual(canvas);
+  });
+
+  it("paints the native window with the glass background before the webview", () => {
+    const light = themeColor(cssBlock('[data-theme="glass-light"]'), "--background");
+    const windowColor = TAURI_CONF.app.windows[0]?.backgroundColor ?? "";
+    expect(parseColor(windowColor)).toEqual(light);
+  });
 });

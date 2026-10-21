@@ -9,7 +9,7 @@ export interface TagColorResult {
 
 /**
  * 固定色板：每项 = 边框 + 底色 + 文字（含 dark: 变体），保证明暗主题下可读。
- * 不依赖 data-accent，避免与全局 accent 冲突导致全部同色。
+ * 不依赖主题强调色（primary / secondary-accent），避免与全局强调色冲突导致全部同色。
  */
 const TAG_SCHEMES: readonly string[] = [
   "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300",

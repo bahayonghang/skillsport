@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Blocks, Keyboard, Moon, Plus, Search, Sun } from "lucide-react";
 
 import { usePlatformStore } from "@/stores/platformStore";
-import { useThemeStore, type ThemeFlavor } from "@/stores/themeStore";
+import { useThemeStore } from "@/stores/themeStore";
 import { TargetQuickSwitcher } from "@/components/layout/TargetQuickSwitcher";
 import { Button } from "@/components/ui/button";
 import { ShortcutHint } from "@/components/ui/shortcut-hint";
@@ -20,22 +20,12 @@ interface TopBarProps {
   onShortcutsClick: () => void;
 }
 
-const LIGHT_FLAVORS: ThemeFlavor[] = ["latte", "claude-light"];
-const FLAVOR_TOGGLE_MAP: Record<ThemeFlavor, ThemeFlavor> = {
-  mocha: "latte",
-  macchiato: "latte",
-  frappe: "latte",
-  "claude-dark": "claude-light",
-  latte: "mocha",
-  "claude-light": "claude-dark",
-};
-
 export function TopBar({ onSearchClick, onShortcutsClick }: TopBarProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const flavor = useThemeStore((s) => s.flavor);
-  const setFlavor = useThemeStore((s) => s.setFlavor);
+  const toggleFlavor = useThemeStore((s) => s.toggleFlavor);
 
   const agents = usePlatformStore((s) => s.agents);
   const skillsByAgent = usePlatformStore((s) => s.skillsByAgent);
@@ -44,7 +34,7 @@ export function TopBar({ onSearchClick, onShortcutsClick }: TopBarProps) {
     DEFAULT_PLATFORM_CATEGORY_VISIBILITY;
   const platformTargets = getPlatformTargetGroups(agents, categoryVisibility);
 
-  const isLightFlavor = LIGHT_FLAVORS.includes(flavor);
+  const isLightFlavor = flavor === "glass-light";
 
   // Determine current view label and count
   const viewInfo = (() => {
@@ -85,10 +75,6 @@ export function TopBar({ onSearchClick, onShortcutsClick }: TopBarProps) {
     }
     return { label: "", count: undefined };
   })();
-
-  function handleToggleTheme() {
-    setFlavor(FLAVOR_TOGGLE_MAP[flavor] ?? "latte");
-  }
 
   return (
     <header className="relative flex items-center h-12 px-4 border-b border-border bg-sidebar text-sidebar-foreground shrink-0">
@@ -172,7 +158,7 @@ export function TopBar({ onSearchClick, onShortcutsClick }: TopBarProps) {
       </button>
 
       <button
-        onClick={handleToggleTheme}
+        onClick={() => toggleFlavor()}
         className={cn(
           "z-10 p-1.5 rounded-md transition-colors cursor-pointer shrink-0",
           "text-muted-foreground hover:text-foreground hover:bg-muted/60",

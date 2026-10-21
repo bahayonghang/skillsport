@@ -203,7 +203,7 @@ export function AppShell() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
+    <div className="glass-canvas flex flex-col h-screen text-foreground overflow-hidden">
       <TopBar
         onSearchClick={() => setIsSearchOpen(true)}
         onShortcutsClick={() => setIsShortcutsOpen(true)}

@@ -113,8 +113,6 @@ export function useSettingsViewBindings() {
 
   const flavor = useThemeStore((state) => state.flavor);
   const setFlavor = useThemeStore((state) => state.setFlavor);
-  const accent = useThemeStore((state) => state.accent);
-  const setAccent = useThemeStore((state) => state.setAccent);
 
   return {
     scanDirectories,
@@ -189,7 +187,5 @@ export function useSettingsViewBindings() {
     switchTarget,
     flavor,
     setFlavor,
-    accent,
-    setAccent,
   };
 }

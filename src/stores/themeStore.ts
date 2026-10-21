@@ -2,107 +2,87 @@ import { create } from "zustand";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type ThemeFlavor =
-  | "mocha"
-  | "macchiato"
-  | "frappe"
-  | "latte"
-  | "claude-light"
-  | "claude-dark";
+/** SkillPort 1.1.0 ships exactly two Light Glass themes (DESIGN.md). */
+export type ThemeFlavor = "glass-light" | "glass-dark";
 
 export type FontThemeMode = "light" | "dark";
 
-export const THEME_FLAVORS: ThemeFlavor[] = [
-  "mocha",
-  "macchiato",
-  "frappe",
-  "latte",
-  "claude-light",
-  "claude-dark",
-];
+export const THEME_FLAVORS: ThemeFlavor[] = ["glass-light", "glass-dark"];
 
 export function fontThemeModeForFlavor(
   flavor: ThemeFlavor,
 ): FontThemeMode {
-  return flavor === "latte" || flavor === "claude-light" ? "light" : "dark";
+  return flavor === "glass-light" ? "light" : "dark";
 }
 
-/** The 14 Catppuccin accent color names (same order as the Obsidian theme). */
-export type CatppuccinAccent =
-  | "rosewater"
-  | "flamingo"
-  | "pink"
-  | "mauve"
-  | "red"
-  | "maroon"
-  | "peach"
-  | "yellow"
-  | "green"
-  | "teal"
-  | "sky"
-  | "sapphire"
-  | "blue"
-  | "lavender";
+const THEME_STORAGE_KEY = "skillport-theme";
 
-/** Ordered list of all accent names — used by the accent picker UI. */
-export const ACCENT_NAMES: CatppuccinAccent[] = [
-  "rosewater",
-  "flamingo",
-  "pink",
-  "mauve",
-  "red",
-  "maroon",
-  "peach",
-  "yellow",
-  "green",
-  "teal",
-  "sky",
-  "sapphire",
-  "blue",
-  "lavender",
-];
-
-const FLAVOR_STORAGE_KEY = "catppuccin-flavor";
-const ACCENT_STORAGE_KEY = "catppuccin-accent";
+/**
+ * 1.0.x persisted a Catppuccin / Claude flavor plus an accent. Both keys are
+ * read once for migration and removed after the new key is written.
+ */
+const LEGACY_FLAVOR_STORAGE_KEY = "catppuccin-flavor";
+const LEGACY_ACCENT_STORAGE_KEY = "catppuccin-accent";
+const LEGACY_FLAVOR_MIGRATION = new Map<string, ThemeFlavor>([
+  ["latte", "glass-light"],
+  ["claude-light", "glass-light"],
+  ["mocha", "glass-dark"],
+  ["macchiato", "glass-dark"],
+  ["frappe", "glass-dark"],
+  ["claude-dark", "glass-dark"],
+]);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/** Detect system color-scheme preference. Returns "latte" for light, "mocha" for dark. */
+/** Detect system color-scheme preference. */
 function systemFlavor(): ThemeFlavor {
-  if (typeof window === "undefined") return "mocha";
+  if (typeof window === "undefined" || !window.matchMedia) return "glass-dark";
   return window.matchMedia("(prefers-color-scheme: light)").matches
-    ? "latte"
-    : "mocha";
+    ? "glass-light"
+    : "glass-dark";
 }
 
 function isThemeFlavor(value: string | null): value is ThemeFlavor {
   return THEME_FLAVORS.includes(value as ThemeFlavor);
 }
 
-/** Read persisted flavor from localStorage (returns null if not set). */
-function readStoredFlavor(): ThemeFlavor | null {
+function readStorage(key: string): string | null {
   try {
-    const stored = localStorage.getItem(FLAVOR_STORAGE_KEY);
-    if (isThemeFlavor(stored)) {
-      return stored;
-    }
+    return localStorage.getItem(key);
   } catch {
     // localStorage unavailable (SSR, privacy mode, etc.)
+    return null;
   }
-  return null;
 }
 
-/** Read persisted accent from localStorage (returns null if not set or invalid). */
-function readStoredAccent(): CatppuccinAccent | null {
+/** Write a key; returns false when storage is unavailable or rejects it. */
+function writeStorage(key: string, value: string): boolean {
   try {
-    const stored = localStorage.getItem(ACCENT_STORAGE_KEY);
-    if (ACCENT_NAMES.includes(stored as CatppuccinAccent)) {
-      return stored as CatppuccinAccent;
-    }
+    localStorage.setItem(key, value);
+    return true;
   } catch {
-    // localStorage unavailable
+    return false;
   }
-  return null;
+}
+
+function removeStorage(key: string): void {
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // Silently ignore storage errors
+  }
+}
+
+/** Resolve the startup flavor: new key → migrated legacy flavor → system. */
+function readFlavor(): ThemeFlavor {
+  const stored = readStorage(THEME_STORAGE_KEY);
+  if (isThemeFlavor(stored)) return stored;
+
+  const legacy = readStorage(LEGACY_FLAVOR_STORAGE_KEY);
+  const migrated = legacy === null ? undefined : LEGACY_FLAVOR_MIGRATION.get(legacy);
+  if (migrated) return migrated;
+
+  return systemFlavor();
 }
 
 let themeSwitchEpoch = 0;
@@ -129,48 +109,34 @@ function applyThemeDom(mutate: () => void): void {
   });
 }
 
-/** Apply flavor to the DOM — sets data-theme on <html> and persists to localStorage. */
-function applyFlavor(flavor: ThemeFlavor): void {
+/**
+ * Apply flavor to the DOM and persist it. Returns whether the new key was
+ * written, so migration only deletes legacy keys after a successful write.
+ */
+function applyFlavor(flavor: ThemeFlavor): boolean {
   if (typeof document !== "undefined") {
     document.documentElement.dataset.theme = flavor;
   }
-  try {
-    localStorage.setItem(FLAVOR_STORAGE_KEY, flavor);
-  } catch {
-    // Silently ignore storage errors
-  }
-}
-
-/** Apply accent to the DOM — sets data-accent on <html> and persists to localStorage. */
-function applyAccent(accent: CatppuccinAccent): void {
-  if (typeof document !== "undefined") {
-    document.documentElement.dataset.accent = accent;
-  }
-  try {
-    localStorage.setItem(ACCENT_STORAGE_KEY, accent);
-  } catch {
-    // Silently ignore storage errors
-  }
+  return writeStorage(THEME_STORAGE_KEY, flavor);
 }
 
 // ─── State ────────────────────────────────────────────────────────────────────
 
 interface ThemeState {
   flavor: ThemeFlavor;
-  accent: CatppuccinAccent;
 
   // Actions
   setFlavor: (flavor: ThemeFlavor) => void;
-  setAccent: (accent: CatppuccinAccent) => void;
+  /** Switch between glass-light and glass-dark (top bar / sidebar toggle). */
+  toggleFlavor: () => void;
   /** Initialize theme — call once before React renders to prevent flash. */
   init: () => void;
 }
 
 // ─── Store ────────────────────────────────────────────────────────────────────
 
-export const useThemeStore = create<ThemeState>((set) => ({
-  flavor: "mocha", // safe default; init() overrides
-  accent: "lavender", // safe default; init() overrides
+export const useThemeStore = create<ThemeState>((set, get) => ({
+  flavor: "glass-dark", // safe default; init() overrides
 
   setFlavor: (flavor) => {
     applyThemeDom(() => {
@@ -179,19 +145,21 @@ export const useThemeStore = create<ThemeState>((set) => ({
     set({ flavor });
   },
 
-  setAccent: (accent) => {
-    applyThemeDom(() => {
-      applyAccent(accent);
-    });
-    set({ accent });
+  toggleFlavor: () => {
+    get().setFlavor(get().flavor === "glass-light" ? "glass-dark" : "glass-light");
   },
 
   init: () => {
-    const flavor = readStoredFlavor() ?? systemFlavor();
-    const accent = readStoredAccent() ?? "lavender";
-    // Direct writes: startup has no previous frame, so do not suppress transitions.
-    applyFlavor(flavor);
-    applyAccent(accent);
-    set({ flavor, accent });
+    const flavor = readFlavor();
+    // Direct write: startup has no previous frame, so do not suppress transitions.
+    if (applyFlavor(flavor)) {
+      removeStorage(LEGACY_FLAVOR_STORAGE_KEY);
+      removeStorage(LEGACY_ACCENT_STORAGE_KEY);
+    }
+    if (typeof document !== "undefined") {
+      // 1.0.x wrote data-accent; nothing reads it any more.
+      delete document.documentElement.dataset.accent;
+    }
+    set({ flavor });
   },
 }));

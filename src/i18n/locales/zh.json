@@ -2453,7 +2453,12 @@
       "title": "外观",
       "description": "调整主题、语言、字体 fallback 与字号缩放。",
       "themeGroup": "主题",
-      "themeGroupDesc": "选择界面风格与强调色。",
+      "themeGroupDesc": "在浅色与深色玻璃主题之间切换。",
+      "themeMode": "明暗模式",
+      "themeOption": {
+        "glass-light": "浅色玻璃",
+        "glass-dark": "深色玻璃"
+      },
       "languageGroup": "语言",
       "languageGroupDesc": "设置界面显示语言。",
       "typographyGroup": "字体",
@@ -2655,30 +2660,6 @@
     "appVersion": "应用版本",
     "dbPath": "数据库路径",
     "repoUrl": "仓库地址",
-    "flavor": "主题风格",
-    "mocha": "Mocha",
-    "macchiato": "Macchiato",
-    "frappe": "Frappé",
-    "latte": "Latte",
-    "claude-light": "Claude 浅色",
-    "claude-dark": "Claude 深色",
-    "accentColor": "强调色",
-    "accent": {
-      "rosewater": "玫瑰水",
-      "flamingo": "火烈鸟",
-      "pink": "粉色",
-      "mauve": "紫色",
-      "red": "红色",
-      "maroon": "栗色",
-      "peach": "桃色",
-      "yellow": "黄色",
-      "green": "绿色",
-      "teal": "青色",
-      "sky": "天蓝",
-      "sapphire": "蓝宝石",
-      "blue": "蓝色",
-      "lavender": "薰衣草"
-    },
     "language": "语言",
     "chinese": "中文",
     "english": "English",
@@ -2691,7 +2672,7 @@
       "legacyFallback": "已从旧设置链接跳转到默认页面。",
       "appearance": {
         "title": "外观",
-        "description": "调整主题、语言、强调色、字体和显示密度。"
+        "description": "调整明暗主题、语言、字体和显示密度。"
       },
       "connections": {
         "title": "连接与同步",

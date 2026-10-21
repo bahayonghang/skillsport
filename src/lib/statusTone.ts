@@ -2,9 +2,11 @@
 // 杜绝各组件复制原生 Tailwind 调色板（amber/emerald/sky/red…）。
 //
 // 配套 token 见 src/index.css：
-//   --success / --warning / --info（fill，复用官方 Catppuccin --ctp-*，随 6 套主题换肤）
+//   --success / --warning / --info（fill：success = 薄荷 primary，info = 薰衣草
+//     secondary-accent，warning = 琥珀；随 glass-light / glass-dark 换值）
 //   --success-foreground / --warning-foreground / --info-foreground
-//     （暗色主题 = fill 本身；浅色主题取更深值，已用 WCAG 公式验 ≥4.5:1 on /10 tint）
+//     （= mint-text / amber-text / lavender-text；按面板叠 canvas 最不利点合成后
+//     验 ≥4.5:1，见 themeContrast.test.ts）
 //   error 态复用既有 --destructive，不新建 token。
 //
 // 用法约定：

@@ -22,11 +22,8 @@ import { SettingsPageSections } from "@/pages/settingsPageSections";
 import { useLocalRemoteSyncStore } from "@/stores/localRemoteSyncStore";
 import { isRemoteLikeTarget } from "@/lib/targetKind";
 import {
-  CTP_VAR_MAP,
   EMPTY_SSH_TARGET_FORM,
   EMPTY_WSL_TARGET_FORM,
-  FLAVOR_COLORS,
-  FLAVOR_ORDER,
   REPO_URL,
   getAiProviderViewModel,
   getCustomAgents,
@@ -116,8 +113,6 @@ export function SettingsView() {
     switchTarget,
     flavor,
     setFlavor,
-    accent,
-    setAccent,
   } = useSettingsViewBindings();
 
   const customAgents = useMemo(() => getCustomAgents(agents), [agents]);
@@ -489,7 +484,6 @@ export function SettingsView() {
             </header>
 
             <SettingsPageSections
-              accent={accent}
               activeTarget={resolvedActiveTarget}
               aiApiKeyState={aiApiKeyState}
               aiSaveError={aiSaveError}
@@ -498,15 +492,12 @@ export function SettingsView() {
               aiTestResult={aiTestResult}
               aiTesting={aiTesting}
               appVersion={APP_VERSION}
-              ctpVarMap={CTP_VAR_MAP}
               customAgents={customAgents}
               dbPathDisplay={dbPathDisplay}
               deletingTargetId={deletingTargetId}
               editingPlatform={editingPlatform}
               editingTargetId={editingTargetId}
               flavor={flavor}
-              flavorColors={FLAVOR_COLORS}
-              flavorOrder={FLAVOR_ORDER}
               githubPatInput={githubPatInput}
               githubPatMessage={githubPatMessage}
               githubPatState={githubPatState}
@@ -609,7 +600,6 @@ export function SettingsView() {
               onSaveGitHubPat={() => {
                 void handleSaveGitHubPat();
               }}
-              onSetAccent={setAccent}
               onSetFlavor={setFlavor}
               onSetPlatformVisibilityQuery={setPlatformVisibilityQuery}
               onSetShowAiTestDetails={setShowAiTestDetails}

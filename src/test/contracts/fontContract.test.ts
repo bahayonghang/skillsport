@@ -64,4 +64,20 @@ describe("font contract", () => {
     // No viewport-driven font-size anywhere in the theme.
     expect(indexCss).not.toMatch(/--text-[a-z-]+:\s*[^;]*v(w|h|min|max)/);
   });
+
+  it("registers the StatTile display-stat size as rem without line-height", () => {
+    const statLine = indexCss
+      .split("\n")
+      .find((line) => line.includes("--text-display-stat:"));
+    expect(statLine).toBeDefined();
+    expect(statLine).toMatch(/--text-display-stat:\s*1\.75rem;/);
+    expect(statLine).not.toContain("line-height");
+    expect(indexCss).not.toContain("--text-display-stat--line-height");
+  });
+
+  it("defaults the body font to Geist (sans body rule)", () => {
+    expect(indexCss).toContain(
+      '--font-body: "Geist Variable", ui-sans-serif, system-ui, sans-serif;',
+    );
+  });
 });

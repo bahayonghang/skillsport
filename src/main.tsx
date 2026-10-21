@@ -7,7 +7,7 @@ import { StartupGate } from "@/components/startup/StartupGate";
 import "./index.css";
 // Initialize i18n before rendering the app
 import "./i18n";
-// Initialize Catppuccin theme before rendering so there's no flash
+// Initialize the glass theme before rendering so there is no flash
 import {
   fontThemeModeForFlavor,
   useThemeStore,

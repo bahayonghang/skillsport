@@ -27,19 +27,13 @@ import {
 import { cn } from "@/lib/utils";
 import {
   fontThemeModeForFlavor,
-  type CatppuccinAccent,
+  THEME_FLAVORS,
   type FontThemeMode,
   type ThemeFlavor,
 } from "@/stores/themeStore";
 
 interface AppearanceSettingsSectionProps {
-  accent: CatppuccinAccent;
-  accentNames: CatppuccinAccent[];
-  ctpVarMap: Record<CatppuccinAccent, string>;
   flavor: ThemeFlavor;
-  flavorColors: Record<ThemeFlavor, string>;
-  flavorOrder: ThemeFlavor[];
-  onSetAccent: (accent: CatppuccinAccent) => void;
   onSetFlavor: (flavor: ThemeFlavor) => void;
 }
 
@@ -49,13 +43,7 @@ interface FontOption {
 }
 
 export function AppearanceSettingsSection({
-  accent,
-  accentNames,
-  ctpVarMap,
   flavor,
-  flavorColors,
-  flavorOrder,
-  onSetAccent,
   onSetFlavor,
 }: AppearanceSettingsSectionProps) {
   const { t, i18n } = useTranslation();
@@ -170,70 +158,16 @@ export function AppearanceSettingsSection({
         title={t("settings.appearance.themeGroup")}
         description={t("settings.appearance.themeGroupDesc")}
       >
-        <div className="space-y-5">
-          <ControlField label={t("settings.flavor")}>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {flavorOrder.map((item) => {
-                const active = flavor === item;
-                return (
-                  <button
-                    key={item}
-                    type="button"
-                    aria-pressed={active}
-                    onClick={() => onSetFlavor(item)}
-                    className={cn(
-                      "focus-ring flex min-h-10 items-center gap-2 rounded-lg px-3 text-left text-sm transition-[scale,background-color,color] active:scale-[0.96]",
-                      active
-                        ? "bg-primary/12 text-foreground"
-                        : "bg-muted/35 text-muted-foreground hover:bg-muted/65 hover:text-foreground",
-                    )}
-                  >
-                    <span
-                      className="size-2.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: flavorColors[item] }}
-                      aria-hidden="true"
-                    />
-                    <span className="truncate">{t(`settings.${item}`)}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </ControlField>
-
-          <ControlField label={t("settings.accentColor")}>
-            <div
-              className="flex flex-wrap gap-1.5"
-              role="radiogroup"
-              aria-label={t("settings.accentColor")}
-            >
-              {accentNames.map((name) => {
-                const selected = accent === name;
-                return (
-                  <button
-                    key={name}
-                    type="button"
-                    role="radio"
-                    aria-checked={selected}
-                    aria-label={t(`settings.accent.${name}`)}
-                    onClick={() => onSetAccent(name)}
-                    className={cn(
-                      "focus-ring relative grid size-10 place-items-center rounded-full transition-[scale,box-shadow] active:scale-[0.96]",
-                      selected
-                        ? "shadow-[0_0_0_2px_var(--background),0_0_0_4px_var(--ring)]"
-                        : "hover:shadow-[0_0_0_2px_var(--background),0_0_0_3px_var(--border)]",
-                    )}
-                  >
-                    <span
-                      className="size-6 rounded-full"
-                      style={{ backgroundColor: `var(${ctpVarMap[name]})` }}
-                      aria-hidden="true"
-                    />
-                  </button>
-                );
-              })}
-            </div>
-          </ControlField>
-        </div>
+        <ControlField label={t("settings.appearance.themeMode")}>
+          <SegmentedControl
+            options={THEME_FLAVORS.map((item) => ({
+              value: item,
+              label: t(`settings.appearance.themeOption.${item}`),
+            }))}
+            value={flavor}
+            onChange={(value) => onSetFlavor(value as ThemeFlavor)}
+          />
+        </ControlField>
       </SettingGroup>
 
       <SettingGroup
