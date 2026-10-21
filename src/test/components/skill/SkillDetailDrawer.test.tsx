@@ -8,6 +8,16 @@ import { usePlatformStore } from "@/stores/platformStore";
 import { useTargetStore } from "@/stores/targetStore";
 import type { AgentWithStatus, SkillDetail as SkillDetailType } from "@/types";
 
+// The modal shell renders the shared ui/dialog scrim (data-slot="dialog-overlay").
+const queryModalOverlay = () =>
+  document.querySelector<HTMLElement>("[data-slot=\"dialog-overlay\"]");
+const findModalOverlay = () =>
+  waitFor(() => {
+    const overlay = queryModalOverlay();
+    if (!overlay) throw new Error("dialog overlay not rendered");
+    return overlay;
+  });
+
 vi.mock("@/stores/skillDetailStore", () => ({
   useSkillDetailStore: vi.fn(),
 }));
@@ -198,7 +208,7 @@ describe("SkillDetailDrawer", () => {
     const drawer = await screen.findByTestId("skill-detail-modal");
     expect(drawer).toHaveAttribute("role", "dialog");
     expect(drawer).toHaveAttribute("aria-modal", "true");
-    expect(screen.getByTestId("skill-detail-modal-overlay")).toBeInTheDocument();
+    expect(document.querySelector("[data-slot=\"dialog-overlay\"]")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /关闭/i })).toBeInTheDocument();
   });
 
@@ -249,7 +259,7 @@ describe("SkillDetailDrawer", () => {
   it("closes on overlay click", async () => {
     render(<TestHarness />);
 
-    fireEvent.click(await screen.findByTestId("skill-detail-modal-overlay"));
+    fireEvent.click(await findModalOverlay());
 
     await waitFor(() => {
       expect(screen.queryByTestId("skill-detail-modal")).toBeNull();
@@ -259,13 +269,13 @@ describe("SkillDetailDrawer", () => {
   it("fully unmounts the shared overlay after close", async () => {
     render(<TestHarness />);
 
-    expect(await screen.findByTestId("skill-detail-modal-overlay")).toBeInTheDocument();
+    expect(await findModalOverlay()).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: /关闭/i }));
 
     await waitFor(() => {
       expect(screen.queryByTestId("skill-detail-modal")).toBeNull();
-      expect(screen.queryByTestId("skill-detail-modal-overlay")).toBeNull();
+      expect(queryModalOverlay()).toBeNull();
       expect(document.querySelector("[data-base-ui-inert]")).toBeNull();
     });
   });
@@ -274,7 +284,7 @@ describe("SkillDetailDrawer", () => {
     render(<TestHarness />);
 
     const closeButton = await screen.findByRole("button", { name: /关闭/i });
-    const overlay = screen.getByTestId("skill-detail-modal-overlay");
+    const overlay = queryModalOverlay()!;
     const drawer = screen.getByTestId("skill-detail-modal");
 
     expect(overlay).toBeInTheDocument();
@@ -284,7 +294,7 @@ describe("SkillDetailDrawer", () => {
 
     await waitFor(() => {
       expect(screen.queryByTestId("skill-detail-modal")).toBeNull();
-      expect(screen.queryByTestId("skill-detail-modal-overlay")).toBeNull();
+      expect(queryModalOverlay()).toBeNull();
     });
   });
 

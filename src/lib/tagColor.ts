@@ -8,28 +8,32 @@ export interface TagColorResult {
 }
 
 /**
- * 固定色板：每项 = 边框 + 底色 + 文字（含 dark: 变体），保证明暗主题下可读。
- * 不依赖主题强调色（primary / secondary-accent），避免与全局强调色冲突导致全部同色。
+ * 克制色板（DESIGN.md Two-Accent / Tint-Not-Fill）：标签是分类数据，不是状态，
+ * 因此只用薄荷 / 薰衣草两强调色的 tint、中性 tint，加三个低饱和色相
+ * （天蓝 / 石板 / 梅，token 见 index.css `--tag-*`）。不使用琥珀 / 玫瑰
+ * （它们只表达告警与错误）。每项 = 1px 同色描边 + 12% tint + 同族文字色，
+ * 全部是主题 token，`glass-light` / `glass-dark` 自动换值；文字在 tint 合成于
+ * panel 最不利点上 ≥ 4.5:1（themeContrast.test.ts 守卫）。
  */
-const TAG_SCHEMES: readonly string[] = [
-  "border-rose-500/30 bg-rose-500/10 text-rose-700 dark:text-rose-300",
-  "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300",
-  "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
-  "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300",
-  "border-violet-500/30 bg-violet-500/10 text-violet-700 dark:text-violet-300",
-  "border-fuchsia-500/30 bg-fuchsia-500/10 text-fuchsia-700 dark:text-fuchsia-300",
-  "border-teal-500/30 bg-teal-500/10 text-teal-700 dark:text-teal-300",
-  "border-orange-500/30 bg-orange-500/10 text-orange-700 dark:text-orange-300",
-  "border-indigo-500/30 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300",
-  "border-cyan-500/30 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300",
+export const TAG_SCHEMES: readonly string[] = [
+  "border-primary-stroke bg-primary-tint text-primary-text",
+  "border-secondary-accent/30 bg-secondary-accent-tint text-secondary-accent-text",
+  "border-tag-sky-text/30 bg-tag-sky-tint text-tag-sky-text",
+  "border-tag-slate-text/30 bg-tag-slate-tint text-tag-slate-text",
+  "border-tag-plum-text/30 bg-tag-plum-tint text-tag-plum-text",
+  "border-border bg-accent text-muted-foreground",
 ];
 
 /**
- * repo 色块用的纯色（HSL），与 getTagColor 的 class 配色独立。
- * 同名确定性映射到色相环上的一个固定色相。
+ * repo 色块（非文字图形，≥ 3:1）：薄荷 / 薰衣草 / 天蓝三条图表序列 + 石板 / 梅，
+ * 均为主题 token，避开琥珀 / 玫瑰的状态语义。
  */
-const REPO_DOT_HUES: readonly number[] = [
-  348, 32, 152, 199, 262, 291, 173, 25, 234, 188,
+export const REPO_DOT_COLORS: readonly string[] = [
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--tag-slate-text)",
+  "var(--tag-plum-text)",
 ];
 
 function hashString(input: string): number {
@@ -60,10 +64,9 @@ export function getTagColor(tag: {
 }
 
 /**
- * repo 名 → 一个稳定的纯色（HSL 串），用于 footer / sidebar 的 repo 色块头像。
- * 与 getTagColor 共用 hashString，但映射到饱和度/亮度固定的实色，便于直接作 backgroundColor。
+ * repo 名 → 一个稳定的主题色（CSS var 串），用于 footer / sidebar 的 repo 色块。
+ * 与 getTagColor 共用 hashString；可直接作 backgroundColor。
  */
 export function getRepoDotColor(name: string): string {
-  const hue = REPO_DOT_HUES[hashString(name) % REPO_DOT_HUES.length];
-  return `hsl(${hue}, 60%, 55%)`;
+  return REPO_DOT_COLORS[hashString(name) % REPO_DOT_COLORS.length]!;
 }

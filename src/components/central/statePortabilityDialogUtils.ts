@@ -93,12 +93,12 @@ export function statusTone(status: SkillportStateSkillPreview["status"]) {
   if (status === "ready")
     return "border-success/40 bg-success/10 text-success-foreground";
   if (status === "conflict")
-    return "border-warning/40 bg-warning/10 text-warning-foreground";
+    return "border-warning/40 bg-warning-tint text-warning-foreground";
   if (status === "missing")
-    return "border-destructive/40 bg-destructive/10 text-destructive-text";
+    return "border-destructive/40 bg-destructive-tint text-destructive-text";
   if (status === "duplicate_skipped")
     return "border-info/40 bg-info/10 text-info-foreground";
-  return "border-muted-foreground/30 bg-muted text-muted-foreground";
+  return "border-muted-foreground/30 bg-accent text-muted-foreground";
 }
 
 export function isManifestPreviewError(error: unknown) {

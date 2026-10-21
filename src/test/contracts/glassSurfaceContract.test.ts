@@ -86,54 +86,21 @@ interface Rule {
 
 // Files outside src/components/ui that still carry backdrop-* utilities.
 // Migrate to `.glass-sticky` / `.glass-overlay` (C5–C8), then drop the entry.
-const PENDING_BACKDROP_UTILITY: readonly string[] = [
-  "src/components/central/BulkActionBar.tsx",
-  "src/components/central/CentralGroupedSkillList.tsx",
-  "src/components/central/CentralSidebar.tsx",
-  "src/components/central/FacetSection.tsx",
-  "src/components/platform/PlatformGroupedSkillList.tsx",
-  "src/components/platform/PlatformTransferRail.tsx",
-];
+const PENDING_BACKDROP_UTILITY: readonly string[] = [];
 
 // Files with arbitrary rounded-[...] values. Use the radius ladder
 // (rounded-control / inner / card / shell / pill) instead.
-const PENDING_ARBITRARY_ROUNDED: readonly string[] = [
-  "src/components/central/CentralSidebar.tsx",
-];
+const PENDING_ARBITRARY_ROUNDED: readonly string[] = [];
 
 // Files with raw bg-white/<n> or bg-black/<n> washes. Use surface tokens.
-const PENDING_RAW_WHITE_BLACK: readonly string[] = [
-];
+const PENDING_RAW_WHITE_BLACK: readonly string[] = [];
 
 // Files with the legacy card recipe. Use <Card> or `glass-panel rounded-card`.
-const PENDING_HANDWRITTEN_SURFACE: readonly string[] = [
-  "src/components/central/BatchDeleteCentralSkillsDialog.tsx",
-  "src/components/central/BatchUninstallCentralSkillsDialog.tsx",
-  "src/components/central/CentralRepositorySyncDialog.tsx",
-  "src/components/central/CentralRepositorySyncPanels.tsx",
-  "src/components/central/CentralSkillEmptyStates.tsx",
-  "src/components/central/CentralUpdateConfirmDialog.tsx",
-  "src/components/central/DeleteCentralSkillDialog.tsx",
-  "src/components/central/RemoteMissingSkillsDialog.tsx",
-  "src/components/central/UpdateCenterDialog.tsx",
-  "src/components/central/repositorySyncPanelControls.tsx",
-  "src/components/central/updateCenter/OrphansTabPanel.tsx",
-  "src/components/central/updateCenter/PlatformDuplicatesTabPanel.tsx",
-  "src/components/platform/BatchDeletePlatformSkillsDialog.tsx",
-  "src/components/skill/SkillDetailModalShell.tsx",
-];
+const PENDING_HANDWRITTEN_SURFACE: readonly string[] = [];
 
 // Files importing @base-ui/react/menu|dialog outside src/components/ui.
 // Use ui/menu, ui/sheet or ui/dialog.
-const PENDING_DIRECT_BASE_UI: readonly string[] = [
-  "src/components/central/CategorizeDrawer.tsx",
-  "src/components/central/CentralPlatformManageDrawer.tsx",
-  "src/components/central/CentralSkillsShellMenus.tsx",
-  "src/components/central/SkillImportLauncher.tsx",
-  "src/components/central/TaskCenterDrawer.tsx",
-  "src/components/platform/PlatformSkillToolbarMenus.tsx",
-  "src/components/skill/SkillDetailModalShell.tsx",
-];
+const PENDING_DIRECT_BASE_UI: readonly string[] = [];
 
 // Initial sizes when the contract landed (C4, 2026-10-21). Never raise these;
 // lower them as entries are migrated. C9 sets every ceiling to 0.
@@ -143,12 +110,16 @@ const PENDING_DIRECT_BASE_UI: readonly string[] = [
 // C8 (tools & settings pages): About / LocalRemoteSync / RemoteTargets settings
 // and the Skills CLI batch bar + two drawers migrated → legacy card 17→14,
 // base-ui 10→7.
+// C7 (library pages): Central / Platform / skill-detail sticky bars, sidebar,
+// dialogs, drawers and menus migrated → backdrop 6→0, rounded 1→0,
+// legacy card 17→3, base-ui 10→3.
+// C7 + C8 merged: every pending list is empty and every ceiling is 0.
 const PENDING_CEILING: Record<string, number> = {
-  "backdrop-* utility": 6,
-  "arbitrary rounded-[...]": 1,
+  "backdrop-* utility": 0,
+  "arbitrary rounded-[...]": 0,
   "raw bg-white/ or bg-black/": 0,
-  "legacy card recipe": 14,
-  "direct @base-ui/react/menu|dialog import": 7,
+  "legacy card recipe": 0,
+  "direct @base-ui/react/menu|dialog import": 0,
 };
 
 const RULES: Rule[] = [

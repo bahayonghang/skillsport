@@ -442,7 +442,7 @@ export function CentralSkillDialogs({
           fallback={
             <div
               role="status"
-              className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 text-sm text-muted-foreground"
+              className="fixed inset-0 z-50 flex items-center justify-center bg-popover text-sm text-muted-foreground"
             >
               <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
                 {t("central.loading")}
@@ -483,7 +483,7 @@ export function CentralSkillDialogs({
           fallback={
             <div
               role="status"
-              className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 text-sm text-muted-foreground"
+              className="fixed inset-0 z-50 flex items-center justify-center bg-popover text-sm text-muted-foreground"
             >
               <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
                 {t("central.loading")}

@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import {
   AlertTriangle,
   Bot,
@@ -12,13 +11,15 @@ import {
 import type { TFunction } from "i18next";
 
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
-  Dialog,
-  DialogClose,
-  DialogOverlay,
-  DialogPortal,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetBody,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { formatBackendError } from "@/lib/backendError";
 import { cn } from "@/lib/utils";
 import type {
@@ -70,39 +71,17 @@ export function TaskCenterDrawer({
   const hasAny = hasAi || hasUpdate || hasPortability;
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogPortal keepMounted={false}>
-        <DialogOverlay className="bg-overlay" />
-        <DialogPrimitive.Popup
-          data-testid="central-task-center-drawer"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby={titleId}
-          className="fixed inset-y-0 right-0 z-50 flex h-full w-screen flex-col bg-background shadow-2xl ring-1 ring-border outline-none sm:w-[min(440px,96vw)]"
-        >
-          <div className="flex shrink-0 items-start justify-between gap-3 border-b border-border p-4">
-            <div className="min-w-0 space-y-1">
-              <DialogTitle id={titleId}>
-                {t("central.taskCenterTitle")}
-              </DialogTitle>
-              <p className="text-sm text-muted-foreground">
-                {t("central.taskCenterDesc")}
-              </p>
-            </div>
-            <DialogClose
-              render={
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={t("common.close")}
-                />
-              }
-            >
-              <XIcon />
-            </DialogClose>
-          </div>
-          <div className="flex-1 space-y-3 overflow-y-auto p-4">
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent
+        side="right"
+        data-testid="central-task-center-drawer"
+        aria-labelledby={titleId}
+      >
+        <SheetHeader>
+          <SheetTitle id={titleId}>{t("central.taskCenterTitle")}</SheetTitle>
+          <SheetDescription>{t("central.taskCenterDesc")}</SheetDescription>
+        </SheetHeader>
+        <SheetBody className="space-y-3">
             {!hasAny && (
               <p
                 data-testid="central-task-center-empty"
@@ -129,10 +108,9 @@ export function TaskCenterDrawer({
                 onCancel={onCancelPortability}
               />
             )}
-          </div>
-        </DialogPrimitive.Popup>
-      </DialogPortal>
-    </Dialog>
+        </SheetBody>
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -168,17 +146,17 @@ function TaskRow({
   return (
     <div
       data-testid={testId}
-      className="rounded-lg border border-border bg-card p-3 shadow-sm"
+      className="rounded-inner bg-accent p-3"
     >
       <div className="flex items-start gap-3">
         <span
           className={cn(
-            "grid size-7 shrink-0 place-items-center rounded-full ring-1",
+            "grid size-7 shrink-0 place-items-center rounded-full",
             hasFailed
-              ? "bg-destructive/10 text-destructive-text ring-destructive/20"
+              ? "bg-destructive-tint text-destructive-text"
               : isCompleted
-                ? "bg-success/10 text-success-foreground ring-success/20"
-                : "bg-primary/10 text-primary ring-primary/20",
+                ? "bg-primary-tint text-success-foreground"
+                : "bg-primary-tint text-primary-text",
           )}
         >
           {icon}
@@ -195,7 +173,7 @@ function TaskRow({
           )}
         </div>
       </div>
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-muted">
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-border">
         <div
           className={cn(
             "h-full w-full origin-left rounded-full transition-transform duration-300 ease-out",
@@ -236,21 +214,20 @@ function StatusBadge({
   label: string;
 }) {
   return (
-    <span
-      className={cn(
-        "rounded-full px-2 py-0.5 text-xs font-medium",
-        tone === "running" &&
-          "bg-primary/10 text-primary ring-1 ring-primary/20",
-        tone === "ok" &&
-          "bg-success/10 text-success-foreground ring-1 ring-success/20",
-        tone === "warn" &&
-          "bg-warning/10 text-warning-foreground ring-1 ring-warning/20",
-        tone === "fail" &&
-          "bg-destructive/10 text-destructive-text ring-1 ring-destructive/20",
-      )}
+    <Badge
+      size="sm"
+      tone={
+        tone === "running"
+          ? "primary"
+          : tone === "ok"
+            ? "success"
+            : tone === "warn"
+              ? "warning"
+              : "destructive"
+      }
     >
       {label}
-    </span>
+    </Badge>
   );
 }
 
@@ -443,7 +420,7 @@ function UpdateTaskRow({
           <span
             className={cn(
               job.failed > 0 &&
-                "rounded-full bg-destructive/10 px-1.5 text-destructive-text",
+                "rounded-full bg-destructive-tint px-1.5 text-destructive-text",
             )}
           >
             {t("central.updateFailed", { count: job.failed })}

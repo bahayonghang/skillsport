@@ -11,6 +11,7 @@ import { centralSkillCardGridTemplateColumns } from "@/lib/centralSkillGrid";
 import type { PlatformTarget } from "@/lib/platformTargetGroups";
 import type { SkillGroup } from "@/lib/centralGrouping";
 import { getRepoDotColor } from "@/lib/tagColor";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { CentralSkillUpdateState, SkillWithLinks } from "@/types";
 
@@ -98,7 +99,7 @@ export function CentralGroupedSkillList({
       ref={contentRef}
       data-testid="central-skill-list-scroll"
       className={cn(
-        "scrollbar-subtle flex-1 overflow-auto p-6",
+        "scrollbar-subtle min-w-0 flex-1 overflow-auto px-4 pt-2 pb-6 sm:px-6",
         selectedCount > 0 && "pb-28",
       )}
     >
@@ -117,18 +118,18 @@ export function CentralGroupedSkillList({
                   }))
                 }
                 aria-expanded={!isCollapsed}
-                className="sticky top-0 z-10 mb-3 flex w-full items-center gap-2 rounded-md border border-border/60 bg-background/95 px-3 py-2 text-left text-sm font-medium backdrop-blur"
+                className="glass-sticky focus-ring sticky top-0 z-10 mb-3 flex w-full items-center gap-2 rounded-full border border-glass-stroke px-3.5 py-1.5 text-left text-sm font-medium"
                 data-testid={`group-header-${group.key}`}
               >
                 <Caret className="size-4 shrink-0 text-muted-foreground" />
                 <span className="min-w-0 flex-1 truncate">{group.label}</span>
-                <span className="shrink-0 rounded-md border border-border/80 bg-muted/60 px-1.5 py-0.5 font-mono text-ui-micro tabular-nums text-muted-foreground">
+                <Badge size="sm" className="tabular-nums">
                   {group.skills.length}
-                </span>
+                </Badge>
               </button>
               {!isCollapsed && (
                 <div
-                  className="grid gap-4"
+                  className="grid gap-5"
                   data-testid={`group-body-${group.key}`}
                   style={{
                     gridTemplateColumns: centralSkillCardGridTemplateColumns(),

@@ -256,6 +256,12 @@ html[data-theme-switching] *::after {
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
   --color-chart-5: var(--chart-5);
+  --color-tag-sky-text: var(--tag-sky-text);
+  --color-tag-sky-tint: var(--tag-sky-tint);
+  --color-tag-slate-text: var(--tag-slate-text);
+  --color-tag-slate-tint: var(--tag-slate-tint);
+  --color-tag-plum-text: var(--tag-plum-text);
+  --color-tag-plum-tint: var(--tag-plum-tint);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
   --color-chart-2: var(--chart-2);
@@ -408,6 +414,14 @@ html[data-theme-switching] *::after {
   --chart-3: #3a8fb7;
   --chart-4: #a97a22;
   --chart-5: #c2566f;
+  /* Tag palette (categorical, not status): low-saturation hues derived from
+     chart-3 / slate / plum; text on its 12% tint over panel >= 4.5:1. */
+  --tag-sky-text: #27668a;
+  --tag-sky-tint: rgb(58 143 183 / 0.12);
+  --tag-slate-text: #4a5872;
+  --tag-slate-tint: rgb(90 108 140 / 0.12);
+  --tag-plum-text: #874a6f;
+  --tag-plum-tint: rgb(160 90 135 / 0.12);
   /* Sidebar (shadcn sidebar-* family) */
   --sidebar-foreground: #1f2a37;
   --sidebar-primary: #13805a;
@@ -485,6 +499,13 @@ html[data-theme-switching] *::after {
   --chart-3: #7cc4e4;
   --chart-4: #f0c06a;
   --chart-5: #ff8fa3;
+  /* Tag palette (see glass-light). */
+  --tag-sky-text: #8ccbe8;
+  --tag-sky-tint: rgb(124 196 228 / 0.12);
+  --tag-slate-text: #b8c3d6;
+  --tag-slate-tint: rgb(160 175 200 / 0.12);
+  --tag-plum-text: #e2a9cb;
+  --tag-plum-tint: rgb(214 150 190 / 0.12);
   /* Sidebar (shadcn sidebar-* family) */
   --sidebar-foreground: #e7edf3;
   --sidebar-primary: #4fd1a1;
@@ -745,35 +766,29 @@ html[data-window-material="mica"] .glass-canvas {
 /* ─── end Window material ─────────────────────────────────────────────────── */
 
 /* ─── Skill markdown surfaces ─────────────────────────────────────────────── */
+/* L2 panel (Light Glass): panel fill + glass stroke + glass shadow, no blur. */
 .skill-markdown-panel {
-  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--card) 94%, transparent) 0%,
-    color-mix(in srgb, var(--background) 18%, var(--card) 82%) 100%
-  );
-  box-shadow:
-    inset 0 1px 0 color-mix(in srgb, var(--foreground) 5%, transparent),
-    0 10px 24px color-mix(in srgb, var(--background) 18%, transparent);
+  border: 1px solid var(--glass-stroke);
+  background-color: var(--card);
+  box-shadow: var(--shadow-glass);
 }
 
 .skill-markdown-panel--detail {
-  border-radius: var(--radius-2xl);
-  padding: 1.1rem 1.1rem 1.35rem;
+  border-radius: var(--radius-card);
+  padding: 1.25rem 1.25rem 1.5rem;
 }
 
 .skill-markdown-panel--compact {
-  border-radius: var(--radius-xl);
+  border-radius: var(--radius-inner);
   padding: 0.95rem 1rem 1.05rem;
 }
 
 .skill-markdown-panel__eyebrow {
   margin-bottom: 0.9rem;
-  font-size: 0.68rem;
-  font-weight: 650;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--muted-foreground) 88%, transparent);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
 }
 
 .skill-markdown {
@@ -807,7 +822,7 @@ html[data-window-material="mica"] .glass-canvas {
 .skill-markdown h1 {
   margin: 0 0 1rem;
   padding-bottom: 0.9rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  border-bottom: 1px solid var(--border);
   font-size: 1.6rem;
   font-weight: 650;
   line-height: 1.15;
@@ -817,12 +832,11 @@ html[data-window-material="mica"] .glass-canvas {
 .skill-markdown h2 {
   margin: 1.75rem 0 0.7rem;
   padding-top: 1rem;
-  border-top: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
-  font-size: 0.95rem;
+  border-top: 1px solid var(--border);
+  font-size: 1.1rem;
   font-weight: 650;
-  line-height: 1.45;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
 }
 
 .skill-markdown h3 {
@@ -836,11 +850,9 @@ html[data-window-material="mica"] .glass-canvas {
 .skill-markdown h5,
 .skill-markdown h6 {
   margin: 1rem 0 0.45rem;
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   font-weight: 650;
   line-height: 1.4;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   color: var(--muted-foreground);
 }
 
@@ -868,25 +880,25 @@ html[data-window-material="mica"] .glass-canvas {
 }
 
 .skill-markdown li::marker {
-  color: color-mix(in srgb, var(--primary) 82%, var(--foreground) 18%);
+  color: var(--primary-text);
 }
 
+/* Inline code: muted wash + mono, control radius scaled down for inline. */
 .skill-markdown code {
   font-family:
     "JetBrains Mono Variable", ui-monospace, "Cascadia Code", "Source Code Pro",
     Menlo, Consolas, monospace;
   font-size: 0.78rem;
-  background: color-mix(in srgb, var(--muted) 70%, transparent);
-  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
-  padding: 0.12rem 0.34rem;
-  border-radius: 0.5rem;
+  background: color-mix(in srgb, var(--muted) 40%, transparent);
+  padding: 0.12rem 0.38rem;
+  border-radius: 0.375rem;
 }
 
+/* Code blocks: bg-muted/40 + inner radius (14px), stroke-less. */
 .skill-markdown pre {
   margin: 1rem 0 1.2rem;
-  background: color-mix(in srgb, var(--card) 84%, var(--background) 16%);
-  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
-  border-radius: var(--radius-xl);
+  background: color-mix(in srgb, var(--muted) 40%, transparent);
+  border-radius: var(--radius-inner);
   padding: 0.95rem 1rem;
   overflow-x: auto;
 }
@@ -896,17 +908,17 @@ html[data-window-material="mica"] .glass-canvas {
   border: none;
   padding: 0;
   border-radius: 0;
-  color: color-mix(in srgb, var(--foreground) 88%, var(--primary) 12%);
+  color: var(--foreground);
   font-size: 0.79rem;
   line-height: 1.65;
 }
 
 .skill-markdown blockquote {
   margin: 1rem 0 1.2rem;
-  padding: 0.95rem 1rem;
-  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
-  border-radius: var(--radius-xl);
-  background: color-mix(in srgb, var(--muted) 24%, transparent);
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--primary-stroke);
+  border-radius: var(--radius-control);
+  background: var(--accent);
   color: var(--muted-foreground);
 }
 
@@ -921,7 +933,7 @@ html[data-window-material="mica"] .glass-canvas {
 }
 
 .skill-markdown a {
-  color: var(--primary);
+  color: var(--primary-text);
   font-weight: 560;
   text-decoration: none;
   border-bottom: 1px solid color-mix(in srgb, var(--primary) 35%, transparent);
@@ -932,9 +944,9 @@ html[data-window-material="mica"] .glass-canvas {
 }
 
 .skill-markdown a:hover {
-  color: color-mix(in srgb, var(--primary) 86%, var(--foreground) 14%);
-  border-color: color-mix(in srgb, var(--primary) 55%, transparent);
-  background: color-mix(in srgb, var(--primary) 10%, transparent);
+  color: var(--primary-text);
+  border-color: var(--primary-text);
+  background: var(--primary-tint);
 }
 
 .skill-markdown strong {
@@ -949,16 +961,16 @@ html[data-window-material="mica"] .glass-canvas {
 .skill-markdown img {
   display: block;
   max-width: 100%;
-  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
-  border-radius: var(--radius-xl);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-inner);
 }
 
 .skill-markdown-table {
   margin: 1rem 0 1.2rem;
   overflow-x: auto;
-  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
-  border-radius: var(--radius-xl);
-  background: color-mix(in srgb, var(--card) 88%, transparent);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-inner);
+  background: var(--popover);
 }
 
 .skill-markdown table {

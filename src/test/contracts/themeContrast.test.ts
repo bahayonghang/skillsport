@@ -346,6 +346,45 @@ describe("theme contrast (composited)", () => {
   });
 });
 
+describe("tag palette contrast (composited)", () => {
+  // src/lib/tagColor.ts low-saturation hues: text on its own 12% tint laid
+  // over every panel / sidebar / overlay composite; the hue itself (repo dots)
+  // is a non-text graphic on panels.
+  const TAG_HUES = ["sky", "slate", "plum"] as const;
+
+  it.each(THEMES)("%s tag text reaches AA on its tint", (theme) => {
+    const model = themeModel(theme);
+    const failures: string[] = [];
+    const bases = [
+      ...model.surfaces.panel,
+      ...model.surfaces.sidebar,
+      ...model.surfaces.overlay,
+    ];
+    for (const hue of TAG_HUES) {
+      const text = model.solid(`--tag-${hue}-text`);
+      const tint = model.color(`--tag-${hue}-tint`);
+      const tinted = bases.map((rgb) => over(tint, rgb));
+      const ratio = minContrast(text, tinted);
+      if (ratio < MIN_TEXT) {
+        failures.push(`${theme} --tag-${hue}-text on tint: ${ratio.toFixed(2)}:1`);
+      }
+      const dot = minContrast(text, model.panel);
+      if (dot < MIN_NON_TEXT) {
+        failures.push(`${theme} --tag-${hue}-text dot on panel: ${dot.toFixed(2)}:1`);
+      }
+    }
+    expect(failures, failures.join("\n")).toEqual([]);
+  });
+
+  it("registers the tag utilities on the Tailwind theme boundary", () => {
+    const themeInline = cssBlock("@theme inline");
+    for (const hue of TAG_HUES) {
+      expect(themeInline).toContain(`--color-tag-${hue}-text: var(--tag-${hue}-text);`);
+      expect(themeInline).toContain(`--color-tag-${hue}-tint: var(--tag-${hue}-tint);`);
+    }
+  });
+});
+
 describe("startup splash literals", () => {
   function startupBlocks() {
     const darkMedia = INDEX_CSS.indexOf("@media (prefers-color-scheme: dark)");

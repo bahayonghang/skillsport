@@ -434,9 +434,9 @@ export function CentralRepositorySyncDialog({
             actionCount={actionCount}
           />
           <RepositorySyncTabs activeTab={activeTab} counts={counts} onTabChange={setActiveTab} />
-          <div className="min-h-[28rem] rounded-xl border border-border p-4 text-sm">
+          <div className="bg-accent min-h-[28rem] rounded-inner p-4 text-sm">
             {isPreviewLoading && (
-              <div className="mb-3 flex items-center gap-2 rounded-xl border border-border p-3 text-sm text-muted-foreground">
+              <div className="bg-accent mb-3 flex items-center gap-2 rounded-inner p-3 text-sm text-muted-foreground">
                 <Loader2 className="size-4 animate-spin" />
                 {t("central.batchDeletePreviewLoading")}
               </div>

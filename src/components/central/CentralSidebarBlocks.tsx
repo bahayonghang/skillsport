@@ -14,6 +14,7 @@ import { FacetItem } from "@/components/central/FacetItem";
 import { useSidebarExpansionSignal } from "@/components/central/useSidebarExpansionSignal";
 import { groupRepositoriesForSidebar } from "@/lib/centralRepositoryGroups";
 import { getRepoDotColor } from "@/lib/tagColor";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { FacetCounts } from "@/lib/centralFacetCounts";
 import type { SkillRepositoryWithStats, SkillTag, TagGroup } from "@/types";
@@ -25,7 +26,7 @@ function RepoDot({ name }: { name: string }) {
   return (
     <span
       aria-hidden
-      className="size-3 shrink-0 rounded-sm"
+      className="size-2.5 shrink-0 rounded-full"
       style={{ backgroundColor: getRepoDotColor(name) }}
     />
   );
@@ -35,13 +36,15 @@ function RepoDot({ name }: { name: string }) {
 function RepoUpdateBadge({ count, t }: { count: number; t: TFunction }) {
   if (count <= 0) return null;
   return (
-    <span
+    <Badge
+      tone="warning"
+      size="sm"
       data-testid="repo-update-badge"
       title={t("central.v2.repoUpdateBadge", { count })}
-      className="shrink-0 rounded-md bg-warning/15 px-1.5 py-0.5 font-mono text-ui-micro tabular-nums font-medium text-warning-foreground"
+      className="tabular-nums"
     >
       {count}
-    </span>
+    </Badge>
   );
 }
 
@@ -74,7 +77,7 @@ export function RepositorySectionBlock({
 
   return (
     <div data-testid={`repo-source-${section.kind}`} className="space-y-1">
-      <div className="px-2 pt-2 text-xs font-medium tracking-normal text-muted-foreground">
+      <div className="px-2.5 pt-2 text-xs font-medium text-muted-foreground">
         {sectionLabel}
       </div>
       {section.groups.map((group) => {
@@ -106,7 +109,7 @@ export function RepositorySectionBlock({
             data-pinned={repo.pinned}
             className={
               repo.pinned
-                ? "border-primary/20 bg-primary/5 text-foreground"
+                ? "border-glass-stroke bg-card text-foreground"
                 : undefined
             }
             onClick={() =>
@@ -183,18 +186,18 @@ function OwnerGroup({
             : t("central.v2.ownerExpand", { owner })
         }
         className={cn(
-          "flex w-full items-center gap-1.5 rounded-md border px-2 py-1.5 text-left text-xs transition-colors",
+          "focus-ring flex w-full items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-left text-xs transition-colors",
           hasSelected
-            ? "border-primary/20 bg-background text-foreground"
-            : "border-transparent text-muted-foreground hover:border-border/70 hover:bg-background/70 hover:text-foreground",
+            ? "border-primary-stroke text-foreground"
+            : "border-transparent text-muted-foreground hover:bg-accent hover:text-foreground",
         )}
       >
         <Caret className="size-3 shrink-0" />
-        <FolderGit2 className="size-3.5 shrink-0 text-info" />
+        <FolderGit2 className="size-3.5 shrink-0 text-secondary-accent-text" />
         <span className="min-w-0 flex-1 truncate font-medium">{owner}</span>
-        <span className="shrink-0 rounded-md border border-border/80 bg-background px-1.5 py-0.5 font-mono text-ui-micro tabular-nums">
+        <Badge size="sm" className="tabular-nums">
           {totalCount}
-        </span>
+        </Badge>
       </button>
       {expanded && (
         <div>
@@ -210,7 +213,7 @@ function OwnerGroup({
               data-pinned={repo.pinned}
               className={
                 repo.pinned
-                  ? "border-primary/20 bg-primary/5 text-foreground"
+                  ? "border-glass-stroke bg-card text-foreground"
                   : undefined
               }
               onClick={() => onToggleRepo(repo.id)}
@@ -274,10 +277,10 @@ function RepoTrailingActions({
             onTogglePin(repository);
           }}
           className={cn(
-            "grid size-6 place-items-center rounded-md transition-colors",
+            "focus-ring grid size-6 place-items-center rounded-full transition-colors",
             repository.pinned
-              ? "text-primary hover:bg-primary/10"
-              : "text-muted-foreground hover:bg-primary/10 hover:text-primary",
+              ? "text-primary-text hover:bg-primary-tint"
+              : "text-muted-foreground hover:bg-primary-tint hover:text-primary-text",
           )}
         >
           {repository.pinned ? (
@@ -299,7 +302,7 @@ function RepoTrailingActions({
             event.stopPropagation();
             onDelete(repository);
           }}
-          className="grid size-6 place-items-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive-text"
+          className="focus-ring grid size-6 place-items-center rounded-full text-muted-foreground transition-colors hover:bg-destructive-tint hover:text-destructive-text"
         >
           <Trash2 className="size-3" />
         </button>
@@ -361,18 +364,18 @@ export function TagGroupBlock({
         onClick={() => setExpanded((v) => !v)}
         aria-expanded={expanded}
         className={cn(
-          "flex w-full items-center gap-1.5 rounded-md border border-transparent px-2 py-1.5 text-left text-xs text-muted-foreground hover:border-border/70 hover:bg-background/70 hover:text-foreground",
+          "focus-ring flex w-full items-center gap-1.5 rounded-full border border-transparent px-2.5 py-1.5 text-left text-xs text-muted-foreground hover:bg-accent hover:text-foreground",
         )}
       >
         <Caret className="size-3 shrink-0" />
         <span
-          className="size-2.5 shrink-0 rounded-sm border border-border/60"
+          className="size-2.5 shrink-0 rounded-full border border-border"
           style={group?.color ? { backgroundColor: group.color } : undefined}
         />
         <span className="min-w-0 flex-1 truncate font-medium">{label}</span>
-        <span className="shrink-0 rounded-md border border-border/80 bg-background px-1.5 py-0.5 font-mono text-ui-micro tabular-nums">
+        <Badge size="sm" className="tabular-nums">
           {totalCount}
-        </span>
+        </Badge>
       </button>
       {expanded && (
         <div>
@@ -429,7 +432,7 @@ export function SidebarTagRow({
         )
       }
       onClick={(e) => e.stopPropagation()}
-      className="ml-1 rounded-md border border-border/60 bg-background px-1 py-0.5 text-xs text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
+      className="ml-1 rounded-control border border-input bg-input-surface px-1 py-0.5 text-xs text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
     >
       <option value="">
         {t ? t("central.v2.tagGroupsAssignNone") : "None"}

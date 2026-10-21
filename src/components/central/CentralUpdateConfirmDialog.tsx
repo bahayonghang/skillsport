@@ -110,7 +110,7 @@ export function CentralUpdateConfirmDialog({
         <DialogBody className="space-y-4">
           {states.length > 0 ? (
             <>
-              <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2">
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-inner border border-border bg-accent px-3 py-2">
                 <label className="flex cursor-pointer items-center gap-2 text-sm font-medium">
                   <Checkbox
                     checked={allSelected}
@@ -133,7 +133,7 @@ export function CentralUpdateConfirmDialog({
                   return (
                     <section
                       key={state.skill_id}
-                      className="rounded-xl border border-border bg-background p-3"
+                      className="rounded-inner bg-accent p-3"
                     >
                       <label className="flex cursor-pointer items-start gap-3">
                         <Checkbox
@@ -144,7 +144,7 @@ export function CentralUpdateConfirmDialog({
                           })}
                         />
                         <span className="min-w-0 flex-1 space-y-2">
-                          <span className="inline-flex max-w-full items-center rounded-md border border-primary/20 bg-primary/5 px-2 py-0.5 text-sm font-semibold text-primary">
+                          <span className="inline-flex max-w-full items-center rounded-control border border-primary/20 bg-primary-tint px-2 py-0.5 text-sm font-semibold text-primary-text">
                             <span className="min-w-0 truncate">{displayName}</span>
                           </span>
                           {skill?.description && (
@@ -152,7 +152,7 @@ export function CentralUpdateConfirmDialog({
                               {skill.description}
                             </span>
                           )}
-                          <span className="block space-y-1 rounded-lg border border-border/70 bg-muted/20 px-3 py-2 text-ui-meta leading-relaxed text-muted-foreground">
+                          <span className="block space-y-1 rounded-inner bg-accent px-3 py-2 text-ui-meta leading-relaxed text-muted-foreground">
                             <span className="block break-all">
                               {state.source_path ?? skill?.source_path
                                 ? t("central.updateConfirmSourcePath", {
@@ -183,7 +183,7 @@ export function CentralUpdateConfirmDialog({
               </div>
             </>
           ) : (
-            <div className="rounded-xl border border-border p-4 text-sm text-muted-foreground">
+            <div className="bg-accent rounded-inner p-4 text-sm text-muted-foreground">
               {t("central.updateConfirmEmpty")}
             </div>
           )}

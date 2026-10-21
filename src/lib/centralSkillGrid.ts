@@ -4,7 +4,8 @@
 // 更窄的卡片由 UnifiedSkillCard 的容器查询把动作图标降级为 hover/focus 揭示。
 export const CENTRAL_SKILL_CARD_MIN_WIDTH = 320;
 export const CENTRAL_SKILL_CARD_MAX_COLUMNS = 4;
-export const CENTRAL_SKILL_CARD_GRID_GAP = 16;
+// DESIGN.md Layout → 卡片网格 gap {spacing.xl} = 20px（1.1.0 C7；只改间距，不改行高契约）。
+export const CENTRAL_SKILL_CARD_GRID_GAP = 20;
 
 type CentralVirtualView = "grid" | "list";
 type CentralVirtualDensity = "comfortable" | "compact";

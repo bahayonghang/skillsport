@@ -361,14 +361,14 @@ export function CentralStatePortabilityDialog({
         </DialogHeader>
 
         <DialogBody className="space-y-5">
-          <div className="inline-flex rounded-md border border-border bg-muted/40 p-1">
+          <div className="inline-flex rounded-control border border-border bg-accent p-1">
             <button
               type="button"
               data-testid="central-portability-export-tab"
               className={cn(
-                "inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm",
+                "inline-flex items-center gap-2 rounded-control px-3 py-1.5 text-sm",
                 activeTab === "export"
-                  ? "bg-background shadow-sm"
+                  ? "bg-popover"
                   : "text-muted-foreground",
               )}
               onClick={() => setActiveTab("export")}
@@ -381,9 +381,9 @@ export function CentralStatePortabilityDialog({
               type="button"
               data-testid="central-portability-import-tab"
               className={cn(
-                "inline-flex items-center gap-2 rounded-sm px-3 py-1.5 text-sm",
+                "inline-flex items-center gap-2 rounded-control px-3 py-1.5 text-sm",
                 activeTab === "import"
-                  ? "bg-background shadow-sm"
+                  ? "bg-popover"
                   : "text-muted-foreground",
               )}
               onClick={() => setActiveTab("import")}
@@ -396,7 +396,7 @@ export function CentralStatePortabilityDialog({
 
           {isJobRunning && (
             <div
-              className="space-y-2 rounded-md border border-border bg-muted/30 p-3"
+              className="space-y-2 rounded-control border border-border bg-accent p-3"
               data-testid="central-portability-progress"
             >
               <div className="flex items-center justify-between gap-3 text-sm">
@@ -431,7 +431,7 @@ export function CentralStatePortabilityDialog({
                     : t("central.portabilityCancel")}
                 </Button>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-background">
+              <div className="h-2 overflow-hidden rounded-full bg-popover">
                 <div
                   className="h-full rounded-full bg-primary transition-[width]"
                   style={{ width: `${Math.round(jobRatio * 100)}%` }}
@@ -482,7 +482,7 @@ export function CentralStatePortabilityDialog({
                 value={displayedExportJson}
                 className="min-h-40 font-mono text-xs"
               />
-              <div className="rounded-md border border-warning/30 bg-warning/10 p-3 text-sm text-warning-foreground">
+              <div className="rounded-control border border-warning/30 bg-warning-tint p-3 text-sm text-warning-foreground">
                 <div className="flex gap-2">
                   <AlertTriangle className="mt-0.5 size-4 shrink-0" />
                   <span>{t("central.portabilityExportBoundary")}</span>
@@ -554,7 +554,7 @@ export function CentralStatePortabilityDialog({
               )}
               {importOriginWarning && (
                 <div
-                  className="rounded-md border border-warning/30 bg-warning/10 p-3 text-sm text-warning-foreground"
+                  className="rounded-control border border-warning/30 bg-warning-tint p-3 text-sm text-warning-foreground"
                   data-testid="central-portability-origin-warning"
                 >
                   <div className="flex gap-2">
@@ -592,7 +592,7 @@ export function CentralStatePortabilityDialog({
                     />
                   </div>
                   {preview.warnings.length > 0 && (
-                    <div className="space-y-2 rounded-md border border-warning/30 bg-warning/10 p-3 text-sm">
+                    <div className="space-y-2 rounded-control border border-warning/30 bg-warning-tint p-3 text-sm">
                       <div className="flex items-center gap-2 font-medium text-warning-foreground">
                         <AlertTriangle className="size-4" />
                         {t("central.portabilityPreviewWarningsTitle", {
@@ -630,7 +630,7 @@ export function CentralStatePortabilityDialog({
                       </div>
                     </div>
                   )}
-                  <div className="max-h-72 overflow-auto rounded-md border border-border">
+                  <div className="max-h-72 overflow-auto rounded-control border border-border">
                     {preview.skills.map((skill, index) => {
                       const key = conflictKey(skill);
                       return (
@@ -676,7 +676,7 @@ export function CentralStatePortabilityDialog({
                           {skill.status === "conflict" && (
                             <div className="flex items-center gap-2">
                               <select
-                                className="h-9 rounded-md border border-input bg-background px-2 text-sm"
+                                className="h-9 rounded-control border border-input bg-input-surface px-2 text-sm"
                                 value={conflictResolutions[key] ?? "skip"}
                                 onChange={(event) =>
                                   setConflictResolutions((current) => ({
@@ -701,7 +701,7 @@ export function CentralStatePortabilityDialog({
                               </select>
                               {conflictResolutions[key] === "rename" && (
                                 <input
-                                  className="h-9 w-40 rounded-md border border-input bg-background px-2 text-sm"
+                                  className="h-9 w-40 rounded-control border border-input bg-input-surface px-2 text-sm"
                                   value={renameValues[key] ?? ""}
                                   onChange={(event) =>
                                     setRenameValues((current) => ({
@@ -722,7 +722,7 @@ export function CentralStatePortabilityDialog({
                   </div>
                   {lastImportResult &&
                     lastImportResult.failedSkills.length > 0 && (
-                      <div className="space-y-2 rounded-md border border-destructive/30 bg-destructive/5 p-3">
+                      <div className="space-y-2 rounded-control border border-destructive/30 bg-destructive-tint p-3">
                         <div className="text-sm font-medium text-destructive-text">
                           {t("central.portabilityImportFailuresTitle", {
                             count: lastImportResult.failedSkills.length,
@@ -732,7 +732,7 @@ export function CentralStatePortabilityDialog({
                           {lastImportResult.failedSkills.map((failure) => (
                             <div
                               key={`${failure.skillId}-${failure.sourcePath ?? "unknown"}`}
-                              className="rounded-md border border-border bg-background/70 p-2"
+                              className="rounded-control border border-border bg-popover p-2"
                             >
                               <div className="text-sm font-medium">
                                 {failure.skillId}

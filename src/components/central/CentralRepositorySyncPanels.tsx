@@ -73,7 +73,7 @@ export function RepositorySyncSummary({
         count: remoteAddedCount,
       }),
       value: remoteAddedCount,
-      className: "border-primary/25 bg-primary/10 text-primary",
+      className: "border-primary/25 bg-primary-tint text-primary-text",
     },
     {
       key: "skipped",
@@ -81,7 +81,7 @@ export function RepositorySyncSummary({
         count: skippedRemoteAddedCount,
       }),
       value: skippedRemoteAddedCount,
-      className: "border-muted-foreground/20 bg-muted/40 text-muted-foreground",
+      className: "border-muted-foreground/20 bg-accent text-muted-foreground",
     },
     {
       key: "missing",
@@ -89,7 +89,7 @@ export function RepositorySyncSummary({
         count: remoteMissingCount,
       }),
       value: remoteMissingCount,
-      className: "border-destructive/20 bg-destructive/10 text-destructive-text",
+      className: "border-destructive/20 bg-destructive-tint text-destructive-text",
     },
     {
       key: "failed",
@@ -97,12 +97,12 @@ export function RepositorySyncSummary({
         count: failedRepositoryCount,
       }),
       value: failedRepositoryCount,
-      className: "border-warning/25 bg-warning/10 text-warning-foreground",
+      className: "border-warning/25 bg-warning-tint text-warning-foreground",
     },
   ];
 
   return (
-    <section className="rounded-xl bg-muted/20 p-4 ring-1 ring-border">
+    <section className="rounded-inner bg-accent p-4">
       <p className="text-sm text-muted-foreground">
         {t("central.repositorySyncDesc", {
           added: remoteAddedCount,
@@ -114,7 +114,7 @@ export function RepositorySyncSummary({
         {cards.map((card) => (
           <div
             key={card.key}
-            className={`rounded-lg border px-3 py-2 ${card.className}`}
+            className={`rounded-inner border px-3 py-2 ${card.className}`}
           >
             <div className="text-lg font-semibold leading-none">
               {card.value}
@@ -156,8 +156,8 @@ export function RepositorySyncTabs({
           onClick={() => onTabChange(tab)}
           className={
             activeTab === tab
-              ? "rounded-t-lg bg-primary/10 px-3 py-2 text-sm font-medium text-primary"
-              : "rounded-t-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted"
+              ? "rounded-t-lg bg-primary-tint px-3 py-2 text-sm font-medium text-primary-text"
+              : "rounded-t-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent"
           }
         >
           {t(`central.repositorySyncTabs.${tab}`, { count: counts[tab] })}
@@ -185,29 +185,29 @@ export function DeletePreviewBlock({
   const { t } = useTranslation();
   if (error) {
     return (
-      <div className="mt-2 rounded-lg border border-warning/30 bg-warning/10 p-2 text-xs text-warning-foreground">
+      <div className="mt-2 rounded-inner border border-warning/30 bg-warning-tint p-2 text-xs text-warning-foreground">
         {t("central.remoteMissingPreviewFailed", { error })}
       </div>
     );
   }
   if (!item) {
     return (
-      <div className="mt-2 rounded-lg border border-dashed border-border p-2 text-xs text-muted-foreground">
+      <div className="mt-2 rounded-inner border border-dashed border-border p-2 text-xs text-muted-foreground">
         {t("central.repositorySyncDeletePreviewUnavailable")}
       </div>
     );
   }
   return (
-    <div className="mt-3 space-y-3 rounded-xl border border-destructive/20 bg-destructive/5 p-3">
+    <div className="mt-3 space-y-3 rounded-inner bg-destructive-tint p-3">
       <div>
-        <div className="text-xs font-medium uppercase tracking-wide text-destructive-text">
+        <div className="text-xs font-medium text-destructive-text">
           {t("central.repositorySyncDeletePreviewTitle")}
         </div>
         <div className="mt-1 break-all text-xs text-muted-foreground">
           {t("central.repositorySyncCentralPath", { path: item.central_path })}
         </div>
       </div>
-      <div className="rounded-lg border border-border/70 bg-background/80 p-2 text-xs text-muted-foreground">
+      <div className="rounded-inner bg-popover p-2 text-xs text-muted-foreground">
         {item.auto_removed_agent_ids.length > 0
           ? t("central.repositorySyncAutoRemovedLinks", {
               platforms: item.auto_removed_agent_ids
@@ -218,7 +218,7 @@ export function DeletePreviewBlock({
       </div>
       {item.copy_installations.length > 0 && (
         <div className="space-y-2">
-          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <div className="text-xs font-medium text-muted-foreground">
             {t("central.remoteMissingCopyInstalls")}
           </div>
           {item.copy_installations.map((installation) => {
@@ -228,7 +228,7 @@ export function DeletePreviewBlock({
             return (
               <label
                 key={`${item.skill_id}:${installation.agent_id}`}
-                className="flex cursor-pointer items-start gap-2 rounded-lg border border-border/70 bg-background/80 p-2 text-sm"
+                className="flex cursor-pointer items-start gap-2 rounded-inner bg-popover p-2 text-sm"
               >
                 <Checkbox
                   checked={checked}
@@ -327,7 +327,7 @@ export function PendingAdditionsPanel({
           return (
             <article
               key={key}
-              className="rounded-xl border border-border bg-background p-3"
+              className="rounded-inner bg-accent p-3"
             >
               <div className="flex items-start gap-3">
                 <Checkbox
@@ -485,7 +485,7 @@ export function SkippedAdditionsPanel(props: SkippedAdditionsPanelProps) {
           return (
             <article
               key={key}
-              className="rounded-xl border border-border bg-background p-3"
+              className="rounded-inner bg-accent p-3"
             >
               <div className="flex flex-wrap items-start gap-3">
                 <div className="min-w-0 flex-1">
@@ -638,7 +638,7 @@ export function RemoteMissingPanel({
           return (
             <article
               key={skillId}
-              className="rounded-xl border border-border bg-background p-3"
+              className="rounded-inner bg-accent p-3"
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
@@ -708,7 +708,7 @@ export function FailedRepositoriesPanel({
         {items.map((item) => (
           <article
             key={item.repositoryId}
-            className="rounded-xl border border-warning/30 bg-warning/10 p-3"
+            className="rounded-inner bg-warning-tint p-3"
           >
             <div className="text-sm font-medium text-warning-foreground">
               {item.name || item.repositoryId}

@@ -46,7 +46,7 @@ export function UpdateCenterToolbar({
         </label>
         <select
           id="update-center-scope"
-          className="h-7 rounded-lg border border-border bg-background px-2 text-sm"
+          className="focus-ring h-7 rounded-control border border-input bg-input-surface px-2 text-sm"
           value={scopeKind}
           onChange={(event) =>
             onScopeKindChange(event.target.value as SkillRefreshScopeKind)
@@ -71,7 +71,7 @@ export function UpdateCenterToolbar({
         </label>
         <select
           id="update-center-refresh-mode"
-          className="h-7 rounded-lg border border-border bg-background px-2 text-sm"
+          className="focus-ring h-7 rounded-control border border-input bg-input-surface px-2 text-sm"
           value={refreshMode}
           onChange={(event) =>
             onRefreshModeChange(event.target.value as SkillRefreshMode)
@@ -117,8 +117,8 @@ export function UpdateCenterToolbar({
             onClick={() => onTabChange(tab)}
             className={
               activeTab === tab
-                ? "rounded-t-lg bg-primary/10 px-3 py-2 text-sm font-medium text-primary"
-                : "rounded-t-lg px-3 py-2 text-sm text-muted-foreground hover:bg-muted"
+                ? "rounded-t-lg bg-primary-tint px-3 py-2 text-sm font-medium text-primary-text"
+                : "rounded-t-lg px-3 py-2 text-sm text-muted-foreground hover:bg-accent"
             }
           >
             {t(`central.updateCenter.tabs.${tab}`, { count: counts[tab] })}
