@@ -2465,6 +2465,17 @@
         "glass-light": "Glass Light",
         "glass-dark": "Glass Dark"
       },
+      "windowMaterial": "Window material",
+      "windowMaterialDesc": "Let the Windows 11 Mica backdrop show through the glass canvas.",
+      "windowMaterialToggle": "Use the Mica window material",
+      "windowMaterialOn": "Mica",
+      "windowMaterialOff": "Off",
+      "windowMaterialUnavailable": {
+        "unsupportedOs": "Mica needs Windows 11. This system keeps the opaque canvas.",
+        "unsupportedPlatform": "Mica is only available on Windows 11. This system keeps the opaque canvas.",
+        "applyFailed": "Mica could not be applied, so the opaque canvas is in use."
+      },
+      "windowMaterialSaveFailed": "Could not save the window material setting.",
       "languageGroup": "Language",
       "languageGroupDesc": "Set the interface language.",
       "typographyGroup": "Typography",

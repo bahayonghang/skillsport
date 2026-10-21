@@ -113,6 +113,7 @@ export const GENERATED_IPC_COMMANDS = {
   set_scan_directory_active: command<{ path: string; isActive: boolean }, null>(),
   set_settings: command<{ values: { [key in string]: string } }, null>(),
   set_skill_repository_pinned: command<{ repositoryId: string; pinned: boolean }, SkillRepository>(),
+  set_window_material: command<{ enabled: boolean; dark: boolean }, WindowMaterialState>(),
   skills_cli_add_global: command<{ jobId: string; source: string; skillNames: string[]; skillportAgentIds: string[] }, SkillsCliAddResult>(),
   skills_cli_apply_updates: command<{ request: SkillsCliApplyUpdateRequest }, SkillsCliApplyResult>(),
   skills_cli_check_updates: command<{ jobId: string }, SkillsCliUpdateInventory>(),
@@ -240,6 +241,7 @@ export const GENERATED_IPC_COMMAND_NAMES = [
   "set_scan_directory_active",
   "set_settings",
   "set_skill_repository_pinned",
+  "set_window_material",
   "skills_cli_add_global",
   "skills_cli_apply_updates",
   "skills_cli_check_updates",
@@ -1788,3 +1790,22 @@ export type UsagePageSnapshot = {
 };
 
 export type UsageSkillMatchStatus = "matched" | "ambiguous" | "unmatched";
+
+export type WindowMaterial = "mica" | "none";
+
+export type WindowMaterialReason = 
+/**  The user turned the material off in Settings. */
+"disabled" | 
+/**  Windows, but older than Windows 11 (no Mica; no Acrylic fallback). */
+"unsupportedOs" | 
+/**  Not Windows at all. */
+"unsupportedPlatform" | 
+/**  Supported OS, but the effect request could not be dispatched. */
+"applyFailed";
+
+export type WindowMaterialState = {
+	applied: WindowMaterial,
+	reason: WindowMaterialReason | null,
+	/**  Whether this OS can show Mica at all (drives the Settings explanation). */
+	supported: boolean,
+};

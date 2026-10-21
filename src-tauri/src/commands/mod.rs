@@ -28,3 +28,4 @@ pub mod startup;
 pub mod tag_groups;
 pub mod targets;
 pub mod usage;
+pub mod window_material;

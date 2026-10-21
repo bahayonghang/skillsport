@@ -21,6 +21,7 @@ import { useTagGroupsStore } from "@/stores/tagGroupsStore";
 import { useTargetStore } from "@/stores/targetStore";
 import { useUsageStore } from "@/stores/usageStore";
 import { useRulesStore } from "@/stores/rulesStore";
+import { useWindowMaterialStore } from "@/stores/windowMaterialStore";
 
 const DESKTOP_ONLY_UNINSTALL_ERROR =
   "Uninstalling skills requires the Tauri desktop runtime.";
@@ -64,6 +65,17 @@ describe("browser fixtures drive real store loaders", () => {
     await useRulesStore.getState().save();
     expect(useRulesStore.getState().detail?.body).toBe("# Synthetic edited content\n");
     expect(useRulesStore.getState().errorCode).toBeNull();
+  });
+  it("windowMaterialStore stays opaque in the browser", async () => {
+    useWindowMaterialStore.getState().reset();
+    await useWindowMaterialStore.getState().init();
+    expect(useWindowMaterialStore.getState().state).toEqual({
+      applied: "none",
+      reason: "unsupportedPlatform",
+      supported: false,
+    });
+    expect(document.documentElement.dataset.windowMaterial).toBe("none");
+    useWindowMaterialStore.getState().reset();
   });
   it("startupStore enters ready before DB-backed loaders run", async () => {
     resetStartupStoreForTests();

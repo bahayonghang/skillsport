@@ -6,6 +6,7 @@ use crate::services::skills_cli::{parse_skill_source, SkillSource};
 const SETTING_KEY_FORBIDDEN: &str =
     "setting_key_forbidden: This setting cannot be changed through the generic settings API.";
 const SETTING_VALUE_INVALID: &str = "setting_value_invalid: The setting value is invalid.";
+const WINDOW_MATERIAL_KEY: &str = "window_material_v1";
 const SKILLS_CLI_RECENT_SOURCES_KEY: &str = "skills_cli.recent_sources";
 const RECENT_SOURCES_MAX_ITEMS: usize = 8;
 const RECENT_SOURCES_MAX_SERIALIZED: usize = 16 * 1024;
@@ -24,6 +25,7 @@ const AI_PROVIDERS: &[&str] = &[
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub(super) enum SettingCategory {
     Ai,
+    Appearance,
     Font,
     Platform,
     Update,
@@ -34,6 +36,7 @@ impl SettingCategory {
     pub(super) fn as_str(self) -> &'static str {
         match self {
             Self::Ai => "ai",
+            Self::Appearance => "appearance",
             Self::Font => "font",
             Self::Platform => "platform",
             Self::Update => "update",
@@ -54,6 +57,7 @@ pub(super) fn category_for_key(key: &str) -> Option<SettingCategory> {
         "platform_category_visibility" => Some(SettingCategory::Platform),
         "central_update_check_mode_v1" => Some(SettingCategory::Update),
         "font_scale_v1" => Some(SettingCategory::Font),
+        WINDOW_MATERIAL_KEY => Some(SettingCategory::Appearance),
         SKILLS_CLI_RECENT_SOURCES_KEY => Some(SettingCategory::SkillsCli),
         "ai_provider"
         | "ai_tag_concurrency"
@@ -72,6 +76,7 @@ pub(super) fn validate_setting(key: &str, value: &str) -> Result<SettingCategory
         "platform_category_visibility" => validate_platform_visibility(value),
         "central_update_check_mode_v1" => matches!(value, "regular" | "sync"),
         "font_scale_v1" => matches!(value, "0.875" | "1" | "1.125"),
+        WINDOW_MATERIAL_KEY => matches!(value, "mica" | "off"),
         "ai_provider" => AI_PROVIDERS.contains(&value),
         "ai_tag_concurrency" => parse_integer_in_range(value, 1, 8),
         "ai_tag_interval_ms" => parse_integer_in_range(value, 0, 60_000),
@@ -265,6 +270,8 @@ mod tests {
             ("display_font_custom_dark_v2", "Segoe UI"),
             ("body_chinese_fallback_light_v2", "sourceHanSerif"),
             ("font_scale_v1", "1.125"),
+            ("window_material_v1", "mica"),
+            ("window_material_v1", "off"),
             ("ai_provider", "custom"),
             ("ai_tag_concurrency", "8"),
             ("ai_tag_interval_ms", "60000"),
@@ -343,6 +350,8 @@ mod tests {
                 r#"{"coding":false,"lobster":false}"#,
             ),
             ("font_scale_v1", "9"),
+            ("window_material_v1", "acrylic"),
+            ("window_material_v1", "Mica"),
             ("display_font_v1", "Comic Sans"),
             ("ai_tag_concurrency", "9"),
             ("ai_tag_interval_ms", "-1"),
@@ -368,6 +377,18 @@ mod tests {
             ));
             assert!(!error.contains(value));
         }
+    }
+
+    #[test]
+    fn window_material_audit_reports_appearance_category_only() {
+        assert_eq!(
+            validate_setting("window_material_v1", "off"),
+            Ok(SettingCategory::Appearance)
+        );
+        let details = setting_audit_details(std::iter::once("window_material_v1"), true);
+        let serialized = serde_json::to_string(&details).unwrap();
+        assert_eq!(details["categories"], serde_json::json!(["appearance"]));
+        assert!(!serialized.contains("window_material_v1"));
     }
 
     #[test]
