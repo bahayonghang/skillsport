@@ -90,11 +90,11 @@ describe("Update Center source metadata", () => {
     const metaChip = (key: string) =>
       row.querySelector<HTMLElement>(`[data-source-meta-key="${key}"]`)!;
 
-    expect(metaChip("repository")).toHaveClass("bg-muted/35", "ring-border/60");
-    expect(metaChip("path")).toHaveClass("bg-muted/35", "ring-border/60");
-    expect(metaChip("url")).toHaveClass("bg-muted/35", "ring-border/60");
-    expect(metaChip("cache")).toHaveClass("bg-muted/35", "ring-border/60");
-    expect(metaChip("hash")).toHaveClass("bg-muted/35", "ring-border/60");
+    expect(metaChip("repository")).toHaveClass("bg-accent", "ring-border");
+    expect(metaChip("path")).toHaveClass("bg-accent", "ring-border");
+    expect(metaChip("url")).toHaveClass("bg-accent", "ring-border");
+    expect(metaChip("cache")).toHaveClass("bg-accent", "ring-border");
+    expect(metaChip("hash")).toHaveClass("bg-accent", "ring-border");
   });
 
   it("uses repository labels for removed remote skills", () => {

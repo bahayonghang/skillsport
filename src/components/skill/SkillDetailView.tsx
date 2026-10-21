@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { Bot, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 import { CentralUpdateConfirmDialog } from "@/components/central/CentralUpdateConfirmDialog";
 import { CollectionPickerDialog } from "@/components/collection/CollectionPickerDialog";
 import {
@@ -541,18 +542,36 @@ export function SkillDetailView({
 
   return (
     <div className={cn("flex h-full flex-col", variant === "drawer" && "min-h-0")}>
-      <div className="flex shrink-0 items-center gap-3 border-b border-border px-6 py-3">
-        {leading}
-        <div className="min-w-0 flex-1">
-          <h1 id={titleId} className="truncate text-lg font-semibold">
-            {isLoading ? (skillId ?? sourceMetadata?.name ?? "") : effectiveName}
-          </h1>
-          {effectiveDescription && (
-            <p className="mt-0.5 truncate text-xs text-muted-foreground">{effectiveDescription}</p>
-          )}
+      {variant === "page" ? (
+        // 独立页面：标题区复用 PageHeader（页面唯一的 <h1>），直接坐在 canvas 上。
+        <div className="flex shrink-0 items-start gap-3 px-4 pt-2 pb-3 sm:px-6">
+          {leading}
+          <PageHeader
+            className="flex-1"
+            titleId={titleId}
+            title={isLoading ? (skillId ?? sourceMetadata?.name ?? "") : effectiveName}
+            meta={
+              effectiveDescription ? (
+                <span className="line-clamp-2">{effectiveDescription}</span>
+              ) : undefined
+            }
+            actions={<TabToggle activeTab={activeTab} onChange={setActiveTab} />}
+          />
         </div>
-        <TabToggle activeTab={activeTab} onChange={setActiveTab} />
-      </div>
+      ) : (
+        <div className="flex shrink-0 items-center gap-3 border-b border-border px-6 py-3">
+          {leading}
+          <div className="min-w-0 flex-1">
+            <h1 id={titleId} className="truncate text-lg font-semibold">
+              {isLoading ? (skillId ?? sourceMetadata?.name ?? "") : effectiveName}
+            </h1>
+            {effectiveDescription && (
+              <p className="mt-0.5 truncate text-xs text-muted-foreground">{effectiveDescription}</p>
+            )}
+          </div>
+          <TabToggle activeTab={activeTab} onChange={setActiveTab} />
+        </div>
+      )}
 
       <div className="min-h-0 flex-1 overflow-hidden">
         {isLoading && (

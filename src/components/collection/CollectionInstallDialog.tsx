@@ -120,7 +120,7 @@ export function CollectionInstallDialog({
             renderBadges={(agent) => (
               <>
                 {isLockedTarget(agent) && (
-                  <span className="text-xs text-primary shrink-0">
+                  <span className="text-xs text-primary-text shrink-0">
                     {t("platformTargets.alwaysIncluded")}
                   </span>
                 )}

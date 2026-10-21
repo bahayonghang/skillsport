@@ -104,7 +104,7 @@ export function SkillDetailPreview({
             <div className="flex items-center justify-between gap-3">
               <div>
                 <h2 className="flex items-center gap-2 text-sm font-semibold">
-                  <Bot className="size-4 text-primary" />
+                  <Bot className="size-4 text-primary-text" />
                   {t("detail.aiExplanation")}
                 </h2>
                 <p className="mt-1 text-xs text-muted-foreground">
@@ -137,7 +137,7 @@ export function SkillDetailPreview({
 
             {explanationError && (
               <div
-                className={`space-y-2 rounded-md border p-3 ${statusChipClass.error}`}
+                className={`space-y-2 rounded-control border p-3 ${statusChipClass.error}`}
               >
                 <p className="text-sm">{explanationErrorMessage}</p>
                 {(explanationErrorInfo?.details ||
@@ -155,7 +155,7 @@ export function SkillDetailPreview({
                       {t("detail.showDetails")}
                     </button>
                     {showErrorDetails && (
-                      <pre className="scrollbar-subtle mt-1.5 max-h-40 overflow-auto whitespace-pre-wrap break-all rounded-md bg-muted/30 p-2 font-mono text-ui-meta leading-4 text-muted-foreground">
+                      <pre className="scrollbar-subtle mt-1.5 max-h-40 overflow-auto whitespace-pre-wrap break-all rounded-control bg-accent p-2 font-mono text-ui-meta leading-4 text-muted-foreground">
                         {explanationErrorInfo?.details || explanationError}
                       </pre>
                     )}
@@ -188,7 +188,7 @@ export function SkillDetailPreview({
                 )}
               </div>
             ) : (
-              <div className="space-y-3 rounded-lg border border-dashed border-border p-8 text-center">
+              <div className="space-y-3 rounded-inner border border-dashed border-border p-8 text-center">
                 <Bot className="mx-auto size-8 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">

@@ -2,6 +2,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useSidebarExpansionSignal } from "@/components/central/useSidebarExpansionSignal";
 
@@ -45,20 +46,20 @@ export function FacetSection({
 
   return (
     <section data-testid={testId}>
-      <div className="sticky top-0 z-10 -mx-3 flex items-center gap-1.5 border-b border-border/40 bg-background/90 px-4 py-2 text-xs font-medium tracking-normal text-muted-foreground shadow-[0_1px_0_color-mix(in_srgb,var(--foreground)_3%,transparent)] backdrop-blur-md">
+      <div className="glass-sticky sticky top-0 z-10 -mx-3 flex items-center gap-1.5 border-b border-border px-4 py-1.5 text-xs font-medium text-muted-foreground">
         <button
           type="button"
           onClick={() => setExpanded((v) => !v)}
-          className="flex min-h-8 flex-1 items-center gap-1.5 rounded-lg text-left transition-[color,background-color] hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
+          className="focus-ring flex min-h-8 flex-1 items-center gap-1.5 rounded-control text-left transition-[color,background-color] hover:text-foreground"
           aria-expanded={expanded}
         >
           <Caret className="size-3 shrink-0" />
           {icon ? <span className="text-muted-foreground">{icon}</span> : null}
           <span className="truncate">{title}</span>
           {typeof count === "number" && (
-            <span className="ml-auto rounded-md border border-border/80 bg-background px-1.5 py-0.5 font-mono text-ui-micro tabular-nums normal-case">
+            <Badge size="sm" className="ml-auto tabular-nums">
               {count}
-            </span>
+            </Badge>
           )}
         </button>
         {rightSlot}

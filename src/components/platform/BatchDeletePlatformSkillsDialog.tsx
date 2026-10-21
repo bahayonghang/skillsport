@@ -51,7 +51,7 @@ export function BatchDeletePlatformSkillsDialog({
         </DialogHeader>
 
         <DialogBody className="space-y-4">
-          <div className="rounded-xl border border-destructive/25 bg-destructive/5 p-3 text-sm">
+          <div className="rounded-inner bg-destructive-tint p-3 text-sm">
             <div className="flex items-start gap-2">
               <AlertTriangle className="mt-0.5 size-4 shrink-0 text-destructive-text" />
               <div className="space-y-1">
@@ -66,14 +66,14 @@ export function BatchDeletePlatformSkillsDialog({
           </div>
 
           <div className="space-y-2">
-            <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <div className="text-xs font-medium text-muted-foreground">
               {t("platform.batchDeleteSelectedSection")}
             </div>
-            <div className="max-h-72 space-y-2 overflow-auto rounded-xl border border-border bg-muted/20 p-3">
+            <div className="max-h-72 space-y-2 overflow-auto rounded-inner bg-accent p-3">
               {skills.map((skill) => (
                 <div
                   key={skill.row_id ?? `${skill.id}::${skill.dir_path}`}
-                  className="rounded-lg border border-border/70 bg-background/80 p-3"
+                  className="rounded-inner bg-popover p-3"
                 >
                   <div className="text-sm font-medium text-foreground">{skill.name}</div>
                   <div className="mt-1 truncate text-xs text-muted-foreground">

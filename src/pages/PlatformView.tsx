@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { UnifiedSkillCard } from "@/components/skill/UnifiedSkillCard";
 import { SkillDetailDrawer } from "@/components/skill/SkillDetailDrawer";
 import { BatchDeletePlatformSkillsDialog } from "@/components/platform/BatchDeletePlatformSkillsDialog";
-import { PlatformIcon } from "@/components/platform/PlatformIcon";
+import { PlatformPageHeader } from "@/components/platform/PlatformPageHeader";
 import { PlatformCleanupScanButtons } from "@/components/platform/PlatformCleanupScanButtons";
 import { PlatformGroupedSkillList } from "@/components/platform/PlatformGroupedSkillList";
 import { PlatformOriginNav } from "@/components/platform/PlatformOriginNav";
@@ -26,7 +26,6 @@ import { useSkillExplanationSummaries } from "@/hooks/useSkillExplanationSummari
 import { useSkillCallCounts } from "@/hooks/useSkillCallCounts";
 import { useSkillUsageStats } from "@/hooks/useSkillUsageStats";
 import { createPlatformBatchUninstallRequest, getFailedBatchUninstallActionKeys, getPlatformSkillActionKey, getPlatformSkillRowKey, getPlatformSkillSummaryKeys } from "@/lib/platformBatchActions";
-import { formatPathForDisplay } from "@/lib/path";
 import { cn } from "@/lib/utils";
 import { ScannedSkill, SkillWithLinks } from "@/types";
 import { selectMostUniversalSkills } from "@/lib/centralInstalledFilters";
@@ -55,8 +54,8 @@ import {
 function EmptyState({ message, action }: { message: string; action?: ReactNode }) {
   return (
     <div className="flex flex-col items-center justify-center h-full gap-4 py-20">
-      <div className="p-4 rounded-full bg-muted/60">
-        <Blocks className="size-12 text-muted-foreground opacity-60" />
+      <div className="rounded-full bg-accent p-4">
+        <Blocks className="size-12 text-muted-foreground" aria-hidden />
       </div>
       <p className="text-sm text-muted-foreground font-medium">{message}</p>
       {action}
@@ -559,27 +558,20 @@ export function PlatformView() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="border-b border-border px-6 py-4">
-        <div className="flex items-center gap-2.5">
-          <PlatformIcon agentId={agent.id} className="size-6 text-primary-text" size={24} />
-          <h1 className="text-xl font-semibold">{platformDisplayName}</h1>
-        </div>
-        {isUniversalPage && (
-          <p className="text-xs text-muted-foreground mt-1">
-            {t("platformTargets.universalScope")}
-          </p>
-        )}
-        <p className="text-sm text-muted-foreground mt-0.5">
-          {formatPathForDisplay(agent.global_skills_dir)}
-        </p>
-      </div>
+      {/* Header（PageHeader 直接坐在 canvas 上）+ 来源分段 + 搜索工具条 */}
+      <div className="shrink-0 space-y-3 px-4 pt-4 pb-3 sm:px-6 sm:pt-5">
+        <PlatformPageHeader
+          agentId={agent.id}
+          name={platformDisplayName}
+          scopeNote={isUniversalPage ? t("platformTargets.universalScope") : undefined}
+          skillsDir={agent.global_skills_dir}
+        />
 
       {showSourceFilter && (
         <div
           role="tablist"
           aria-label={t("platform.sourceFilterTabsLabel")}
-          className="flex items-center gap-1 px-6 py-3 border-b border-border"
+          className="flex flex-wrap items-center gap-1.5"
         >
           {sourceTabs.map((tab) => (
             <button
@@ -589,29 +581,28 @@ export function PlatformView() {
               aria-selected={sourceFilter === tab.id}
               onClick={() => setSourceFilter(tab.id)}
               className={cn(
-                "inline-flex items-center gap-1.5 px-4 py-1.5 rounded-md text-sm transition-colors cursor-pointer",
+                "focus-ring inline-flex h-8 cursor-pointer items-center gap-1.5 rounded-full border px-3.5 text-sm transition-colors",
                 sourceFilter === tab.id
-                  ? "bg-primary/15 text-foreground font-medium"
-                  : "text-muted-foreground hover:bg-muted/40"
+                  ? "border-primary-stroke bg-primary-tint font-medium text-primary-text"
+                  : "border-glass-stroke bg-popover text-muted-foreground ring-1 ring-glass-hairline hover:text-foreground"
               )}
             >
               <span>{tab.label}</span>
-              <span className="text-xs opacity-75">({tab.count})</span>
+              <span className="text-xs tabular-nums">({tab.count})</span>
             </button>
           ))}
         </div>
       )}
 
       {/* Search bar */}
-      <div className="px-6 py-3 border-b border-border">
-        <div className="flex items-center gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative min-w-60 flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
             <Input
               placeholder={t("platform.searchPlaceholder")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-8 bg-muted/40"
+              className="h-9 rounded-full pl-9"
             />
           </div>
           <PlatformSkillSortMenu
@@ -659,14 +650,18 @@ export function PlatformView() {
       />
 
       {/* Content */}
-      <div className="flex flex-1 min-h-0">
+      <div className="mt-4 flex flex-1 min-h-0">
         <PlatformOriginNav
-          className="w-56 shrink-0 border-r border-border overflow-y-auto p-3"
+          className="glass-panel scrollbar-subtle mb-4 ml-4 w-56 shrink-0 overflow-y-auto rounded-card p-2 sm:ml-6"
           model={originNavModel}
           value={originFilter}
           onChange={setOriginFilter}
         />
-        <div ref={contentRef} className="flex-1 overflow-auto p-6">
+        <div
+          ref={contentRef}
+          data-testid="platform-content-scroll"
+          className="scrollbar-subtle min-w-0 flex-1 overflow-auto px-4 pt-0.5 pb-6 sm:px-6"
+        >
           {isLoading ? (
             <EmptyState message={t("platform.loading")} />
           ) : skills.length === 0 ? (
@@ -709,8 +704,8 @@ export function PlatformView() {
             <VirtualizedGrid
               items={filteredSkills}
               itemHeight={204} // 行高契约：覆盖卡片内容上限 ≈200（virtualized-grid 行轨道已钉死）
-              rowGap={16}
-              columnGap={16}
+              rowGap={20}
+              columnGap={20}
               overscanRows={3}
               minColumnWidth={420}
               maxColumns={2}
@@ -719,7 +714,7 @@ export function PlatformView() {
               renderItem={(skill) => renderSkillCard(skill)}
             />
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
               {filteredSkills.map((skill) => renderSkillCard(skill))}
             </div>
           )}

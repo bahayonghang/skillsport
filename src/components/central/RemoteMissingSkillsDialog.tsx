@@ -164,7 +164,7 @@ export function RemoteMissingSkillsDialog({
           </DialogDescription>
 
           {isPreviewLoading ? (
-            <div className="flex items-center gap-2 rounded-xl border border-border p-3 text-sm text-muted-foreground">
+            <div className="bg-accent flex items-center gap-2 rounded-inner p-3 text-sm text-muted-foreground">
               <Loader2 className="size-4 animate-spin" />
               {t("central.batchDeletePreviewLoading")}
             </div>
@@ -178,7 +178,7 @@ export function RemoteMissingSkillsDialog({
                 return (
                   <section
                     key={state.skill_id}
-                    className="rounded-xl border border-border bg-background p-3"
+                    className="rounded-inner bg-accent p-3"
                   >
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0">
@@ -198,13 +198,13 @@ export function RemoteMissingSkillsDialog({
                           </div>
                         )}
                       </div>
-                      <div className="grid grid-cols-2 rounded-xl border border-border/70 bg-muted/20 p-1 text-xs">
+                      <div className="grid grid-cols-2 rounded-full bg-accent p-1 text-xs">
                         <button
                           type="button"
-                          className={`rounded-lg px-3 py-1.5 font-medium transition-colors ${
+                          className={`focus-ring rounded-full px-3 py-1.5 font-medium transition-colors ${
                             decision === "keep"
-                              ? "bg-primary text-primary-foreground shadow-sm"
-                              : "text-muted-foreground hover:bg-background"
+                              ? "bg-primary text-primary-foreground"
+                              : "text-muted-foreground hover:bg-popover"
                           }`}
                           onClick={() => setDecision(state.skill_id, "keep")}
                         >
@@ -213,10 +213,10 @@ export function RemoteMissingSkillsDialog({
                         </button>
                         <button
                           type="button"
-                          className={`rounded-lg px-3 py-1.5 font-medium transition-colors ${
+                          className={`focus-ring rounded-full px-3 py-1.5 font-medium transition-colors ${
                             decision === "delete"
-                              ? "bg-destructive text-destructive-foreground shadow-sm"
-                              : "text-muted-foreground hover:bg-background"
+                              ? "bg-destructive-tint text-destructive-text"
+                              : "text-muted-foreground hover:bg-popover"
                           }`}
                           disabled={!canDelete}
                           onClick={() => setDecision(state.skill_id, "delete")}
@@ -228,7 +228,7 @@ export function RemoteMissingSkillsDialog({
                     </div>
 
                     {previewError && (
-                      <div className="mt-3 rounded-lg border border-warning/30 bg-warning/10 p-2 text-xs text-warning-foreground">
+                      <div className="mt-3 rounded-inner border border-warning/30 bg-warning-tint p-2 text-xs text-warning-foreground">
                         <AlertTriangle className="mr-1 inline size-3.5" />
                         {t("central.remoteMissingPreviewFailed", {
                           error: previewError,
@@ -239,8 +239,8 @@ export function RemoteMissingSkillsDialog({
                     {decision === "delete" &&
                       item &&
                       item.copy_installations.length > 0 && (
-                        <div className="mt-3 space-y-2 border-t border-border/70 pt-3">
-                          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                        <div className="mt-3 space-y-2 border-t border-border pt-3">
+                          <div className="text-xs font-medium text-muted-foreground">
                             {t("central.remoteMissingCopyInstalls")}
                           </div>
                           {item.copy_installations.map((installation) => {
@@ -250,7 +250,7 @@ export function RemoteMissingSkillsDialog({
                             return (
                               <label
                                 key={`${item.skill_id}:${installation.agent_id}`}
-                                className="flex cursor-pointer items-start gap-2 rounded-lg border border-border/70 p-2 text-sm"
+                                className="flex cursor-pointer items-start gap-2 rounded-inner p-2 text-sm"
                               >
                                 <Checkbox
                                   checked={checked}

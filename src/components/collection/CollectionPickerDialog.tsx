@@ -103,7 +103,7 @@ export function CollectionPickerDialog({
 
             {/* Collections list */}
             <div
-              className="max-h-60 overflow-y-auto space-y-1 border border-border rounded-md p-2"
+              className="scrollbar-subtle max-h-60 space-y-1 overflow-y-auto rounded-inner bg-accent p-1.5"
               role="group"
               aria-label={t("collectionPicker.selectCollections")}
             >
@@ -126,8 +126,8 @@ export function CollectionPickerDialog({
                       key={collection.id}
                       className={
                         isAlreadyMember
-                          ? "flex items-start gap-2.5 px-2 py-1.5 rounded opacity-50 cursor-not-allowed"
-                          : "flex items-start gap-2.5 px-2 py-1.5 rounded hover:bg-hover-bg/20 cursor-pointer"
+                          ? "flex cursor-not-allowed items-start gap-2.5 rounded-control px-2.5 py-2 opacity-50"
+                          : "flex cursor-pointer items-start gap-2.5 rounded-control px-2.5 py-2 transition-colors hover:bg-popover"
                       }
                       onClick={() => {
                         if (!isAlreadyMember) {

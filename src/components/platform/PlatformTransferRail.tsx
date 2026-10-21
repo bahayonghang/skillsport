@@ -29,11 +29,11 @@ export function PlatformTransferRail({
   return (
     <div
       data-testid="platform-transfer-rail"
-      className="border-b border-border bg-muted/40 px-6 py-3"
+      className="glass-panel mx-4 rounded-card px-4 py-2.5 sm:mx-6"
     >
       <div className="flex flex-wrap items-center gap-3">
-        <div className="flex min-w-[220px] flex-1 items-center gap-3">
-          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg border border-border bg-primary/10 text-primary">
+        <div className="flex min-w-56 flex-1 items-center gap-3">
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-control bg-primary-tint text-primary-text">
             <ArrowRightLeft className="size-4" aria-hidden />
           </div>
           <div className="min-w-0">
@@ -55,7 +55,7 @@ export function PlatformTransferRail({
         <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
-            variant="outline"
+            variant="glass"
             size="sm"
             disabled={!hasSelectableSkills}
             onClick={onSelectCurrentResults}
@@ -66,7 +66,7 @@ export function PlatformTransferRail({
           {canSelectMostUniversal && (
             <Button
               type="button"
-              variant="outline"
+              variant="glass"
               size="sm"
               disabled={!hasSelectableSkills}
               onClick={onSelectMostUniversal}
@@ -116,9 +116,9 @@ export function PlatformTransferActionBar({
   return (
     <div
       data-testid="platform-batch-action-bar"
-      className="sticky bottom-0 z-20 border-t border-border bg-card/95 px-6 py-3 backdrop-blur"
+      className="sticky bottom-0 z-20 px-4 pb-4 sm:px-6"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="glass-sticky flex flex-wrap items-center justify-between gap-3 rounded-full border border-glass-stroke py-2 pr-2 pl-4 shadow-overlay">
         <div className="flex items-center gap-2">
           <span className="inline-flex size-2 rounded-full bg-primary" />
           <span className="text-sm font-semibold text-foreground">
@@ -129,7 +129,7 @@ export function PlatformTransferActionBar({
           <Button
             type="button"
             variant="ghost"
-            className="h-9 px-3 text-xs"
+            size="sm"
             onClick={onClearSelection}
           >
             {t("platform.transferClear")}
@@ -137,7 +137,7 @@ export function PlatformTransferActionBar({
           {showInstall && (
             <Button
               type="button"
-              className="h-9 px-3 text-xs font-semibold"
+              size="sm"
               disabled={isInstalling || isDeleting}
               onClick={onInstall}
               data-testid="platform-batch-install"
@@ -149,7 +149,7 @@ export function PlatformTransferActionBar({
           <Button
             type="button"
             variant="destructive"
-            className="h-9 px-3 text-xs font-semibold"
+            size="sm"
             disabled={isDeleting || isInstalling}
             onClick={onDelete}
             data-testid="platform-batch-delete"

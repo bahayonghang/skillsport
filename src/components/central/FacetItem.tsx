@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 /**
@@ -49,13 +50,13 @@ export function FacetItem({
   return (
     <div
       className={cn(
-        "group relative flex min-h-9 w-full items-center gap-2 rounded-lg border px-2 py-1.5 text-left text-xs transition-[background-color,border-color,box-shadow,color]",
+        "group relative flex min-h-9 w-full items-center gap-2 rounded-full border px-2.5 py-1 text-left text-xs transition-[background-color,border-color,color] has-[button:focus-visible]:outline-2 has-[button:focus-visible]:outline-offset-2 has-[button:focus-visible]:outline-ring has-[button:focus-visible]:outline-solid",
         indentLevel === 1 && "ml-3",
-        active
-          ? "border-primary/25 bg-background text-foreground shadow-sm ring-1 ring-primary/10"
-          : "border-transparent text-muted-foreground hover:border-border/70 hover:bg-background/70 hover:text-foreground",
-        disabled && "pointer-events-none opacity-50",
+        "border-transparent text-muted-foreground hover:bg-accent hover:text-foreground",
+        // caller 装饰（如 pinned 行）覆盖静止态，active 永远胜出
         className,
+        active && "border-primary-stroke bg-primary-tint text-primary-text hover:bg-primary-tint hover:text-primary-text",
+        disabled && "pointer-events-none opacity-50",
       )}
       data-pinned={dataPinned}
     >
@@ -65,10 +66,16 @@ export function FacetItem({
         data-active={active}
         onClick={onClick}
         title={description}
-        className="flex min-h-7 min-w-0 flex-1 items-center gap-2 text-left"
+        aria-pressed={active}
+        className="flex min-h-7 min-w-0 flex-1 items-center gap-2 text-left outline-none"
       >
         {icon ? (
-          <span className="grid size-4 shrink-0 place-items-center text-muted-foreground">
+          <span
+            className={cn(
+              "grid size-4 shrink-0 place-items-center",
+              active ? "text-primary-text" : "text-muted-foreground",
+            )}
+          >
             {icon}
           </span>
         ) : null}
@@ -76,16 +83,13 @@ export function FacetItem({
       </button>
       {badge}
       {typeof count === "number" && (
-        <span
-          className={cn(
-            "shrink-0 rounded-md border bg-background px-1.5 py-0.5 font-mono text-ui-micro tabular-nums",
-            active
-              ? "border-primary/30 text-foreground"
-              : "border-border/80 text-muted-foreground",
-          )}
+        <Badge
+          tone={active ? "primary" : "neutral"}
+          size="sm"
+          className="tabular-nums"
         >
           {count}
-        </span>
+        </Badge>
       )}
       {trailingAction}
     </div>

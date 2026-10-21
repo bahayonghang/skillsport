@@ -1,6 +1,7 @@
 import { useParams, useNavigate, useLocation, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useSkillDetailStore } from "@/stores/skillDetailStore";
 import { SkillDetailView } from "@/components/skill/SkillDetailView";
 import { saveScrollPosition } from "@/lib/scrollRestoration";
@@ -17,7 +18,8 @@ export interface SkillDetailPageFromState {
 }
 
 /**
- * PageHeader — thin row above the shared `SkillDetailView`.
+ * DetailBreadcrumb — thin row above the shared `SkillDetailView`.
+ * (The page's `<h1>` lives in the ui `PageHeader` rendered by the view.)
  *
  * Renders `[← Back]` plus a breadcrumb derived from `location.state.from`.
  * The back button always invokes `navigate(-1)` (browser history back); the
@@ -25,7 +27,7 @@ export interface SkillDetailPageFromState {
  * route so users can jump directly to the prior list even if the history
  * stack is missing that entry.
  */
-function PageHeader({
+function DetailBreadcrumb({
   from,
   skillLabel,
   onBack,
@@ -37,14 +39,16 @@ function PageHeader({
   const { t } = useTranslation();
 
   return (
-    <div className="border-b border-border px-6 py-2 flex items-center gap-3 shrink-0">
-      <button
+    <div className="flex shrink-0 items-center gap-2 px-4 pt-3 sm:px-6 sm:pt-4">
+      <Button
+        variant="ghost"
+        size="icon-sm"
         onClick={onBack}
-        className="p-1.5 rounded-md hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+        className="text-muted-foreground hover:text-foreground"
         aria-label={t("detail.goBack")}
       >
         <ArrowLeft className="size-4" />
-      </button>
+      </Button>
       <nav aria-label={t("detail.breadcrumb")} className="min-w-0 flex-1">
         <ol className="flex items-center gap-1.5 text-xs text-muted-foreground min-w-0">
           {from ? (
@@ -52,7 +56,7 @@ function PageHeader({
               <li className="shrink-0">
                 <Link
                   to={from.route}
-                  className="hover:text-foreground hover:underline truncate"
+                  className="focus-ring truncate rounded-control hover:text-foreground hover:underline"
                 >
                   {from.pageLabel}
                 </Link>
@@ -123,7 +127,7 @@ export function SkillDetailPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <PageHeader from={from} skillLabel={skillLabel} onBack={handleGoBack} />
+      <DetailBreadcrumb from={from} skillLabel={skillLabel} onBack={handleGoBack} />
       <div className="flex-1 min-h-0">
         <SkillDetailView skillId={skillId} variant="page" leading={null} />
       </div>

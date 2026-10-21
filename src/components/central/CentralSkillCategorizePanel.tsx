@@ -120,12 +120,12 @@ export function CentralSkillCategorizePanel({
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       {/* 选中范围摘要 */}
-      <div className="border-b border-border/80 px-5 py-3">
+      <div className="border-b border-border px-5 py-3">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
           <span
             className={cn(
               "font-medium",
-              selectedSkillCount > 0 ? "text-primary" : "text-foreground",
+              selectedSkillCount > 0 ? "text-primary-text" : "text-foreground",
             )}
           >
             {t("central.selectedSkillSummary", { count: selectedSkillCount })}
@@ -135,7 +135,7 @@ export function CentralSkillCategorizePanel({
             className={cn(
               "font-medium",
               manualSelectedTagIds.length > 0
-                ? "text-primary"
+                ? "text-primary-text"
                 : "text-foreground",
             )}
           >
@@ -157,7 +157,7 @@ export function CentralSkillCategorizePanel({
         <div
           role="tablist"
           aria-label={t("central.categorizeIntent")}
-          className="mb-4 grid grid-cols-3 gap-1 rounded-xl bg-muted/20 p-1.5 shadow-inner ring-1 ring-border/80"
+          className="mb-4 grid grid-cols-3 gap-1 rounded-inner bg-accent p-1.5 shadow-inner"
         >
           {(["manual", "ai", "review"] as const).map((tab) => (
             <button
@@ -167,10 +167,10 @@ export function CentralSkillCategorizePanel({
               aria-selected={categorizeTab === tab}
               onClick={() => onSetCategorizeTab(tab)}
               className={cn(
-                "flex h-9 items-center justify-center gap-1.5 rounded-lg border px-2 text-xs font-semibold transition-colors",
-                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+                "flex h-9 items-center justify-center gap-1.5 rounded-inner border px-2 text-xs font-semibold transition-colors",
+                "focus-ring",
                 categorizeTab === tab
-                  ? "border-primary/35 bg-background text-primary shadow-sm ring-1 ring-primary/15"
+                  ? "border-primary/35 bg-popover text-primary-text ring-1 ring-primary/15"
                   : "border-transparent text-foreground hover:border-border/80 hover:bg-background/80 hover:text-foreground",
               )}
             >
@@ -200,7 +200,7 @@ export function CentralSkillCategorizePanel({
                 {t("central.createTagInline", { name: manualTagQuery.trim() })}
               </Button>
             )}
-            <div className="flex max-h-72 flex-wrap gap-2 overflow-auto rounded-xl bg-muted/10 p-3 text-foreground ring-1 ring-border/90">
+            <div className="flex max-h-72 flex-wrap gap-2 overflow-auto rounded-inner bg-accent p-3 text-foreground">
               {filteredManualTags.map((tag) => {
                 const selected = manualSelectedTagIds.includes(tag.id);
                 return (
@@ -212,8 +212,8 @@ export function CentralSkillCategorizePanel({
                     className={cn(
                       "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
                       selected
-                        ? "border-primary/70 bg-primary/15 text-primary shadow-sm ring-1 ring-primary/20"
-                        : "border-border bg-background text-foreground hover:border-primary/40 hover:text-foreground",
+                        ? "border-primary/70 bg-primary-tint text-primary-text ring-1 ring-primary/20"
+                        : "border-border bg-popover text-foreground hover:border-primary/40 hover:text-foreground",
                     )}
                   >
                     {selected && <Check className="size-3" />}
@@ -243,19 +243,19 @@ export function CentralSkillCategorizePanel({
         {categorizeTab === "review" && (
           <div className="space-y-3">
             {aiTagReviews.length > 0 && manualSelectedTagIds.length === 0 && (
-              <div className="rounded-xl bg-muted/20 p-3 text-xs text-foreground ring-1 ring-border/90">
+              <div className="rounded-inner bg-accent p-3 text-xs text-foreground">
                 {t("central.reviewReplaceNeedsTags")}
               </div>
             )}
             {aiTagReviews.length === 0 ? (
-              <div className="rounded-xl bg-muted/20 p-4 text-center text-xs text-foreground ring-1 ring-border/90">
+              <div className="rounded-inner bg-accent p-4 text-center text-xs text-foreground">
                 {t("central.reviewEmpty")}
               </div>
             ) : (
               aiTagReviews.map((review) => (
                 <div
                   key={`${review.skill_id}:${review.tag.id}`}
-                  className="rounded-xl bg-background p-3 shadow-sm ring-1 ring-border/90"
+                  className="rounded-inner bg-popover p-3"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
@@ -264,11 +264,11 @@ export function CentralSkillCategorizePanel({
                       </div>
                       <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-foreground">
                         {review.is_proposal && (
-                          <span className="rounded-md bg-accent px-2 py-0.5 font-medium text-accent-foreground">
+                          <span className="rounded-control bg-accent px-2 py-0.5 font-medium text-accent-foreground">
                             {t("central.reviewProposalBadge")}
                           </span>
                         )}
-                        <span className="rounded-full bg-muted px-2 py-0.5">
+                        <span className="rounded-full bg-accent px-2 py-0.5">
                           {review.tag.name}
                         </span>
                         <span>
@@ -320,14 +320,14 @@ export function CentralSkillCategorizePanel({
       </div>
 
       {/* 主操作行 */}
-      <div className="border-t border-border/80 bg-muted/10 px-5 py-3">
+      <div className="border-t border-border bg-accent px-5 py-3">
         {categorizeTab === "manual" && (
           <>
             <Button
               className={cn(
                 "w-full",
                 isManualActionDisabled
-                  ? "border border-dashed border-border bg-muted/30 text-foreground shadow-none"
+                  ? "border border-dashed border-border bg-accent text-foreground shadow-none"
                   : "shadow-sm",
               )}
               disabled={isManualActionDisabled}
@@ -353,7 +353,7 @@ export function CentralSkillCategorizePanel({
               className={cn(
                 "w-full",
                 isAiActionDisabled
-                  ? "border border-dashed border-border bg-muted/30 text-foreground shadow-none"
+                  ? "border border-dashed border-border bg-accent text-foreground shadow-none"
                   : "shadow-sm",
               )}
               disabled={isAiActionDisabled}

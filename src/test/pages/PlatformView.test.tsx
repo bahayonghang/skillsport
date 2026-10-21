@@ -2051,7 +2051,8 @@ describe("PlatformView", () => {
     const searchInput = screen.getByPlaceholderText(/搜索技能/);
     fireEvent.change(searchInput, { target: { value: "frontend" } });
 
-    const scroller = searchInput.closest(".flex.flex-col.h-full")?.querySelector(".flex-1.overflow-auto.p-6");
+    void searchInput;
+    const scroller = screen.queryByTestId("platform-content-scroll");
     expect(scroller).not.toBeNull();
     if (!scroller) return;
     (scroller as HTMLDivElement).scrollTop = 180;
@@ -2221,9 +2222,8 @@ describe("PlatformView", () => {
     expect(await screen.findByTestId("platform-batch-action-bar")).toBeInTheDocument();
 
     const searchInput = screen.getByPlaceholderText(/搜索技能/);
-    const scroller = searchInput
-      .closest(".flex.flex-col.h-full")
-      ?.querySelector(".flex-1.overflow-auto.p-6");
+    void searchInput;
+    const scroller = screen.queryByTestId("platform-content-scroll");
     expect(scroller).not.toBeNull();
     if (!scroller) return;
 

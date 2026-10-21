@@ -14,8 +14,10 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
 import { PlatformIcon } from "@/components/platform/PlatformIcon";
 import { UnifiedSkillCard } from "@/components/skill/UnifiedSkillCard";
 import { useSkillExplanationSummaries } from "@/hooks/useSkillExplanationSummaries";
@@ -141,8 +143,8 @@ function ProjectList({
   }, [projects, projectSearch]);
 
   return (
-    <div className="w-64 shrink-0 border-r border-border flex flex-col">
-      <div className="p-2 border-b border-border">
+    <div className="glass-panel mb-4 ml-4 flex w-52 shrink-0 flex-col overflow-hidden rounded-card sm:ml-6 lg:w-64">
+      <div className="border-b border-border p-2">
         <div className="relative">
           <Search className="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-muted-foreground pointer-events-none" />
           <Input
@@ -150,7 +152,7 @@ function ProjectList({
             value={projectSearch}
             onChange={(event) => onProjectSearchChange(event.target.value)}
             aria-label={t("projects.searchPlaceholder")}
-            className="pl-7 pr-7 h-7 text-xs bg-muted/40"
+            className="h-8 rounded-full pr-7 pl-7 text-xs md:text-xs"
           />
           {projectSearch.length > 0 && (
             <button
@@ -158,7 +160,7 @@ function ProjectList({
               onClick={() => onProjectSearchChange("")}
               aria-label={t("projects.clearSearch")}
               title={t("projects.clearSearch")}
-              className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
+              className="focus-ring absolute right-1 top-1/2 -translate-y-1/2 cursor-pointer rounded-full p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             >
               <X className="size-3" />
             </button>
@@ -166,7 +168,7 @@ function ProjectList({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto py-1 px-1.5">
+      <div className="scrollbar-subtle flex-1 overflow-y-auto px-1.5 py-1.5">
         {filtered.length === 0 ? (
           <div className="px-3 py-6 text-center">
             <p className="text-xs text-muted-foreground">
@@ -183,36 +185,36 @@ function ProjectList({
               <div
                 key={project.id}
                 className={cn(
-                  "group flex items-center gap-1 w-full text-left transition-colors border rounded-md mb-0.5",
+                  "group mb-0.5 flex w-full items-center gap-1 rounded-full border text-left transition-colors has-[button:focus-visible]:outline-2 has-[button:focus-visible]:outline-offset-2 has-[button:focus-visible]:outline-ring has-[button:focus-visible]:outline-solid",
                   isActive
-                    ? "bg-primary/10 border-primary/60 text-foreground font-medium shadow-sm"
-                    : "border-transparent text-muted-foreground hover:border-border hover:bg-muted/40",
+                    ? "border-primary-stroke bg-primary-tint font-medium text-primary-text"
+                    : "border-transparent text-muted-foreground hover:bg-accent hover:text-foreground",
                 )}
               >
                 <button
                   onClick={() => onSelectProject(project.id)}
                   title={formatPathForDisplay(project.path)}
                   aria-current={isActive ? "true" : undefined}
-                  className="flex items-center gap-2 flex-1 min-w-0 px-2.5 py-2 cursor-pointer"
+                  className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 px-3 py-2 text-left outline-none"
                 >
                   <Folder
                     className={cn(
                       "size-3.5 shrink-0",
-                      isActive ? "text-primary" : "text-muted-foreground",
+                      isActive ? "text-primary-text" : "text-muted-foreground",
                     )}
                   />
                   <span className="text-sm truncate flex-1">
                     {project.name}
                   </span>
                   {project.pinned && (
-                    <Pin className="size-3 shrink-0 text-warning" />
+                    <Pin className="size-3 shrink-0 text-warning-foreground" aria-hidden />
                   )}
                   {isScanning ? (
                     <Loader2 className="size-3 shrink-0 animate-spin" />
                   ) : (
-                    <span className="text-ui-micro font-mono tabular-nums text-muted-foreground shrink-0">
+                    <Badge size="sm" tone={isActive ? "primary" : "neutral"} className="tabular-nums">
                       {project.skillCount}
-                    </span>
+                    </Badge>
                   )}
                 </button>
                 <div className="hidden group-hover:flex items-center gap-0.5 pr-1">
@@ -229,7 +231,7 @@ function ProjectList({
                         ? t("projects.menuUnpin")
                         : t("projects.menuPin")
                     }
-                    className="p-1 rounded text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
+                    className="focus-ring cursor-pointer rounded-full p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
                   >
                     {project.pinned ? (
                       <PinOff className="size-3" />
@@ -242,7 +244,7 @@ function ProjectList({
                     onClick={() => onRequestRename(project)}
                     aria-label={t("projects.menuRename")}
                     title={t("projects.menuRename")}
-                    className="p-1 rounded text-muted-foreground hover:bg-muted hover:text-foreground cursor-pointer"
+                    className="focus-ring cursor-pointer rounded-full p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
                   >
                     <Pencil className="size-3" />
                   </button>
@@ -251,7 +253,7 @@ function ProjectList({
                     onClick={() => onRequestRemove(project)}
                     aria-label={t("projects.menuRemove")}
                     title={t("projects.menuRemove")}
-                    className="p-1 rounded text-muted-foreground hover:bg-destructive/10 hover:text-destructive-text cursor-pointer"
+                    className="focus-ring cursor-pointer rounded-full p-1 text-muted-foreground hover:bg-destructive-tint hover:text-destructive-text"
                   >
                     <Trash2 className="size-3" />
                   </button>
@@ -279,9 +281,9 @@ function ProjectCliSidebar({
   const { t } = useTranslation();
 
   return (
-    <aside className="w-44 shrink-0 border-r border-border bg-muted/10 flex flex-col">
-      <div className="px-3 py-2 border-b border-border">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+    <aside className="glass-panel mb-4 ml-3 flex w-40 shrink-0 flex-col overflow-hidden rounded-card lg:w-44">
+      <div className="border-b border-border px-3 py-2">
+        <p className="text-xs font-medium text-muted-foreground">
           {t("projects.cliSidebarTitle")}
         </p>
       </div>
@@ -300,10 +302,10 @@ function ProjectCliSidebar({
               title={item.title}
               aria-current={isActive ? "true" : undefined}
               className={cn(
-                "flex w-full items-center gap-2 rounded-md border px-2 py-1.5 text-left text-xs transition-colors",
+                "focus-ring flex w-full items-center gap-2 rounded-full border px-2.5 py-1.5 text-left text-xs transition-colors",
                 isActive
-                  ? "border-primary/60 bg-primary/10 text-foreground shadow-sm"
-                  : "border-transparent text-muted-foreground hover:border-border hover:bg-muted/50",
+                  ? "border-primary-stroke bg-primary-tint text-primary-text"
+                  : "border-transparent text-muted-foreground hover:bg-accent hover:text-foreground",
                 item.disabled &&
                   "cursor-not-allowed opacity-50 hover:border-transparent hover:bg-transparent",
               )}
@@ -317,9 +319,9 @@ function ProjectCliSidebar({
                 <Folder className="size-3.5 shrink-0 text-muted-foreground" />
               )}
               <span className="min-w-0 flex-1 truncate">{item.label}</span>
-              <span className="rounded-full bg-background/80 px-1.5 py-0.5 text-ui-micro font-mono tabular-nums text-muted-foreground">
+              <Badge size="sm" tone={isActive ? "primary" : "neutral"} className="tabular-nums">
                 {item.count}
-              </span>
+              </Badge>
             </button>
           );
         })}
@@ -380,8 +382,8 @@ function SkillPanel({
 
   if (!project) {
     return (
-      <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-        <Folder className="size-5 mr-2 opacity-40" />
+      <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+        <Folder className="mr-2 size-5" aria-hidden />
         {t("projects.noSelection")}
       </div>
     );
@@ -389,14 +391,14 @@ function SkillPanel({
 
   return (
     <div className="flex-1 flex flex-col min-w-0">
-      <div className="px-6 py-3 border-b border-border flex items-center gap-3">
-        <div className="min-w-0 flex-1">
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2 px-4 pb-3 sm:px-6">
+        <div className="min-w-0 flex-1 basis-40">
           <h2 className="text-sm font-semibold truncate">{project.name}</h2>
           <div
-            className="mt-1 inline-flex max-w-full items-center gap-1.5 rounded-full bg-muted/50 px-2 py-0.5 text-xs text-muted-foreground"
+            className="mt-1 inline-flex max-w-full items-center gap-1.5 text-xs text-muted-foreground"
             title={formatPathForDisplay(project.path)}
           >
-            <Folder className="size-3 shrink-0 opacity-70" />
+            <Folder className="size-3 shrink-0" aria-hidden />
             <span className="min-w-0 truncate font-mono">
               {midEllipsis(formatPathForDisplay(project.path))}
             </span>
@@ -412,7 +414,7 @@ function SkillPanel({
           {t("projects.installFromCentral")}
         </Button>
         <Button
-          variant="outline"
+          variant="glass"
           size="sm"
           onClick={onRescan}
           disabled={isScanning}
@@ -426,7 +428,7 @@ function SkillPanel({
         </Button>
       </div>
 
-      <div className="flex-1 overflow-auto p-4">
+      <div className="scrollbar-subtle flex-1 overflow-auto px-4 pb-6 sm:px-6">
         {isScanning && skills.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full gap-3 py-12">
             <Loader2 className="size-6 animate-spin text-muted-foreground" />
@@ -436,34 +438,34 @@ function SkillPanel({
           </div>
         ) : skills.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full gap-2 py-12">
-            <Folder className="size-8 text-muted-foreground opacity-40" />
+            <Folder className="size-8 text-muted-foreground" aria-hidden />
             <p className="text-sm text-muted-foreground">
               {t("projects.noSkills")}
             </p>
             <p className="text-xs text-muted-foreground text-center max-w-sm">
               {t("projects.noSkillsHint")}
             </p>
-            <Button variant="outline" size="sm" onClick={onOpenInstallDialog}>
+            <Button variant="glass" size="sm" onClick={onOpenInstallDialog}>
               <PackagePlus className="size-3.5 mr-1" />
               {t("projects.installFromCentral")}
             </Button>
           </div>
         ) : visibleGroups.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full gap-2 py-12">
-            <Folder className="size-8 text-muted-foreground opacity-40" />
+            <Folder className="size-8 text-muted-foreground" aria-hidden />
             <p className="text-sm text-muted-foreground">
               {t("projects.noSkillsForCli", { cli: selectedPlatformName })}
             </p>
             <p className="text-xs text-muted-foreground text-center max-w-sm">
               {t("projects.noSkillsForCliHint", { cli: selectedPlatformName })}
             </p>
-            <Button variant="outline" size="sm" onClick={onOpenInstallDialog}>
+            <Button variant="glass" size="sm" onClick={onOpenInstallDialog}>
               <PackagePlus className="size-3.5 mr-1" />
               {t("projects.installFromCentral")}
             </Button>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-6">
             {visibleGroups.map((group) => {
               const platformName = getProjectPlatformDisplayName(
                 group.target,
@@ -475,10 +477,10 @@ function SkillPanel({
                 <section
                   key={group.id}
                   aria-labelledby={headingId}
-                  className="space-y-2"
+                  className="space-y-3"
                 >
                   <div
-                    className="flex items-center gap-2 rounded-lg border border-border/70 bg-muted/30 px-3 py-2"
+                    className="glass-panel flex items-center gap-2 rounded-full px-3.5 py-2"
                     title={title}
                   >
                     {group.target ? (
@@ -495,14 +497,14 @@ function SkillPanel({
                     >
                       {platformName}
                     </h3>
-                    <span className="rounded-full bg-background/80 px-2 py-0.5 text-ui-micro font-mono tabular-nums text-muted-foreground">
+                    <Badge size="sm" className="tabular-nums">
                       {t("projects.platformSkillCount", {
                         count: group.skills.length,
                       })}
-                    </span>
+                    </Badge>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="grid gap-5">
                     {group.skills.map((skill) => {
                       const key = `${skill.agentId}:${skill.skillId}`;
                       const isLoading = uninstallingKeys.has(key);
@@ -648,30 +650,30 @@ export function ProjectsShell({
   if (projects.length === 0) {
     return (
       <div className="flex flex-col h-full">
-        <div className="border-b border-border px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-semibold">{t("projects.title")}</h1>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              {t("projects.subtitle")}
-            </p>
-          </div>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={onAddProject}
-            disabled={isAddingProject}
-          >
-            {isAddingProject ? (
-              <Loader2 className="size-3.5 mr-1 animate-spin" />
-            ) : (
-              <Plus className="size-3.5 mr-1" />
-            )}
-            {t("projects.addProject")}
-          </Button>
+        <div className="shrink-0 px-4 pt-4 pb-3 sm:px-6 sm:pt-5">
+          <PageHeader
+            title={t("projects.title")}
+            meta={t("projects.subtitle")}
+            actions={
+            <Button
+              variant="default"
+              size="sm"
+              onClick={onAddProject}
+              disabled={isAddingProject}
+            >
+              {isAddingProject ? (
+                <Loader2 className="size-3.5 mr-1 animate-spin" />
+              ) : (
+                <Plus className="size-3.5 mr-1" />
+              )}
+              {t("projects.addProject")}
+            </Button>
+            }
+          />
         </div>
         <div className="flex-1 flex flex-col items-center justify-center gap-4 py-20">
-          <div className="p-4 rounded-full bg-muted/60">
-            <Folder className="size-12 text-muted-foreground opacity-60" />
+          <div className="rounded-full bg-accent p-4">
+            <Folder className="size-12 text-muted-foreground" aria-hidden />
           </div>
           <p className="text-sm text-muted-foreground font-medium">
             {t("projects.emptyTitle")}
@@ -680,7 +682,7 @@ export function ProjectsShell({
             {t("projects.emptyHint")}
           </p>
           <Button
-            variant="outline"
+            variant="glass"
             size="sm"
             onClick={onAddProject}
             disabled={isAddingProject}
@@ -695,26 +697,26 @@ export function ProjectsShell({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="border-b border-border px-6 py-4 flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl font-semibold">{t("projects.title")}</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">
-            {t("projects.foundSummary", { count: projects.length })}
-          </p>
-        </div>
-        <Button
-          variant="default"
-          size="sm"
-          onClick={onAddProject}
-          disabled={isAddingProject}
-        >
-          {isAddingProject ? (
-            <Loader2 className="size-3.5 mr-1 animate-spin" />
-          ) : (
-            <Plus className="size-3.5 mr-1" />
-          )}
-          {t("projects.addProject")}
-        </Button>
+      <div className="shrink-0 px-4 pt-4 pb-3 sm:px-6 sm:pt-5">
+        <PageHeader
+          title={t("projects.title")}
+          meta={t("projects.foundSummary", { count: projects.length })}
+          actions={
+            <Button
+              variant="default"
+              size="sm"
+              onClick={onAddProject}
+              disabled={isAddingProject}
+            >
+              {isAddingProject ? (
+                <Loader2 className="size-3.5 mr-1 animate-spin" />
+              ) : (
+                <Plus className="size-3.5 mr-1" />
+              )}
+              {t("projects.addProject")}
+            </Button>
+          }
+        />
       </div>
 
       <div className="flex flex-1 min-h-0">

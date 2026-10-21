@@ -146,7 +146,7 @@ export function DeleteCentralSkillDialog({
             {t("central.deleteDialogDesc")}
           </DialogDescription>
 
-          <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-3 text-sm">
+          <div className="rounded-inner bg-destructive-tint p-3 text-sm">
             <div className="flex items-start gap-2">
               <AlertTriangle className="mt-0.5 size-4 shrink-0 text-destructive-text" />
               <div className="min-w-0">
@@ -159,7 +159,7 @@ export function DeleteCentralSkillDialog({
           </div>
 
           {pendingRecovery && recoveryMessage && (
-            <div className="rounded-xl border border-warning/30 bg-warning/10 p-3 text-sm text-warning-foreground">
+            <div className="rounded-inner bg-warning-tint p-3 text-sm text-warning-foreground">
               <div className="font-medium">{recoveryMessage}</div>
               {forceDeleteEligible ? (
                 forceArmed && (
@@ -172,7 +172,7 @@ export function DeleteCentralSkillDialog({
           )}
 
           {isPreviewLoading ? (
-            <div className="flex items-center gap-2 rounded-xl border border-border p-3 text-sm text-muted-foreground">
+            <div className="bg-accent flex items-center gap-2 rounded-inner p-3 text-sm text-muted-foreground">
               <Loader2 className="size-4 animate-spin" />
               {t("central.deletePreviewLoading")}
             </div>
@@ -180,12 +180,12 @@ export function DeleteCentralSkillDialog({
             <>
               {autoRemovedGroups.length > 0 && (
                 <div className="space-y-2">
-                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  <div className="text-xs font-medium text-muted-foreground">
                     {t("central.deleteLinkedPlatformInstalls")}
                   </div>
                   <div className="space-y-2">
                     {autoRemovedGroups.map((group) => (
-                      <div key={group.id} className="rounded-xl border border-border bg-muted/30 p-3">
+                      <div key={group.id} className="rounded-inner bg-accent p-3">
                         <div className="text-sm font-medium text-foreground">{group.label}</div>
                         {group.detail && (
                           <div className="mt-1 truncate text-xs text-muted-foreground">
@@ -200,7 +200,7 @@ export function DeleteCentralSkillDialog({
 
               {copyInstallationGroups.length > 0 ? (
                 <div className="space-y-2">
-                  <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  <div className="text-xs font-medium text-muted-foreground">
                     {t("central.deletePlatformCopies")}
                   </div>
                   <div className="space-y-2">
@@ -212,7 +212,7 @@ export function DeleteCentralSkillDialog({
                       return (
                         <label
                           key={group.id}
-                          className="flex cursor-pointer items-start gap-2 rounded-xl border border-border p-3"
+                          className="flex cursor-pointer items-start gap-2 rounded-control bg-popover p-3 transition-colors hover:bg-card"
                         >
                           <Checkbox
                             checked={checked}
@@ -234,7 +234,7 @@ export function DeleteCentralSkillDialog({
                   </div>
                 </div>
               ) : autoRemovedGroups.length === 0 ? (
-                <div className="rounded-xl border border-border p-3 text-sm text-muted-foreground">
+                <div className="bg-accent rounded-inner p-3 text-sm text-muted-foreground">
                   {t("central.deleteNoPlatformCopies")}
                 </div>
               ) : null}

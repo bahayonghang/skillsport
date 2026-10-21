@@ -36,7 +36,7 @@ export function ActionButton({
   return (
     <button
       type="button"
-      className={`rounded-lg border px-2 py-1 ${
+      className={`rounded-inner border px-2 py-1 ${
         selected
           ? "border-primary bg-primary text-primary-foreground"
           : "border-border text-muted-foreground"
@@ -62,8 +62,8 @@ export function RenameField({
   return (
     <div className="mt-2 space-y-1">
       <input
-        className={`w-full rounded-lg border bg-background px-3 py-2 text-sm ${
-          error ? "border-destructive" : "border-border"
+        className={`focus-ring w-full rounded-control border bg-input-surface px-3 py-2 text-sm ${
+          error ? "border-destructive-text" : "border-input"
         }`}
         value={value}
         onChange={(event) => onChange(event.target.value)}
@@ -92,7 +92,7 @@ export function DeleteOldSkillAction({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="mt-3 border-t border-border/70 pt-3">
+    <div className="mt-3 border-t border-border pt-3">
       <Button
         type="button"
         variant={selected ? "destructive" : "outline"}
@@ -121,17 +121,17 @@ export function MissingChoice({
 }) {
   const { t } = useTranslation();
   return (
-    <div className="grid grid-cols-2 rounded-xl border border-border/70 bg-muted/20 p-1 text-xs">
+    <div className="grid grid-cols-2 rounded-full bg-accent p-1 text-xs">
       {(["keep", "delete"] as MissingDecision[]).map((next) => (
         <button
           key={next}
           type="button"
-          className={`rounded-lg px-3 py-1.5 font-medium ${
+          className={`focus-ring rounded-full px-3 py-1.5 font-medium ${
             decision === next
               ? next === "delete"
-                ? "bg-destructive text-destructive-foreground"
+                ? "bg-destructive-tint text-destructive-text"
                 : "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:bg-background"
+              : "text-muted-foreground hover:bg-popover"
           }`}
           disabled={next === "delete" && !item}
           onClick={() => onChange(next)}
@@ -150,7 +150,7 @@ export function MissingChoice({
 export function EmptyTab() {
   const { t } = useTranslation();
   return (
-    <p className="rounded-xl border border-dashed border-border bg-muted/20 p-4 text-sm text-muted-foreground">
+    <p className="rounded-inner border border-dashed border-input p-4 text-sm text-muted-foreground">
       {t("central.repositorySyncTabEmpty")}
     </p>
   );

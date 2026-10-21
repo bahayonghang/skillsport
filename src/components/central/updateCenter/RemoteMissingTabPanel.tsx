@@ -38,7 +38,7 @@ export function RemoteMissingTabPanel({
           : null;
         const repositoryLabel = source?.label ?? item.repositoryId;
         return (
-          <article key={skillId} className="rounded-xl bg-background/80 p-3 ring-1 ring-border/80">
+          <article key={skillId} className="rounded-inner bg-popover p-3">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
                 <div className="text-sm font-medium text-foreground">
@@ -51,17 +51,17 @@ export function RemoteMissingTabPanel({
                   diagnostics={item.diagnostics}
                 />
               </div>
-              <div className="grid w-full grid-cols-2 rounded-xl border border-border/70 bg-muted/20 p-1 text-xs sm:w-auto">
+              <div className="grid w-full grid-cols-2 rounded-full bg-accent p-1 text-xs sm:w-auto">
                 {CHOICES.map((next) => (
                   <button
                     key={next}
                     type="button"
-                    className={`rounded-lg px-3 py-1.5 font-medium ${
+                    className={`focus-ring rounded-full px-3 py-1.5 font-medium ${
                       decision === next
                         ? next === "delete"
                           ? "bg-destructive text-destructive-foreground"
                           : "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-background"
+                        : "text-muted-foreground hover:bg-popover"
                     }`}
                     onClick={() => onChange(skillId, { decision: next })}
                   >
