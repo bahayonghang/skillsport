@@ -50,16 +50,9 @@
 
 另断言 `index.css` 中 `backdrop-filter` 只在 `.glass-overlay` / `.glass-sticky` 两块，`.glass-canvas` 不用 `filter`。
 
-### Pending 清单只减不增
+### 零违规（C9 起）
 
-C4 落地时已违规的文件写死在测试的 `PENDING_*` 清单里（`PENDING_BACKDROP_UTILITY` 6、`PENDING_ARBITRARY_ROUNDED` 2、`PENDING_RAW_WHITE_BLACK` 0、`PENDING_HANDWRITTEN_SURFACE` 20、`PENDING_DIRECT_BASE_UI` 12）。测试同时断言：
-
-- 清单外的文件不得违规（新文件、新违规一律失败）；
-- 清单里的文件必须仍存在且仍违规——迁移完成就**必须**把它从清单删掉；
-- 清单长度不超过 `PENDING_CEILING`（落地时的大小）；只许调低，不许调高；
-- `src/components/ui/**` 永远不进清单（primitives 自己必须合规）。
-
-C5–C8 按各自文件归属迁移并删减清单；C9 把所有 ceiling 设为 0 并断言清单为空。
+C4 落地时曾用 `PENDING_*` 清单 + `PENDING_CEILING` 记录存量违规（backdrop 6、rounded 2、白/黑 0、旧卡片 20、直接 base-ui 12），只许减不许增。C5–C8 迁移后全部清零；C9 删除了清单与 ceiling 机制，测试改为每条规则直接断言**生产 TS/TSX 中违规文件为空**。新增违规一律失败，没有豁免清单；`src/components/ui/**` 同样受约束（直接 base-ui 规则除外，那是 primitives 的封装位置）。
 
 ## 5. Wrong vs Correct
 

@@ -1,6 +1,6 @@
 /// <reference types="node" />
 
-import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { extname, join, relative, resolve } from "node:path";
 
 import { describe, expect, it } from "vitest";
@@ -17,11 +17,8 @@ import { describe, expect, it } from "vitest";
  * - Menus / drawers go through `ui/menu` / `ui/sheet` / `ui/dialog`, not
  *   `@base-ui/react/menu|dialog` directly.
  *
- * Files that already offended when the contract landed (C4) are listed in the
- * PENDING_* sets below. The lists may only SHRINK: a file outside its list
- * must not offend, and every listed file must still exist and still offend
- * (remove it from the list as soon as it is migrated). C9 asserts all lists
- * are empty.
+ * The C4 migration allow-lists (PENDING_*) and their ceilings were retired in
+ * C9 once every list reached zero: no production file may offend any rule.
  */
 
 const ROOT = process.cwd();
@@ -81,73 +78,29 @@ function hasLegacyCardRecipe(content: string): boolean {
 interface Rule {
   name: string;
   offends: (file: { path: string; content: string }) => boolean;
-  pending: readonly string[];
 }
-
-// Files outside src/components/ui that still carry backdrop-* utilities.
-// Migrate to `.glass-sticky` / `.glass-overlay` (C5–C8), then drop the entry.
-const PENDING_BACKDROP_UTILITY: readonly string[] = [];
-
-// Files with arbitrary rounded-[...] values. Use the radius ladder
-// (rounded-control / inner / card / shell / pill) instead.
-const PENDING_ARBITRARY_ROUNDED: readonly string[] = [];
-
-// Files with raw bg-white/<n> or bg-black/<n> washes. Use surface tokens.
-const PENDING_RAW_WHITE_BLACK: readonly string[] = [];
-
-// Files with the legacy card recipe. Use <Card> or `glass-panel rounded-card`.
-const PENDING_HANDWRITTEN_SURFACE: readonly string[] = [];
-
-// Files importing @base-ui/react/menu|dialog outside src/components/ui.
-// Use ui/menu, ui/sheet or ui/dialog.
-const PENDING_DIRECT_BASE_UI: readonly string[] = [];
-
-// Initial sizes when the contract landed (C4, 2026-10-21). Never raise these;
-// lower them as entries are migrated. C9 sets every ceiling to 0.
-// C5 (app shell): SidebarSection migrated → legacy card 20→19, base-ui 12→11.
-// C6 (signature surfaces): ActivityHeatmap, RuntimeLogsPanel, OperationLogsView,
-// CompactCardMoreMenu migrated → rounded 2→1, legacy card 19→17, base-ui 11→10.
-// C8 (tools & settings pages): About / LocalRemoteSync / RemoteTargets settings
-// and the Skills CLI batch bar + two drawers migrated → legacy card 17→14,
-// base-ui 10→7.
-// C7 (library pages): Central / Platform / skill-detail sticky bars, sidebar,
-// dialogs, drawers and menus migrated → backdrop 6→0, rounded 1→0,
-// legacy card 17→3, base-ui 10→3.
-// C7 + C8 merged: every pending list is empty and every ceiling is 0.
-const PENDING_CEILING: Record<string, number> = {
-  "backdrop-* utility": 0,
-  "arbitrary rounded-[...]": 0,
-  "raw bg-white/ or bg-black/": 0,
-  "legacy card recipe": 0,
-  "direct @base-ui/react/menu|dialog import": 0,
-};
 
 const RULES: Rule[] = [
   {
     name: "backdrop-* utility",
     offends: ({ content }) => BACKDROP_UTILITY.test(content),
-    pending: PENDING_BACKDROP_UTILITY,
   },
   {
     name: "arbitrary rounded-[...]",
     offends: ({ content }) => ARBITRARY_ROUNDED.test(content),
-    pending: PENDING_ARBITRARY_ROUNDED,
   },
   {
     name: "raw bg-white/ or bg-black/",
     offends: ({ content }) => RAW_WHITE_BLACK.test(content),
-    pending: PENDING_RAW_WHITE_BLACK,
   },
   {
     name: "legacy card recipe",
     offends: ({ content }) => hasLegacyCardRecipe(content),
-    pending: PENDING_HANDWRITTEN_SURFACE,
   },
   {
     name: "direct @base-ui/react/menu|dialog import",
     offends: ({ path, content }) =>
       !path.startsWith(UI_ROOT) && DIRECT_BASE_UI.test(content),
-    pending: PENDING_DIRECT_BASE_UI,
   },
 ];
 
@@ -172,43 +125,14 @@ describe("glass surface contract", () => {
   });
 
   for (const rule of RULES) {
-    describe(rule.name, () => {
-      it("no file outside the pending list offends", () => {
-        const pending = new Set<string>(rule.pending);
-        const offenders = PRODUCTION_FILES.filter(
-          (file) => !pending.has(file.path) && rule.offends(file),
-        ).map((file) => file.path);
-        expect(
-          offenders,
-          `New ${rule.name} offenders (migrate them, do not grow the list):\n${offenders.join("\n")}`,
-        ).toEqual([]);
-      });
-
-      it("pending list only shrinks: every entry exists and still offends", () => {
-        const stale = rule.pending.filter((path) => {
-          if (!existsSync(resolve(ROOT, path))) return true;
-          const file = PRODUCTION_FILES.find((entry) => entry.path === path);
-          return !file || !rule.offends(file);
-        });
-        expect(
-          stale,
-          `Remove migrated / deleted entries from the ${rule.name} pending list:\n${stale.join("\n")}`,
-        ).toEqual([]);
-      });
-
-      it("pending list never grows past its landing size", () => {
-        expect(PENDING_CEILING[rule.name]).toBeDefined();
-        expect(rule.pending.length).toBeLessThanOrEqual(
-          PENDING_CEILING[rule.name]!,
-        );
-        expect(new Set(rule.pending).size).toBe(rule.pending.length);
-      });
-
-      it("never lists primitives under src/components/ui", () => {
-        expect(rule.pending.filter((path) => path.startsWith(UI_ROOT))).toEqual(
-          [],
-        );
-      });
+    it(`has no ${rule.name} offenders in production code`, () => {
+      const offenders = PRODUCTION_FILES.filter((file) => rule.offends(file)).map(
+        (file) => file.path,
+      );
+      expect(
+        offenders,
+        `${rule.name} offenders (migrate them to primitives / tokens):\n${offenders.join("\n")}`,
+      ).toEqual([]);
     });
   }
 

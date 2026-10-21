@@ -68,9 +68,9 @@ The docs site reuses the same screenshot assets as the README.
 
 ![Central skills library view](/images/01.png)
 
-![Skill detail and platform install status](/images/02.png)
+![GitHub repository import wizard](/images/02.png)
 
-![Collection and batch workflow](/images/03.png)
+![Skill collections view](/images/05.png)
 
 ## Auto-centralization
 

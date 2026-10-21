@@ -915,10 +915,12 @@ html[data-window-material="mica"] .glass-canvas {
   line-height: 1.65;
 }
 
+/* Neutral callout: hover-surface fill + 1px divider. No colored side stripe
+   (DESIGN.md Don'ts: border-left/right > 1px). */
 .skill-markdown blockquote {
   margin: 1rem 0 1.2rem;
   padding: 0.75rem 1rem;
-  border-left: 3px solid var(--primary-stroke);
+  border: 1px solid var(--border);
   border-radius: var(--radius-control);
   background: var(--accent);
   color: var(--muted-foreground);
@@ -973,6 +975,13 @@ html[data-window-material="mica"] .glass-canvas {
   border: 1px solid var(--border);
   border-radius: var(--radius-inner);
   background: var(--popover);
+}
+
+/* Horizontal-only scrollers: `.scrollbar-subtle` reserves a stable vertical
+   gutter, which left an empty strip at the inline end of tables / code. */
+.skill-markdown .skill-markdown-table,
+.skill-markdown pre.scrollbar-subtle {
+  scrollbar-gutter: auto;
 }
 
 .skill-markdown table {

@@ -6,6 +6,9 @@
 
 ### 新功能
 
+- **轻盈毛玻璃界面（1.1.0）**：全新视觉体系——低饱和薄荷到薰衣草 canvas 上叠半透明面板，按钮与标签胶囊化，统一 18–20px 大圆角，只用两个语义强调色（薄荷 = 完成 / 输入 / 主操作，薰衣草 = 输出 / 次要数据）。新增 `StatTile`、`Badge`、`PageHeader`、`Menu`、`Sheet`、`Toaster` 基础组件；真实背景模糊只用于 sticky 条与浮层。详见 `DESIGN.md`。
+- **浅色玻璃 / 深色玻璃两套主题**，在侧栏底部或 **设置 → 外观** 切换；两套主题均按半透明表面合成后的颜色通过 WCAG 2.1 AA 对比度校验。
+- **Windows 11 Mica 窗口材质**：默认开启，可在 **设置 → 外观** 关闭。窗口先以不透明背景启动，Mica 应用成功后才变通透；Windows 10 及不支持的系统保持不透明渐变背景。新增 Tauri 命令 `set_window_material`。
 - **更新中心**：统一 dialog，把可更新 skills、远端新增、远端删除、平台冗余合到一个屏幕，每条都支持逐项决策。取代原本独立的 **检查更新**、**远端缺失**、**仓库同步** 三个 dialog。文档见 `docs/zh/guide/update-center.md`。
 - 新增 Tauri 命令 `refresh_skill_update_inventory`、`apply_skill_update_decisions`、`clear_skill_update_inventory`、`get_skill_update_inventory`、`scan_platform_duplicate_skills`。
 - 新增 DB 表 `skill_repository_pending_additions`，新增字段 `skill_repositories.last_synced_at`，用于跨 session 持久化刷新结果。
@@ -23,6 +26,9 @@
 
 ### 调整
 
+- **外观偏好不兼容变更（1.1.0）**：首次启动时一次性迁移已保存的主题：Latte、Claude 亮色 → 浅色玻璃；Frappé、Macchiato、Mocha、Claude 暗色 → 深色玻璃。已保存的强调色被丢弃，`catppuccin-flavor` / `catppuccin-accent` 键被删除。
+- 正文默认字体改为无衬线字体 Geist；JetBrains Mono 只用于代码、路径、ID 与按键。升级时若正文字体仍是旧默认值（JetBrains Mono 且无自定义字体）会一次性改为 Geist；已自定义的正文字体保持不变，可在 **设置 → 外观** 改回。
+- Dashboard 就绪度与计数改用 StatTile，不再使用锥形评分盘；明暗切换从顶栏移到侧栏底部。路由、数据与行为不变。
 - 桌面发布收口到 tag 触发的 `Release Desktop` workflow，并补充发布检查清单与 updater 不变量文档。
 - 由于当前 updater metadata 仅覆盖 Windows，应用内更新现在会在非 Windows 桌面构建上 fail closed。
 - PlatformView 的 **扫描重复** 按钮现在跳转到更新中心的 **平台冗余** Tab，不再打开独立 dialog。
@@ -30,6 +36,10 @@
 - `DuplicatePlatformSkillsDialog`、`CentralUpdateConfirmDialog`、`RemoteMissingSkillsDialog`、`CentralRepositorySyncDialog` 已标记 `@deprecated`，下一个 minor release 之后移除。
 - Central 与 Platform 页面支持可配置字体 fallback 和字号缩放，统一紧凑排版与语义状态色，并补充快捷键速查、键盘焦点和无障碍行为。
 - 远程更新与同步现在会批量处理 SSH/WSL 操作，按任务隔离取消状态，提供有界进度，并监督进程树生命周期。
+
+### 移除
+
+- **Catppuccin（Latte / Frappé / Macchiato / Mocha）与 Claude 亮 / 暗主题，以及 14 种强调色选择器**（1.1.0）。已有偏好按「调整」中的规则迁移到浅色 / 深色玻璃。
 
 ### 修复
 

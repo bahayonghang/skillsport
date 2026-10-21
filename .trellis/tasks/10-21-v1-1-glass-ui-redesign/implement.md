@@ -21,13 +21,15 @@
 
 ## 集成审查清单（父任务在 C9 前执行）
 
-- [ ] `rg "ctp-|catppuccin|data-accent" src` 仅剩迁移代码与其测试。
-- [ ] `rg "backdrop-" src --glob '*.tsx' --glob '!src/test/**'` 为 0；`index.css` 中 `backdrop-filter` 只在 `.glass-overlay` / `.glass-sticky`。
-- [ ] C4 契约测试的两份待迁移清单为空。
-- [ ] `rg "rounded-\[" src --glob '!src/test/**'` 为 0；圆角只来自登记阶梯。
-- [ ] `rg "uppercase" src --glob '!src/test/**'` 剩余处均为有意保留的短标签。
-- [ ] DESIGN.md 中每个组件条目都能在 `src/components/ui/` 找到对应实现。
-- [ ] README / README_CN 截图与主题描述已更新。
+- [x] `rg "ctp-|catppuccin|data-accent" src` 仅剩迁移代码与其测试。
+- [x] `rg "backdrop-" src --glob '*.tsx' --glob '!src/test/**'` 为 0；`index.css` 中 `backdrop-filter` 只在 `.glass-overlay` / `.glass-sticky`。
+- [x] C4 契约测试的两份待迁移清单为空。
+- [x] `rg "rounded-\[" src --glob '!src/test/**'` 为 0；圆角只来自登记阶梯。
+- [x] `rg "uppercase" src --glob '!src/test/**'` 剩余处均为有意保留的短标签。
+- [x] DESIGN.md 中每个组件条目都能在 `src/components/ui/` 找到对应实现。
+- [x] README / README_CN 截图与主题描述已更新。
+
+> 2026-10-21 C9 执行，全部通过；结果与命令输出见 `../10-21-v1-1-0-release-prep/research/integration-checklist.md`（待迁移清单机制已在 C9 删除，契约改为零违规断言）。
 
 ## 回退点
 

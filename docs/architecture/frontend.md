@@ -70,7 +70,7 @@ components/
 
 ## Theming
 
-Catppuccin Mocha / Frappé / Latte plus 14 accent colors are toggled by the `data-theme` and `data-accent` attributes on `<html>`. The palette is derived from `tailwind.config.ts` tokens; component CSS uses tokens, not literal hex values.
+Two Light Glass themes, `glass-light` and `glass-dark`, are selected by the `data-theme` attribute on `<html>` (`themeStore`, persisted as `skillport-theme`; 1.0.x Catppuccin / Claude choices migrate once). Tokens live in `src/index.css` and mirror the repository-root `DESIGN.md`; components use semantic tokens and the `ui/` primitives, not literal hex values. Real `backdrop-filter` blur exists only in the `.glass-overlay` and `.glass-sticky` classes. On Windows 11, `windowMaterialStore` requests Mica through the `set_window_material` command and sets `data-window-material`; the canvas stays opaque until Mica is applied.
 
 ## i18n
 

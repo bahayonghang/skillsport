@@ -22,7 +22,7 @@ The app combines four roles in a single window:
 - Discover scan for project-level skill libraries on local disks.
 - Marketplace browsing and GitHub repository import with authenticated requests and retry fallback.
 - Fast search for large skill libraries with deferred queries, lazy indexing, and virtualization.
-- Bilingual UI, Catppuccin themes, accent colors, onboarding, and responsive navigation.
+- Light Glass interface (Glass Light / Glass Dark themes, Geist body font, Windows 11 Mica window material), bilingual UI, onboarding, and responsive navigation.
 
 ## Privacy
 

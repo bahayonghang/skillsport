@@ -26,7 +26,7 @@ features:
   - title: Collections and Discover
     details: Group skills into collections for batch install, and scan local projects to import project-level skill libraries.
   - title: Bilingual UI and themes
-    details: English and Simplified Chinese interface, four Catppuccin flavors, accent colors, and onboarding. No telemetry.
+    details: English and Simplified Chinese interface, Glass Light and Glass Dark themes, Windows 11 Mica window material, and onboarding. No telemetry.
   - title: Local-first, privacy-aware
     details: Metadata, settings, and AI explanation cache stay in a local SQLite database. Network calls only happen when you trigger them.
 ---
