@@ -1,0 +1,2406 @@
+{
+  "matrix": [
+    {
+      "name": "c5-light-900x600-expanded.png",
+      "navLeft": 12,
+      "navTop": 48,
+      "navBottomGap": 12,
+      "navWidth": 208,
+      "gapNavMain": 12,
+      "mainRightGap": 12,
+      "mainBottomGap": 12,
+      "headerHeight": 48,
+      "headerBg": "rgba(0, 0, 0, 0)",
+      "headerBorderBottom": "0px",
+      "navRadius": "20px",
+      "navBackdrop": "none",
+      "canvasPosition": "fixed",
+      "horizontalOverflow": 0,
+      "theme": "glass-light",
+      "themeToggles": [
+        {
+          "label": "切换到深色模式",
+          "inNav": true
+        }
+      ],
+      "footer": [
+        "设置",
+        "切换到深色模式",
+        "收起侧边栏"
+      ]
+    },
+    {
+      "name": "c5-light-900x600-collapsed.png",
+      "navLeft": 12,
+      "navTop": 48,
+      "navBottomGap": 12,
+      "navWidth": 56,
+      "gapNavMain": 12,
+      "mainRightGap": 12,
+      "mainBottomGap": 12,
+      "headerHeight": 48,
+      "headerBg": "rgba(0, 0, 0, 0)",
+      "headerBorderBottom": "0px",
+      "navRadius": "20px",
+      "navBackdrop": "none",
+      "canvasPosition": "fixed",
+      "horizontalOverflow": 0,
+      "theme": "glass-light",
+      "themeToggles": [
+        {
+          "label": "切换到深色模式",
+          "inNav": true
+        }
+      ],
+      "footer": [
+        "设置",
+        "切换到深色模式",
+        "展开侧边栏"
+      ],
+      "railMaxCentreOffsetPx": 0,
+      "railHorizontalOverflow": 0,
+      "recapturedAt": "2026-10-21T10:31:14.510Z"
+    },
+    {
+      "name": "c5-light-1280x800-expanded.png",
+      "navLeft": 12,
+      "navTop": 48,
+      "navBottomGap": 12,
+      "navWidth": 208,
+      "gapNavMain": 12,
+      "mainRightGap": 12,
+      "mainBottomGap": 12,
+      "headerHeight": 48,
+      "headerBg": "rgba(0, 0, 0, 0)",
+      "headerBorderBottom": "0px",
+      "navRadius": "20px",
+      "navBackdrop": "none",
+      "canvasPosition": "fixed",
+      "horizontalOverflow": 0,
+      "theme": "glass-light",
+      "themeToggles": [
+        {
+          "label": "切换到深色模式",
+          "inNav": true
+        }
+      ],
+      "footer": [
+        "设置",
+        "切换到深色模式",
+        "收起侧边栏"
+      ]
+    },
+    {
+      "name": "c5-light-1280x800-collapsed.png",
+      "navLeft": 12,
+      "navTop": 48,
+      "navBottomGap": 12,
+      "navWidth": 56,
+      "gapNavMain": 12,
+      "mainRightGap": 12,
+      "mainBottomGap": 12,
+      "headerHeight": 48,
+      "headerBg": "rgba(0, 0, 0, 0)",
+      "headerBorderBottom": "0px",
+      "navRadius": "20px",
+      "navBackdrop": "none",
+      "canvasPosition": "fixed",
+      "horizontalOverflow": 0,
+      "theme": "glass-light",
+      "themeToggles": [
+        {
+          "label": "切换到深色模式",
+          "inNav": true
+        }
+      ],
+      "footer": [
+        "设置",
+        "切换到深色模式",
+        "展开侧边栏"
+      ],
+      "railMaxCentreOffsetPx": 0,
+      "railHorizontalOverflow": 0,
+      "recapturedAt": "2026-10-21T10:31:14.510Z"
+    },
+    {
+      "name": "c5-light-1440x900-expanded.png",
+      "navLeft": 12,
+      "navTop": 48,
+      "navBottomGap": 12,
+      "navWidth": 208,
+      "gapNavMain": 12,
+      "mainRightGap": 12,
+      "mainBottomGap": 12,
+      "headerHeight": 48,
+      "headerBg": "rgba(0, 0, 0, 0)",
+      "headerBorderBottom": "0px",
+      "navRadius": "20px",
+      "navBackdrop": "none",
+      "canvasPosition": "fixed",
+      "horizontalOverflow": 0,
+      "theme": "glass-light",
+      "themeToggles": [
+        {
+          "label": "切换到深色模式",
+          "inNav": true
+        }
+      ],
+      "footer": [
+        "设置",
+        "切换到深色模式",
+        "收起侧边栏"
+      ]
+    },
+    {
+      "name": "c5-light-1440x900-collapsed.png",
+      "navLeft": 12,
+      "navTop": 48,
+      "navBottomGap": 12,
+      "navWidth": 56,
+      "gapNavMain": 12,
+      "mainRightGap": 12,
+      "mainBottomGap": 12,
+      "headerHeight": 48,
+      "headerBg": "rgba(0, 0, 0, 0)",
+      "headerBorderBottom": "0px",
+      "navRadius": "20px",
+      "navBackdrop": "none",
+      "canvasPosition": "fixed",
+      "horizontalOverflow": 0,
+      "theme": "glass-light",
+      "themeToggles": [
+        {
+          "label": "切换到深色模式",
+          "inNav": true
+        }
+      ],
+      "footer": [
+        "设置",
+        "切换到深色模式",
+        "展开侧边栏"
+      ],
+      "railMaxCentreOffsetPx": 0,
+      "railHorizontalOverflow": 0,
+      "recapturedAt": "2026-10-21T10:31:14.510Z"
+    },
+    {
+      "name": "c5-dark-900x600-expanded.png",
+      "navLeft": 12,
+      "navTop": 48,
+      "navBottomGap": 12,
+      "navWidth": 208,
+      "gapNavMain": 12,
+      "mainRightGap": 12,
+      "mainBottomGap": 12,
+      "headerHeight": 48,
+      "headerBg": "rgba(0, 0, 0, 0)",
+      "headerBorderBottom": "0px",
+      "navRadius": "20px",
+      "navBackdrop": "none",
+      "canvasPosition": "fixed",
+      "horizontalOverflow": 0,
+      "theme": "glass-dark",
+      "themeToggles": [
+        {
+          "label": "切换到浅色模式",
+          "inNav": true
+        }
+      ],
+      "footer": [
+        "设置",
+        "切换到浅色模式",
+        "收起侧边栏"
+      ]
+    },
+    {
+      "name": "c5-dark-900x600-collapsed.png",
+      "navLeft": 12,
+      "navTop": 48,
+      "navBottomGap": 12,
+      "navWidth": 56,
+      "gapNavMain": 12,
+      "mainRightGap": 12,
+      "mainBottomGap": 12,
+      "headerHeight": 48,
+      "headerBg": "rgba(0, 0, 0, 0)",
+      "headerBorderBottom": "0px",
+      "navRadius": "20px",
+      "navBackdrop": "none",
+      "canvasPosition": "fixed",
+      "horizontalOverflow": 0,
+      "theme": "glass-dark",
+      "themeToggles": [
+        {
+          "label": "切换到浅色模式",
+          "inNav": true
+        }
+      ],
+      "footer": [
+        "设置",
+        "切换到浅色模式",
+        "展开侧边栏"
+      ],
+      "railMaxCentreOffsetPx": 0,
+      "railHorizontalOverflow": 0,
+      "recapturedAt": "2026-10-21T10:31:14.510Z"
+    },
+    {
+      "name": "c5-dark-1280x800-expanded.png",
+      "navLeft": 12,
+      "navTop": 48,
+      "navBottomGap": 12,
+      "navWidth": 208,
+      "gapNavMain": 12,
+      "mainRightGap": 12,
+      "mainBottomGap": 12,
+      "headerHeight": 48,
+      "headerBg": "rgba(0, 0, 0, 0)",
+      "headerBorderBottom": "0px",
+      "navRadius": "20px",
+      "navBackdrop": "none",
+      "canvasPosition": "fixed",
+      "horizontalOverflow": 0,
+      "theme": "glass-dark",
+      "themeToggles": [
+        {
+          "label": "切换到浅色模式",
+          "inNav": true
+        }
+      ],
+      "footer": [
+        "设置",
+        "切换到浅色模式",
+        "收起侧边栏"
+      ]
+    },
+    {
+      "name": "c5-dark-1280x800-collapsed.png",
+      "navLeft": 12,
+      "navTop": 48,
+      "navBottomGap": 12,
+      "navWidth": 56,
+      "gapNavMain": 12,
+      "mainRightGap": 12,
+      "mainBottomGap": 12,
+      "headerHeight": 48,
+      "headerBg": "rgba(0, 0, 0, 0)",
+      "headerBorderBottom": "0px",
+      "navRadius": "20px",
+      "navBackdrop": "none",
+      "canvasPosition": "fixed",
+      "horizontalOverflow": 0,
+      "theme": "glass-dark",
+      "themeToggles": [
+        {
+          "label": "切换到浅色模式",
+          "inNav": true
+        }
+      ],
+      "footer": [
+        "设置",
+        "切换到浅色模式",
+        "展开侧边栏"
+      ],
+      "railMaxCentreOffsetPx": 0,
+      "railHorizontalOverflow": 0,
+      "recapturedAt": "2026-10-21T10:31:14.510Z"
+    },
+    {
+      "name": "c5-dark-1440x900-expanded.png",
+      "navLeft": 12,
+      "navTop": 48,
+      "navBottomGap": 12,
+      "navWidth": 208,
+      "gapNavMain": 12,
+      "mainRightGap": 12,
+      "mainBottomGap": 12,
+      "headerHeight": 48,
+      "headerBg": "rgba(0, 0, 0, 0)",
+      "headerBorderBottom": "0px",
+      "navRadius": "20px",
+      "navBackdrop": "none",
+      "canvasPosition": "fixed",
+      "horizontalOverflow": 0,
+      "theme": "glass-dark",
+      "themeToggles": [
+        {
+          "label": "切换到浅色模式",
+          "inNav": true
+        }
+      ],
+      "footer": [
+        "设置",
+        "切换到浅色模式",
+        "收起侧边栏"
+      ]
+    },
+    {
+      "name": "c5-dark-1440x900-collapsed.png",
+      "navLeft": 12,
+      "navTop": 48,
+      "navBottomGap": 12,
+      "navWidth": 56,
+      "gapNavMain": 12,
+      "mainRightGap": 12,
+      "mainBottomGap": 12,
+      "headerHeight": 48,
+      "headerBg": "rgba(0, 0, 0, 0)",
+      "headerBorderBottom": "0px",
+      "navRadius": "20px",
+      "navBackdrop": "none",
+      "canvasPosition": "fixed",
+      "horizontalOverflow": 0,
+      "theme": "glass-dark",
+      "themeToggles": [
+        {
+          "label": "切换到浅色模式",
+          "inNav": true
+        }
+      ],
+      "footer": [
+        "设置",
+        "切换到浅色模式",
+        "展开侧边栏"
+      ],
+      "railMaxCentreOffsetPx": 0,
+      "railHorizontalOverflow": 0,
+      "recapturedAt": "2026-10-21T10:31:14.510Z"
+    }
+  ],
+  "overlays": [
+    {
+      "name": "target-menu",
+      "theme": "glass-light",
+      "open": true,
+      "cls": true
+    },
+    {
+      "name": "project-sort",
+      "theme": "glass-light",
+      "open": false
+    },
+    {
+      "name": "shortcuts-sheet",
+      "theme": "glass-light",
+      "open": true
+    },
+    {
+      "name": "global-search",
+      "theme": "glass-light",
+      "open": true
+    },
+    {
+      "name": "target-menu",
+      "theme": "glass-dark",
+      "open": true,
+      "cls": true
+    },
+    {
+      "name": "project-sort",
+      "theme": "glass-dark",
+      "open": false
+    },
+    {
+      "name": "shortcuts-sheet",
+      "theme": "glass-dark",
+      "open": true
+    },
+    {
+      "name": "global-search",
+      "theme": "glass-dark",
+      "open": true
+    }
+  ],
+  "keyboard": {
+    "glass-light": [
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "SkillPort",
+        "region": "topbar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "搜索技能...CtrlK",
+        "region": "topbar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "导入技能",
+        "region": "topbar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "切换当前目标",
+        "region": "topbar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "查看键盘快捷键",
+        "region": "topbar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Dashboard",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "中央技能库",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "规则管理",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Skills CLI 全局",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "项目",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Obsidian 仓库",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "技能市场",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "技能集合",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "操作日志",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "技能使用",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "收起全局工作区",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Universal",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Claude Code",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Grok",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Antigravity",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Antigravity CLI",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Kiro",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "设置",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "切换到深色模式",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "收起侧边栏",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "DIV",
+        "role": "separator",
+        "name": "调整侧边栏宽度",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "浏览中央技能",
+        "region": "main",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90)",
+        "offset": "2px"
+      }
+    ],
+    "glass-dark": [
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "SkillPort",
+        "region": "topbar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "搜索技能...CtrlK",
+        "region": "topbar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "导入技能",
+        "region": "topbar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "切换当前目标",
+        "region": "topbar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "查看键盘快捷键",
+        "region": "topbar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Dashboard",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "中央技能库",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "规则管理",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Skills CLI 全局",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "项目",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Obsidian 仓库",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "技能市场",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "技能集合",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "操作日志",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "技能使用",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "收起全局工作区",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Universal",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Claude Code",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Grok",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Antigravity",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Antigravity CLI",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "Kiro",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "设置",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "切换到浅色模式",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "收起侧边栏",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "DIV",
+        "role": "separator",
+        "name": "调整侧边栏宽度",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      },
+      {
+        "tag": "BUTTON",
+        "role": null,
+        "name": "浏览中央技能",
+        "region": "main",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161)",
+        "offset": "2px"
+      }
+    ]
+  },
+  "consoleErrors": [],
+  "followUp": {
+    "capturedAt": "2026-10-21T10:31:14.510Z",
+    "collapsedRail": [
+      {
+        "name": "c5-light-900x600-collapsed.png",
+        "theme": "glass-light",
+        "viewport": "900x600",
+        "navWidth": 56,
+        "buttonCount": 19,
+        "buttonSizes": [
+          "40x40"
+        ],
+        "maxCentreOffsetPx": 0,
+        "worst": {
+          "name": "Dashboard",
+          "w": 40,
+          "h": 40,
+          "offset": 0
+        },
+        "scroller": {
+          "scrollWidth": 54,
+          "clientWidth": 54,
+          "offsetWidth": 54,
+          "horizontalOverflow": 0,
+          "scrollbarGutter": 0,
+          "overflowX": "hidden",
+          "canScrollX": 0
+        },
+        "footer": {
+          "scrollWidth": 54,
+          "clientWidth": 54
+        },
+        "documentHorizontalOverflow": 0,
+        "maxCentreOffsetAfterScrollPx": 0
+      },
+      {
+        "name": "c5-light-1280x800-collapsed.png",
+        "theme": "glass-light",
+        "viewport": "1280x800",
+        "navWidth": 56,
+        "buttonCount": 19,
+        "buttonSizes": [
+          "40x40"
+        ],
+        "maxCentreOffsetPx": 0,
+        "worst": {
+          "name": "Dashboard",
+          "w": 40,
+          "h": 40,
+          "offset": 0
+        },
+        "scroller": {
+          "scrollWidth": 54,
+          "clientWidth": 54,
+          "offsetWidth": 54,
+          "horizontalOverflow": 0,
+          "scrollbarGutter": 0,
+          "overflowX": "hidden",
+          "canScrollX": 0
+        },
+        "footer": {
+          "scrollWidth": 54,
+          "clientWidth": 54
+        },
+        "documentHorizontalOverflow": 0,
+        "maxCentreOffsetAfterScrollPx": 0
+      },
+      {
+        "name": "c5-light-1440x900-collapsed.png",
+        "theme": "glass-light",
+        "viewport": "1440x900",
+        "navWidth": 56,
+        "buttonCount": 19,
+        "buttonSizes": [
+          "40x40"
+        ],
+        "maxCentreOffsetPx": 0,
+        "worst": {
+          "name": "Dashboard",
+          "w": 40,
+          "h": 40,
+          "offset": 0
+        },
+        "scroller": {
+          "scrollWidth": 54,
+          "clientWidth": 54,
+          "offsetWidth": 54,
+          "horizontalOverflow": 0,
+          "scrollbarGutter": 0,
+          "overflowX": "hidden",
+          "canScrollX": 0
+        },
+        "footer": {
+          "scrollWidth": 54,
+          "clientWidth": 54
+        },
+        "documentHorizontalOverflow": 0,
+        "maxCentreOffsetAfterScrollPx": 0
+      },
+      {
+        "name": "c5-dark-900x600-collapsed.png",
+        "theme": "glass-dark",
+        "viewport": "900x600",
+        "navWidth": 56,
+        "buttonCount": 19,
+        "buttonSizes": [
+          "40x40"
+        ],
+        "maxCentreOffsetPx": 0,
+        "worst": {
+          "name": "Dashboard",
+          "w": 40,
+          "h": 40,
+          "offset": 0
+        },
+        "scroller": {
+          "scrollWidth": 54,
+          "clientWidth": 54,
+          "offsetWidth": 54,
+          "horizontalOverflow": 0,
+          "scrollbarGutter": 0,
+          "overflowX": "hidden",
+          "canScrollX": 0
+        },
+        "footer": {
+          "scrollWidth": 54,
+          "clientWidth": 54
+        },
+        "documentHorizontalOverflow": 0,
+        "maxCentreOffsetAfterScrollPx": 0
+      },
+      {
+        "name": "c5-dark-1280x800-collapsed.png",
+        "theme": "glass-dark",
+        "viewport": "1280x800",
+        "navWidth": 56,
+        "buttonCount": 19,
+        "buttonSizes": [
+          "40x40"
+        ],
+        "maxCentreOffsetPx": 0,
+        "worst": {
+          "name": "Dashboard",
+          "w": 40,
+          "h": 40,
+          "offset": 0
+        },
+        "scroller": {
+          "scrollWidth": 54,
+          "clientWidth": 54,
+          "offsetWidth": 54,
+          "horizontalOverflow": 0,
+          "scrollbarGutter": 0,
+          "overflowX": "hidden",
+          "canScrollX": 0
+        },
+        "footer": {
+          "scrollWidth": 54,
+          "clientWidth": 54
+        },
+        "documentHorizontalOverflow": 0,
+        "maxCentreOffsetAfterScrollPx": 0
+      },
+      {
+        "name": "c5-dark-1440x900-collapsed.png",
+        "theme": "glass-dark",
+        "viewport": "1440x900",
+        "navWidth": 56,
+        "buttonCount": 19,
+        "buttonSizes": [
+          "40x40"
+        ],
+        "maxCentreOffsetPx": 0,
+        "worst": {
+          "name": "Dashboard",
+          "w": 40,
+          "h": 40,
+          "offset": 0
+        },
+        "scroller": {
+          "scrollWidth": 54,
+          "clientWidth": 54,
+          "offsetWidth": 54,
+          "horizontalOverflow": 0,
+          "scrollbarGutter": 0,
+          "overflowX": "hidden",
+          "canScrollX": 0
+        },
+        "footer": {
+          "scrollWidth": 54,
+          "clientWidth": 54
+        },
+        "documentHorizontalOverflow": 0,
+        "maxCentreOffsetAfterScrollPx": 0
+      },
+      {
+        "name": "c5-light-1280x800-collapsed-en.png",
+        "theme": "glass-light",
+        "viewport": "1280x800",
+        "lang": "en",
+        "navWidth": 56,
+        "buttonCount": 19,
+        "buttonSizes": [
+          "40x40"
+        ],
+        "maxCentreOffsetPx": 0,
+        "worst": {
+          "name": "Dashboard",
+          "w": 40,
+          "h": 40,
+          "offset": 0
+        },
+        "scroller": {
+          "scrollWidth": 54,
+          "clientWidth": 54,
+          "offsetWidth": 54,
+          "horizontalOverflow": 0,
+          "scrollbarGutter": 0,
+          "overflowX": "hidden",
+          "canScrollX": 0
+        },
+        "footer": {
+          "scrollWidth": 54,
+          "clientWidth": 54
+        },
+        "documentHorizontalOverflow": 0
+      },
+      {
+        "name": "c5-dark-1280x800-collapsed-en.png",
+        "theme": "glass-dark",
+        "viewport": "1280x800",
+        "lang": "en",
+        "navWidth": 56,
+        "buttonCount": 19,
+        "buttonSizes": [
+          "40x40"
+        ],
+        "maxCentreOffsetPx": 0,
+        "worst": {
+          "name": "Dashboard",
+          "w": 40,
+          "h": 40,
+          "offset": 0
+        },
+        "scroller": {
+          "scrollWidth": 54,
+          "clientWidth": 54,
+          "offsetWidth": 54,
+          "horizontalOverflow": 0,
+          "scrollbarGutter": 0,
+          "overflowX": "hidden",
+          "canScrollX": 0
+        },
+        "footer": {
+          "scrollWidth": 54,
+          "clientWidth": 54
+        },
+        "documentHorizontalOverflow": 0
+      }
+    ],
+    "focusRing": [
+      {
+        "name": "中央技能库",
+        "tag": "BUTTON",
+        "role": null,
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90) offset 2px",
+        "file": "c5-light-focus-ring-nav.png"
+      },
+      {
+        "name": "调整侧边栏宽度",
+        "tag": "DIV",
+        "role": "separator",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90) offset 2px",
+        "file": "c5-light-focus-ring-resize.png"
+      },
+      {
+        "name": "中央技能库",
+        "tag": "BUTTON",
+        "role": null,
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(19, 128, 90) offset 2px",
+        "ringLeftClearancePx": 3,
+        "ringRightClearancePx": 3,
+        "file": "c5-light-focus-ring-nav-collapsed.png"
+      },
+      {
+        "name": "中央技能库",
+        "tag": "BUTTON",
+        "role": null,
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161) offset 2px",
+        "file": "c5-dark-focus-ring-nav.png"
+      },
+      {
+        "name": "调整侧边栏宽度",
+        "tag": "DIV",
+        "role": "separator",
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161) offset 2px",
+        "file": "c5-dark-focus-ring-resize.png"
+      },
+      {
+        "name": "中央技能库",
+        "tag": "BUTTON",
+        "role": null,
+        "region": "sidebar",
+        "focusVisible": true,
+        "outline": "solid 2px rgb(79, 209, 161) offset 2px",
+        "ringLeftClearancePx": 3,
+        "ringRightClearancePx": 3,
+        "file": "c5-dark-focus-ring-nav-collapsed.png"
+      }
+    ],
+    "keyboardWalkthrough": {
+      "theme": "glass-light",
+      "viewport": "1280x800",
+      "lang": "zh",
+      "steps": [
+        {
+          "step": 1,
+          "action": "page loaded on /dashboard, focus on body",
+          "focus": {
+            "tag": "BODY"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 2,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "SkillPort",
+            "region": "topbar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 3,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "搜索技能...CtrlK",
+            "region": "topbar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 4,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "导入技能",
+            "region": "topbar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 5,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "切换当前目标",
+            "region": "topbar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 6,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "查看键盘快捷键",
+            "region": "topbar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 7,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "Dashboard",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 8,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "中央技能库",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 9,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "规则管理",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 10,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "Skills CLI 全局",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 11,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "项目",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 12,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "Obsidian 仓库",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 13,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "技能市场",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 14,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "技能集合",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 15,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "操作日志",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 16,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "技能使用",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 17,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "收起全局工作区",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 18,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "Universal",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 19,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "Claude Code",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 20,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "Grok",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 21,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "Antigravity",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 22,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "Antigravity CLI",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 23,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "Kiro",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 24,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "设置",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 25,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "切换到深色模式",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 26,
+          "action": "Tab",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "收起侧边栏",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 27,
+          "action": "Tab",
+          "focus": {
+            "tag": "DIV",
+            "role": "separator",
+            "name": "调整侧边栏宽度",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 28,
+          "action": "ArrowRight on resize handle",
+          "focus": {
+            "tag": "DIV",
+            "role": "separator",
+            "name": "调整侧边栏宽度",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 224,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 29,
+          "action": "ArrowRight on resize handle",
+          "focus": {
+            "tag": "DIV",
+            "role": "separator",
+            "name": "调整侧边栏宽度",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 240,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 30,
+          "action": "ArrowLeft on resize handle",
+          "focus": {
+            "tag": "DIV",
+            "role": "separator",
+            "name": "调整侧边栏宽度",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 224,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 31,
+          "action": "ArrowLeft on resize handle",
+          "focus": {
+            "tag": "DIV",
+            "role": "separator",
+            "name": "调整侧边栏宽度",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 32,
+          "action": "Shift+Tab (back to collapse entry)",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "收起侧边栏",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 33,
+          "action": "Shift+Tab (back to light/dark toggle)",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "切换到深色模式",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 34,
+          "action": "Enter on light/dark toggle",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "切换到浅色模式",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(79, 209, 161) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-dark",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 35,
+          "action": "Enter on light/dark toggle again",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "切换到深色模式",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 36,
+          "action": "Tab (to collapse entry)",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "收起侧边栏",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 37,
+          "action": "Enter on collapse entry",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "展开侧边栏",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 56,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 38,
+          "action": "Enter on expand entry",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "收起侧边栏",
+            "region": "sidebar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 39,
+          "action": "focus target switcher trigger (programmatic, same element as Tab stop 4)",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "切换当前目标",
+            "region": "topbar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 40,
+          "action": "Enter on target switcher",
+          "focus": {
+            "tag": "DIV",
+            "role": "menuitem",
+            "name": "本机当前管理当前电脑上的 skills。",
+            "region": "menu",
+            "focusVisible": true,
+            "outline": "none 1px oklab(0.53303 -0.105102 0.0320495 / 0.5) offset 0px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": true,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 41,
+          "action": "ArrowDown in target menu",
+          "focus": {
+            "tag": "DIV",
+            "role": "menuitem",
+            "name": "Windows typography validation workstation with a",
+            "region": "menu",
+            "focusVisible": true,
+            "outline": "none 1px oklab(0.53303 -0.105102 0.0320495 / 0.5) offset 0px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": true,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 42,
+          "action": "ArrowDown in target menu",
+          "focus": {
+            "tag": "DIV",
+            "role": "menuitem",
+            "name": "管理目标…",
+            "region": "menu",
+            "focusVisible": true,
+            "outline": "none 1px oklab(0.53303 -0.105102 0.0320495 / 0.5) offset 0px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": true,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 43,
+          "action": "Escape in target menu",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "切换当前目标",
+            "region": "topbar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 44,
+          "action": "Tab (to shortcuts button)",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "查看键盘快捷键",
+            "region": "topbar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 45,
+          "action": "Enter on shortcuts button",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "关闭",
+            "region": "dialog",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": true,
+            "sheetOpen": true
+          }
+        },
+        {
+          "step": 46,
+          "action": "Tab inside shortcuts sheet",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "关闭",
+            "region": "dialog",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": true,
+            "sheetOpen": true
+          }
+        },
+        {
+          "step": 47,
+          "action": "Tab inside shortcuts sheet",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "关闭",
+            "region": "dialog",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": true,
+            "sheetOpen": true
+          }
+        },
+        {
+          "step": 48,
+          "action": "Escape in shortcuts sheet",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "查看键盘快捷键",
+            "region": "topbar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 49,
+          "action": "? hotkey (focus on body)",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "关闭",
+            "region": "dialog",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": true,
+            "sheetOpen": true
+          }
+        },
+        {
+          "step": 50,
+          "action": "Escape in shortcuts sheet",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "查看键盘快捷键",
+            "region": "topbar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 51,
+          "action": "Ctrl+K",
+          "focus": {
+            "tag": "INPUT",
+            "role": "combobox",
+            "name": "搜索技能、技能集、操作...",
+            "region": "dialog",
+            "focusVisible": true,
+            "outline": "none 1px oklab(0.53303 -0.105102 0.0320495 / 0.5) offset 0px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": true,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 52,
+          "action": "ArrowDown in global search",
+          "focus": {
+            "tag": "INPUT",
+            "role": "combobox",
+            "name": "搜索技能、技能集、操作...",
+            "region": "dialog",
+            "focusVisible": true,
+            "outline": "none 1px oklab(0.53303 -0.105102 0.0320495 / 0.5) offset 0px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": true,
+            "sheetOpen": false
+          },
+          "cmdkSelected": "dense-typography-validation-skill-with-a"
+        },
+        {
+          "step": 53,
+          "action": "Escape in global search",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "查看键盘快捷键",
+            "region": "topbar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 54,
+          "action": "Tab (to search trigger)",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "搜索技能...CtrlK",
+            "region": "topbar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 55,
+          "action": "Enter on search trigger",
+          "focus": {
+            "tag": "INPUT",
+            "role": "combobox",
+            "name": "搜索技能、技能集、操作...",
+            "region": "dialog",
+            "focusVisible": true,
+            "outline": "none 1px oklab(0.53303 -0.105102 0.0320495 / 0.5) offset 0px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": true,
+            "sheetOpen": false
+          }
+        },
+        {
+          "step": 56,
+          "action": "Escape in global search",
+          "focus": {
+            "tag": "BUTTON",
+            "role": null,
+            "name": "搜索技能...CtrlK",
+            "region": "topbar",
+            "focusVisible": true,
+            "outline": "solid 2px rgb(19, 128, 90) offset 2px"
+          },
+          "state": {
+            "navWidth": 208,
+            "theme": "glass-light",
+            "menuOpen": false,
+            "dialogOpen": false,
+            "sheetOpen": false
+          }
+        }
+      ]
+    },
+    "reducedMotion": {
+      "mediaMatches": true,
+      "before": {
+        "nav": {
+          "transitionProperty": "all",
+          "transitionDuration": "1e-05s",
+          "transitionDelay": "0s",
+          "animationName": "none"
+        },
+        "scroller": {
+          "transitionProperty": "all",
+          "transitionDuration": "1e-05s",
+          "transitionDelay": "0s",
+          "animationName": "none"
+        },
+        "collapseButton": {
+          "transitionProperty": "scale, background-color, color, border-color",
+          "transitionDuration": "1e-05s",
+          "transitionDelay": "0s",
+          "animationName": "none"
+        },
+        "navItem": {
+          "transitionProperty": "scale, background-color, color, border-color",
+          "transitionDuration": "1e-05s",
+          "transitionDelay": "0s",
+          "animationName": "none"
+        }
+      },
+      "widthSamples": [
+        {
+          "t": "before",
+          "w": 208
+        },
+        {
+          "t": "sync-after-click",
+          "w": 208
+        },
+        {
+          "t": "rAF1",
+          "w": 208
+        },
+        {
+          "t": "rAF2",
+          "w": 56
+        },
+        {
+          "t": "50ms",
+          "w": 56
+        }
+      ],
+      "afterCollapse": {
+        "nav": {
+          "transitionProperty": "all",
+          "transitionDuration": "1e-05s",
+          "transitionDelay": "0s",
+          "animationName": "none"
+        },
+        "scroller": {
+          "transitionProperty": "all",
+          "transitionDuration": "1e-05s",
+          "transitionDelay": "0s",
+          "animationName": "none"
+        },
+        "collapseButton": {
+          "transitionProperty": "scale, background-color, color, border-color",
+          "transitionDuration": "1e-05s",
+          "transitionDelay": "0s",
+          "animationName": "none"
+        },
+        "navItem": {
+          "transitionProperty": "scale, background-color, color, border-color",
+          "transitionDuration": "1e-05s",
+          "transitionDelay": "0s",
+          "animationName": "none"
+        }
+      },
+      "runningAnimations": [],
+      "baselineNoPreference": {
+        "nav": {
+          "transitionProperty": "all",
+          "transitionDuration": "0s",
+          "transitionDelay": "0s",
+          "animationName": "none"
+        },
+        "scroller": {
+          "transitionProperty": "all",
+          "transitionDuration": "0s",
+          "transitionDelay": "0s",
+          "animationName": "none"
+        },
+        "collapseButton": {
+          "transitionProperty": "scale, background-color, color, border-color",
+          "transitionDuration": "0.15s",
+          "transitionDelay": "0s",
+          "animationName": "none"
+        },
+        "navItem": {
+          "transitionProperty": "scale, background-color, color, border-color",
+          "transitionDuration": "0.15s",
+          "transitionDelay": "0s",
+          "animationName": "none"
+        }
+      }
+    },
+    "consoleErrors": [],
+    "notes": {
+      "harness": "headless Chrome (CDP) against pnpm dev + browser IPC fixtures; scrollbars NOT hidden in this run (first run used --hide-scrollbars), so the collapsed-rail numbers include any real scrollbar gutter",
+      "collapsedRail": "maxCentreOffsetPx = max |button centre - panel centre| over every rendered nav/footer button (rail scrolled to top and to bottom); scroller.horizontalOverflow = scrollWidth - clientWidth; canScrollX = scrollLeft after trying to set 50",
+      "focusRingClearance": "ringLeft/RightClearancePx = space between the 2px+2px-offset outline and the rail scroll box edge (>= 0 means not clipped by overflow-x-hidden)",
+      "reducedMotion": "prefers-reduced-motion: reduce emulated via Emulation.setEmulatedMedia; transition-duration resolves to 1e-05s (the app-wide 0.01ms reduced-motion rule); the nav width has no transition of its own and jumps 208 -> 56 in one frame (no intermediate widths, no running Animation objects). Baseline without the preference: nav items 0.15s on scale/background/color/border only, still no width transition."
+    }
+  }
+}

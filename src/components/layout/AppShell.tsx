@@ -32,7 +32,8 @@ function disposeListener(unlisten?: (() => void | Promise<void>) | null) {
 }
 
 /**
- * Top-level app shell: TopBar + icon sidebar + scrollable main content area.
+ * Top-level app shell: fixed glass canvas + transparent TopBar + floating
+ * glass sidebar + main content area.
  * Triggers the initial platform scan on mount.
  */
 export function AppShell() {
@@ -203,12 +204,23 @@ export function AppShell() {
   }
 
   return (
-    <div className="glass-canvas flex flex-col h-screen text-foreground overflow-hidden">
+    // C5 D-S1: the L1 canvas is its own fixed layer behind the content, so it
+    // never scrolls with <main> (and stays the element html[data-window-
+    // material="mica"] makes translucent). The transparent TopBar row sits
+    // directly on it; below it the floating sidebar panel keeps a 12px gap to
+    // the left / bottom window edges, and <main> keeps 12px to the right /
+    // bottom. Pages bring their own 24px gutter.
+    <div className="relative isolate flex h-screen flex-col overflow-hidden text-foreground">
+      <div
+        aria-hidden="true"
+        data-slot="app-canvas"
+        className="glass-canvas pointer-events-none fixed inset-0 -z-10"
+      />
       <TopBar
         onSearchClick={() => setIsSearchOpen(true)}
         onShortcutsClick={() => setIsShortcutsOpen(true)}
       />
-      <div className="flex flex-1 min-h-0">
+      <div className="flex min-h-0 flex-1 gap-3 px-3 pb-3">
         <Sidebar />
         <main ref={mainRef} className="flex-1 min-h-0 min-w-0 overflow-hidden">
           <Outlet />

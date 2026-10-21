@@ -120,7 +120,6 @@ const PENDING_HANDWRITTEN_SURFACE: readonly string[] = [
   "src/components/central/repositorySyncPanelControls.tsx",
   "src/components/central/updateCenter/OrphansTabPanel.tsx",
   "src/components/central/updateCenter/PlatformDuplicatesTabPanel.tsx",
-  "src/components/layout/SidebarSection.tsx",
   "src/components/logs/RuntimeLogsPanel.tsx",
   "src/components/platform/BatchDeletePlatformSkillsDialog.tsx",
   "src/components/settings/AboutSettingsSection.tsx",
@@ -138,7 +137,6 @@ const PENDING_DIRECT_BASE_UI: readonly string[] = [
   "src/components/central/CentralSkillsShellMenus.tsx",
   "src/components/central/SkillImportLauncher.tsx",
   "src/components/central/TaskCenterDrawer.tsx",
-  "src/components/layout/SidebarSection.tsx",
   "src/components/platform/PlatformSkillToolbarMenus.tsx",
   "src/components/skill/CompactCardMoreMenu.tsx",
   "src/components/skill/SkillDetailModalShell.tsx",
@@ -149,12 +147,13 @@ const PENDING_DIRECT_BASE_UI: readonly string[] = [
 
 // Initial sizes when the contract landed (C4, 2026-10-21). Never raise these;
 // lower them as entries are migrated. C9 sets every ceiling to 0.
+// C5 (app shell): SidebarSection migrated → legacy card 20→19, base-ui 12→11.
 const PENDING_CEILING: Record<string, number> = {
   "backdrop-* utility": 6,
   "arbitrary rounded-[...]": 2,
   "raw bg-white/ or bg-black/": 0,
-  "legacy card recipe": 20,
-  "direct @base-ui/react/menu|dialog import": 12,
+  "legacy card recipe": 19,
+  "direct @base-ui/react/menu|dialog import": 11,
 };
 
 const RULES: Rule[] = [

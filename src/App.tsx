@@ -82,13 +82,16 @@ const PrimitivesGallery = import.meta.env.DEV
 function RouteLoadingFallback() {
   const { t } = useTranslation();
 
+  // C5 D-S8: no page fill, so the AppShell canvas shows through; the status
+  // is a glass capsule (overlay-strength fill so it reads on the bare canvas)
+  // with a mint dot plus text — never colour alone.
   return (
     <div
       role="status"
       aria-live="polite"
-      className="flex h-full items-center justify-center bg-background text-sm text-muted-foreground"
+      className="flex h-full items-center justify-center text-sm text-muted-foreground"
     >
-      <div className="flex items-center gap-2 rounded-full border border-border bg-card/80 px-3 py-1.5 shadow-sm">
+      <div className="flex items-center gap-2 rounded-full border border-glass-stroke bg-popover px-3.5 py-1.5 shadow-glass ring-1 ring-glass-hairline">
         <span className="size-2 animate-pulse rounded-full bg-primary" aria-hidden />
         <span>{t("common.loading")}</span>
       </div>

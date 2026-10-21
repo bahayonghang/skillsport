@@ -10,7 +10,7 @@
 
 | 层 | 用途 | 表达方式 | 真实 blur |
 | --- | --- | --- | --- |
-| L1 canvas | 全窗渐变 + 光斑 | `.glass-canvas`（AppShell 根，C5） | 否 |
+| L1 canvas | 全窗渐变 + 光斑 | `.glass-canvas`：AppShell 根下独立的 `fixed inset-0 -z-10` 层（`data-slot="app-canvas"`，根容器 `isolate`），不随 `<main>` 滚动；Mica 透明化规则作用在这个元素上 | 否 |
 | L2 panel | 卡片、面板、表格容器、侧栏 | `<Card>` 或 `glass-panel rounded-card`；可交互加 `glass-panel-hover` | **否** |
 | L3 overlay | Dialog / Sheet / Menu / Command / Toast / BulkActionBar | `.glass-overlay`（Dialog / Sheet 再加 `.glass-overlay-dialog` 换 24px） | 是 |
 | L3 sticky | 分组头、facet 头、transfer rail 等 sticky 条 | `.glass-sticky` | 是 |

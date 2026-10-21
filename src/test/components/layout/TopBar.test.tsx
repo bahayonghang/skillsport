@@ -100,21 +100,35 @@ describe("TopBar shortcut hint", () => {
     expect(screen.getByLabelText("Command+K")).toHaveTextContent("⌘K");
   });
 
-  it("toggles glass dark to light through the store", () => {
-    const toggleFlavor = mockTheme("glass-dark");
-    renderTopBar();
+  it.each(["glass-light", "glass-dark"] as const)(
+    "has no theme toggle in %s (the sidebar footer is the only entry)",
+    (flavor) => {
+      mockTheme(flavor);
+      renderTopBar();
 
-    const button = screen.getByRole("button", { name: "切换到浅色主题" });
-    fireEvent.click(button);
-    expect(toggleFlavor).toHaveBeenCalledTimes(1);
-  });
+      expect(
+        screen.queryByRole("button", { name: /主题|模式|theme|mode/i }),
+      ).not.toBeInTheDocument();
+    },
+  );
 
-  it("offers the dark theme while glass light is active", () => {
-    mockTheme("glass-light");
-    renderTopBar();
+  it("keeps search, import, target switcher and shortcuts on a transparent bar", () => {
+    const onSearchClick = vi.fn();
+    const onShortcutsClick = vi.fn();
+    const { container } = render(
+      <MemoryRouter initialEntries={["/central"]}>
+        <TopBar onSearchClick={onSearchClick} onShortcutsClick={onShortcutsClick} />
+      </MemoryRouter>,
+    );
 
-    expect(
-      screen.getByRole("button", { name: "切换到深色主题" }),
-    ).toBeInTheDocument();
+    const header = container.querySelector("header")!;
+    expect(header.className).not.toContain("border-b");
+    expect(header.className.split(/\s+/).some((token) => token.startsWith("bg-"))).toBe(false);
+    fireEvent.click(screen.getAllByRole("button", { name: /搜索/ })[0]!);
+    expect(onSearchClick).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole("button", { name: "查看键盘快捷键" }));
+    expect(onShortcutsClick).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("button", { name: "查看键盘快捷键" }).className).toContain("focus-ring");
+    expect(screen.getByTestId("target-switcher")).toBeInTheDocument();
   });
 });

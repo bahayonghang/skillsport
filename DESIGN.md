@@ -338,7 +338,8 @@ frontmatter 用逗号 `rgba()` 以兼容 stitch 解析；代码层写成 `rgb(r 
 | `{spacing.page}` | 24px | 页面 gutter（内容区四周） |
 
 ### 结构
-- **外壳**：canvas 铺满窗口；侧栏是一整块浮动玻璃面板，与窗口边缘保持 `{spacing.md}` 留白，圆角 `{rounded.shell}`。内容区不画外框，直接坐在 canvas 上。
+- **外壳**：canvas 是 AppShell 根下一层独立的 `fixed inset-0` 层，铺满窗口、不随内容滚动。顶部是 48px 的**透明工具条**（无底色、无底边框；应用图标、搜索胶囊 `glass-panel`、导入、目标切换 button-glass、快捷键），直接坐在 canvas 上。其下：侧栏是一整块浮动玻璃面板（L2，`{colors.surface-sidebar}`），与窗口左 / 下边缘保持 `{spacing.md}` 留白，圆角 `{rounded.shell}`；`<main>` 与右 / 下边缘同样留 `{spacing.md}`，内容区不画外框，直接坐在 canvas 上，页面自带 `{spacing.page}` gutter。
+- **侧栏调宽**：面板宽 168–360px（折叠 56px），不含留白。拖拽手柄是侧栏与 `<main>` 之间 12px 间隙中线上的 8px 命中条，静止不可见，hover / 键盘聚焦显示 2px 薄荷竖线（聚焦另有统一焦点环）；方向键调宽。
 - **页面标题区（PageHeader）**：粗标题（`{typography.display}`）左对齐；右侧放小号灰字元信息与页面级操作。标题区直接坐在 canvas 上，不包面板。
 - **网格**：卡片网格 gap `{spacing.xl}`，列数沿用现有 auto-fill 规则；本次只换视觉，不改信息架构。
 - **分组**：用留白与分组标签分组，而不是用嵌套边框。同一面板内的层级不超过两层（面板 → 内层块）。
@@ -437,10 +438,10 @@ L2 不用真实 blur 的理由：L2 面板下方是 L1 平滑渐变，模糊平�
 - hover：描边加深到 `{colors.ink-muted}`。focus-visible：描边 `{colors.ring}` + 统一焦点环。disabled：不透明度 0.5、禁手势。error：`aria-invalid`，描边 `{colors.rose-text}` + 下方玫瑰字说明。loading（异步校验）：右侧 spinner。
 
 **nav-item-active** — 侧栏导航项。
-- default（非激活）：透明底、`{colors.ink-muted}` 文字 + 20px 线性图标、`{rounded.pill}`、高 32px、内距 `0 12px`；计数徽标用等宽 tabular-nums 小灰字。
+- default（非激活）：透明底、`{colors.ink-muted}` 文字 + 20px 线性图标、`{rounded.pill}`、高 32px、内距 `0 12px`；计数徽标用 `Badge size="sm"` + `tabular-nums`：非激活行 neutral，激活行 mint（neutral 胶囊叠在 mint tint 上暗色只有 4.49:1，mint 胶囊为 4.63 / 5.22）。折叠态为 40px 圆形图标钮，可访问名称经 `aria-label` + `title` 保留。
 - hover：`{colors.surface-hover}` 底、文字转 `{colors.ink}`。focus-visible：统一焦点环。
 - active（当前路由）：`{colors.mint-tint}` 底 + 1px `{colors.mint-stroke}` 描边 + `{colors.mint-text}` 文字与图标。**无渐变填充、无发光、无左缘指示条**；`aria-current="page"` 与图标、字重共同表达，不只靠颜色。
-- disabled：不适用。侧栏底部放「明暗切换」与「收起」两个次级入口，样式同非激活导航项。
+- disabled：不适用。侧栏底部依次为：设置、分隔线、「明暗切换」（亮色显示 Moon +「深色模式」，暗色显示 Sun +「浅色模式」）与「收起」（ChevronsLeft / ChevronsRight），后两者样式同非激活导航项。侧栏没有头部行；这是全应用唯一的明暗切换入口（顶栏不放主题按钮）。
 
 **dialog** — Dialog / Sheet（L3）。
 - default：`.glass-overlay`——`{colors.surface-overlay}`、1px `{colors.glass-stroke}`、`shadow-overlay`、`backdrop-filter: blur(24px) saturate(140%)`、`{rounded.shell}`、内距 `{spacing.2xl}`；遮罩为 canvas 色 30% 的半透明层，不再叠加模糊。

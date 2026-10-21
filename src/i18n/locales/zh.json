@@ -429,9 +429,7 @@
     "projectModeRemoteHint": "请输入远程项目的绝对路径。"
   },
   "topbar": {
-    "importSkill": "导入技能",
-    "themeToggleLight": "切换到浅色主题",
-    "themeToggleDark": "切换到深色主题"
+    "importSkill": "导入技能"
   },
   "sidebar": {
     "rules": "规则管理",
@@ -444,7 +442,12 @@
     "noPlatforms": "没有检测到平台",
     "newCollection": "+ 新建",
     "expandSidebar": "展开侧边栏",
-    "collapseSidebar": "折叠侧边栏",
+    "collapseSidebar": "收起侧边栏",
+    "collapse": "收起",
+    "darkMode": "深色模式",
+    "lightMode": "浅色模式",
+    "themeToggleDark": "切换到深色模式",
+    "themeToggleLight": "切换到浅色模式",
     "importCollection": "导入技能集",
     "newCollectionLabel": "新建技能集",
     "importCollectionInput": "导入技能集 JSON 文件",

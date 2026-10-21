@@ -8,7 +8,7 @@
 
 修改 `data-theme` 的写入、主题持久化 / 迁移，或给大面积表面加 `color` / `background-color` / `border-color` / `box-shadow` 过渡时适用。
 
-顶栏 / 侧栏明暗开关只调用 `toggleFlavor`，设置页明暗二选一只调用 `setFlavor`。组件不得自己写 `document.documentElement.dataset.theme`。`data-accent` 已废止，不得重新引入。
+明暗开关只有一个入口：侧栏底部（`Sidebar.tsx` footer，C5 D-S3），它只调用 `toggleFlavor`；顶栏不放主题按钮（`TopBar.test.tsx` 断言）。设置页明暗二选一只调用 `setFlavor`。组件不得自己写 `document.documentElement.dataset.theme`。`data-accent` 已废止，不得重新引入。
 
 ## 2. Signatures
 
@@ -52,7 +52,7 @@ localStorage key：`skillport-theme`。旧 key `catppuccin-flavor` / `catppuccin
 
 ## 5. Good / Base / Bad Cases
 
-- Good：Central 网格上点击顶栏主题按钮，背景和卡片阴影直接落到目标色，中段不发灰；标记清除后卡片 hover 阴影仍有过渡。
+- Good：Central 网格上点击侧栏底部明暗切换，背景和卡片阴影直接落到目标色，中段不发灰；标记清除后卡片 hover 阴影仍有过渡。
 - Base：`init()` 使用已保存的 flavor，首屏没有 `data-theme-switching`。
 - Migration：1.0.x 用户存有 `catppuccin-flavor = frappe`，首启落到 `glass-dark`，旧两个 key 被删除。
 - Bad：在 `TopBar` 里单独改 `dataset.theme`，或在 rAF 里先删标记再让浏览器做同一次样式计算。两种都会让 `transition-colors` 和卡片 `box-shadow` 把 glass-dark `#121a20` / `#e7edf3` 插到 glass-light `#eef3f4` / `#1f2a37`，中点发灰并卡住主线程。

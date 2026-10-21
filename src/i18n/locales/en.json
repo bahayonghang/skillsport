@@ -429,9 +429,7 @@
     "projectModeRemoteHint": "Enter an absolute remote project path."
   },
   "topbar": {
-    "importSkill": "Import skill",
-    "themeToggleLight": "Switch to light theme",
-    "themeToggleDark": "Switch to dark theme"
+    "importSkill": "Import skill"
   },
   "sidebar": {
     "rules": "Rules",
@@ -445,6 +443,11 @@
     "newCollection": "+ New",
     "expandSidebar": "Expand sidebar",
     "collapseSidebar": "Collapse sidebar",
+    "collapse": "Collapse",
+    "darkMode": "Dark mode",
+    "lightMode": "Light mode",
+    "themeToggleDark": "Switch to dark mode",
+    "themeToggleLight": "Switch to light mode",
     "importCollection": "Import Collection",
     "newCollectionLabel": "New Collection",
     "importCollectionInput": "Import collection JSON file",
