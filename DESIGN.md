@@ -207,7 +207,7 @@ components:
     backdropFilter: "blur(24px) saturate(140%)"
 ---
 <!-- design-md: entry=style:glassmorphism; source=https://github.com/bergside/awesome-design-skills@f631a09; license=MIT -->
-<!-- customized: SkillPort 1.1.0 light-glass; tokens from task 10-21-v1-1-glass-ui-redesign design.md §2 (contrast-adjusted: ink-muted, mint-text, amber-text, chart-4; added surface-input/hover, divider, input-stroke, mint-hover/stroke, rounded.inner, typography.button, canvas-blob-3-dark); all catalog generic values replaced; replaces Catppuccin control-room system (backup: .trellis/tasks/10-21-glass-design-source/research/DESIGN.catppuccin-backup.md) -->
+<!-- customized: SkillPort 1.1.0 light-glass; tokens from task 10-21-v1-1-glass-ui-redesign design.md §2 (contrast-adjusted: ink-muted, mint-text, amber-text, chart-4; added surface-input/hover, divider, input-stroke, mint-hover/stroke, rounded.inner, typography.button, canvas-blob-3-dark); all catalog generic values replaced; replaces Catppuccin control-room system (backup: .trellis/tasks/archive/2026-10/10-21-glass-design-source/research/DESIGN.catppuccin-backup.md) -->
 
 # Design System: SkillPort
 
