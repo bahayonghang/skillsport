@@ -1,0 +1,9 @@
+{"file": ".trellis/tasks/10-21-v1-1-glass-ui-redesign/prd.md", "reason": "父任务决策 D1–D4、源设计语言与跨子任务验收"}
+{"file": ".trellis/tasks/10-21-v1-1-glass-ui-redesign/design.md", "reason": "四层模型、token 草案、blur 白名单与对比度预算"}
+{"file": ".trellis/tasks/10-21-v1-1-0-release-prep/prd.md", "reason": "本子任务需求与验收"}
+{"file": ".trellis/tasks/10-21-v1-1-0-release-prep/design.md", "reason": "本子任务技术设计/执行计划"}
+{"file": ".trellis/tasks/10-21-v1-1-0-release-prep/implement.md", "reason": "本子任务技术设计/执行计划"}
+{"file": "DESIGN.md", "reason": "C1 定稿后的唯一视觉依据"}
+{"file": ".trellis/spec/quality/index.md", "reason": "质量规范入口"}
+{"file": ".trellis/spec/quality/ci-quality-gate.md", "reason": "just ci 门禁要求"}
+{"file": "docs/agents/git-and-release.md", "reason": "检查时核对的契约"}
