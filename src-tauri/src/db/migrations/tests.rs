@@ -306,6 +306,7 @@ async fn migration_six_preserves_legacy_pending_additions_and_accepts_new_identi
 
 #[tokio::test]
 async fn migration_seven_creates_skills_cli_update_tables_and_reopens() {
+    let _guard = DATABASE_OPEN_TEST_LOCK.lock().await;
     let directory = TempDir::new().unwrap();
     let database_path = directory.path().join("migration-seven.sqlite");
     let pool = crate::db::pool::create_pool(&database_path).await.unwrap();
