@@ -45,6 +45,7 @@ export function SkillDetailModalShell({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
+        overlayProps={{ "data-testid": "skill-detail-modal-overlay" }}
         role="dialog"
         aria-modal="true"
         aria-labelledby={children ? titleId : undefined}

@@ -3157,7 +3157,16 @@
     "githubImportResultSkippedNone": "No skills were skipped.",
     "githubPatSettingsHint": "Open Settings and save a GitHub Personal Access Token to use authenticated direct GitHub requests for this import flow.",
     "githubPatConfiguredFailureHint": "A configured GitHub token was already used. Check that the token owner can read this repo and that the token has sufficient repository access.",
-    "backToPublishers": "Back to publishers"
+    "backToPublishers": "Back to publishers",
+    "officialEmpty": "No matching recommended skills",
+    "publisherSearchPlaceholder": "Search publishers...",
+    "publisherCount": "{{count}} publishers",
+    "repoSkillCount": "{{count}} skills",
+    "browseRepoSkills": "Browse Skills",
+    "repoPreviewFetching": "Fetching...",
+    "repoPreviewRefresh": "Refresh preview",
+    "repoPreviewFetchingFromGithub": "Fetching skills from GitHub...",
+    "repoPreviewEmpty": "No skills found"
   },
   "obsidian": {
     "title": "Obsidian Vault Skills",

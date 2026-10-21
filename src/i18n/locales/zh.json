@@ -3157,7 +3157,16 @@
     "githubImportResultSkippedNone": "没有跳过任何技能。",
     "githubPatSettingsHint": "请前往设置并保存 GitHub Personal Access Token，让该导入流程改用经过认证的直连 GitHub 请求。",
     "githubPatConfiguredFailureHint": "当前请求已经使用已配置的 GitHub 令牌。请检查令牌所属账号是否能读取该仓库，以及令牌是否有足够的仓库访问权限。",
-    "backToPublishers": "返回发布者列表"
+    "backToPublishers": "返回发布者列表",
+    "officialEmpty": "没有匹配的推荐技能",
+    "publisherSearchPlaceholder": "搜索发布者...",
+    "publisherCount": "{{count}} 个官方发布者",
+    "repoSkillCount": "{{count}} 个 Skills",
+    "browseRepoSkills": "浏览 Skills",
+    "repoPreviewFetching": "正在获取...",
+    "repoPreviewRefresh": "刷新预览",
+    "repoPreviewFetchingFromGithub": "正在从 GitHub 获取 Skills...",
+    "repoPreviewEmpty": "未找到 Skills"
   },
   "obsidian": {
     "title": "Obsidian 仓库技能",

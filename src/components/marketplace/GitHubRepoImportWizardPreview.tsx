@@ -513,16 +513,19 @@ function GitHubRepoImportPreviewDetailPane({
             <div className="mt-1 break-all text-ui-meta text-muted-foreground">
               {!isRenameEditing ? (
                 <>
-                  {selectedPreviewSkill.sourcePath}
-                  {selectedPreviewSkill.rootDirectory
-                    ? ` · ${t("marketplace.githubImportRootDirectory")}: ${selectedPreviewSkill.rootDirectory}`
-                    : ""}
+                  <span className="font-mono">{selectedPreviewSkill.sourcePath}</span>
+                  {selectedPreviewSkill.rootDirectory ? (
+                    <>
+                      {` · ${t("marketplace.githubImportRootDirectory")}: `}
+                      <span className="font-mono">{selectedPreviewSkill.rootDirectory}</span>
+                    </>
+                  ) : null}
                 </>
               ) : (
                 <>
                   {selectedPreviewSkill.skillName}
                   {" · "}
-                  {selectedPreviewSkill.sourcePath}
+                  <span className="font-mono">{selectedPreviewSkill.sourcePath}</span>
                 </>
               )}
             </div>

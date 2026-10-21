@@ -32,7 +32,7 @@
 | `Sheet*` | base-ui Dialog 侧滑抽屉：`SheetContent side="right|left"`（浮动 8px、`rounded-shell`、`.glass-overlay-dialog`）+ Header / Title / Description / Body / Footer / Close。`backdropProps` 透传 scrim 的非 class 属性（如 `data-testid`），供迁移前的 overlay 测试锚点沿用 |
 | `Dialog*` / `Command*` | `.glass-overlay glass-overlay-dialog rounded-shell p-6`；遮罩 `bg-overlay`（canvas 30%，无 blur） |
 | `Toaster` | 封装 sonner；每个 toast 带 `.glass-overlay`；palette / 状态 tint / 图标色在 `index.css` 的 Toaster 段映射；不开 `richColors` |
-| 表单控件 | Input / InputGroup / Textarea：`rounded-control bg-input-surface border-input`，hover 描边加深，focus = `border-ring` + 统一 outline，error = `aria-invalid` 玫瑰描边；Checkbox 保留 4px `rounded` 与 `strokeWidth={3}`（glyph 尺度的有意例外）；Switch 胶囊轨道，关 = input 描边，开 = 薄荷 |
+| 表单控件 | Input / InputGroup / Textarea：`rounded-control bg-input-surface border-input`，hover 描边加深，focus = `border-ring` + 统一 outline，error = `aria-invalid` 玫瑰描边；Checkbox 保留 4px `rounded` 与 `strokeWidth={3}`（glyph 尺度的有意例外）；Markdown 行内 `code`（`index.css` `.skill-markdown code`）保留 6px，同属 glyph 尺度例外；Switch 胶囊轨道，关 = input 描边，开 = 薄荷 |
 
 `cn()`（`src/lib/utils.ts`）已向 tailwind-merge 注册 `text-ui-meta|ui-micro|display-*`、`rounded-control|inner|card|shell|pill`、`shadow-glass|glass-hover|overlay`；新增同类 token 时同步注册，否则 `cn("text-ui-meta", "text-muted-foreground")` 会把字号当颜色丢掉。
 

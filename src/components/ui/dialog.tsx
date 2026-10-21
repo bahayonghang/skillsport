@@ -47,14 +47,18 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  overlayProps,
   ...props
 }: DialogPrimitive.Popup.Props & {
   showCloseButton?: boolean;
+  /** Extra props for the scrim (e.g. a `data-testid`); mirrors Sheet's `backdropProps`. */
+  overlayProps?: Omit<DialogPrimitive.Backdrop.Props, "className"> &
+    Partial<Record<`data-${string}`, string>>;
 }) {
   const { t } = useTranslation();
   return (
     <DialogPortal>
-      <DialogOverlay />
+      <DialogOverlay {...overlayProps} />
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(

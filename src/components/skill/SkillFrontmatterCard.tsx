@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { FrontmatterValue } from "@/lib/frontmatter";
 
@@ -152,9 +153,9 @@ export function SkillFrontmatterCard({ data, raw, className }: SkillFrontmatterC
                 )}
               </div>
               {summaryVersion && (
-                <span className="inline-flex items-center rounded-full bg-popover px-2.5 py-1 text-xs font-medium tracking-wide text-foreground">
+                <Badge className="shrink-0 font-mono tabular-nums">
                   v{summaryVersion}
-                </span>
+                </Badge>
               )}
             </div>
           )}

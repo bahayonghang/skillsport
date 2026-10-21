@@ -39,6 +39,12 @@ colors:
   chart-3: "#3a8fb7"
   chart-4: "#a97a22"
   chart-5: "#c2566f"
+  tag-sky-text: "#27668a"
+  tag-sky-tint: "rgba(58,143,183,0.12)"
+  tag-slate-text: "#4a5872"
+  tag-slate-tint: "rgba(90,108,140,0.12)"
+  tag-plum-text: "#874a6f"
+  tag-plum-tint: "rgba(160,90,135,0.12)"
   canvas-from-dark: "#0f1b1f"
   canvas-to-dark: "#18172b"
   canvas-blob-1-dark: "rgba(18,48,42,0.70)"
@@ -75,6 +81,12 @@ colors:
   chart-3-dark: "#7cc4e4"
   chart-4-dark: "#f0c06a"
   chart-5-dark: "#ff8fa3"
+  tag-sky-text-dark: "#8ccbe8"
+  tag-sky-tint-dark: "rgba(124,196,228,0.12)"
+  tag-slate-text-dark: "#b8c3d6"
+  tag-slate-tint-dark: "rgba(160,175,200,0.12)"
+  tag-plum-text-dark: "#e2a9cb"
+  tag-plum-tint-dark: "rgba(214,150,190,0.12)"
 typography:
   display:
     fontFamily: "Geist Variable, ui-sans-serif, system-ui, sans-serif"
@@ -268,6 +280,17 @@ SkillPort 仍然是重度用户每天住在里面的工作台：把中央目录�
 
 图表序列在面板上 ≥ 3:1；必须同时用形状、标签或图例区分，不依赖色相。
 
+### Tags（分类色，不是状态，也不是第三强调色）
+技能标签与 repo 色块是**分类数据**，按名称哈希稳定取色（`src/lib/tagColor.ts`）。色板 = 薄荷 tint、薰衣草 tint、中性（`{colors.surface-hover}` + `{colors.ink-muted}`），加三个低饱和色相；**不用琥珀 / 玫瑰**（它们只表达告警与错误）。每个标签 = 1px 同色 30% 描边 + 12% tint + 同族文字色，且必须带文字。
+
+| Token | Light | Dark | 角色 |
+| --- | --- | --- | --- |
+| `{colors.tag-sky-text}` / `{colors.tag-sky-tint}` | `#27668a` / 天蓝 12% | `#8ccbe8` / 12% | 天蓝（源自 chart-3） |
+| `{colors.tag-slate-text}` / `{colors.tag-slate-tint}` | `#4a5872` / 石板 12% | `#b8c3d6` / 12% | 石板 |
+| `{colors.tag-plum-text}` / `{colors.tag-plum-tint}` | `#874a6f` / 梅 12% | `#e2a9cb` / 12% | 梅 |
+
+repo 色块（非文字图形）取 chart-1..3 与 `tag-slate-text` / `tag-plum-text`，在面板上 ≥ 3:1。用户自定义 hex 标签色不在对比度矩阵内（用户自选）。
+
 ### 代码映射（C2 实现时的唯一对照）
 沿用 shadcn 语义变量名，**不改名**，让现有 utility 直接换值生效；只为新概念新增变量。
 
@@ -285,6 +308,7 @@ SkillPort 仍然是重度用户每天住在里面的工作台：把中央目录�
 | `amber-text` / `amber-tint` | `--warning-foreground` / `--warning-tint` |
 | `rose-text` / `rose-tint` | `--destructive-text` / `--destructive-tint` |
 | `ring` / `chart-1..5` | `--ring` / `--chart-1..5` |
+| `tag-{sky,slate,plum}-text` / `tag-{sky,slate,plum}-tint` | `--tag-*-text` / `--tag-*-tint`（新增；utility `text-tag-*-text`、`bg-tag-*-tint`） |
 
 frontmatter 用逗号 `rgba()` 以兼容 stitch 解析；代码层写成 `rgb(r g b / a)`，数值一致。tint 在代码层可写为 `color-mix(in oklch, <色> 12%, transparent)`，与 frontmatter 的 rgba 等价。
 
@@ -437,7 +461,7 @@ L2 不用真实 blur 的理由：L2 面板下方是 L1 平滑渐变，模糊平�
 - default：`{colors.surface-input}` 底、1px `{colors.input-stroke}`、`{colors.ink}` 文字、占位符 `{colors.ink-muted}`、`{rounded.control}`、高 32px、内距 `0 12px`。
 - hover：描边加深到 `{colors.ink-muted}`。focus-visible：描边 `{colors.ring}` + 统一焦点环。disabled：不透明度 0.5、禁手势。error：`aria-invalid`，描边 `{colors.rose-text}` + 下方玫瑰字说明。loading（异步校验）：右侧 spinner。
 
-**nav-item-active** — 侧栏导航项。
+**nav-item-active** — 侧栏导航项（实现在 `src/components/layout/Sidebar.tsx` 的 `NavItem`，不是 `ui/` primitive；页内二级导航如 Settings SideNav、Central facet 复用同一激活语言）。
 - default（非激活）：透明底、`{colors.ink-muted}` 文字 + 20px 线性图标、`{rounded.pill}`、高 32px、内距 `0 12px`；计数徽标用 `Badge size="sm"` + `tabular-nums`：非激活行 neutral，激活行 mint（neutral 胶囊叠在 mint tint 上暗色只有 4.49:1，mint 胶囊为 4.63 / 5.22）。折叠态为 40px 圆形图标钮，可访问名称经 `aria-label` + `title` 保留。
 - hover：`{colors.surface-hover}` 底、文字转 `{colors.ink}`。focus-visible：统一焦点环。
 - active（当前路由）：`{colors.mint-tint}` 底 + 1px `{colors.mint-stroke}` 描边 + `{colors.mint-text}` 文字与图标。**无渐变填充、无发光、无左缘指示条**；`aria-current="page"` 与图标、字重共同表达，不只靠颜色。
@@ -448,7 +472,7 @@ L2 不用真实 blur 的理由：L2 面板下方是 L1 平滑渐变，模糊平�
 - 标题 `{typography.title}`，说明 `{typography.body}` + `{colors.ink-muted}`；底部操作右对齐，主操作 button-primary、取消 button-glass。
 - open / close：150ms 淡入 + 2% 缩放；`prefers-reduced-motion` 下只淡入。焦点进入首个可操作元素，Esc 关闭，焦点归还触发器。error：内联玫瑰 tint 提示条。
 
-**其余 primitives**（C4 实现，沿用上面的 token）：`Badge`（= pill-status 的计数 / 标签形态）、`Menu` / Popover / Command / `Toaster`（`.glass-overlay` + `{rounded.card}`，菜单项 `{rounded.control}`）、`Switch`（`{rounded.pill}` 轨道，关闭态 `{colors.input-stroke}` 描边，开启态 `{colors.mint}`）、`PageHeader`（见 Layout）。
+**其余 primitives**（C4 实现，沿用上面的 token）：`Badge`（= pill-status 的计数 / 标签形态）、`Menu`（下拉与弹出层统一用它，不另设 Popover primitive）/ Command / `Toaster`（`.glass-overlay` + `{rounded.card}`，菜单项 `{rounded.control}`）、`Switch`（`{rounded.pill}` 轨道，关闭态 `{colors.input-stroke}` 描边，开启态 `{colors.mint}`）、`PageHeader`（见 Layout）。
 
 ### Signature: UnifiedSkillCard
 全应用所有技能卡的**唯一实现**，通过显式场景 props 覆盖 central / platform / project / marketplace / collection 五种场景。视觉为 card 规格：标题 `{typography.title}`、描述 `{typography.body}` + `{colors.ink-muted}`、ID / 路径用 `{typography.mono}`；右上角 pill-status；平台图标两行（LOBSTER / CODING），点击即时切换安装 / 卸载，已安装为薄荷 tint 胶囊。**禁止**在各页面重建内联卡片。
@@ -553,6 +577,8 @@ L2 不用真实 blur 的理由：L2 面板下方是 L1 平滑渐变，模糊平�
 | input-stroke（叠在 input 底上）/ panel 与 input 底 | 3.17 | 3.08 | 3.0 |
 | chart-1..5 / panel | 4.44 / 3.73 / 3.27 / 3.44 / 3.90 | 8.03 / 6.43 / 7.96 / 9.12 / 7.11 | 3.0 |
 | 白字 / lavender 实色 | 4.14（不达标，故禁止） | — | 4.5 |
+| tag-sky / slate / plum 文字 / 各自 tint（叠在 panel、sidebar、overlay 上） | 4.94 / 5.52 / 5.00 | 6.55 / 6.70 / 6.20 | 4.5 |
+| tag-sky / slate / plum 文字色作 repo 色块 / panel | 5.65 / 6.47 / 5.85 | 8.67 / 8.67 / 7.90 | 3.0 |
 
 **组件状态对**（同一方法，取最小值）
 

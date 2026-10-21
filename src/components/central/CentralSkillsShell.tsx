@@ -358,8 +358,8 @@ export function CentralSkillsShell(props: CentralSkillsShellProps) {
             </span>
           }
           actions={
-            // 容器查询单位把 actions 的 max-content 限制在标题区宽度内，窄窗口自动换行。
-            <div className="flex max-w-[100cqw] flex-wrap items-center gap-2">
+            // PageHeader 的 actions 槽自带 max-w-full + flex-wrap，窄窗口自动换行。
+            <>
               {/* 统一入口：添加技能（GitHub / 本地 ZIP）───────────── */}
               <SkillImportLauncher
                 t={t}
@@ -446,7 +446,7 @@ export function CentralSkillsShell(props: CentralSkillsShellProps) {
                 onOpenPlatformManage={() => setIsPlatformManageOpen(true)}
                 onOpenPortability={() => setIsPortabilityOpen(true)}
               />
-            </div>
+            </>
           }
         />
 

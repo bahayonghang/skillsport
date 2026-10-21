@@ -13,7 +13,9 @@ import { cn } from "@/lib/utils"
 // collection / platform name cannot overflow the header) and the aside takes
 // the remaining space and wraps internally, so a long meta line or the 1.125
 // font scale cannot push actions off-screen or collapse the title under the
-// meta.
+// meta. The actions group is capped at the aside width (`max-w-full`), so a
+// long action row moves to its own line and then wraps button by button
+// instead of overflowing the header; callers never need their own wrapper.
 
 interface PageHeaderProps
   extends Omit<React.ComponentProps<"header">, "title"> {
@@ -63,7 +65,7 @@ function PageHeader({
             {actions ? (
               <div
                 data-slot="page-header-actions"
-                className="flex shrink-0 flex-wrap items-center gap-2"
+                className="flex min-w-0 max-w-full shrink-0 flex-wrap items-center gap-2"
               >
                 {actions}
               </div>

@@ -883,7 +883,9 @@ html[data-window-material="mica"] .glass-canvas {
   color: var(--primary-text);
 }
 
-/* Inline code: muted wash + mono, control radius scaled down for inline. */
+/* Inline code: muted wash + mono. The 6px radius is a glyph-scale exception
+   (like the Checkbox 4px): ladder radii on an inline chip of ~19px height
+   would read as a pill. */
 .skill-markdown code {
   font-family:
     "JetBrains Mono Variable", ui-monospace, "Cascadia Code", "Source Code Pro",
@@ -1000,12 +1002,12 @@ html[data-window-material="mica"] .glass-canvas {
   border-bottom: none;
 }
 
+/* Table headers are author content: sentence case as written (DESIGN.md
+   Sentence-Case Rule), label weight, no tracking. */
 .skill-markdown th {
   background: color-mix(in srgb, var(--muted) 52%, transparent);
-  font-size: 0.72rem;
-  font-weight: 650;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  font-size: 0.75rem;
+  font-weight: 600;
   color: var(--muted-foreground);
 }
 

@@ -135,6 +135,14 @@ describe("PageHeader", () => {
     expect(aside.className).toContain("@min-[900px]/page-header:flex-1")
   })
 
+  it("caps the actions group at the aside width so long action rows wrap", () => {
+    const { container } = render(
+      <PageHeader title="T" actions={<button type="button">A</button>} />
+    )
+    const actions = container.querySelector("[data-slot=page-header-actions]")!
+    expect(actions).toHaveClass("flex-wrap", "min-w-0", "max-w-full")
+  })
+
   it("omits the aside when there is no meta or action", () => {
     const { container } = render(<PageHeader title="Only title" />)
     expect(container.querySelector("[data-slot=page-header-aside]")).toBeNull()
