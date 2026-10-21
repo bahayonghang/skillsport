@@ -416,7 +416,8 @@ describe("SettingsView", () => {
     setupMocks();
     renderSettingsView();
     const heading = screen.getByRole("heading", { name: "外观", level: 1 });
-    expect(heading).toHaveClass("font-heading");
+    // PageHeader h1 uses the display face (font-heading aliases it).
+    expect(heading).toHaveClass("font-display");
     expect(screen.queryByRole("heading", { name: "设置" })).toBeNull();
   });
 
@@ -807,7 +808,7 @@ describe("SettingsView", () => {
     const { container } = renderSettingsView("/settings/connections");
 
     expect(screen.getByRole("heading", { name: "连接与同步" })).toHaveClass(
-      "font-heading"
+      "font-display"
     );
     expect(
       container.querySelector('[data-settings-section] h3')

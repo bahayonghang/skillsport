@@ -106,8 +106,10 @@ export function SettingsSection({
   }
 
   return (
+    // One glass panel per settings section (DESIGN.md card, L2). The panel is
+    // the only container: children render flat inside it (no card-in-card).
     <section
-      className="border-b border-border/70 pb-6 last:border-b-0 last:pb-0"
+      className="glass-panel rounded-card px-5 py-4"
       data-settings-section={sectionId}
     >
       <div className="flex items-start justify-between gap-4">

@@ -45,7 +45,7 @@ export function GitHubRepoImportConfirmSummary({
       data-testid="github-import-confirm-summary"
     >
       <div className="min-h-0 flex-1 overflow-y-auto space-y-5 pr-1">
-        <div className="rounded-xl border border-border/70 bg-card/80 p-5">
+        <div className="rounded-inner bg-accent p-5">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="space-y-1">
               <div className="text-sm font-semibold">
@@ -89,9 +89,9 @@ export function GitHubRepoImportConfirmSummary({
             ).map(([key, label, value]) => (
               <div
                 key={key}
-                className="rounded-xl border border-border/70 bg-muted/20 px-3 py-2.5"
+                className="rounded-inner bg-accent px-3 py-2.5"
               >
-                <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <div className="text-xs font-medium text-muted-foreground">
                   {label}
                 </div>
                 <div className="mt-1 text-2xl font-semibold leading-tight">
@@ -111,7 +111,7 @@ export function GitHubRepoImportConfirmSummary({
 
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(0,0.95fr)]">
           <div className="space-y-4">
-            <div className="rounded-xl border border-border/70 bg-card/80 p-4">
+            <div className="rounded-inner bg-accent p-4">
               <div className="text-sm font-semibold">
                 {t("marketplace.githubImportReadyListTitle")}
               </div>
@@ -125,7 +125,7 @@ export function GitHubRepoImportConfirmSummary({
                   return (
                     <li
                       key={skill.sourcePath}
-                      className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 bg-background/80 px-3 py-2"
+                      className="flex flex-wrap items-center justify-between gap-3 rounded-control bg-input-surface px-3 py-2"
                     >
                       <div className="min-w-0">
                         <div className="font-medium">{skill.skillName}</div>
@@ -151,7 +151,7 @@ export function GitHubRepoImportConfirmSummary({
           </div>
 
           <div className="space-y-4">
-            <div className="rounded-xl border border-border/70 bg-card/80 p-4">
+            <div className="rounded-inner bg-accent p-4">
               <div className="text-sm font-semibold">
                 {t("marketplace.githubImportConflictSummaryTitle")}
               </div>
@@ -210,11 +210,11 @@ export function GitHubRepoImportConfirmSummary({
             </div>
 
             {blockingConflict ? (
-              <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive-text">
+              <div className="rounded-inner bg-destructive-tint p-4 text-sm text-destructive-text">
                 {t("marketplace.resolveConflictsBeforeImport")}
               </div>
             ) : (
-              <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-muted-foreground">
+              <div className="rounded-inner bg-primary-tint p-4 text-sm text-muted-foreground">
                 {t("marketplace.githubImportConfirmCalmHint")}
               </div>
             )}
@@ -248,9 +248,9 @@ export function GitHubRepoImportResultHub({
       data-testid="github-import-result-hub"
     >
       <div className="min-h-0 flex-1 overflow-y-auto space-y-5 pr-1">
-        <div className="rounded-xl border border-success/30 bg-success/5 p-5">
+        <div className="rounded-inner bg-primary-tint p-5">
           <div className="flex items-start gap-3">
-            <div className="rounded-full bg-success/10 p-2 text-success-foreground">
+            <div className="rounded-full bg-primary-tint p-2 text-success-foreground">
               <PartyPopper className="size-5" />
             </div>
             <div className="min-w-0 flex-1">
@@ -258,7 +258,7 @@ export function GitHubRepoImportResultHub({
                 <div className="text-base font-semibold">
                   {t("marketplace.githubImportSuccessTitle")}
                 </div>
-                <span className="rounded-full bg-success/10 px-2 py-0.5 text-xs font-medium">
+                <span className="rounded-full bg-popover px-2 py-0.5 text-xs font-medium">
                   {importResult.repo.owner}/{importResult.repo.repo}
                 </span>
               </div>
@@ -287,7 +287,7 @@ export function GitHubRepoImportResultHub({
         </div>
 
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,0.95fr)]">
-          <div className="rounded-xl border border-border/70 bg-card/80 p-4">
+          <div className="rounded-inner bg-accent p-4">
             <div className="text-sm font-semibold">
               {t("marketplace.githubImportResultImportedTitle")}
             </div>
@@ -295,11 +295,11 @@ export function GitHubRepoImportResultHub({
               {importResult.importedSkills.map((skill) => (
                 <li
                   key={`${skill.sourcePath}-${skill.importedSkillId}`}
-                  className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/60 bg-background/80 px-3 py-2"
+                  className="flex flex-wrap items-center justify-between gap-3 rounded-control bg-input-surface px-3 py-2"
                 >
                   <div className="min-w-0">
                     <div className="font-medium">{skill.skillName}</div>
-                    <code className="mt-1 inline-flex rounded bg-muted px-2 py-1 text-ui-meta text-muted-foreground">
+                    <code className="mt-1 inline-flex rounded-control bg-input-surface px-2 py-1 font-mono text-ui-meta text-muted-foreground">
                       {skill.importedSkillId}
                     </code>
                   </div>
@@ -309,7 +309,7 @@ export function GitHubRepoImportResultHub({
                     </span>
                     {canInstallImportedSkills ? (
                       <Button
-                        variant="outline"
+                        variant="glass"
                         size="sm"
                         onClick={() => onInstallImported(skill.importedSkillId)}
                       >
@@ -325,7 +325,7 @@ export function GitHubRepoImportResultHub({
           </div>
 
           <div className="space-y-4">
-            <div className="rounded-xl border border-border/70 bg-card/80 p-4">
+            <div className="rounded-inner bg-accent p-4">
               <div className="text-sm font-semibold">
                 {t("marketplace.githubImportResultNextTitle")}
               </div>
@@ -350,7 +350,7 @@ export function GitHubRepoImportResultHub({
                   </Button>
                 ) : null}
                 <Button
-                  variant="outline"
+                  variant="glass"
                   className="justify-between"
                   onClick={onOpenCentral}
                 >
@@ -372,7 +372,7 @@ export function GitHubRepoImportResultHub({
               </div>
             </div>
 
-            <div className="rounded-xl border border-border/70 bg-card/80 p-4">
+            <div className="rounded-inner bg-accent p-4">
               <div className="text-sm font-semibold">
                 {t("marketplace.githubImportResultSkippedTitle")}
               </div>
@@ -391,8 +391,8 @@ export function GitHubRepoImportResultHub({
 
 function ResultMetricCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-xl border border-border/70 bg-card/80 px-4 py-3">
-      <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+    <div className="rounded-inner bg-accent px-4 py-3">
+      <div className="text-xs font-medium text-muted-foreground">
         {label}
       </div>
       <div className="mt-2 text-2xl font-semibold">{value}</div>

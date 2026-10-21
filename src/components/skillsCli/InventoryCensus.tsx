@@ -1,4 +1,8 @@
+import type { ReactNode } from "react";
+import { GitBranch, Link2, Package } from "lucide-react";
 import { useTranslation } from "react-i18next";
+
+import { StatTile, type StatTileTone } from "@/components/ui/stat-tile";
 
 import type { SkillsCliGlobalSkill, SkillsCliInstallTarget } from "@/types";
 
@@ -193,10 +197,30 @@ export function InventoryCensus({ skills, targets }: InventoryCensusProps) {
   }
   const sourceKindCount = Object.keys(sourceKindPresence).length;
 
-  const kpis = [
-    { label: t("skillsCli.census.kpiInstalled"), value: skills.length },
-    { label: t("skillsCli.census.kpiLinked"), value: linkedCount },
-    { label: t("skillsCli.census.kpiSourceKinds"), value: sourceKindCount },
+  const kpis: Array<{
+    label: string;
+    value: number;
+    tone: StatTileTone;
+    icon: ReactNode;
+  }> = [
+    {
+      label: t("skillsCli.census.kpiInstalled"),
+      value: skills.length,
+      tone: "neutral",
+      icon: <Package />,
+    },
+    {
+      label: t("skillsCli.census.kpiLinked"),
+      value: linkedCount,
+      tone: "primary",
+      icon: <Link2 />,
+    },
+    {
+      label: t("skillsCli.census.kpiSourceKinds"),
+      value: sourceKindCount,
+      tone: "secondary",
+      icon: <GitBranch />,
+    },
   ];
 
   const platformRows: CensusRow[] = targets.map((target) => ({
@@ -227,19 +251,22 @@ export function InventoryCensus({ skills, targets }: InventoryCensusProps) {
 
   return (
     <div className="@container/census">
-      <dl
+      <div
+        role="group"
         aria-label={t("skillsCli.census.kpiAria")}
-        className="grid grid-cols-3 gap-4 border-b border-border pb-4"
+        className="grid grid-cols-3 gap-2"
       >
         {kpis.map((kpi) => (
-          <div key={kpi.label}>
-            <dt className="text-xs text-muted-foreground">{kpi.label}</dt>
-            <dd className="mt-1 text-lg font-semibold tabular-nums text-foreground">
-              {kpi.value.toLocaleString()}
-            </dd>
-          </div>
+          <StatTile
+            key={kpi.label}
+            size="compact"
+            tone={kpi.tone}
+            icon={kpi.icon}
+            label={kpi.label}
+            value={kpi.value}
+          />
         ))}
-      </dl>
+      </div>
       <div className="mt-5 grid items-start gap-6 @min-[60rem]/census:grid-cols-[13rem_minmax(0,1fr)]">
         <figure className="min-w-0 space-y-3">
           <figcaption className="text-xs font-medium">

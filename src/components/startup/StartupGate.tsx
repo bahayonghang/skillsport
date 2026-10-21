@@ -10,14 +10,22 @@ function StartupLoadingView() {
 
   return (
     <main className="glass-canvas flex min-h-screen items-center justify-center px-6 text-foreground">
-      <div role="status" aria-live="polite" className="w-full max-w-lg">
-        <div className="mb-5 flex items-center gap-2" aria-hidden="true">
-          <span className="h-8 w-1.5 animate-pulse rounded-full bg-primary" />
-          <span className="h-11 w-1.5 animate-pulse rounded-full bg-primary/70 [animation-delay:120ms]" />
-          <span className="h-8 w-1.5 animate-pulse rounded-full bg-primary/40 [animation-delay:240ms]" />
+      {/* Mirrors the static index.html splash card (.startup-card) so the
+          hand-off from the pre-JS splash to React is visually continuous. */}
+      <div
+        role="status"
+        aria-live="polite"
+        className="glass-panel grid w-[min(22rem,calc(100vw-3rem))] justify-items-center gap-5 rounded-shell p-8"
+      >
+        <div className="flex items-center gap-1.5" aria-hidden="true">
+          <span className="h-9 w-2.5 animate-pulse rounded-full bg-primary motion-reduce:animate-none" />
+          <span className="h-12 w-2.5 animate-pulse rounded-full bg-secondary-accent [animation-delay:120ms] motion-reduce:animate-none" />
+          <span className="h-9 w-2.5 animate-pulse rounded-full bg-primary [animation-delay:240ms] motion-reduce:animate-none" />
         </div>
-        <p className="text-sm font-medium text-foreground">{t("app.name")}</p>
-        <p className="mt-1 text-sm text-muted-foreground">{t("startup.loading")}</p>
+        <p className="font-display text-xl font-semibold tracking-tight text-foreground">{t("app.name")}</p>
+        <p className="inline-flex items-center rounded-pill bg-primary-tint px-3 py-1 text-xs font-medium text-primary-text">
+          {t("startup.loading")}
+        </p>
       </div>
     </main>
   );

@@ -178,7 +178,7 @@ export function SkillsCliCleanupDialog({
             <p
               role="status"
               data-testid="skills-cli-cleanup-platform-risk"
-              className="rounded-md border border-warning/30 bg-warning/10 p-2 text-sm text-warning-foreground"
+              className="rounded-control bg-warning-tint p-2 text-sm text-warning-foreground"
             >
               {t("skillsCli.cleanup.platformRisk")}
             </p>
@@ -187,7 +187,7 @@ export function SkillsCliCleanupDialog({
         <DialogFooter>
           <Button
             type="button"
-            variant="outline"
+            variant="glass"
             disabled={busy}
             onClick={() => onOpenChange(false)}
           >

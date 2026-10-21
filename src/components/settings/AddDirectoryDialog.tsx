@@ -119,7 +119,7 @@ export function AddDirectoryDialog({
 
         <DialogFooter>
           <Button
-            variant="outline"
+            variant="glass"
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
           >

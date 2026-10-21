@@ -103,7 +103,7 @@ export function GitHubRepoImportUrlInputBlock({
 
   return (
     <div
-      className="rounded-xl border border-border/70 bg-muted/10 p-4"
+      className="rounded-inner bg-accent p-4"
       data-testid="github-import-url-card"
     >
       <label
@@ -130,7 +130,7 @@ export function GitHubRepoImportUrlInputBlock({
       </div>
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div
-          className="inline-flex h-9 min-w-0 items-stretch gap-0.5 self-start rounded-lg border border-input bg-background p-0.5"
+          className="inline-flex h-9 min-w-0 items-stretch gap-0.5 self-start rounded-pill bg-popover p-0.5"
           role="radiogroup"
           aria-labelledby="github-repo-branch-label"
           aria-describedby="github-repo-branch-hint"
@@ -145,10 +145,10 @@ export function GitHubRepoImportUrlInputBlock({
                 aria-checked={selected}
                 onClick={() => handleBranchModeChange(mode)}
                 className={cn(
-                  "focus-ring flex min-w-0 items-center justify-center gap-1.5 rounded-md px-3 text-xs font-medium transition-[scale,background-color,color] active:scale-[0.96]",
+                  "focus-ring flex min-w-0 items-center justify-center gap-1.5 rounded-pill border px-3 text-xs font-medium transition-[scale,background-color,color] active:scale-[0.96] motion-reduce:active:scale-100",
                   selected
-                    ? "bg-primary/15 text-foreground"
-                    : "text-muted-foreground hover:bg-muted/65 hover:text-foreground",
+                    ? "border-primary-stroke bg-primary-tint text-primary-text"
+                    : "border-transparent text-muted-foreground hover:bg-accent hover:text-foreground",
                 )}
               >
                 {selected ? (
@@ -208,9 +208,9 @@ export function GitHubRepoImportUrlInputBlock({
       </p>
 
       {browserMode ? (
-        <div className="mt-3 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2 text-sm text-muted-foreground">
+        <div className="mt-3 rounded-control bg-primary-tint px-3 py-2 text-sm text-muted-foreground">
           <div className="flex items-start gap-2">
-            <AlertCircle className="mt-0.5 size-4 shrink-0 text-primary" />
+            <AlertCircle className="mt-0.5 size-4 shrink-0 text-primary-text" />
             <div className="space-y-1">
               <span className="block">
                 {t("marketplace.githubImportDesktopOnlyHint")}
@@ -225,7 +225,7 @@ export function GitHubRepoImportUrlInputBlock({
       {previewError && errorDescription ? (
         <div
           role="alert"
-          className="mt-3 rounded-lg border border-destructive/30 bg-destructive/5 px-3 py-2.5 text-destructive-text"
+          className="mt-3 rounded-control bg-destructive-tint px-3 py-2.5 text-destructive-text"
           data-testid="github-import-preview-error"
           data-error-code={errorDescription.code ?? undefined}
         >
@@ -255,7 +255,7 @@ export function GitHubRepoImportUrlInputBlock({
             {errorDescription.action === "use_default_branch" ? (
               <Button
                 size="sm"
-                variant="outline"
+                variant="glass"
                 className="shrink-0 self-start"
                 onClick={handleUseDefaultBranch}
                 disabled={isPreviewLoading}
@@ -266,7 +266,7 @@ export function GitHubRepoImportUrlInputBlock({
             ) : errorDescription.action === "retry" ? (
               <Button
                 size="sm"
-                variant="outline"
+                variant="glass"
                 className="shrink-0 self-start"
                 onClick={() => submitPreview(effectiveBranch)}
                 disabled={previewDisabled}

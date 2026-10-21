@@ -32,7 +32,7 @@ function RemoteTargetCreateCard({
   children,
 }: RemoteTargetCreateCardProps) {
   return (
-    <div className="space-y-4 rounded-xl border border-border/70 bg-muted/20 p-4 xl:p-5">
+    <div className="space-y-4 rounded-inner bg-accent p-4 xl:p-5">
       <div>
         <div className="text-sm font-medium">{title}</div>
         <div className="text-xs text-muted-foreground">{description}</div>
@@ -156,12 +156,12 @@ export function RemoteTargetsSettingsSection({
       <div className="space-y-4">
         {quarantineStatusError ? (
           <div
-            className="border-l-2 border-warning bg-warning/10 px-3 py-2.5 text-xs text-foreground"
+            className="rounded-control bg-warning-tint px-3 py-2.5 text-xs text-foreground"
             role="status"
             aria-live="polite"
           >
             <div className="flex items-start gap-2">
-              <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" />
+              <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning-foreground" />
               <p className="text-muted-foreground">
                 {t("targets.quarantine.statusUnavailable")}
               </p>
@@ -170,12 +170,12 @@ export function RemoteTargetsSettingsSection({
         ) : null}
         {quarantineStatus && quarantineStatus.incidents.length > 0 ? (
           <div
-            className="border-l-2 border-warning bg-warning/10 px-3 py-2.5 text-xs text-foreground"
+            className="rounded-control bg-warning-tint px-3 py-2.5 text-xs text-foreground"
             role="status"
             aria-live="polite"
           >
             <div className="flex items-start gap-2">
-              <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning" />
+              <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning-foreground" />
               <div className="min-w-0 space-y-1.5">
                 <p className="font-medium">{t("targets.quarantine.title")}</p>
                 <p className="text-muted-foreground">
@@ -204,14 +204,14 @@ export function RemoteTargetsSettingsSection({
         ) : null}
         {targetMessage && (
           <p
-            className={`text-xs ${targetMessage.type === "success" ? "text-primary" : "text-destructive-text"}`}
+            className={`text-xs ${targetMessage.type === "success" ? "text-primary-text" : "text-destructive-text"}`}
             role="status"
           >
             {targetMessage.text}
           </p>
         )}
 
-        <div className="overflow-hidden rounded-xl border border-border bg-card/35">
+        <div className="overflow-hidden rounded-inner bg-accent">
           {targets.map((target) => (
             <RemoteTargetRow
               key={target.id}

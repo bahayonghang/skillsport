@@ -208,10 +208,10 @@ export function PlatformDialog({
                   type="button"
                   onClick={() => setCategory(cat)}
                   disabled={isSubmitting}
-                  className={`px-3 py-1.5 rounded-md text-xs transition-colors cursor-pointer border ${
+                  className={`focus-ring px-3 py-1.5 rounded-full text-xs transition-colors cursor-pointer border ${
                     category === cat
-                      ? "bg-primary/15 border-primary text-foreground font-medium"
-                      : "border-border bg-background text-muted-foreground hover:border-primary/40"
+                      ? "border-primary-stroke bg-primary-tint text-primary-text font-medium"
+                      : "border-glass-stroke bg-popover text-muted-foreground hover:bg-accent hover:text-foreground"
                   }`}
                 >
                   {cat === "coding" ? (t("sidebar.categoryCoding") || "Coding") : (t("sidebar.categoryLobster") || "Lobster")}
@@ -230,7 +230,7 @@ export function PlatformDialog({
 
         <DialogFooter>
           <Button
-            variant="outline"
+            variant="glass"
             onClick={() => onOpenChange(false)}
             disabled={isSubmitting}
           >

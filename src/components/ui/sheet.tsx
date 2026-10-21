@@ -38,6 +38,9 @@ interface SheetContentProps extends DialogPrimitive.Popup.Props {
   /** Unmount on close (default) or keep the subtree mounted. */
   keepMounted?: boolean
   backdropClassName?: string
+  /** Extra props for the scrim (e.g. a `data-testid`). */
+  backdropProps?: Omit<DialogPrimitive.Backdrop.Props, "className"> &
+    Partial<Record<`data-${string}`, string>>
 }
 
 function SheetContent({
@@ -45,6 +48,7 @@ function SheetContent({
   showCloseButton = true,
   keepMounted = false,
   backdropClassName,
+  backdropProps,
   className,
   children,
   ...props
@@ -53,6 +57,7 @@ function SheetContent({
   return (
     <DialogPrimitive.Portal keepMounted={keepMounted}>
       <DialogPrimitive.Backdrop
+        {...backdropProps}
         data-slot="sheet-overlay"
         className={cn(
           "fixed inset-0 z-50 bg-overlay transition-opacity duration-150 data-[ending-style]:opacity-0 data-[starting-style]:opacity-0",

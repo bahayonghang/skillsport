@@ -20,7 +20,7 @@ export function RemoteTargetSyncButton({
   return (
     <Button
       type="button"
-      variant="outline"
+      variant="glass"
       size="sm"
       className={cn(className)}
       onClick={() => onOpenLocalRemoteSync(targetId)}

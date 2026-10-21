@@ -1,8 +1,14 @@
-import { Menu as MenuPrimitive } from "@base-ui/react/menu";
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
+import {
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuSeparator,
+  MenuTrigger,
+} from "@/components/ui/menu";
 import { cn } from "@/lib/utils";
 import type { SkillsCliLinkTargetSummary } from "@/pages/skillsCliBatchModel";
 
@@ -30,12 +36,9 @@ export interface SkillsCliBatchBarProps {
 export const ICON_HIT =
   "relative size-8 after:absolute after:left-1/2 after:top-1/2 after:size-10 after:-translate-x-1/2 after:-translate-y-1/2 after:content-['']";
 
-const MENU_POPUP_CLASS = cn(
-  "min-w-[16rem] rounded-lg bg-popover p-1 text-sm text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-none",
-  "data-[starting-style]:animate-in data-[starting-style]:fade-in-0 data-[starting-style]:zoom-in-95",
-  "data-[ending-style]:animate-out data-[ending-style]:fade-out-0 data-[ending-style]:zoom-out-95",
-  "animation-duration-100",
-);
+// Two-line menu rows (platform name + counts); the glass popup, item radius,
+// highlight and disabled styling come from ui/menu.
+const MENU_ITEM_CLASS = "flex-col items-start gap-0.5";
 
 export function SkillsCliBatchBar({
   selectedCount,
@@ -71,14 +74,14 @@ export function SkillsCliBatchBar({
       aria-label={t("skillsCli.batch.barAria")}
       aria-busy={busy || exporting}
       data-testid="skills-cli-batch-bar"
-      className="flex flex-wrap items-center gap-2 border-t border-border bg-background/95 px-4 py-2"
+      className="glass-panel mx-4 mb-3 flex flex-wrap items-center gap-2 rounded-card px-4 py-2"
     >
       <p className="text-sm font-medium tabular-nums">
         {t("skillsCli.batch.selectedCount", { count: selectedCount })}
       </p>
       <Button
         type="button"
-        variant="outline"
+        variant="glass"
         className="min-h-10"
         disabled={updateLocked}
         title={updateLockReason}
@@ -88,16 +91,16 @@ export function SkillsCliBatchBar({
       >
         {t("skillsCli.batch.update")}
       </Button>
-      <MenuPrimitive.Root
+      <Menu
         open={linkMenuOpen}
         onOpenChange={onLinkMenuOpenChange}
       >
-        <MenuPrimitive.Trigger
+        <MenuTrigger
           disabled={placementLocked || !anyLinkable}
           render={
             <Button
               type="button"
-              variant="outline"
+              variant="glass"
               className="min-h-10"
               title={mutationLockReason}
               aria-label={t("skillsCli.batch.linkMenuAria")}
@@ -106,18 +109,12 @@ export function SkillsCliBatchBar({
           }
         >
           {t("skillsCli.batch.linkToPlatform")}
-        </MenuPrimitive.Trigger>
-        <MenuPrimitive.Portal>
-          <MenuPrimitive.Positioner
-            align="start"
-            sideOffset={4}
-            className="z-50 outline-none"
-          >
-            <MenuPrimitive.Popup className={MENU_POPUP_CLASS}>
+        </MenuTrigger>
+        <MenuContent align="start" sideOffset={4} className="min-w-64">
               {summaries.map((summary) => {
                 const disabled = summary.linkableCount === 0 || placementLocked;
                 return (
-                  <MenuPrimitive.Item
+                  <MenuItem
                     key={summary.agentId}
                     disabled={disabled}
                     label={t("skillsCli.batch.linkTargetAria", {
@@ -129,10 +126,7 @@ export function SkillsCliBatchBar({
                     })}
                     onClick={() => onLink(summary.agentId)}
                     data-testid={`skills-cli-batch-link-${summary.agentId}`}
-                    className={cn(
-                      "flex cursor-pointer flex-col gap-0.5 rounded-md px-2.5 py-1.5 outline-none data-[highlighted]:bg-accent/60",
-                      disabled && "cursor-default opacity-50",
-                    )}
+                    className={MENU_ITEM_CLASS}
                   >
                     <span>{summary.displayName}</span>
                     <span className="text-ui-meta text-muted-foreground">
@@ -152,23 +146,21 @@ export function SkillsCliBatchBar({
                         count: summary.blockedCount,
                       })}
                     </span>
-                  </MenuPrimitive.Item>
+                  </MenuItem>
                 );
               })}
-            </MenuPrimitive.Popup>
-          </MenuPrimitive.Positioner>
-        </MenuPrimitive.Portal>
-      </MenuPrimitive.Root>
-      <MenuPrimitive.Root
+        </MenuContent>
+      </Menu>
+      <Menu
         open={unlinkMenuOpen}
         onOpenChange={onUnlinkMenuOpenChange}
       >
-        <MenuPrimitive.Trigger
+        <MenuTrigger
           disabled={placementLocked || !unlinkEnabled}
           render={
             <Button
               type="button"
-              variant="outline"
+              variant="glass"
               className="min-h-10"
               title={mutationLockReason}
               aria-label={t("skillsCli.batch.unlinkMenuAria")}
@@ -177,18 +169,12 @@ export function SkillsCliBatchBar({
           }
         >
           {t("skillsCli.batch.unlink")}
-        </MenuPrimitive.Trigger>
-        <MenuPrimitive.Portal>
-          <MenuPrimitive.Positioner
-            align="start"
-            sideOffset={4}
-            className="z-50 outline-none"
-          >
-            <MenuPrimitive.Popup className={MENU_POPUP_CLASS}>
+        </MenuTrigger>
+        <MenuContent align="start" sideOffset={4} className="min-w-64">
               {summaries.map((summary) => {
                 const disabled = summary.managedCount === 0 || placementLocked;
                 return (
-                  <MenuPrimitive.Item
+                  <MenuItem
                     key={summary.agentId}
                     disabled={disabled}
                     label={t("skillsCli.batch.unlinkTargetAria", {
@@ -199,10 +185,7 @@ export function SkillsCliBatchBar({
                     })}
                     onClick={() => onUnlinkPlatform(summary.agentId)}
                     data-testid={`skills-cli-batch-unlink-${summary.agentId}`}
-                    className={cn(
-                      "flex cursor-pointer flex-col gap-0.5 rounded-md px-2.5 py-1.5 outline-none data-[highlighted]:bg-accent/60",
-                      disabled && "cursor-default opacity-50",
-                    )}
+                    className={MENU_ITEM_CLASS}
                   >
                     <span>{summary.displayName}</span>
                     <span className="text-ui-meta text-muted-foreground">
@@ -218,28 +201,24 @@ export function SkillsCliBatchBar({
                         count: summary.blockedCount,
                       })}
                     </span>
-                  </MenuPrimitive.Item>
+                  </MenuItem>
                 );
               })}
-              <MenuPrimitive.Item
+              <MenuSeparator />
+              <MenuItem
                 disabled={placementLocked || !unlinkEnabled}
                 label={t("skillsCli.batch.unlinkAllAria")}
                 onClick={onUnlink}
                 data-testid="skills-cli-batch-unlink-all"
-                className={cn(
-                  "flex cursor-pointer flex-col gap-0.5 rounded-md px-2.5 py-1.5 outline-none data-[highlighted]:bg-accent/60",
-                  (placementLocked || !unlinkEnabled) && "cursor-default opacity-50",
-                )}
+                className={MENU_ITEM_CLASS}
               >
                 {t("skillsCli.batch.unlinkAll")}
-              </MenuPrimitive.Item>
-            </MenuPrimitive.Popup>
-          </MenuPrimitive.Positioner>
-        </MenuPrimitive.Portal>
-      </MenuPrimitive.Root>
+              </MenuItem>
+        </MenuContent>
+      </Menu>
       <Button
         type="button"
-        variant="outline"
+        variant="glass"
         className="min-h-10"
         disabled={busy || exporting || selectedCount === 0}
         onClick={onExportSelected}
@@ -260,7 +239,7 @@ export function SkillsCliBatchBar({
         type="button"
         className={cn(
           ICON_HIT,
-          "ml-auto rounded-md text-muted-foreground hover:bg-muted/60 hover:text-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "focus-ring ml-auto rounded-control text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
         )}
         onClick={onClear}
         aria-label={t("skillsCli.batch.clear")}

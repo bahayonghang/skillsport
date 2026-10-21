@@ -168,8 +168,11 @@ describe("InventoryCensus", () => {
       />,
     );
     const strip = screen.getByLabelText("库存统计 KPI");
+    // KPIs render as StatTiles; the value is the tile's second row.
     expect(
-      Array.from(strip.querySelectorAll("dd")).map((node) => node.textContent),
+      Array.from(
+        strip.querySelectorAll('[data-slot="stat-tile"] > div:nth-child(2)'),
+      ).map((node) => node.textContent),
     ).toEqual([count.toLocaleString(), count.toLocaleString(), "2"]);
     expect(screen.getByRole("img", { name: `Cursor：${count}` })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: `Amp：${count}` })).toBeInTheDocument();

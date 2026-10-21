@@ -13,7 +13,7 @@ export function RuleTargets({ targets, pending, disabled, onToggle }: {
   const { t } = useTranslation();
   return (
     <section aria-label={t("rules.targetsTitle")} className="shrink-0 border-t border-border">
-      <div className="px-4 pt-3 text-xs font-medium text-muted-foreground">
+      <div className="px-4 pt-3 pb-2 text-xs font-medium text-muted-foreground">
         {t("rules.targetsTitle")}
       </div>
       {targets.map((target) => {
@@ -21,13 +21,13 @@ export function RuleTargets({ targets, pending, disabled, onToggle }: {
         const canEnable = target.state === "absent" || target.state === "native_equivalent";
         const Icon = linked ? Check : canEnable ? Unlink : AlertTriangle;
         return (
-          <div key={target.tool} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 px-4 py-2.5">
+          <div key={target.tool} className="mx-3 mb-1.5 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-control bg-accent px-3 py-2.5">
             <div className="min-w-0 flex-1 basis-40">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <span className="text-sm font-medium">
                   {t(`rules.tools.${target.tool}`)}
                 </span>
-                <span className={linked ? "flex items-center gap-1 text-xs text-success" : "flex items-center gap-1 text-xs text-muted-foreground"}>
+                <span className={linked ? "flex items-center gap-1 text-xs text-success-foreground" : "flex items-center gap-1 text-xs text-muted-foreground"}>
                   <Icon aria-hidden className="size-3.5" />
                   {t(`rules.states.${target.state}`)}
                 </span>
@@ -37,14 +37,14 @@ export function RuleTargets({ targets, pending, disabled, onToggle }: {
               {target.errorCode && <p className="mt-1 text-xs text-destructive-text">{formatBackendError(`${target.errorCode}:`, t)}
               </p>}
             </div>
-            <Button variant="outline" disabled={disabled || !!pending[target.tool] || (!linked && !canEnable)} onClick={() => onToggle(target)}>
+            <Button variant="glass" disabled={disabled || !!pending[target.tool] || (!linked && !canEnable)} onClick={() => onToggle(target)}>
               {linked ? <Unlink aria-hidden /> : <Link2 aria-hidden />}
               {pending[target.tool] ? t("rules.applying") : linked ? t("rules.disable") : target.state === "native_equivalent" ? t("rules.takeOver") : t("rules.enable")}
             </Button>
           </div>
         );
       })}
-      <p className="px-4 pb-3 text-xs text-muted-foreground">
+      <p className="px-4 pt-1 pb-3 text-xs text-muted-foreground">
         {t("rules.reloadHint")}
       </p>
     </section>

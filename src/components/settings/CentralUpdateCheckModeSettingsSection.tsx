@@ -73,12 +73,19 @@ function ModeButton({
       disabled={disabled}
       aria-pressed={active}
       className={cn(
-        "h-auto justify-start rounded-xl p-4 text-left",
-        active && "border-primary bg-primary/10 text-foreground hover:bg-primary/10",
+        "h-auto justify-start whitespace-normal rounded-inner p-4 text-left",
+        active &&
+          "border-primary-stroke bg-primary-tint text-foreground hover:bg-primary-tint",
       )}
       onClick={onClick}
     >
-      <span className="mr-3 mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full border border-border bg-muted">
+      <span
+        className={cn(
+          "mr-3 mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full",
+          active ? "bg-primary-tint text-primary-text" : "bg-accent text-muted-foreground",
+        )}
+        aria-hidden="true"
+      >
         {icon}
       </span>
       <span className="min-w-0">

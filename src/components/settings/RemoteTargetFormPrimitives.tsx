@@ -22,7 +22,7 @@ export function FormActionButtons({
     <div className="flex flex-col gap-2 sm:flex-row md:col-span-2 md:items-end">
       <Button
         type="button"
-        variant="outline"
+        variant="glass"
         className="flex-1"
         disabled={isSaving}
         onClick={onCancel}
@@ -86,22 +86,22 @@ export function SshAuthMethodButtons({
   const { t } = useTranslation();
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-1 xl:col-span-2">
       <span id={id} className="text-xs text-muted-foreground">
         {t("targets.authMethodLabel")}
       </span>
       <div
-        className="grid grid-cols-2 gap-1 rounded-md border border-border p-1"
+        className="grid grid-cols-2 gap-0.5 rounded-pill bg-accent p-0.5"
         aria-labelledby={id}
       >
         {(["key", "password"] as const).map((method) => (
           <button
             key={method}
             type="button"
-            className={`rounded px-2 py-2 text-xs transition-colors ${
+            className={`focus-ring h-8 truncate rounded-pill border px-2 text-xs whitespace-nowrap transition-colors ${
               value === method
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                ? "border-primary-stroke bg-primary-tint text-primary-text"
+                : "border-transparent text-muted-foreground hover:bg-accent hover:text-foreground"
             }`}
             aria-pressed={value === method}
             onClick={() => onChange(method)}

@@ -2465,7 +2465,7 @@
       "title": "Appearance",
       "description": "Adjust theme, language, font fallbacks, and type scale.",
       "themeGroup": "Theme",
-      "themeGroupDesc": "Switch between the light and dark glass themes.",
+      "themeGroupDesc": "Pick the light or dark glass theme and whether the window material shows through.",
       "themeMode": "Appearance mode",
       "themeOption": {
         "glass-light": "Glass Light",
@@ -2492,8 +2492,8 @@
         "light": "Light",
         "dark": "Dark"
       },
-      "densityGroup": "Density",
-      "densityGroupDesc": "Adjust the global base type size.",
+      "densityGroup": "Font size",
+      "densityGroupDesc": "Adjust the global base type size in three steps.",
       "displayFontOptionsLabel": "Display font options",
       "bodyFontOptionsLabel": "Body font options",
       "primaryFont": "Primary font",
@@ -2531,6 +2531,10 @@
         "system": "System fallback",
         "sourceHanSerif": "Source Han Serif SC VF",
         "custom": "Custom"
+      },
+      "themeOptionDesc": {
+        "glass-light": "Bright mint-to-lavender canvas with translucent white panels.",
+        "glass-dark": "Deep ink canvas with low-glare panels for night work."
       }
     },
     "toc": {
@@ -2695,7 +2699,7 @@
       "legacyFallback": "This old settings link was redirected to the default page.",
       "appearance": {
         "title": "Appearance",
-        "description": "Adjust light/dark theme, language, fonts, and display density."
+        "description": "Adjust the light or dark theme, window material, language, fonts, and font size."
       },
       "connections": {
         "title": "Connections & Sync",
@@ -2720,7 +2724,7 @@
     },
     "aboutCockpit": {
       "eyebrow": "Release Cockpit",
-      "heroDesc": "Version, updates, diagnostics, and help links in one dark release console.",
+      "heroDesc": "Version, updates, diagnostics, and help links in one place.",
       "channel": "Update channel",
       "stable": "Stable",
       "platform": "Platform",
@@ -3152,7 +3156,8 @@
     "githubImportResultSkippedTitle": "Skipped items",
     "githubImportResultSkippedNone": "No skills were skipped.",
     "githubPatSettingsHint": "Open Settings and save a GitHub Personal Access Token to use authenticated direct GitHub requests for this import flow.",
-    "githubPatConfiguredFailureHint": "A configured GitHub token was already used. Check that the token owner can read this repo and that the token has sufficient repository access."
+    "githubPatConfiguredFailureHint": "A configured GitHub token was already used. Check that the token owner can read this repo and that the token has sufficient repository access.",
+    "backToPublishers": "Back to publishers"
   },
   "obsidian": {
     "title": "Obsidian Vault Skills",

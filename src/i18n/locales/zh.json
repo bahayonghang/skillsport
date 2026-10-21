@@ -2465,7 +2465,7 @@
       "title": "外观",
       "description": "调整主题、语言、字体 fallback 与字号缩放。",
       "themeGroup": "主题",
-      "themeGroupDesc": "在浅色与深色玻璃主题之间切换。",
+      "themeGroupDesc": "选择浅色或深色玻璃主题，并决定是否透出窗口材质。",
       "themeMode": "明暗模式",
       "themeOption": {
         "glass-light": "浅色玻璃",
@@ -2492,8 +2492,8 @@
         "light": "亮色",
         "dark": "暗色"
       },
-      "densityGroup": "密度",
-      "densityGroupDesc": "调整全局基础字号。",
+      "densityGroup": "字号",
+      "densityGroupDesc": "调整全局基础字号，三档可选。",
       "displayFontOptionsLabel": "标题字体选项",
       "bodyFontOptionsLabel": "正文字体选项",
       "primaryFont": "主字体",
@@ -2531,6 +2531,10 @@
         "system": "系统 fallback",
         "sourceHanSerif": "Source Han Serif SC VF",
         "custom": "自定义"
+      },
+      "themeOptionDesc": {
+        "glass-light": "薄荷到薰衣草的明亮 canvas，半透明白色面板。",
+        "glass-dark": "深墨 canvas 与低亮度面板，夜间更柔和。"
       }
     },
     "toc": {
@@ -2695,7 +2699,7 @@
       "legacyFallback": "已从旧设置链接跳转到默认页面。",
       "appearance": {
         "title": "外观",
-        "description": "调整明暗主题、语言、字体和显示密度。"
+        "description": "调整明暗主题、窗口材质、语言、字体与字号。"
       },
       "connections": {
         "title": "连接与同步",
@@ -2720,7 +2724,7 @@
     },
     "aboutCockpit": {
       "eyebrow": "Release Cockpit",
-      "heroDesc": "把版本、更新、诊断和帮助入口集中到一个深色版本控制台。",
+      "heroDesc": "版本、更新、诊断与帮助入口集中在一处。",
       "channel": "更新通道",
       "stable": "Stable",
       "platform": "平台",
@@ -3152,7 +3156,8 @@
     "githubImportResultSkippedTitle": "已跳过项目",
     "githubImportResultSkippedNone": "没有跳过任何技能。",
     "githubPatSettingsHint": "请前往设置并保存 GitHub Personal Access Token，让该导入流程改用经过认证的直连 GitHub 请求。",
-    "githubPatConfiguredFailureHint": "当前请求已经使用已配置的 GitHub 令牌。请检查令牌所属账号是否能读取该仓库，以及令牌是否有足够的仓库访问权限。"
+    "githubPatConfiguredFailureHint": "当前请求已经使用已配置的 GitHub 令牌。请检查令牌所属账号是否能读取该仓库，以及令牌是否有足够的仓库访问权限。",
+    "backToPublishers": "返回发布者列表"
   },
   "obsidian": {
     "title": "Obsidian 仓库技能",

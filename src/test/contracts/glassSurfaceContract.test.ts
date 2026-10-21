@@ -120,9 +120,6 @@ const PENDING_HANDWRITTEN_SURFACE: readonly string[] = [
   "src/components/central/updateCenter/OrphansTabPanel.tsx",
   "src/components/central/updateCenter/PlatformDuplicatesTabPanel.tsx",
   "src/components/platform/BatchDeletePlatformSkillsDialog.tsx",
-  "src/components/settings/AboutSettingsSection.tsx",
-  "src/components/settings/LocalRemoteSyncDialog.tsx",
-  "src/components/settings/RemoteTargetsSettingsSection.tsx",
   "src/components/skill/SkillDetailModalShell.tsx",
 ];
 
@@ -136,9 +133,6 @@ const PENDING_DIRECT_BASE_UI: readonly string[] = [
   "src/components/central/TaskCenterDrawer.tsx",
   "src/components/platform/PlatformSkillToolbarMenus.tsx",
   "src/components/skill/SkillDetailModalShell.tsx",
-  "src/components/skillsCli/SkillsCliBatchBar.tsx",
-  "src/components/skillsCli/SkillsCliDetailDrawer.tsx",
-  "src/components/skillsCli/SkillsCliUpdateDrawer.tsx",
 ];
 
 // Initial sizes when the contract landed (C4, 2026-10-21). Never raise these;
@@ -146,12 +140,15 @@ const PENDING_DIRECT_BASE_UI: readonly string[] = [
 // C5 (app shell): SidebarSection migrated → legacy card 20→19, base-ui 12→11.
 // C6 (signature surfaces): ActivityHeatmap, RuntimeLogsPanel, OperationLogsView,
 // CompactCardMoreMenu migrated → rounded 2→1, legacy card 19→17, base-ui 11→10.
+// C8 (tools & settings pages): About / LocalRemoteSync / RemoteTargets settings
+// and the Skills CLI batch bar + two drawers migrated → legacy card 17→14,
+// base-ui 10→7.
 const PENDING_CEILING: Record<string, number> = {
   "backdrop-* utility": 6,
   "arbitrary rounded-[...]": 1,
   "raw bg-white/ or bg-black/": 0,
-  "legacy card recipe": 17,
-  "direct @base-ui/react/menu|dialog import": 10,
+  "legacy card recipe": 14,
+  "direct @base-ui/react/menu|dialog import": 7,
 };
 
 const RULES: Rule[] = [
