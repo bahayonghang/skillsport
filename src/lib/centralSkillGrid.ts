@@ -20,6 +20,12 @@ type CentralVirtualDensity = "comfortable" | "compact";
  * 组成（grid / compact ≈ 215px）：padding 28 + 标题 28 + 描述 2 行 ≈ 40
  * + meta 22 + 标签行 24 + footer 41 + 4×gap 8；comfortable 描述 3 行 ≈ 62。
  * list 视图卡片无 footer/平台图标行，自然更矮。
+ *
+ * 1.1.0 C6（Light Glass 卡片：padding 16、标题 text-base、描述 text-sm）后
+ * 在浏览器 fixture 的 dense-typography 最坏卡片上实测（fontScale = 1）：
+ * grid comfortable ≈ 219 / compact ≈ 197，list 内容 ≈ 180（两档 density
+ * 相同，comfortable 由 min-h-47 托底到 188）。list compact 因此从 168 提到 184；
+ * 卡片 min-h 下限改为 rem，随 fontScale 同比缩放。
  */
 export const CENTRAL_GRID_CARD_HEIGHT: Record<CentralVirtualDensity, number> = {
   comfortable: 240,
@@ -28,7 +34,7 @@ export const CENTRAL_GRID_CARD_HEIGHT: Record<CentralVirtualDensity, number> = {
 
 export const CENTRAL_LIST_CARD_HEIGHT: Record<CentralVirtualDensity, number> = {
   comfortable: 196,
-  compact: 168,
+  compact: 184,
 };
 
 export function centralVirtualItemHeight(

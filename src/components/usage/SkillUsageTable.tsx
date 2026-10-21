@@ -126,7 +126,7 @@ export function SkillUsageTable({
         data-testid={`usage-row-${item.skill}`}
         className={cn(
           ROW_GRID,
-          "h-full items-stretch border-b border-border/70 px-3 hover:bg-muted/20",
+          "h-full items-stretch border-b border-border px-3 hover:bg-accent",
           selected && "bg-primary/7",
         )}
       >

@@ -130,7 +130,7 @@ export function UnusedSkillsPanel({
       <div className={cn("px-3 py-3", className)}>
         <div className="animate-pulse space-y-2 motion-reduce:animate-none">
           {[0, 1, 2].map((index) => (
-            <div key={index} className="h-9 rounded bg-muted/30" />
+            <div key={index} className="h-9 rounded-control bg-accent" />
           ))}
         </div>
         <p className="mt-3 text-center text-xs text-muted-foreground">
@@ -268,7 +268,7 @@ function UnusedSection({
   if (items.length === 0) return null;
   return (
     <section>
-      <h3 className="border-b border-border bg-muted/20 px-3 py-1.5 text-xs font-medium text-muted-foreground">
+      <h3 className="border-b border-border bg-accent px-3 py-1.5 text-xs font-medium text-muted-foreground">
         {title} · {items.length}
       </h3>
       <div
@@ -309,7 +309,7 @@ function UnusedSection({
             <li
               key={`${entry.origin}-${entry.name}`}
               data-testid={`unused-row-${entry.origin}-${entry.name}`}
-              className={cn("hover:bg-muted/20", selected && "bg-primary/7")}
+              className={cn("hover:bg-accent", selected && "bg-primary-tint")}
             >
               <div className={cn(ROW_GRID, "items-stretch px-3")}>
                 <button

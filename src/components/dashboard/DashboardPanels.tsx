@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
 
 import { useTranslation } from "react-i18next";
-import { Loader2 } from "lucide-react";
+import { Loader2, XCircle } from "lucide-react";
 
+import { logStatusBadge } from "@/components/logs/logStatusBadge";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -19,34 +21,33 @@ function ratio(count: number, total: number) {
   return Math.min(1, Math.max(0, count / total));
 }
 
-function logStatusClass(status: string) {
-  switch (status) {
-    case "failed":
-      return "border-destructive/30 bg-destructive/10 text-destructive-text";
-    case "partial":
-    case "cancelled":
-      return "border-primary/30 bg-primary/10 text-primary-text";
-    default:
-      return "border-border bg-muted/40 text-muted-foreground";
-  }
-}
-
-function logDotClass(status: string) {
-  switch (status) {
-    case "failed":
-      return "bg-destructive";
-    case "partial":
-    case "cancelled":
-      return "bg-primary";
-    default:
-      return "bg-muted-foreground";
-  }
-}
-
 function formatTime(value: string) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return logTimeFormatter.format(date);
+}
+
+/**
+ * Quiet in-panel placeholder block (loading / empty). `rounded-inner` so it
+ * nests concentric inside an 18px card; surface-hover fill, muted text.
+ */
+export function PanelNotice({
+  children,
+  className,
+}: {
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "flex items-center gap-2 rounded-inner bg-accent px-3 py-4 text-sm text-muted-foreground",
+        className,
+      )}
+    >
+      {children}
+    </div>
+  );
 }
 
 /** 图表面板的加载/失败占位（Activity / TopTags 共用，失败可重试）。 */
@@ -61,19 +62,22 @@ export function ChartStateRow({
 
   if (kind === "loading") {
     return (
-      <div className="flex items-center gap-2 rounded-md border border-border/80 bg-background px-3 py-4 text-sm text-muted-foreground">
+      <PanelNotice>
         <Loader2 className="size-4 animate-spin" />
         {t("dashboard.loading")}
-      </div>
+      </PanelNotice>
     );
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-3 text-sm text-destructive-text">
-      <span className="min-w-0 truncate">{t("dashboard.chartError")}</span>
+    <div className="flex items-center justify-between gap-3 rounded-inner bg-destructive-tint px-3 py-3 text-sm text-destructive-text">
+      <span className="flex min-w-0 items-center gap-2">
+        <XCircle className="size-4 shrink-0" aria-hidden="true" />
+        <span className="min-w-0 truncate">{t("dashboard.chartError")}</span>
+      </span>
       {onRetry && (
         <Button
-          variant="outline"
+          variant="glass"
           size="sm"
           className="shrink-0"
           onClick={onRetry}
@@ -85,6 +89,7 @@ export function ChartStateRow({
   );
 }
 
+/** Card header row: title (typography.title) + muted description + action. */
 export function PanelHeader({
   title,
   description,
@@ -95,10 +100,10 @@ export function PanelHeader({
   action?: ReactNode;
 }) {
   return (
-    <CardHeader className="border-b border-border/70 px-4 py-3">
+    <CardHeader className="border-b border-border px-4 py-3">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <CardTitle className="truncate text-sm font-semibold text-balance">
+          <CardTitle className="truncate text-base font-semibold text-balance">
             {title}
           </CardTitle>
           {description && (
@@ -113,42 +118,6 @@ export function PanelHeader({
   );
 }
 
-export function StatusTile({
-  icon,
-  label,
-  value,
-  detail,
-  testId,
-}: {
-  icon: ReactNode;
-  label: string;
-  value: string;
-  detail?: string;
-  testId?: string;
-}) {
-  return (
-    <div
-      data-testid={testId}
-      className="flex min-w-0 items-start gap-3 border-b border-border/70 bg-card px-3 py-3 last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0"
-    >
-      <span className="grid size-8 shrink-0 place-items-center rounded-md border border-border/80 bg-muted/40 text-primary-text">
-        {icon}
-      </span>
-      <div className="min-w-0">
-        <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-          {label}
-        </div>
-        <div className="mt-1 truncate text-sm font-semibold">{value}</div>
-        {detail && (
-          <div className="mt-1 truncate text-xs text-muted-foreground">
-            {detail}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 export function ProgressRow({
   label,
   count,
@@ -156,10 +125,10 @@ export function ProgressRow({
   tone = "default",
   testId,
 }: {
-  label: string;
+  label: ReactNode;
   count: number;
   total: number;
-  tone?: "default" | "primary" | "muted" | "destructive";
+  tone?: "default" | "primary" | "secondary" | "muted" | "destructive";
   testId?: string;
 }) {
   const scale = ratio(count, total);
@@ -167,8 +136,10 @@ export function ProgressRow({
     tone === "destructive"
       ? "bg-destructive"
       : tone === "muted"
-        ? "bg-muted-foreground/55"
-        : "bg-primary";
+        ? "bg-muted-foreground"
+        : tone === "secondary"
+          ? "bg-secondary-accent"
+          : "bg-primary";
 
   return (
     <div
@@ -178,9 +149,9 @@ export function ProgressRow({
       <span className="min-w-0 text-xs font-medium leading-4 text-muted-foreground">
         {label}
       </span>
-      <span className="h-1.5 overflow-hidden rounded-full bg-muted">
+      <span className="h-1.5 overflow-hidden rounded-pill bg-accent">
         <span
-          className={cn("block h-full origin-left rounded-full", fillClass)}
+          className={cn("block h-full origin-left rounded-pill", fillClass)}
           style={{ transform: `scaleX(${scale})` }}
         />
       </span>
@@ -198,32 +169,22 @@ export function LogRow({
   entry: OperationLogEntry;
   statusLabel: string;
 }) {
+  const status = logStatusBadge(entry.status);
   return (
-    <div className="grid grid-cols-[0.875rem_minmax(0,1fr)_auto] items-start gap-3 py-2">
-      <span
-        className={cn(
-          "mt-1.5 size-2 rounded-full ring-4 ring-muted/35",
-          logDotClass(entry.status),
-        )}
-      />
+    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 py-2.5">
       <div className="min-w-0">
         <div className="truncate text-sm font-medium">{entry.summary}</div>
         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-          <span>{entry.action}</span>
-          <span className="h-3 w-px bg-border" />
+          <span className="font-mono text-ui-meta">{entry.action}</span>
+          <span aria-hidden="true" className="h-3 w-px bg-border" />
           <span>{entry.targetLabel ?? entry.targetKind}</span>
         </div>
       </div>
       <div className="flex shrink-0 items-center gap-2">
-        <span
-          className={cn(
-            "rounded-md border px-2 py-0.5 text-xs font-medium",
-            logStatusClass(entry.status),
-          )}
-        >
+        <Badge tone={status.tone} size="sm" icon={status.icon}>
           {statusLabel}
-        </span>
-        <span className="hidden w-12 text-right text-xs text-muted-foreground sm:block">
+        </Badge>
+        <span className="hidden w-12 text-right text-xs tabular-nums text-muted-foreground sm:block">
           {formatTime(entry.createdAt)}
         </span>
       </div>

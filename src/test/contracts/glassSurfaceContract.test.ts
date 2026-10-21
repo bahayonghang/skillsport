@@ -99,7 +99,6 @@ const PENDING_BACKDROP_UTILITY: readonly string[] = [
 // (rounded-control / inner / card / shell / pill) instead.
 const PENDING_ARBITRARY_ROUNDED: readonly string[] = [
   "src/components/central/CentralSidebar.tsx",
-  "src/components/usage/ActivityHeatmap.tsx",
 ];
 
 // Files with raw bg-white/<n> or bg-black/<n> washes. Use surface tokens.
@@ -121,13 +120,11 @@ const PENDING_HANDWRITTEN_SURFACE: readonly string[] = [
   "src/components/central/updateCenter/OrphansTabPanel.tsx",
   "src/components/central/updateCenter/PlatformDuplicatesTabPanel.tsx",
   "src/components/layout/SidebarSection.tsx",
-  "src/components/logs/RuntimeLogsPanel.tsx",
   "src/components/platform/BatchDeletePlatformSkillsDialog.tsx",
   "src/components/settings/AboutSettingsSection.tsx",
   "src/components/settings/LocalRemoteSyncDialog.tsx",
   "src/components/settings/RemoteTargetsSettingsSection.tsx",
   "src/components/skill/SkillDetailModalShell.tsx",
-  "src/pages/OperationLogsView.tsx",
 ];
 
 // Files importing @base-ui/react/menu|dialog outside src/components/ui.
@@ -140,7 +137,6 @@ const PENDING_DIRECT_BASE_UI: readonly string[] = [
   "src/components/central/TaskCenterDrawer.tsx",
   "src/components/layout/SidebarSection.tsx",
   "src/components/platform/PlatformSkillToolbarMenus.tsx",
-  "src/components/skill/CompactCardMoreMenu.tsx",
   "src/components/skill/SkillDetailModalShell.tsx",
   "src/components/skillsCli/SkillsCliBatchBar.tsx",
   "src/components/skillsCli/SkillsCliDetailDrawer.tsx",

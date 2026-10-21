@@ -13,6 +13,13 @@ interface ActivityHeatmapProps {
 
 const LABELED_WEEKDAY_ROWS = new Set([0, 2, 4]);
 
+function localTodayKey() {
+  const now = new Date();
+  const month = `${now.getMonth() + 1}`.padStart(2, "0");
+  const day = `${now.getDate()}`.padStart(2, "0");
+  return `${now.getFullYear()}-${month}-${day}`;
+}
+
 /** 固定轨道：格子边长不随容器宽度变化，避免 maximize 时 aspect-ratio 回传高度。 */
 const CELL_TRACK_CLASS = {
   default: "auto-cols-[1rem]",
@@ -51,6 +58,7 @@ export function ActivityHeatmap({
     () => buildMonthLabels(days, i18n.language),
     [days, i18n.language],
   );
+  const todayKey = localTodayKey();
   const trackSize = compact ? "compact" : "default";
   const cellTrackClass = CELL_TRACK_CLASS[trackSize];
   const cellSizeClass = CELL_SIZE_CLASS[trackSize];
@@ -115,6 +123,7 @@ export function ActivityHeatmap({
             >
               {days.map((day, index) => {
                 const level = heatLevelFor(day.count, heatmapScale);
+                const isToday = day.date === todayKey;
                 const label = t("skillUsage.heatmap.cellLabel", {
                   date: day.date,
                   count: day.count,
@@ -130,6 +139,7 @@ export function ActivityHeatmap({
                     tabIndex={index === focusIndex ? 0 : -1}
                     data-testid={`heatmap-cell-${day.date}`}
                     data-level={level}
+                    aria-current={isToday ? "date" : undefined}
                     title={label}
                     aria-label={label}
                     onFocus={() => setFocusIndex(index)}
@@ -150,9 +160,13 @@ export function ActivityHeatmap({
                       }
                     }}
                     className={cn(
-                      "block shrink-0 rounded-[3px] border border-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+                      "block shrink-0 rounded-pill border border-transparent focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring",
                       cellSizeClass,
                       CELL_LEVEL_CLASS[level],
+                      // "Today" is marked by an ink outline + aria-current,
+                      // never by colour alone.
+                      isToday &&
+                        "outline-solid outline-1 outline-offset-1 outline-foreground",
                     )}
                   />
                 );
@@ -169,7 +183,7 @@ export function ActivityHeatmap({
                 key={level}
                 aria-hidden
                 className={cn(
-                  "size-2.5 rounded-[2px] border border-transparent",
+                  "size-2.5 rounded-pill border border-transparent",
                   CELL_LEVEL_CLASS[level],
                 )}
               />
@@ -213,11 +227,15 @@ function buildMonthLabels(days: DayCount[], locale: string) {
   return months.filter((month) => month.weekSpan >= 2);
 }
 
+// Mint ramp (DESIGN.md chart-1 = primary / input series): five alpha steps
+// of the theme's mint, so light and dark each get their own ramp from the
+// token. Level 0 is the neutral surface-hover dot with a divider edge. The
+// count is always in the cell's accessible name; colour is never alone.
 const CELL_LEVEL_CLASS: Record<0 | 1 | 2 | 3 | 4 | 5, string> = {
-  0: "border-border/60 bg-muted/25",
-  1: "bg-chart-2/20",
-  2: "bg-chart-2/35",
-  3: "bg-chart-2/55",
-  4: "bg-chart-2/75",
-  5: "bg-chart-2",
+  0: "border-border bg-accent",
+  1: "bg-chart-1/20",
+  2: "bg-chart-1/35",
+  3: "bg-chart-1/55",
+  4: "bg-chart-1/75",
+  5: "bg-chart-1",
 };

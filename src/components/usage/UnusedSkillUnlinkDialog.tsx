@@ -191,7 +191,7 @@ export function UnusedSkillUnlinkDialog({
               <label
                 data-testid="unused-unlink-select-all"
                 className={cn(
-                  "flex cursor-pointer items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm font-medium",
+                  "flex cursor-pointer items-center gap-2 rounded-control bg-accent px-3 py-2 text-sm font-medium",
                   busy && "pointer-events-none opacity-60",
                 )}
               >
@@ -234,7 +234,7 @@ export function UnusedSkillUnlinkDialog({
                           : undefined
                       }
                       className={cn(
-                        "flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2",
+                        "flex items-center gap-2 rounded-control border border-border bg-input-surface px-3 py-2",
                         disabled && "opacity-60",
                       )}
                     >
@@ -296,7 +296,7 @@ export function UnusedSkillUnlinkDialog({
 
         <DialogFooter>
           <Button
-            variant="outline"
+            variant="glass"
             onClick={() => onOpenChange(false)}
             disabled={busy}
           >

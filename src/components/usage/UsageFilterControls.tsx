@@ -14,7 +14,7 @@ export function UsageFilterGroup({
     <div
       role="group"
       aria-label={label}
-      className="inline-flex flex-wrap gap-0.5 rounded-lg border border-border bg-muted/20 p-0.5"
+      className="inline-flex flex-wrap gap-0.5 rounded-pill bg-accent p-0.5"
     >
       {children}
     </div>
@@ -33,10 +33,12 @@ export function UsageFilterButton({
       size="sm"
       aria-pressed={pressed}
       className={cn(
-        "h-10 min-h-[40px] min-w-[40px] rounded-md px-3 text-xs transition-none disabled:pointer-events-auto disabled:cursor-not-allowed disabled:opacity-100 md:h-10 md:min-w-[40px]",
+        "h-10 min-h-[40px] min-w-[40px] rounded-pill px-3 text-xs transition-none disabled:pointer-events-auto disabled:cursor-not-allowed disabled:opacity-100 md:h-10 md:min-w-[40px]",
+        // DESIGN.md pill-status as a filter: selected = mint tint + 1px mint
+        // stroke (not a solid fill); the selected look survives (dark) hover.
         pressed
-          ? "border-primary bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground dark:hover:bg-primary"
-          : "text-muted-foreground hover:bg-muted hover:text-foreground disabled:border-border disabled:bg-muted/15",
+          ? "border-primary-stroke bg-primary-tint text-primary-text hover:bg-primary-tint hover:text-primary-text dark:hover:bg-primary-tint"
+          : "text-muted-foreground hover:bg-accent hover:text-foreground disabled:bg-transparent",
         className,
       )}
       {...props}

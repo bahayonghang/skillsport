@@ -15,7 +15,6 @@
 | UI meta | `text-ui-meta` | 0.6875rem | 次要 metadata、ID、路径、keycap、frontmatter/preview pre、紧凑辅助说明 |
 | UI micro | `text-ui-micro` | 0.625rem | 紧凑数字计数、heatmap 坐标轴、冗余 chevron/step marker、`aria-hidden` 装饰 glyph |
 | Stat | `text-display-stat` | 1.75rem | StatTile 大号数字（DESIGN.md `typography.stat`）；调用方配 `font-semibold tabular-nums`，数字用 `text-foreground`，不着强调色、不渐变、不发光；只出现在 tint 浅底块或面板内并配小号灰字标签 |
-| Dashboard display | `text-display-hero` / `text-display-hero-xl` / `text-display-score` | 2.35 / 3.25 / 3.35rem | Dashboard hero 标题与 score 大数，归 Dashboard surface 所有，不参与通用 type ladder（C6 迁移到 `text-display-stat` 后再评估删除） |
 
 规则：
 - `section` / `status` / `action` label 至少 `text-xs`，不落入 `text-ui-meta` / `text-ui-micro`。
@@ -23,6 +22,7 @@
 - `text-ui-micro` 仅用于紧凑计数、坐标轴或已有等价可访问名称的辅助标记；纯装饰 glyph 必须同时 `aria-hidden`。
 - 不要新增 `text-ui-label` 同义 token：标准 `text-xs` 已表达该层级。不要把 11px 一对一替换为 meta；先按角色分类，真正的 label 提升到 `text-xs`，路径/ID/辅助信息才使用 meta。
 - 状态重要性通过 weight、foreground、icon 和位置表达，不通过再造 10.5px/11.5px 值表达。
+- 1.1.0 C6 起 Dashboard 不再有专属 display 字号：`text-display-hero` / `text-display-hero-xl` / `text-display-score` 已从 `@theme` 与 `cn()` 注册中删除；就绪度评分与计数改用 `StatTile`（`text-display-stat`），页面标题改用 `PageHeader`。不得恢复这三个 token。
 
 ## 3. Scale contract
 

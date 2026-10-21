@@ -37,13 +37,16 @@ export const PlatformToggleIcon = memo(function PlatformToggleIcon({
   return (
     <button
       className={cn(
-        "focus-ring relative grid size-8 place-items-center rounded-lg transition-[scale,background-color,color] active:not-disabled:scale-[0.96]",
+        "focus-ring relative grid size-8 place-items-center rounded-pill border transition-[scale,background-color,border-color,color] duration-150 active:not-disabled:scale-[0.96]",
         "after:absolute after:left-1/2 after:top-1/2 after:size-10 after:-translate-x-1/2 after:-translate-y-1/2 after:content-['']",
+        // DESIGN.md Signature: UnifiedSkillCard — installed = mint tint capsule
+        // + mint stroke; not installed = hollow outline; locked (always
+        // included) = dashed mint stroke. State is also in aria-label/title.
         isLocked
-          ? "text-primary/70 cursor-default border border-dashed border-primary/40"
+          ? "cursor-default border-dashed border-primary-stroke text-primary-text"
           : isLinked
-            ? "text-primary ring-1 ring-primary/30 hover:bg-primary/15"
-            : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+            ? "border-primary-stroke bg-primary-tint text-primary-text hover:bg-primary/20"
+            : "border-border text-muted-foreground hover:bg-accent hover:text-foreground",
         isToggling && "animate-pulse pointer-events-none",
       )}
       title={title}
@@ -100,14 +103,14 @@ export const UnifiedSkillCardFooter = memo(function UnifiedSkillCardFooter({
   return (
     <div
       data-testid="card-footer"
-      className="mt-auto flex items-center justify-between gap-2 border-t border-border/50 pt-2"
+      className="mt-auto flex items-center justify-between gap-2 border-t border-border pt-2"
     >
-      <div className="flex min-w-0 items-center gap-1.5 text-ui-meta text-muted-foreground">
+      <div className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
         {repoName && (
           <span className="flex min-w-0 items-center gap-1">
             <span
               aria-hidden
-              className="size-2 shrink-0 rounded-sm"
+              className="size-2 shrink-0 rounded-pill"
               style={{
                 backgroundColor: repoColor ?? "var(--muted-foreground)",
               }}
@@ -117,7 +120,7 @@ export const UnifiedSkillCardFooter = memo(function UnifiedSkillCardFooter({
         )}
         {typeof usageBadge === "number" && usageBadge > 0 && (
           <>
-            <span aria-hidden className="text-muted-foreground/40">
+            <span aria-hidden className="text-muted-foreground">
               ·
             </span>
             <span className="shrink-0 tabular-nums">
