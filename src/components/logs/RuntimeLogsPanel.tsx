@@ -89,7 +89,7 @@ function RuntimeLineRow({
       aria-pressed={selected}
       onClick={() => onSelect(line)}
       className={cn(
-        "grid w-full grid-cols-[4.5rem_5rem_minmax(8rem,0.7fr)_minmax(0,1.6fr)] gap-3 border-b border-border px-3 py-2 text-left text-xs transition-colors duration-150 last:border-b-0 hover:bg-accent focus-visible:bg-accent focus-visible:outline-none",
+        "grid w-full grid-cols-[4.5rem_5rem_minmax(8rem,0.7fr)_minmax(0,1.6fr)] gap-3 border-b border-border px-3 py-2 text-left text-xs transition-colors duration-150 last:border-b-0 hover:bg-accent focus-visible:bg-accent focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring",
         selected && "bg-primary-tint hover:bg-primary-tint focus-visible:bg-primary-tint",
       )}
     >

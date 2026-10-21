@@ -125,6 +125,16 @@ describe("PageHeader", () => {
     expect(row.className).toContain("@min-[900px]/page-header:flex-row")
   })
 
+  it("keeps the title width at the wide breakpoint but caps it so long names wrap", () => {
+    const { container } = render(<PageHeader title="T" meta="M" />)
+    const title = screen.getByRole("heading", { level: 1 })
+    expect(title.className).toContain("@min-[900px]/page-header:shrink-0")
+    expect(title.className).toContain("@min-[900px]/page-header:max-w-2/3")
+    expect(title).toHaveClass("break-words")
+    const aside = container.querySelector("[data-slot=page-header-aside]")!
+    expect(aside.className).toContain("@min-[900px]/page-header:flex-1")
+  })
+
   it("omits the aside when there is no meta or action", () => {
     const { container } = render(<PageHeader title="Only title" />)
     expect(container.querySelector("[data-slot=page-header-aside]")).toBeNull()

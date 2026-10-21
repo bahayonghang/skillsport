@@ -941,7 +941,6 @@
       "label": "就绪度",
       "ariaLabel": "技能库就绪度 {{score}} 分（满分 100）",
       "description": "分数由分类、描述、来源映射和安装健康度组成，优先暴露真正阻塞下一步的质量问题。",
-      "scoreUnit": "/100",
       "scoreLabel": "就绪度评分",
       "scoreHint": "满分 100",
       "status": {

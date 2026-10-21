@@ -99,7 +99,7 @@ export function CardTagEditor({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t("central.cardTagSearchPlaceholder")}
-              className="mb-1 w-full rounded-control border border-input bg-input-surface px-2.5 py-1 text-xs placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-none"
+              className="mb-1 w-full rounded-control border border-input bg-input-surface px-2.5 py-1 text-xs placeholder:text-muted-foreground focus-visible:border-ring focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
             />
             <div className="max-h-40 overflow-y-auto">
               {candidates.map((tg) => (
@@ -112,7 +112,7 @@ export function CardTagEditor({
                     setQuery("");
                     setOpen(false);
                   }}
-                  className="block w-full truncate rounded-control px-2.5 py-1 text-left text-xs hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
+                  className="block w-full truncate rounded-control px-2.5 py-1 text-left text-xs hover:bg-accent focus-visible:bg-accent focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
                 >
                   {tg.name}
                 </button>
@@ -126,7 +126,7 @@ export function CardTagEditor({
                     setQuery("");
                     setOpen(false);
                   }}
-                  className="block w-full truncate rounded-control px-2.5 py-1 text-left text-xs text-primary-text hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
+                  className="block w-full truncate rounded-control px-2.5 py-1 text-left text-xs text-primary-text hover:bg-accent focus-visible:bg-accent focus-visible:outline-solid focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring"
                 >
                   {t("central.cardTagCreate", { name: query.trim() })}
                 </button>
