@@ -9,11 +9,14 @@
 @custom-variant dark (&:is([data-theme='glass-dark'] *));
 
 /* Shared keyboard focus ring for hand-written buttons/controls (a11y).
-   Equivalent to: focus-visible:outline-none focus-visible:ring-2
-   focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-card */
+   DESIGN.md Components: `outline: 2px solid {colors.ring}` + 2px offset. An
+   outline (not a ring-offset box-shadow) stays visible on translucent glass,
+   because the offset gap shows whatever surface is underneath. Equivalent to:
+   focus-visible:outline-solid focus-visible:outline-2
+   focus-visible:outline-offset-2 focus-visible:outline-ring */
 @utility focus-ring {
   &:focus-visible {
-    @apply outline-none ring-2 ring-ring ring-offset-1 ring-offset-card;
+    @apply outline-solid outline-2 outline-offset-2 outline-ring;
   }
 }
 
@@ -555,9 +558,13 @@ html[data-theme-switching] *::after {
    L3 .glass-overlay  overlays (Dialog / Menu / Command / Sheet / Toast /
       .glass-sticky   BulkActionBar) and sticky bars. These two blocks are the
                       ONLY places allowed to use real (backdrop) blur.
-   Tints are 12% accent washes for information blocks; text colour stays with
-   the caller (text-primary-text, text-secondary-accent-text, ...).
-   Shapes (radius, padding) stay with primitives (C4). */
+   Tints are 12% accent washes for information blocks, painted as a
+   background-image so they composite OVER the element's own fill (a
+   `glass-panel tint-primary` card is panel + 12% tint, the pair measured by
+   themeContrast.test.ts). Text colour stays with the caller
+   (text-primary-text, text-secondary-accent-text, ...).
+   .glass-overlay-dialog only swaps the blur radius (Dialog / Sheet use 24px).
+   Shapes (radius, padding) stay with primitives in src/components/ui. */
 @layer components {
   .glass-canvas {
     background-color: var(--background);
@@ -589,8 +596,14 @@ html[data-theme-switching] *::after {
     background-color: var(--popover);
     border: 1px solid var(--glass-stroke);
     box-shadow: var(--shadow-overlay);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(140%);
-    backdrop-filter: blur(var(--glass-blur)) saturate(140%);
+    -webkit-backdrop-filter: blur(var(--glass-overlay-blur, var(--glass-blur)))
+      saturate(140%);
+    backdrop-filter: blur(var(--glass-overlay-blur, var(--glass-blur)))
+      saturate(140%);
+  }
+
+  .glass-overlay-dialog {
+    --glass-overlay-blur: var(--glass-blur-dialog);
   }
 
   .glass-sticky {
@@ -600,20 +613,114 @@ html[data-theme-switching] *::after {
   }
 
   .tint-primary {
-    background-color: var(--primary-tint);
+    background-image: linear-gradient(var(--primary-tint), var(--primary-tint));
   }
 
   .tint-secondary {
-    background-color: var(--secondary-accent-tint);
+    background-image: linear-gradient(var(--secondary-accent-tint), var(--secondary-accent-tint));
   }
 
   .tint-warning {
-    background-color: var(--warning-tint);
+    background-image: linear-gradient(var(--warning-tint), var(--warning-tint));
   }
 
   .tint-destructive {
-    background-color: var(--destructive-tint);
+    background-image: linear-gradient(var(--destructive-tint), var(--destructive-tint));
   }
+}
+
+/* ─── Toaster (src/components/ui/toaster.tsx) ──────────────────────────────
+   sonner injects its own unlayered attribute-selector styles at runtime, so
+   the glass mapping is unlayered too and prefixed with `html` to outrank
+   sonner's `[data-sonner-toaster][data-sonner-theme]` / `[data-styled]`
+   selectors regardless of injection order. Every toast also carries the
+   `.glass-overlay` class (real blur comes from that block only); these rules
+   map sonner's palette variables onto the overlay tokens and add a 12% tint
+   wash per status. Status colour sits on the icon; the title stays ink and
+   sonner's per-type icon keeps state readable without colour. */
+html [data-sonner-toaster][data-sonner-theme] {
+  --normal-bg: var(--popover);
+  --normal-bg-hover: var(--popover);
+  --normal-border: var(--glass-stroke);
+  --normal-border-hover: var(--glass-stroke);
+  --normal-text: var(--popover-foreground);
+  --border-radius: var(--radius-card);
+  font-family: var(--font-body);
+}
+
+html [data-sonner-toaster] [data-sonner-toast][data-styled="true"] {
+  border-color: var(--glass-stroke);
+  background-color: var(--popover);
+  color: var(--popover-foreground);
+  box-shadow: var(--shadow-overlay);
+  font-size: 0.875rem;
+}
+
+html [data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-description] {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+}
+
+html [data-sonner-toaster] [data-sonner-toast][data-type="success"] {
+  background-image: linear-gradient(var(--primary-tint), var(--primary-tint));
+}
+
+html [data-sonner-toaster] [data-sonner-toast][data-type="success"] [data-icon] {
+  color: var(--success-foreground);
+}
+
+html [data-sonner-toaster] [data-sonner-toast][data-type="info"] {
+  background-image: linear-gradient(
+    var(--secondary-accent-tint),
+    var(--secondary-accent-tint)
+  );
+}
+
+html [data-sonner-toaster] [data-sonner-toast][data-type="info"] [data-icon] {
+  color: var(--info-foreground);
+}
+
+html [data-sonner-toaster] [data-sonner-toast][data-type="warning"] {
+  background-image: linear-gradient(var(--warning-tint), var(--warning-tint));
+}
+
+html [data-sonner-toaster] [data-sonner-toast][data-type="warning"] [data-icon] {
+  color: var(--warning-foreground);
+}
+
+html [data-sonner-toaster] [data-sonner-toast][data-type="error"] {
+  background-image: linear-gradient(
+    var(--destructive-tint),
+    var(--destructive-tint)
+  );
+}
+
+html [data-sonner-toaster] [data-sonner-toast][data-type="error"] [data-icon] {
+  color: var(--destructive-text);
+}
+
+html [data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-button] {
+  border-radius: var(--radius-pill);
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+html [data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-cancel] {
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--foreground);
+}
+
+html [data-sonner-toaster] [data-sonner-toast][data-styled="true"] [data-close-button] {
+  border-color: var(--glass-stroke);
+  background: var(--popover);
+  color: var(--muted-foreground);
+}
+
+html [data-sonner-toaster] [data-sonner-toast] :is([data-button], [data-close-button]):focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+  box-shadow: none;
 }
 
 /* ─── Central Skills polish primitives ────────────────────────────────────── */

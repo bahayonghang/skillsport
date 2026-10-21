@@ -15,6 +15,7 @@
 - [主题提交与颜色过渡抑制](./theme-switch.md)
 - [语义字号与 no-growth 排版契约](./typography-tokens.md)
 - [小型图标控件热区与焦点可见性契约](./icon-control-hit-area.md)
+- [轻盈毛玻璃表面与 primitives 契约](./glass-surfaces.md)
 - [Settings 页面结构约定](./settings-structure.md)
 - [Dashboard 数据契约](./dashboard-data-contract.md)
 - [Skill Usage 状态与交互契约](./skill-usage-state.md)

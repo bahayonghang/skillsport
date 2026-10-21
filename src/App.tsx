@@ -68,6 +68,17 @@ const SkillUsageView = lazy(() =>
   }))
 );
 
+// DEV-only primitives gallery (C4 visual verification). The `import.meta.env.DEV`
+// guard is statically false in production builds, so the route and its chunk
+// are dropped from the bundle.
+const PrimitivesGallery = import.meta.env.DEV
+  ? lazy(() =>
+      import("@/dev/PrimitivesGallery").then(({ PrimitivesGallery }) => ({
+        default: PrimitivesGallery,
+      }))
+    )
+  : null;
+
 function RouteLoadingFallback() {
   const { t } = useTranslation();
 
@@ -171,6 +182,12 @@ function App() {
           path="settings/*"
           element={lazyPage(<SettingsView />)}
         />
+        {PrimitivesGallery ? (
+          <Route
+            path="__primitives"
+            element={lazyPage(<PrimitivesGallery />)}
+          />
+        ) : null}
       </Route>
     </Routes>
   );

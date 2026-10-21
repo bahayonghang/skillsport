@@ -152,6 +152,12 @@
     "enabled": "启用",
     "disabled": "禁用"
   },
+  "ui": {
+    "statAriaLabel": "{{label}}：{{value}}",
+    "statUnavailable": "暂不可用",
+    "notifications": "通知",
+    "closeNotification": "关闭通知"
+  },
   "backendErrors": {
     "rules": {
       "invalid_name": "请使用平铺 .md 文件名，不能含路径分隔符或保留名称。",

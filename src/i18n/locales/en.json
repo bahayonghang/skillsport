@@ -152,6 +152,12 @@
     "enabled": "Enabled",
     "disabled": "Disabled"
   },
+  "ui": {
+    "statAriaLabel": "{{label}}: {{value}}",
+    "statUnavailable": "Unavailable",
+    "notifications": "Notifications",
+    "closeNotification": "Close notification"
+  },
   "backendErrors": {
     "rules": {
       "invalid_name": "Use a flat .md file name without path separators or reserved names.",

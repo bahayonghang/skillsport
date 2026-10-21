@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/toaster";
 import App from "./App";
 import { StartupGate } from "@/components/startup/StartupGate";
 import "./index.css";
@@ -50,7 +50,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <StartupGate>
         <App />
       </StartupGate>
-      <Toaster position="bottom-right" richColors />
+      <Toaster position="bottom-right" />
     </BrowserRouter>
   </React.StrictMode>,
 );

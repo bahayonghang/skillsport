@@ -1,0 +1,114 @@
+[
+  {
+    "tag": "BUTTON",
+    "slot": null,
+    "text": "SkillPort",
+    "outline": "auto 1px oklab(0.776238 -0.129807 0.0343391 / 0.5)",
+    "offset": "0px",
+    "focusVisible": true
+  },
+  {
+    "tag": "BUTTON",
+    "slot": null,
+    "text": "Search skills...CtrlK",
+    "outline": "auto 1px oklab(0.776238 -0.129807 0.0343391 / 0.5)",
+    "offset": "0px",
+    "focusVisible": true
+  },
+  {
+    "tag": "BUTTON",
+    "slot": "button",
+    "text": "Import skill",
+    "outline": "solid 2px rgb(79, 209, 161)",
+    "offset": "2px",
+    "focusVisible": true
+  },
+  {
+    "tag": "BUTTON",
+    "slot": null,
+    "text": "Switch active target",
+    "outline": "auto 1px oklab(0.776238 -0.129807 0.0343391 / 0.5)",
+    "offset": "0px",
+    "focusVisible": true
+  },
+  {
+    "tag": "BUTTON",
+    "slot": null,
+    "text": "View keyboard shortcuts",
+    "outline": "solid 2px rgb(79, 209, 161)",
+    "offset": "2px",
+    "focusVisible": true
+  },
+  {
+    "tag": "BUTTON",
+    "slot": null,
+    "text": "Switch to light theme",
+    "outline": "auto 1px oklab(0.776238 -0.129807 0.0343391 / 0.5)",
+    "offset": "0px",
+    "focusVisible": true
+  },
+  {
+    "tag": "BUTTON",
+    "slot": null,
+    "text": "Collapse sidebar",
+    "outline": "auto 1px oklab(0.776238 -0.129807 0.0343391 / 0.5)",
+    "offset": "0px",
+    "focusVisible": true
+  },
+  {
+    "tag": "BUTTON",
+    "slot": null,
+    "text": "Dashboard",
+    "outline": "none 1px oklab(0.776238 -0.129807 0.0343391 / 0.5)",
+    "offset": "0px",
+    "focusVisible": true
+  },
+  {
+    "tag": "BUTTON",
+    "slot": null,
+    "text": "Central Skills",
+    "outline": "none 1px oklab(0.776238 -0.129807 0.0343391 / 0.5)",
+    "offset": "0px",
+    "focusVisible": true
+  },
+  {
+    "tag": "BUTTON",
+    "slot": null,
+    "text": "Rules",
+    "outline": "none 1px oklab(0.776238 -0.129807 0.0343391 / 0.5)",
+    "offset": "0px",
+    "focusVisible": true
+  },
+  {
+    "tag": "BUTTON",
+    "slot": null,
+    "text": "Skills CLI global",
+    "outline": "none 1px oklab(0.776238 -0.129807 0.0343391 / 0.5)",
+    "offset": "0px",
+    "focusVisible": true
+  },
+  {
+    "tag": "BUTTON",
+    "slot": null,
+    "text": "Projects",
+    "outline": "none 1px oklab(0.776238 -0.129807 0.0343391 / 0.5)",
+    "offset": "0px",
+    "focusVisible": true
+  },
+  {
+    "tag": "BUTTON",
+    "slot": null,
+    "text": "Obsidian Vaults",
+    "outline": "none 1px oklab(0.776238 -0.129807 0.0343391 / 0.5)",
+    "offset": "0px",
+    "focusVisible": true
+  },
+  {
+    "tag": "BUTTON",
+    "slot": null,
+    "text": "Marketplace",
+    "outline": "none 1px oklab(0.776238 -0.129807 0.0343391 / 0.5)",
+    "offset": "0px",
+    "focusVisible": true
+  }
+]

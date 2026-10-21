@@ -31,9 +31,9 @@ function RadioItem({
       data-slot="radio-item"
       value={value}
       className={cn(
-        "group/radio flex size-4 shrink-0 items-center justify-center rounded-full border border-input bg-transparent transition-colors",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
-        "disabled:cursor-not-allowed disabled:opacity-50",
+        "group/radio flex size-4 shrink-0 items-center justify-center rounded-full border border-input bg-input-surface transition-[border-color] duration-150",
+        "hover:border-muted-foreground focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+        "disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive-text",
         "data-[checked]:border-primary",
         className
       )}
