@@ -28,3 +28,4 @@ pub mod scanner;
 pub mod skills_cli;
 pub mod startup;
 pub mod usage;
+pub mod window_material;

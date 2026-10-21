@@ -16,5 +16,11 @@ export function registerMiscFixtures(): void {
   registerIpcFixtures({
     get_skill_explanation_summaries: () => ({}),
     open_obsidian_path: () => undefined,
+    // 浏览器没有原生窗口材质：保持不透明 canvas（与非 Windows 平台一致）
+    set_window_material: () => ({
+      applied: "none",
+      reason: "unsupportedPlatform",
+      supported: false,
+    }),
   });
 }

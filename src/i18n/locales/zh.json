@@ -2459,6 +2459,17 @@
         "glass-light": "浅色玻璃",
         "glass-dark": "深色玻璃"
       },
+      "windowMaterial": "窗口材质",
+      "windowMaterialDesc": "让 Windows 11 的 Mica 材质透过玻璃背景显示。",
+      "windowMaterialToggle": "使用 Mica 窗口材质",
+      "windowMaterialOn": "Mica",
+      "windowMaterialOff": "关闭",
+      "windowMaterialUnavailable": {
+        "unsupportedOs": "Mica 需要 Windows 11，当前系统保持不透明背景。",
+        "unsupportedPlatform": "Mica 仅在 Windows 11 上可用，当前系统保持不透明背景。",
+        "applyFailed": "无法应用 Mica，当前使用不透明背景。"
+      },
+      "windowMaterialSaveFailed": "无法保存窗口材质设置。",
       "languageGroup": "语言",
       "languageGroupDesc": "设置界面显示语言。",
       "typographyGroup": "字体",

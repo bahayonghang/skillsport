@@ -13,6 +13,7 @@
 - [技能卡片显式场景 interface 约定](./skill-card-scenarios.md)
 - [字体偏好与中文 fallback 契约](./font-preferences.md)
 - [主题提交与颜色过渡抑制](./theme-switch.md)
+- [窗口材质（Windows 11 Mica）与不透明降级契约](./window-material.md)
 - [语义字号与 no-growth 排版契约](./typography-tokens.md)
 - [小型图标控件热区与焦点可见性契约](./icon-control-hit-area.md)
 - [Settings 页面结构约定](./settings-structure.md)

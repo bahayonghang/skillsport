@@ -12,6 +12,7 @@ import {
   fontThemeModeForFlavor,
   useThemeStore,
 } from "./stores/themeStore";
+import { useWindowMaterialStore } from "./stores/windowMaterialStore";
 import {
   DEFAULT_THEMED_FONT_PREFERENCES,
   activateFontTheme,
@@ -29,6 +30,9 @@ if (!isTauriRuntime()) {
 
 // Apply theme synchronously before React renders to prevent flash of wrong theme
 useThemeStore.getState().init();
+// Window material starts opaque (data-window-material="none") and only turns
+// translucent once Rust reports Mica; it then follows every theme commit.
+void useWindowMaterialStore.getState().init();
 let activeFontMode = fontThemeModeForFlavor(useThemeStore.getState().flavor);
 // 字体偏好：先 apply 当前 mode 默认值避免 layout 跳动；IPC 完成后再覆盖
 applyThemedFontPreferences(DEFAULT_THEMED_FONT_PREFERENCES, activeFontMode);

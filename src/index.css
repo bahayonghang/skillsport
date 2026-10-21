@@ -616,6 +616,32 @@ html[data-theme-switching] *::after {
   }
 }
 
+/* ─── Window material (C3 · DESIGN.md "Window Material (Mica)") ─────────────
+   Default — no attribute, or data-window-material="none" — leaves html, body
+   and .glass-canvas exactly as above: fully opaque. Only "mica", written by
+   windowMaterialStore after Rust applied Mica on Windows 11, clears the page
+   background and runs the canvas gradient at 80% alpha so Mica shows through.
+   DESIGN.md Known Gaps: canvas alpha under Mica must stay >= 0.80.
+   Unlayered so it beats @layer base (body) and @layer components (canvas). */
+html[data-window-material="mica"],
+html[data-window-material="mica"] body {
+  background: transparent;
+}
+
+html[data-window-material="mica"] .glass-canvas {
+  background-color: transparent;
+  background-image:
+    radial-gradient(42rem 32rem at 12% 6%, var(--canvas-blob-1), transparent 70%),
+    radial-gradient(40rem 32rem at 92% 96%, var(--canvas-blob-2), transparent 70%),
+    radial-gradient(30rem 24rem at 82% 10%, var(--canvas-blob-3), transparent 70%),
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--canvas-from) 80%, transparent) 0%,
+      color-mix(in srgb, var(--canvas-to) 80%, transparent) 100%
+    );
+}
+/* ─── end Window material ─────────────────────────────────────────────────── */
+
 /* ─── Central Skills polish primitives ────────────────────────────────────── */
 @layer components {
   .central-skill-card-surface {

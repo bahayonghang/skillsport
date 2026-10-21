@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { WindowMaterialSetting } from "@/components/settings/WindowMaterialSetting";
 import {
   BODY_FONT_OPTIONS,
   CHINESE_FALLBACK_OPTIONS,
@@ -168,6 +169,9 @@ export function AppearanceSettingsSection({
             onChange={(value) => onSetFlavor(value as ThemeFlavor)}
           />
         </ControlField>
+        <div className="mt-5">
+          <WindowMaterialSetting />
+        </div>
       </SettingGroup>
 
       <SettingGroup

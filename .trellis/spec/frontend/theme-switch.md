@@ -2,6 +2,7 @@
 
 > 建立于 2026-10-12（任务 10-12-theme-switch-transition）。主题切换不得借用 hover 过渡去插值语义色。
 > 2026-10-21（任务 10-21-glass-theme-foundation）：主题收敛为 `glass-light` / `glass-dark` 两个，accent 概念删除，新增 `toggleFlavor` 与旧偏好迁移。
+> 2026-10-21（任务 10-21-glass-window-material）：主题提交后同步原生窗口材质 / 窗口主题，见 [window-material.md](./window-material.md)。
 
 ## 1. Scope / Trigger
 
@@ -35,6 +36,7 @@ localStorage key：`skillport-theme`。旧 key `catppuccin-flavor` / `catppuccin
 - `init()` 解析顺序：`skillport-theme` 合法值 → 旧 `catppuccin-flavor`（`latte` / `claude-light` → `glass-light`；`mocha` / `macchiato` / `frappe` / `claude-dark` → `glass-dark`）→ `prefers-color-scheme`。新 key 写入成功后才删除 `catppuccin-flavor` 与 `catppuccin-accent`，并清掉残留的 `html[data-accent]`。
 - hover、focus、按下缩放仍留在组件自己的 `transition` 上。抑制只包住主题属性提交。
 - 不使用 `document.startViewTransition` 或整页交叉淡化来切换主题。
+- 窗口材质同步在主题提交**之后**：`windowMaterialStore` 订阅 `themeStore.flavor`，`setFlavor` / `toggleFlavor` 完成 `data-theme` 提交并 `set({ flavor })` 后才调用 `syncTheme(dark)` → `set_window_material`（Mica 用 `MicaLight` / `MicaDark`，否则只 `set_theme`）。原生调用是异步的，不得放进 `applyThemeDom` 的抑制窗口，也不得阻塞 `data-theme` 写入；`init()` 不触发同步（材质 store 自己的 `init()` 负责首个请求）。组件不得自行调用该命令。
 
 ## 4. Validation & Error Matrix
 
@@ -58,6 +60,7 @@ localStorage key：`skillport-theme`。旧 key `catppuccin-flavor` / `catppuccin
 ## 6. Tests Required
 
 - `src/test/stores/themeStore.test.ts`：`setFlavor` / `toggleFlavor` 在强制布局时标记仍在，捕获的动画帧之后标记消失；连续两次 `setFlavor` 只有最后一帧清除标记；`init()` 不打标记且不调用 `requestAnimationFrame`。两个 flavor、`toggleFlavor`、`fontThemeModeForFlavor`、六种旧 flavor 迁移、旧 key 删除、写入失败保留旧 key、读取抛错降级。
+- `src/test/stores/windowMaterialStore.test.ts`：`setFlavor` / `toggleFlavor` 之后各触发一次 `set_window_material`，重复 `init()` 不重复订阅。
 - `src/test/contracts/themeSwitchSuppression.test.ts`：`src/index.css` 里该规则只有一条，位于 `@layer` 之外，包含 `transition: none !important`，声明块里没有 `animation`。
 
 ## 7. Wrong vs Correct
