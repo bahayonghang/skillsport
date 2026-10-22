@@ -279,7 +279,13 @@ pub(crate) fn build_inventory(
             other => LocalArchiveImportError::ArchiveReadFailed(format!("entry {index}: {other}")),
         })?;
 
-        let raw_name = entry.name().to_string();
+        let raw_name = entry
+            .name()
+            .map_err(|error| LocalArchiveImportError::UnsupportedArchiveEntry {
+                path: format!("entry #{index}"),
+                reason: format!("unreadable entry name: {error}"),
+            })?
+            .into_owned();
         let is_dir = entry.is_dir();
         let encrypted = entry.encrypted();
         let compression = entry.compression();

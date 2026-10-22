@@ -60,7 +60,7 @@ fs2 = "0.4"
 clap = { version = "4", features = ["derive"] }
 # Local archive (ZIP) skill import: pure-Rust reader, no shell extraction.
 # License: MIT OR Apache-2.0. Used by `services::local_archive_import`.
-zip = { version = "8.6.0", default-features = false, features = ["deflate-flate2-zlib-rs"] }
+zip = { version = "9.0.5", default-features = false, features = ["deflate-flate2-zlib-rs"] }
 specta = { version = "=2.0.0-rc.25", features = ["derive", "function", "tokio"], optional = true }
 specta-serde = { version = "=0.0.12", optional = true }
 specta-typescript = { version = "=0.0.12", optional = true }
