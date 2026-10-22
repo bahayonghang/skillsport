@@ -22,7 +22,7 @@ import type {
 
 const DB_PATH_FALLBACK = "~/.skillsmanage/db.sqlite";
 
-export const REPO_URL = "https://github.com/bahayonghang/skills-manage-windows";
+export const REPO_URL = "https://github.com/bahayonghang/skillsport";
 
 export const EMPTY_SSH_TARGET_FORM: SshTargetFormState = {
   label: "",

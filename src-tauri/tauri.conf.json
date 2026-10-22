@@ -34,7 +34,7 @@
       "nsis"
     ],
     "publisher": "bahayonghang",
-    "homepage": "https://github.com/bahayonghang/skills-manage-windows",
+    "homepage": "https://github.com/bahayonghang/skillsport",
     "licenseFile": "../LICENSE",
     "category": "DeveloperTool",
     "shortDescription": "AI Agent Skills Manager",
@@ -103,7 +103,7 @@
     "updater": {
       "pubkey": "TAURI_UPDATER_PUBLIC_KEY_PLACEHOLDER_REPLACE_IN_RELEASE_CONFIG",
       "endpoints": [
-        "https://github.com/bahayonghang/skills-manage-windows/releases/latest/download/latest.json"
+        "https://github.com/bahayonghang/skillsport/releases/latest/download/latest.json"
       ],
       "windows": {
         "installMode": "passive"

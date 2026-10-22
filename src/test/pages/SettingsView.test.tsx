@@ -906,13 +906,13 @@ describe("SettingsView", () => {
 
     expect(screen.getByText("Release Cockpit")).toBeTruthy();
     expect(screen.getByText("仓库地址")).toBeTruthy();
-    expect(screen.getAllByRole("link", { name: "https://github.com/bahayonghang/skills-manage-windows" })[0]).toHaveAttribute(
+    expect(screen.getAllByRole("link", { name: "https://github.com/bahayonghang/skillsport" })[0]).toHaveAttribute(
       "href",
-      "https://github.com/bahayonghang/skills-manage-windows"
+      "https://github.com/bahayonghang/skillsport"
     );
     expect(screen.getByRole("link", { name: /^README/ })).toHaveAttribute(
       "href",
-      "https://github.com/bahayonghang/skills-manage-windows#readme"
+      "https://github.com/bahayonghang/skillsport#readme"
     );
     expect(screen.getByRole("link", { name: /中文 README/ })).toBeTruthy();
     expect(screen.getByRole("link", { name: /Releases/ })).toBeTruthy();

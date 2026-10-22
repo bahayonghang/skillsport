@@ -14,7 +14,7 @@ export default defineConfig({
   cleanUrls: true,
   lastUpdated: true,
   outDir: '../dist-docs',
-  base: '/skills-manage-windows/',
+  base: '/skillsport/',
   ignoreDeadLinks: 'localhostLinks',
   // Exclude legacy design notes and the planning doc so they do not become
   // public pages now that the site lives at docs/ (no longer docs/site/).
@@ -28,7 +28,7 @@ export default defineConfig({
     socialLinks: [
       {
         icon: 'github',
-        link: 'https://github.com/bahayonghang/skills-manage-windows',
+        link: 'https://github.com/bahayonghang/skillsport',
       },
     ],
     search: {

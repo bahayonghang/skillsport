@@ -14,7 +14,7 @@ hero:
       link: /zh/guide/installation
     - theme: alt
       text: GitHub
-      link: https://github.com/bahayonghang/skills-manage-windows
+      link: https://github.com/bahayonghang/skillsport
 
 features:
   - title: 中央技能库
