@@ -1,4 +1,92 @@
 {
+  "rules": {
+    "fixture": {
+      "description": "Synthetic browser acceptance data",
+      "reviewBody": "# Review checklist\n\n## Before a change\n\n- Read the affected source files.\n- Define a result that can be checked.\n\n## Before delivery\n\nReport the checks that ran and preserve any remaining verification gap.\n",
+      "writingBody": "# Writing style\n\nUse short sentences and precise names. Keep one meaning in each paragraph.\n",
+      "safetyBody": "# File safety\n\nPreserve external changes. Check the original revision before replacing a file.\n",
+      "contextBody": "# Project context\n\nRead the project guidance before editing. Keep changes within the requested scope.\n"
+    },
+    "title": "Rules",
+    "listTitle": "Rule files",
+    "selectRule": "Select {{name}}",
+    "fileNamePlaceholder": "example.md",
+    "editorTitle": "Rule editor",
+    "targetsTitle": "Tool links",
+    "importExisting": "Import existing rules",
+    "newRule": "New rule",
+    "search": "Search rules",
+    "unsaved": "Unsaved changes",
+    "saved": "Saved",
+    "saving": "Saving",
+    "applying": "Applying",
+    "enable": "Enable",
+    "disable": "Disable",
+    "takeOver": "Replace with link",
+    "reloadHint": "Tools read saved content after reload or in a new session.",
+    "bodyLabel": "Rule body",
+    "sourceLabel": "Complete source file",
+    "viewMode": "Editor view",
+    "diskChanged": "The file changed outside SkillPort. Your draft remains available; saving requires the original revision.",
+    "unsupportedHint": "Conditional or unsupported rule formats are read-only.",
+    "localOnly": "Local rules only",
+    "localOnlyDetail": "Select the Local target to manage rules. Session drafts remain available when you return.",
+    "fixtureNotice": "Browser preview uses synthetic data. No local files change.",
+    "reloadRequired": "Refresh the file state before continuing.",
+    "recoveryNeeded": "Recovery required: {{name}}",
+    "reviewRecovery": "Review recovery",
+    "empty": "No rules in the central library. Import existing rules or create a rule.",
+    "noResults": "No matching rule files.",
+    "retryHint": "Refresh to retry loading the rule.",
+    "selectHint": "Select a rule to edit its body and manage tool links.",
+    "backToList": "Rule files",
+    "newRuleHint": "Create a flat .md file. The shared metadata applies the rule to all sessions.",
+    "fileName": "File name",
+    "description": "Description",
+    "importHint": "Import saves a shared file with alwaysApply metadata. Original files remain in place. Enable each tool separately to replace an equivalent file with a link; SkillPort preserves a byte-for-byte backup.",
+    "noImportSources": "No supported source files found.",
+    "importing": "Importing",
+    "importSelected": "Import selected ({{count}})",
+    "unsavedTitle": "Unsaved changes",
+    "unsavedHint": "Save the draft before switching, discard the draft, or keep editing.",
+    "discard": "Discard and switch",
+    "saveAndSwitch": "Save and switch",
+    "takeOverTitle": "Replace equivalent file with link",
+    "takeOverHint": "SkillPort backs up the complete original file, then replaces the file with a symbolic link to the saved central rule. Different content and external links remain unchanged.",
+    "backupLocation": "Original file backup directory",
+    "deleteTitle": "Delete rule",
+    "deleteHint": "Delete {{name}} from the central library and remove verified SkillPort links from both tools. SkillPort preserves a recovery backup.",
+    "recoveryTitle": "Recover interrupted operation",
+    "recoveryHint": "Restore the original file from the verified backup or undo the interrupted operation. Recovery stops if an external change conflicts with the recorded state.",
+    "recover": "Recover",
+    "modes": {
+      "body": "Body",
+      "preview": "Preview",
+      "source": "Source"
+    },
+    "tools": {
+      "claude-code": "Claude Code",
+      "omp": "OMP"
+    },
+    "states": {
+      "linked": "Linked",
+      "absent": "No link",
+      "native_equivalent": "Equivalent file",
+      "conflict": "Conflict",
+      "broken": "Broken link",
+      "unreadable": "Unreadable",
+      "unsupported": "Unsupported",
+      "recovery_required": "Recovery required"
+    },
+    "importStates": {
+      "new": "Ready to import",
+      "same": "Already imported",
+      "conflict": "Different content",
+      "unsupported": "Unsupported format",
+      "failed": "Import unavailable",
+      "imported": "Imported"
+    }
+  },
   "app": {
     "name": "SkillPort"
   },
@@ -64,7 +152,26 @@
     "enabled": "Enabled",
     "disabled": "Disabled"
   },
+  "ui": {
+    "statAriaLabel": "{{label}}: {{value}}",
+    "statUnavailable": "Unavailable",
+    "notifications": "Notifications",
+    "closeNotification": "Close notification"
+  },
   "backendErrors": {
+    "rules": {
+      "invalid_name": "Use a flat .md file name without path separators or reserved names.",
+      "revision_conflict": "The rule changed outside SkillPort. Your draft remains available.",
+      "target_conflict": "The tool file has different content or an external link. Resolve the conflict before enabling.",
+      "permission_denied": "SkillPort cannot write the file or create a file symbolic link. Check permissions and Windows Developer Mode.",
+      "lock_busy": "Another Local file operation is running. Retry when the operation finishes.",
+      "local_only": "Rules management requires the Local target.",
+      "unsupported": "The rule format or custom tool configuration is not supported.",
+      "recovery_blocked": "External changes prevent safe recovery. The backup and operation record remain available.",
+      "budget_exceeded": "The rule file or scan exceeds the supported limit.",
+      "io": "The file operation did not finish. Refresh the state and review any recovery record.",
+      "not_found": "The rule file no longer exists."
+    },
     "wrong_link_target": "This link points at a different folder.",
     "broken_link": "This link is broken.",
     "not_a_directory": "This path is a file, not a skill folder.",
@@ -144,6 +251,8 @@
       "branch_conflict": "The branch in the repository URL differs from the branch field. Make them match, then preview again.",
       "archive_redirect_rejected": "GitHub returned an unsafe or unexpected repository archive redirect. Try checking for updates again.",
       "transport_failed": "GitHub could not be reached. Check the network connection, then try again.",
+      "branch_not_found": "This branch does not exist in the repository. Use the repository default branch or check the branch name.",
+      "request_rejected": "GitHub rejected the request. Check the repository URL and branch, then try again.",
       "rate_limited": "GitHub rate limited the request. Wait for the limit to reset, then try again.",
       "access_denied": "GitHub denied anonymous access to this repository. Configure a token if the repository requires authentication.",
       "configured_token_failed": "GitHub denied the authenticated request. Check that the token owner can read this repository and that the token has the required permissions.",
@@ -320,11 +429,10 @@
     "projectModeRemoteHint": "Enter an absolute remote project path."
   },
   "topbar": {
-    "importSkill": "Import skill",
-    "themeToggleLight": "Switch to light theme",
-    "themeToggleDark": "Switch to dark theme"
+    "importSkill": "Import skill"
   },
   "sidebar": {
+    "rules": "Rules",
     "byTool": "By Tool",
     "dashboard": "Dashboard",
     "centralSkills": "Central Skills",
@@ -335,6 +443,11 @@
     "newCollection": "+ New",
     "expandSidebar": "Expand sidebar",
     "collapseSidebar": "Collapse sidebar",
+    "collapse": "Collapse",
+    "darkMode": "Dark mode",
+    "lightMode": "Light mode",
+    "themeToggleDark": "Switch to dark mode",
+    "themeToggleLight": "Switch to light mode",
     "importCollection": "Import Collection",
     "newCollectionLabel": "New Collection",
     "importCollectionInput": "Import collection JSON file",
@@ -344,6 +457,15 @@
     "rescan": "Re-scan...",
     "categoryLobster": "Lobster",
     "categoryCoding": "Coding",
+    "globalWorkspace": "Global Workspace",
+    "projectWorkspace": "Project Workspaces",
+    "collapseSection": "Collapse {{name}}",
+    "expandSection": "Expand {{name}}",
+    "projectSortLabel": "Sort projects",
+    "projectSortCurrent": "Current sort: {{sort}}",
+    "projectSortName": "Name",
+    "projectSortSkillCount": "Skill count",
+    "projectSortRecent": "Recently scanned",
     "resizeSidebar": "Resize sidebar",
     "obsidian": "Obsidian Vaults",
     "skillUsage": "Skill Usage",
@@ -819,7 +941,8 @@
       "label": "Readiness",
       "ariaLabel": "Library readiness score {{score}} of 100",
       "description": "Quality factors behind the score: taxonomy, descriptions, source mapping, and install health.",
-      "scoreUnit": "/100",
+      "scoreLabel": "Readiness score",
+      "scoreHint": "out of 100",
       "status": {
         "ready": "Ready",
         "review": "Review gate",
@@ -859,7 +982,9 @@
       "uncategorized": "Uncategorized skills",
       "uncategorizedDesc": "Assign tags from the Central categorize panel.",
       "unassigned": "Unknown source",
-      "unassignedDesc": "Attach skills to a repository source when known."
+      "unassignedDesc": "Attach skills to a repository source when known.",
+      "centralTotal": "Central skills",
+      "sources": "Sources"
     },
     "activeJobs": "Active job",
     "jobProgress": "{{completed}} / {{total}} complete",
@@ -1264,6 +1389,8 @@
     "viewDetailsLabel": "View details for {{name}}",
     "installLabel": "Install {{name}} to platforms",
     "installTo": "Install to...",
+    "linkedProjectLabel": "Installed in project {{name}}",
+    "linkedProjectFallback": "Project",
     "uninstallFromPlatforms": "Uninstall from platforms",
     "uninstallFromPlatformsLabel": "Uninstall {{name}} from platforms",
     "deleteSkill": "Delete from Central Skills",
@@ -2338,7 +2465,23 @@
       "title": "Appearance",
       "description": "Adjust theme, language, font fallbacks, and type scale.",
       "themeGroup": "Theme",
-      "themeGroupDesc": "Choose the interface flavor and accent.",
+      "themeGroupDesc": "Pick the light or dark glass theme and whether the window material shows through.",
+      "themeMode": "Appearance mode",
+      "themeOption": {
+        "glass-light": "Glass Light",
+        "glass-dark": "Glass Dark"
+      },
+      "windowMaterial": "Window material",
+      "windowMaterialDesc": "Let the Windows 11 Mica backdrop show through the glass canvas.",
+      "windowMaterialToggle": "Use the Mica window material",
+      "windowMaterialOn": "Mica",
+      "windowMaterialOff": "Off",
+      "windowMaterialUnavailable": {
+        "unsupportedOs": "Mica needs Windows 11. This system keeps the opaque canvas.",
+        "unsupportedPlatform": "Mica is only available on Windows 11. This system keeps the opaque canvas.",
+        "applyFailed": "Mica could not be applied, so the opaque canvas is in use."
+      },
+      "windowMaterialSaveFailed": "Could not save the window material setting.",
       "languageGroup": "Language",
       "languageGroupDesc": "Set the interface language.",
       "typographyGroup": "Typography",
@@ -2349,8 +2492,8 @@
         "light": "Light",
         "dark": "Dark"
       },
-      "densityGroup": "Density",
-      "densityGroupDesc": "Adjust the global base type size.",
+      "densityGroup": "Font size",
+      "densityGroupDesc": "Adjust the global base type size in three steps.",
       "displayFontOptionsLabel": "Display font options",
       "bodyFontOptionsLabel": "Body font options",
       "primaryFont": "Primary font",
@@ -2388,6 +2531,10 @@
         "system": "System fallback",
         "sourceHanSerif": "Source Han Serif SC VF",
         "custom": "Custom"
+      },
+      "themeOptionDesc": {
+        "glass-light": "Bright mint-to-lavender canvas with translucent white panels.",
+        "glass-dark": "Deep ink canvas with low-glare panels for night work."
       }
     },
     "toc": {
@@ -2540,30 +2687,6 @@
     "appVersion": "App Version",
     "dbPath": "Database Path",
     "repoUrl": "Repository URL",
-    "flavor": "Flavor",
-    "mocha": "Mocha",
-    "macchiato": "Macchiato",
-    "frappe": "Frappé",
-    "latte": "Latte",
-    "claude-light": "Claude Light",
-    "claude-dark": "Claude Dark",
-    "accentColor": "Accent Color",
-    "accent": {
-      "rosewater": "Rosewater",
-      "flamingo": "Flamingo",
-      "pink": "Pink",
-      "mauve": "Mauve",
-      "red": "Red",
-      "maroon": "Maroon",
-      "peach": "Peach",
-      "yellow": "Yellow",
-      "green": "Green",
-      "teal": "Teal",
-      "sky": "Sky",
-      "sapphire": "Sapphire",
-      "blue": "Blue",
-      "lavender": "Lavender"
-    },
     "language": "Language",
     "chinese": "中文",
     "english": "English",
@@ -2576,7 +2699,7 @@
       "legacyFallback": "This old settings link was redirected to the default page.",
       "appearance": {
         "title": "Appearance",
-        "description": "Adjust theme, language, accent color, fonts, and display density."
+        "description": "Adjust the light or dark theme, window material, language, fonts, and font size."
       },
       "connections": {
         "title": "Connections & Sync",
@@ -2601,7 +2724,7 @@
     },
     "aboutCockpit": {
       "eyebrow": "Release Cockpit",
-      "heroDesc": "Version, updates, diagnostics, and help links in one dark release console.",
+      "heroDesc": "Version, updates, diagnostics, and help links in one place.",
       "channel": "Update channel",
       "stable": "Stable",
       "platform": "Platform",
@@ -2880,7 +3003,7 @@
     "githubImportCta": "Import GitHub repo",
     "githubImportSecondaryCta": "Import from GitHub",
     "githubImportTitle": "GitHub repo import",
-    "githubImportDesc": "Launch the shared GitHub repo import wizard from {{launcher}}.",
+    "githubImportDesc": "Preview the skills in a repository. Nothing is written until you confirm the import.",
     "githubImportHeaderLauncher": "From {{launcher}}",
     "githubImportStep": {
       "input": "Repo URL",
@@ -2891,16 +3014,28 @@
     "githubRepoUrl": "GitHub repository URL",
     "githubBranchLabel": "Branch",
     "githubBranchOption": {
+      "default": "Repo default",
       "main": "main",
       "dev": "dev",
       "custom": "Custom"
     },
     "githubCustomBranchLabel": "Custom branch",
     "githubCustomBranchPlaceholder": "feature/my-branch",
-    "githubBranchDefaultHint": "main is selected by default. Choose dev or enter a custom branch.",
+    "githubBranchDefaultHint": "Uses the default branch set on GitHub, such as main or master.",
+    "githubBranchExplicitHint": "Previews exactly this branch. If the repository has no such branch, the preview says so.",
     "githubCustomBranchHint": "Enter the exact branch name to preview.",
     "previewImport": "Preview import",
-    "githubImportNoWriteHint": "Preview is read-only and performs no write before you confirm import.",
+    "githubPreviewError": {
+      "title": {
+        "branchNotFound": "Branch not found",
+        "requestRejected": "GitHub rejected the request",
+        "transportFailed": "Cannot reach GitHub",
+        "generic": "Preview failed"
+      },
+      "branchNotFoundBody": "{{repo}} has no branch named {{branch}}. Use the repository default branch or check the branch name.",
+      "useDefaultBranch": "Use repo default branch",
+      "retry": "Retry"
+    },
     "githubImportDesktopOnlyHint": "GitHub repo preview and import are desktop-only actions in this release.",
     "githubImportDesktopOnlyState": "This shared wizard is available in the browser for guidance, but preview/import actions only run in the desktop app with the Tauri bridge enabled.",
     "githubImportSshPasswordTitle": "Save the active SSH password",
@@ -3021,7 +3156,17 @@
     "githubImportResultSkippedTitle": "Skipped items",
     "githubImportResultSkippedNone": "No skills were skipped.",
     "githubPatSettingsHint": "Open Settings and save a GitHub Personal Access Token to use authenticated direct GitHub requests for this import flow.",
-    "githubPatConfiguredFailureHint": "A configured GitHub token was already used. Check that the token owner can read this repo and that the token has sufficient repository access."
+    "githubPatConfiguredFailureHint": "A configured GitHub token was already used. Check that the token owner can read this repo and that the token has sufficient repository access.",
+    "backToPublishers": "Back to publishers",
+    "officialEmpty": "No matching recommended skills",
+    "publisherSearchPlaceholder": "Search publishers...",
+    "publisherCount": "{{count}} publishers",
+    "repoSkillCount": "{{count}} skills",
+    "browseRepoSkills": "Browse Skills",
+    "repoPreviewFetching": "Fetching...",
+    "repoPreviewRefresh": "Refresh preview",
+    "repoPreviewFetchingFromGithub": "Fetching skills from GitHub...",
+    "repoPreviewEmpty": "No skills found"
   },
   "obsidian": {
     "title": "Obsidian Vault Skills",

@@ -229,6 +229,132 @@ describe("UnifiedSkillCard", () => {
     expect(container.querySelector("[data-testid='card-footer']")).toBeNull();
   });
 
+  it("renders linked project chips with basename and full-path tooltip", () => {
+    render(
+      <UnifiedSkillCard
+        {...centralBaseProps}
+        linkedProjects={[
+          {
+            project_id: "p1",
+            path: "D:\\Documents\\Code\\Rust\\Exp\\PromptHub",
+          },
+        ]}
+      />,
+    );
+    const chip = screen.getByTestId("central-linked-project-p1");
+    expect(chip).toHaveTextContent("PromptHub");
+    expect(chip).not.toHaveTextContent("Documents");
+    expect(chip).toHaveAttribute(
+      "title",
+      "D:\\Documents\\Code\\Rust\\Exp\\PromptHub",
+    );
+    expect(chip).toHaveAttribute("aria-label", "已安装到项目 PromptHub");
+  });
+
+  it("dedupes linked project chips by project_id", () => {
+    render(
+      <UnifiedSkillCard
+        {...centralBaseProps}
+        linkedProjects={[
+          { project_id: "p1", path: "D:\\work\\PromptHub" },
+          { project_id: "p1", path: "D:\\work\\PromptHub" },
+          { project_id: "p2", path: "/tmp/other" },
+        ]}
+      />,
+    );
+    expect(screen.getByTestId("central-linked-project-p1")).toBeInTheDocument();
+    expect(screen.getByTestId("central-linked-project-p2")).toBeInTheDocument();
+    expect(screen.getAllByTestId(/central-linked-project-/)).toHaveLength(2);
+  });
+
+  it("keeps same basenames distinct via full-path tooltips", () => {
+    render(
+      <UnifiedSkillCard
+        {...centralBaseProps}
+        linkedProjects={[
+          { project_id: "p1", path: "D:\\a\\PromptHub" },
+          { project_id: "p2", path: "D:\\b\\PromptHub" },
+        ]}
+      />,
+    );
+    const first = screen.getByTestId("central-linked-project-p1");
+    const second = screen.getByTestId("central-linked-project-p2");
+    expect(first).toHaveTextContent("PromptHub");
+    expect(second).toHaveTextContent("PromptHub");
+    expect(first).toHaveAttribute("title", "D:\\a\\PromptHub");
+    expect(second).toHaveAttribute("title", "D:\\b\\PromptHub");
+    expect(first.textContent).not.toContain("D:");
+    expect(second.textContent).not.toContain("D:");
+  });
+
+  it("falls back to the generic project label when the basename is empty", () => {
+    render(
+      <UnifiedSkillCard
+        {...centralBaseProps}
+        linkedProjects={[{ project_id: "root", path: "///" }]}
+      />,
+    );
+    const chip = screen.getByTestId("central-linked-project-root");
+    expect(chip).toHaveTextContent("项目");
+    expect(chip).toHaveAttribute("aria-label", "已安装到项目 项目");
+  });
+
+  it("omits the linked project row when the list is empty", () => {
+    const { rerender } = render(<UnifiedSkillCard {...centralBaseProps} />);
+    expect(screen.queryByTestId("central-linked-projects")).not.toBeInTheDocument();
+    rerender(
+      <UnifiedSkillCard {...centralBaseProps} linkedProjects={[]} />,
+    );
+    expect(screen.queryByTestId("central-linked-projects")).not.toBeInTheDocument();
+  });
+
+  it("shows linked project chips in compact density without idle-hiding", () => {
+    render(
+      <UnifiedSkillCard
+        {...centralBaseProps}
+        density="compact"
+        linkedProjects={[
+          { project_id: "p1", path: "D:\\work\\PromptHub" },
+        ]}
+      />,
+    );
+    const row = screen.getByTestId("central-linked-projects");
+    expect(row).toBeVisible();
+    expect(row.className).not.toMatch(/opacity-0/);
+    expect(row.className).not.toMatch(/hidden/);
+    expect(screen.getByText("PromptHub")).toBeVisible();
+  });
+
+  it("keeps linked project chips in list and grid layouts", () => {
+    const projects = [
+      { project_id: "p1", path: "/Users/me/PromptHub" },
+    ];
+    const { rerender } = render(
+      <UnifiedSkillCard
+        {...centralBaseProps}
+        linkedProjects={projects}
+      />,
+    );
+    expect(screen.getByText("PromptHub")).toBeInTheDocument();
+
+    rerender(
+      <UnifiedSkillCard
+        {...centralBaseProps}
+        linkedProjects={projects}
+        footer={{ repoName: "owner/repo" }}
+        platformIcons={{
+          agents: [],
+          linkedAgents: ["claude-code"],
+          skillId: "s",
+          onToggle: noop,
+          togglingAgentId: null,
+        }}
+      />,
+    );
+    expect(screen.getByText("PromptHub")).toBeInTheDocument();
+    expect(screen.getByText("owner/repo")).toBeInTheDocument();
+  });
+
   it("hides usage rank until lifetimeUsage is ready", () => {
     render(<UnifiedSkillCard {...platformBaseProps} />);
     expect(screen.queryByTestId("usage-rank")).not.toBeInTheDocument();
@@ -242,7 +368,7 @@ describe("UnifiedSkillCard", () => {
       />,
     );
     const rank = screen.getByTestId("usage-rank");
-    expect(rank).toHaveClass("absolute", "bottom-3.5", "right-3.5");
+    expect(rank).toHaveClass("absolute", "bottom-4", "right-4");
     expect(rank).toHaveTextContent("无记录");
     expect(rank).toHaveAttribute("aria-label", "全部已记录历史中无调用记录");
 
@@ -264,7 +390,7 @@ describe("UnifiedSkillCard", () => {
       />,
     );
     const rank = screen.getByTestId("usage-rank");
-    expect(rank).toHaveClass("absolute", "bottom-3.5", "right-3.5");
+    expect(rank).toHaveClass("absolute", "bottom-4", "right-4");
     expect(rank).toHaveTextContent("#2");
     expect(rank).toHaveTextContent("14");
     expect(rank).toHaveAttribute(
@@ -295,11 +421,12 @@ describe("UnifiedSkillCard", () => {
     const { container } = render(<UnifiedSkillCard {...platformBaseProps} />);
     expect(screen.getByText("中央技能库")).toBeInTheDocument();
     expect(screen.queryByText("符号链接")).not.toBeInTheDocument();
-    expect(container.querySelector(".bg-info")).not.toBeNull();
-    expect(container.querySelector(".bg-warning")).toBeNull();
+    expect(
+      container.querySelector('[data-slot="skill-card"][data-origin="central"]'),
+    ).not.toBeNull();
   });
 
-  it("paints a warning origin bar for plugin rows", () => {
+  it("marks plugin rows with the plugin origin and no colored side stripe", () => {
     const { container } = render(
       <UnifiedSkillCard
         {...platformBaseProps}
@@ -308,7 +435,11 @@ describe("UnifiedSkillCard", () => {
         isReadOnly
       />,
     );
-    expect(container.querySelector(".bg-warning")).not.toBeNull();
+    expect(
+      container.querySelector('[data-slot="skill-card"][data-origin="plugin"]'),
+    ).not.toBeNull();
+    // DESIGN.md: no colored side stripes; origin is the icon + text capsule.
+    expect(container.querySelector(".bg-warning")).toBeNull();
     expect(container.querySelector(".bg-info")).toBeNull();
   });
 });

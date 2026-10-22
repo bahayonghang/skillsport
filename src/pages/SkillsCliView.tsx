@@ -393,7 +393,7 @@ export function SkillsCliView() {
               <span>{t("skillsCli.updates.recoveryRequired")}</span>
               <Button
                 type="button"
-                variant="outline"
+                variant="glass"
                 size="sm"
                 onClick={() => {
                   const operationId =
@@ -427,7 +427,7 @@ export function SkillsCliView() {
               <span>{formatBackendError(updateError, t)}</span>
               <Button
                 type="button"
-                variant="outline"
+                variant="glass"
                 size="sm"
                 onClick={() => void useSkillsCliStore.getState().checkUpdates()}
               >
@@ -445,7 +445,7 @@ export function SkillsCliView() {
               <span>{formatBackendError(inventoryError, t)}</span>
               <Button
                 type="button"
-                variant="outline"
+                variant="glass"
                 size="sm"
                 onClick={() => void loadAll()}
               >
@@ -465,7 +465,7 @@ export function SkillsCliView() {
                   <div
                     key={index}
                     aria-hidden
-                    className="min-h-[76px] animate-pulse rounded-xl bg-muted/60"
+                    className="min-h-[76px] animate-pulse rounded-card bg-card"
                   />
                 ))}
               </div>

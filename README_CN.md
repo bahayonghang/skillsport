@@ -25,8 +25,17 @@
 - 支持扫描本地项目级 skill 库的 Discover 能力。
 - 支持 marketplace 浏览，以及带鉴权请求和重试回退的 GitHub 仓库导入。
 - 通过延迟查询、懒加载索引和虚拟列表提升大规模 skill 库搜索体验。
-- 提供中英文界面、Catppuccin 主题、强调色、首次引导和响应式导航。
+- 轻盈毛玻璃界面：薄荷到薰衣草的低饱和 canvas 上叠半透明面板，提供「浅色玻璃 / 深色玻璃」两套主题，正文默认无衬线字体 Geist，Windows 11 支持 Mica 窗口材质（Windows 10 使用不透明背景）。
+- 提供中英文界面、首次引导和响应式导航。
 - **中央技能库 V2（默认开启）**：支持结构化查询语法（`tag:`、`repo:`、`owner:`、`has:source` 等）、URL-as-state、保存视图、命令面板（`Ctrl+K`）、标签分组、列表分组视图（不分组 / 按仓库 / 按 owner / 按标签 / 按状态）。通过 Beta 徽章旁的"切回经典布局"链接，或在 DevTools localStorage 中设 `featureFlag.central.newLayout=off`，可退回 V1 布局。
+
+## Rules 管理
+
+Rules 页面在本机 Local 目标上管理平面的无条件 Markdown 规则。可以预览并导入 `~/.claude/rules/` 与 `~/.omp/agent/rules/` 中的现有规则，将共享内容保存到 `~/.skillport/rules/`，再编辑和预览正文。共享文件包含 OMP 所需的 `alwaysApply: true` 和 description。
+
+导入会保留工具原文件。分别启用 Claude Code 或 OMP 后，工具入口通过文件 symlink 指向共享规则。接管同内容的普通文件需要确认，并生成原始字节备份；异文文件和外部链接保留。Windows 需要允许创建文件软链接，权限不足时会显示错误。
+
+备份与恢复凭据分别保存在 `~/.skillport/rules/.backups/` 和 `~/.skillport/rules/.state/`。目标被外部修改后，恢复会停止。会话草稿在切页和切换目标后保留，关闭应用后清除。首版不支持 SSH、WSL、项目规则、条件规则、自定义配置根目录及 OMP profile。
 
 ## SSH 远程模式
 
@@ -51,9 +60,9 @@ SkillPort 可以通过 SSH 管理远程 Linux 或 macOS 用户目录里的全局
 
 ![平台技能视图](images/06.png)
 
-### 扫描本地项目技能库
+### 管理项目本地技能
 
-![项目技能库发现页](images/03.png)
+![项目技能视图](images/03.png)
 
 ### 浏览 marketplace 发布者与技能
 
@@ -177,7 +186,7 @@ xattr -dr com.apple.quarantine "/Applications/SkillPort.app"
 | 状态管理 | Zustand |
 | Markdown | react-markdown |
 | 国际化 | react-i18next、i18next-browser-languagedetector |
-| 主题 | Catppuccin 4 种风格 |
+| 主题 | 轻盈毛玻璃设计 token（浅色玻璃 / 深色玻璃） |
 | 后端 | Rust（serde、sqlx、chrono、uuid） |
 | 数据库 | SQLite via sqlx（WAL 模式） |
 | 路由 | react-router-dom v7 |
@@ -187,11 +196,11 @@ xattr -dr com.apple.quarantine "/Applications/SkillPort.app"
 ### 前置依赖
 
 - [Node.js](https://nodejs.org/) 26（见 `.node-version`）
-- [pnpm](https://pnpm.io/) 10.34.5
+- [pnpm](https://pnpm.io/) 最新稳定版
 - [Rust toolchain](https://rustup.rs/) 1.98.0（见 `rust-toolchain.toml`）
 - Tauri v2 系统依赖：<https://v2.tauri.app/start/prerequisites/>
 
-仓库工具链固定为 Node 26、pnpm 10.34.5 和 Rust 1.98.0。
+仓库固定 Node 26 和 Rust 1.98.0。pnpm 优先使用最新稳定版，仓库不声明固定版本。
 
 ### 安装依赖
 

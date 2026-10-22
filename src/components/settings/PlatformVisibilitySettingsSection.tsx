@@ -65,12 +65,12 @@ export function PlatformVisibilitySettingsSection({
             />
           </div>
 
-          <div className="rounded-lg border border-border/70 bg-muted/20 p-3 text-sm text-muted-foreground">
+          <div className="rounded-inner bg-accent p-3 text-sm text-muted-foreground">
             <p>{t("settings.platformVisibilityScope")}</p>
           </div>
 
           {groups.length === 0 ? (
-            <div className="rounded-lg border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
+            <div className="rounded-inner border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
               {t("settings.platformSearchEmpty")}
             </div>
           ) : (
@@ -108,14 +108,14 @@ function PlatformVisibilityRow({ agent, onToggle }: PlatformVisibilityRowProps) 
   const pathHint = getPlatformPathHint(agent.global_skills_dir);
 
   return (
-    <div className="flex items-center gap-3 rounded-md border border-border/60 bg-background px-3 py-2">
+    <div className="flex items-center gap-3 rounded-control bg-input-surface px-3 py-2">
       <PlatformIcon
         agentId={agent.id}
         className="size-4 shrink-0 text-muted-foreground"
       />
       <div className="min-w-0 flex-1">
         <div className="truncate text-sm font-medium">{agent.display_name}</div>
-        <div className="truncate text-xs text-muted-foreground">
+        <div className="truncate font-mono text-ui-meta text-muted-foreground">
           {pathHint}
         </div>
       </div>
@@ -150,7 +150,7 @@ function PlatformVisibilityUniversalRow({
   const pathHint = getPlatformPathHint(agent.global_skills_dir);
 
   return (
-    <div className="rounded-md border border-border/60 bg-background p-3">
+    <div className="rounded-control bg-input-surface p-3">
       <div className="flex items-center gap-3">
         <PlatformIcon
           agentId={agent.id}
@@ -158,7 +158,7 @@ function PlatformVisibilityUniversalRow({
         />
         <div className="min-w-0 flex-1">
           <div className="truncate text-sm font-medium">{agent.display_name}</div>
-          <div className="truncate text-xs text-muted-foreground">{pathHint}</div>
+          <div className="truncate font-mono text-ui-meta text-muted-foreground">{pathHint}</div>
           <div className="mt-0.5 text-xs text-muted-foreground">
             {t("settings.universalMembersSummary", {
               enabled: enabledMembers,
@@ -177,7 +177,7 @@ function PlatformVisibilityUniversalRow({
         />
       </div>
       {visibleMembers.length > 0 ? (
-        <div className="mt-3 space-y-2 border-t border-border/60 pt-3">
+        <div className="mt-3 space-y-2 border-t border-border pt-3">
           {visibleMembers.map((member) => (
             <PlatformVisibilityRow
               key={member.id}
@@ -225,12 +225,12 @@ function PlatformVisibilityGroup({
   const ToggleIcon = detailsCollapsed ? ChevronRight : ChevronDown;
 
   return (
-    <div className="rounded-lg border border-border/70">
-      <div className="flex items-start justify-between gap-3 border-b border-border/70 px-4 py-3">
+    <div className="rounded-inner bg-accent">
+      <div className="flex items-start justify-between gap-3 border-b border-border px-4 py-3">
         <div className="flex min-w-0 flex-1 items-start gap-2">
           <button
             type="button"
-            className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-md border border-border/60 bg-background text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+            className="focus-ring mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-control bg-input-surface text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             aria-controls={detailsId}
             aria-expanded={!detailsCollapsed}
             aria-label={t(
@@ -259,7 +259,7 @@ function PlatformVisibilityGroup({
         <div className="flex shrink-0 items-center gap-2">
           <button
             type="button"
-            className="rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+            className="focus-ring rounded-full px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
             aria-controls={detailsId}
             aria-expanded={!detailsCollapsed}
             onClick={() => setIsCollapsed((value) => !value)}

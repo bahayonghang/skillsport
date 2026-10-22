@@ -55,6 +55,49 @@ describe("projectsStore", () => {
     });
   });
 
+  it("resetForTargetChange clears projects without dropping the scan listener", async () => {
+    vi.mocked(invoke).mockResolvedValueOnce(sampleProject);
+    await useProjectsStore.getState().addProject("D:/Code/demo");
+    expect(scannedHandler).not.toBeNull();
+
+    useProjectsStore.getState().resetForTargetChange();
+
+    const state = useProjectsStore.getState();
+    expect(state.projects).toEqual([]);
+    expect(state.currentProjectId).toBeNull();
+    expect(state.skillsByProject).toEqual({});
+    expect(state.scanningProjectIds.size).toBe(0);
+
+    vi.mocked(invoke).mockResolvedValueOnce([sampleSkill]);
+    scannedHandler!({ payload: { projectId: sampleProject.id, skillCount: 1 } });
+    await vi.waitFor(() =>
+      expect(useProjectsStore.getState().skillsByProject[sampleProject.id]).toEqual([
+        sampleSkill,
+      ]),
+    );
+  });
+
+  it("drops a project list that arrives after the target reset", async () => {
+    let resolveList: ((projects: Project[]) => void) | undefined;
+    vi.mocked(invoke).mockImplementationOnce(
+      () =>
+        new Promise((resolve) => {
+          resolveList = resolve as (projects: Project[]) => void;
+        }),
+    );
+
+    const pending = useProjectsStore.getState().loadProjects();
+    await vi.waitFor(() => {
+      expect(resolveList).toBeTypeOf("function");
+    });
+    useProjectsStore.getState().resetForTargetChange();
+    resolveList?.([sampleProject]);
+    await pending;
+
+    expect(useProjectsStore.getState().projects).toEqual([]);
+    expect(useProjectsStore.getState().isLoading).toBe(false);
+  });
+
   it("has correct initial state", () => {
     const state = useProjectsStore.getState();
     expect(state.projects).toEqual([]);
@@ -62,6 +105,17 @@ describe("projectsStore", () => {
     expect(state.skillsByProject).toEqual({});
     expect(state.scanningProjectIds.size).toBe(0);
     expect(state.isLoading).toBe(false);
+  });
+
+  it("keeps the current project list when list_projects is not an array", async () => {
+    useProjectsStore.setState({ projects: [sampleProject] });
+    vi.mocked(invoke).mockResolvedValueOnce(undefined);
+
+    await useProjectsStore.getState().loadProjects();
+
+    expect(useProjectsStore.getState().projects).toEqual([sampleProject]);
+    expect(useProjectsStore.getState().isLoading).toBe(false);
+    expect(useProjectsStore.getState().error).toBeTruthy();
   });
 
   it("loadProjects fetches list_projects and sets store", async () => {

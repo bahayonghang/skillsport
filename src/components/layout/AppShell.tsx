@@ -14,6 +14,7 @@ import { useTargetStore } from "@/stores/targetStore";
 import { useSkillStore } from "@/stores/skillStore";
 import { useMarketplaceStore } from "@/stores/marketplaceStore";
 import { useImportIntentStore } from "@/stores/importIntentStore";
+import { useProjectsStore } from "@/stores/projectsStore";
 import { useSkillsCliStore } from "@/stores/skillsCliStore";
 import { isTauriRuntime, listen } from "@/lib/ipc";
 
@@ -31,7 +32,8 @@ function disposeListener(unlisten?: (() => void | Promise<void>) | null) {
 }
 
 /**
- * Top-level app shell: TopBar + icon sidebar + scrollable main content area.
+ * Top-level app shell: fixed glass canvas + transparent TopBar + floating
+ * glass sidebar + main content area.
  * Triggers the initial platform scan on mount.
  */
 export function AppShell() {
@@ -62,12 +64,16 @@ export function AppShell() {
   const clearGitHubBranchForTargetChange = useImportIntentStore(
     (s) => s.setGitHubBranch,
   );
+  const loadProjects = useProjectsStore((s) => s.loadProjects);
+  const resetProjectsForTargetChange = useProjectsStore(
+    (s) => s.resetForTargetChange,
+  );
   const loadTargets = useTargetStore((s) => s.loadTargets);
   const activeTargetId = useTargetStore((s) => s.activeTarget.id);
   const [hasLoadedTargets, setHasLoadedTargets] = useState(false);
   const lastTargetIdRef = useRef<string | null>(null);
   const isInitialTargetLoadRef = useRef(true);
-  const startupActionsRef = useRef({ initialize, loadTargets });
+  const startupActionsRef = useRef({ initialize, loadTargets, loadProjects });
   const handleGlobalRescan = useCallback(async () => {
     await rescan();
     await loadCentralSkills();
@@ -76,12 +82,18 @@ export function AppShell() {
   useEffect(() => {
     let cancelled = false;
     void (async () => {
-      const { initialize: initialInitialize, loadTargets: initialLoadTargets } =
-        startupActionsRef.current;
+      const {
+        initialize: initialInitialize,
+        loadTargets: initialLoadTargets,
+        loadProjects: initialLoadProjects,
+      } = startupActionsRef.current;
       await initialLoadTargets().catch(() => undefined);
       if (cancelled) return;
       setHasLoadedTargets(true);
-      await initialInitialize().catch(() => undefined);
+      await Promise.all([
+        initialInitialize().catch(() => undefined),
+        initialLoadProjects().catch(() => undefined),
+      ]);
     })();
     return () => {
       cancelled = true;
@@ -112,16 +124,20 @@ export function AppShell() {
     resetSkillsForTargetChange();
     resetMarketplaceForTargetChange();
     resetSkillsCliForTargetChange();
+    resetProjectsForTargetChange();
     clearGitHubBranchForTargetChange("");
     void handleGlobalRescan();
+    void loadProjects();
   }, [
     activeTargetId,
     clearGitHubBranchForTargetChange,
     handleGlobalRescan,
     hasLoadedTargets,
+    loadProjects,
     resetCentralForTargetChange,
     resetMarketplaceForTargetChange,
     resetPlatformForTargetChange,
+    resetProjectsForTargetChange,
     resetSkillsCliForTargetChange,
     resetSkillsForTargetChange,
   ]);
@@ -188,12 +204,23 @@ export function AppShell() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-background text-foreground overflow-hidden">
+    // C5 D-S1: the L1 canvas is its own fixed layer behind the content, so it
+    // never scrolls with <main> (and stays the element html[data-window-
+    // material="mica"] makes translucent). The transparent TopBar row sits
+    // directly on it; below it the floating sidebar panel keeps a 12px gap to
+    // the left / bottom window edges, and <main> keeps 12px to the right /
+    // bottom. Pages bring their own 24px gutter.
+    <div className="relative isolate flex h-screen flex-col overflow-hidden text-foreground">
+      <div
+        aria-hidden="true"
+        data-slot="app-canvas"
+        className="glass-canvas pointer-events-none fixed inset-0 -z-10"
+      />
       <TopBar
         onSearchClick={() => setIsSearchOpen(true)}
         onShortcutsClick={() => setIsShortcutsOpen(true)}
       />
-      <div className="flex flex-1 min-h-0">
+      <div className="flex min-h-0 flex-1 gap-3 px-3 pb-3">
         <Sidebar />
         <main ref={mainRef} className="flex-1 min-h-0 min-w-0 overflow-hidden">
           <Outlet />

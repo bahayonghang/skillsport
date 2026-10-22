@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 
 import { ActivityHeatmap } from "@/components/usage/ActivityHeatmap";
@@ -9,6 +9,7 @@ import { RecentCallsFeed } from "@/components/usage/RecentCallsFeed";
 import { SkillUsageDetailPanel } from "@/components/usage/SkillUsageDetailPanel";
 import { SkillUsageTable } from "@/components/usage/SkillUsageTable";
 import { UsageMetricStrip } from "@/components/usage/UsageMetricStrip";
+import { UsageFilterButton } from "@/components/usage/UsageFilterControls";
 import { useTargetStore } from "@/stores/targetStore";
 import { useUsageStore } from "@/stores/usageStore";
 import type {
@@ -22,6 +23,7 @@ const wrap = (ui: React.ReactNode) => <MemoryRouter>{ui}</MemoryRouter>;
 
 const initialUsageActions = {
   refresh: useUsageStore.getState().refresh,
+  loadDetail: useUsageStore.getState().loadDetail,
   subscribeTargetChanged: useUsageStore.getState().subscribeTargetChanged,
   subscribeScanCompleted: useUsageStore.getState().subscribeScanCompleted,
 };
@@ -140,6 +142,27 @@ describe("UsageMetricStrip", () => {
   });
 });
 
+describe("UsageFilterButton", () => {
+  it("preserves the minimum target width over the inherited desktop size variant", () => {
+    render(<UsageFilterButton pressed={false}>All</UsageFilterButton>);
+    const button = screen.getByRole("button", { name: "All" });
+    expect(button).toHaveClass("min-w-[40px]", "md:min-w-[40px]");
+    expect(button).not.toHaveClass("md:min-w-0");
+  });
+
+  it("keeps the selected fill on dark hover over the inherited ghost variant", () => {
+    render(<UsageFilterButton pressed>All</UsageFilterButton>);
+    const button = screen.getByRole("button", { name: "All" });
+    expect(button).toHaveAttribute("aria-pressed", "true");
+    expect(button).toHaveClass(
+      "bg-primary-tint",
+      "hover:bg-primary-tint",
+      "dark:hover:bg-primary-tint",
+    );
+    expect(button).not.toHaveClass("dark:hover:bg-muted/50");
+  });
+});
+
 describe("platform and provider controls", () => {
   const providers = [
     {
@@ -175,9 +198,44 @@ describe("platform and provider controls", () => {
 
     expect(screen.getByTestId("platform-pill-claude-code")).toBeEnabled();
     expect(screen.getByTestId("platform-pill-antigravity")).toBeDisabled();
+    expect(screen.getByTestId("platform-pill-all")).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByTestId("platform-pill-claude-code")).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByTestId("platform-pill-antigravity")).toHaveAttribute("title");
     expect(screen.getByTestId("provider-row-antigravity").textContent).toMatch(
       /未检测到|not detected/,
     );
+  });
+
+  it("exposes the selected platform to keyboard and assistive users", () => {
+    const onSelect = vi.fn();
+    render(
+      <PlatformFilterBar
+        providers={providers}
+        selected="Claude Code"
+        onSelect={onSelect}
+      />,
+    );
+    const selected = screen.getByTestId("platform-pill-claude-code");
+    expect(selected).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByTestId("platform-pill-all")).toHaveAttribute("aria-pressed", "false");
+    fireEvent.click(screen.getByTestId("platform-pill-all"));
+    expect(onSelect).toHaveBeenCalledWith(null);
+  });
+
+  it("keeps the secondary provider action reachable at every font scale", () => {
+    const onSelect = vi.fn();
+    render(
+      <ProviderHealthList
+        providers={providers}
+        activeSource="Claude Code"
+        onSelect={onSelect}
+      />,
+    );
+    const button = within(screen.getByTestId("provider-row-claude-code")).getByRole("button");
+    expect(button).toHaveAttribute("aria-pressed", "true");
+    expect(button).toHaveClass("min-h-[40px]", "focus-visible:ring-2");
+    fireEvent.click(button);
+    expect(onSelect).toHaveBeenCalledWith("Claude Code");
   });
 });
 
@@ -222,7 +280,7 @@ describe("SkillUsageTable", () => {
       .getByTestId("usage-row-review")
       .querySelector("button")!;
     fireEvent.click(reviewButton);
-    expect(onSelect).toHaveBeenCalledWith("review", reviewButton);
+    expect(onSelect).toHaveBeenCalledWith("review", reviewButton, expect.any(Function));
     expect(reviewButton).toHaveAttribute("aria-pressed", "true");
   });
 
@@ -354,6 +412,13 @@ describe("ActivityHeatmap", () => {
     cells[0].focus();
     fireEvent.keyDown(cells[0], { key: "ArrowRight" });
     expect(cells[7]).toHaveFocus();
+    fireEvent.keyDown(cells[7], { key: "ArrowDown" });
+    expect(cells[8]).toHaveFocus();
+    fireEvent.keyDown(cells[8], { key: "ArrowUp" });
+    expect(cells[7]).toHaveFocus();
+    fireEvent.keyDown(cells[7], { key: "ArrowLeft" });
+    expect(cells[0]).toHaveFocus();
+    expect(cells.filter((cell) => cell.tabIndex === 0)).toHaveLength(1);
     expect(document.body.textContent).toMatch(/少|Less/);
     expect(document.body.textContent).toMatch(/多|More/);
     expect(cells[5]).toHaveAttribute("data-level", "5");
@@ -364,12 +429,12 @@ describe("ActivityHeatmap", () => {
     const { rerender } = render(<ActivityHeatmap days={days} />);
 
     const grid = screen.getByTestId("heatmap-grid");
-    expect(grid.className).toContain("auto-cols-[0.75rem]");
+    expect(grid.className).toContain("auto-cols-[1rem]");
     expect(grid.className).not.toContain("auto-cols-fr");
     expect(grid.className).not.toContain("flex-1");
 
     const cell = screen.getAllByRole("gridcell")[0];
-    expect(cell.className).toContain("size-3");
+    expect(cell.className).toContain("size-4");
     expect(cell.className).not.toContain("aspect-square");
     expect(cell.className).not.toMatch(/(?:^|\s)w-full(?:\s|$)/);
 
@@ -381,6 +446,45 @@ describe("ActivityHeatmap", () => {
     expect(screen.getAllByRole("gridcell")[0].className).not.toContain(
       "aspect-square",
     );
+  });
+
+  it("allocates month labels their week spans and omits a single-week residual month", () => {
+    const days = Array.from({ length: 112 }, (_, index) => ({
+      date: new Date(Date.UTC(2026, 6, 27) + index * 86_400_000)
+        .toISOString()
+        .slice(0, 10),
+      count: 0,
+    }));
+    render(<ActivityHeatmap days={days} />);
+    const labels = screen.getByTestId("heatmap-months").querySelectorAll("span");
+    expect(labels).toHaveLength(4);
+    expect(labels[0].style.gridColumn).toBe("2 / span 5");
+    expect(labels[1].style.gridColumn).toBe("7 / span 4");
+    expect(labels[2].style.gridColumn).toBe("11 / span 4");
+    expect(labels[3].style.gridColumn).toBe("15 / span 2");
+    expect(screen.getAllByRole("gridcell")).toHaveLength(112);
+    expect(screen.getByTestId("heatmap-cell-2026-07-27")).toHaveAttribute("data-level", "0");
+    const plot = screen.getByTestId("heatmap-plot");
+    expect(plot).toContainElement(screen.getByTestId("heatmap-grid"));
+    expect(plot).toContainElement(screen.getByTestId("heatmap-legend"));
+  });
+
+  it("keeps every date across a year boundary and renders the activity empty state", () => {
+    const days = Array.from({ length: 112 }, (_, index) => ({
+      date: new Date(Date.UTC(2026, 11, 28) + index * 86_400_000)
+        .toISOString()
+        .slice(0, 10),
+      count: 0,
+    }));
+    const { rerender } = render(<ActivityHeatmap days={days} compact />);
+    expect(screen.getAllByRole("gridcell")).toHaveLength(112);
+    expect(screen.getByTestId("heatmap-cell-2027-01-01")).toBeInTheDocument();
+    expect(screen.getByTestId("heatmap-months").firstElementChild).toHaveStyle({
+      gridColumn: "2 / span 4",
+    });
+    rerender(<ActivityHeatmap days={[]} />);
+    expect(screen.queryByRole("gridcell")).not.toBeInTheDocument();
+    expect(document.body.textContent).toMatch(/活动|activity/i);
   });
 });
 
@@ -418,6 +522,20 @@ describe("detail and recent actions", () => {
     );
   });
 
+  it("preserves repeated identical calls without duplicate keys and keeps existing triggers when a newer call arrives", () => {
+    const errors = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    try {
+      const { rerender } = render(wrap(<RecentCallsFeed calls={[recent[0], recent[0]]} onSelect={vi.fn()} />));
+      const original = within(screen.getByTestId("recent-feed")).getAllByRole("button", { name: /git-commit.*Codex CLI/ });
+      expect(original).toHaveLength(2);
+      rerender(wrap(<RecentCallsFeed calls={[recent[1], recent[0], recent[0]]} onSelect={vi.fn()} />));
+      expect(within(screen.getByTestId("recent-feed")).getAllByRole("button", { name: /git-commit.*Codex CLI/ })).toEqual(original);
+      expect(errors).not.toHaveBeenCalled();
+    } finally {
+      errors.mockRestore();
+    }
+  });
+
   it("renders project session counts, static estimate and close action", () => {
     const onClose = vi.fn();
     render(
@@ -435,6 +553,30 @@ describe("detail and recent actions", () => {
     expect(screen.getByTestId("usage-detail-panel")).toHaveTextContent("420");
     fireEvent.click(screen.getByRole("button", { name: /关闭|Close usage/ }));
     expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it("can close a pending detail and replaces its skeleton after a failed request", () => {
+    const onClose = vi.fn();
+    const { rerender } = render(
+      wrap(<SkillUsageDetailPanel detail={null} loading onClose={onClose} />),
+    );
+    fireEvent.click(screen.getByRole("button", { name: /关闭|Close usage/ }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+
+    rerender(
+      wrap(
+        <SkillUsageDetailPanel
+          detail={null}
+          loading={false}
+          error="detail failed"
+          onClose={onClose}
+        />,
+      ),
+    );
+    expect(screen.getByRole("alert")).toHaveTextContent("detail failed");
+    expect(screen.queryByTestId("usage-detail-loading")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /关闭|Close usage/ }));
+    expect(onClose).toHaveBeenCalledTimes(2);
   });
 });
 
@@ -472,6 +614,96 @@ describe("SkillUsageView", () => {
 
     expect(screen.getByRole("alert")).toHaveTextContent("scan failed");
     expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.queryByText(/^0$/)).not.toBeInTheDocument();
+  });
+
+  it("shows a failed source request while preserving the previous ranking", async () => {
+    useUsageStore.setState({
+      overview: {
+        kpis: {
+          totalCalls: 40,
+          uniqueSkills: 3,
+          uniqueProjects: 2,
+          uniqueSources: 2,
+          uniqueSessions: 12,
+        },
+        topSkills: skills,
+        heatmap: [],
+        lastScanMs: Date.now(),
+      },
+      selectedSource: "Claude Code",
+      error: "source failed",
+      refresh: vi.fn(async () => null),
+      subscribeTargetChanged: vi.fn(async () => () => undefined),
+    });
+    const { SkillUsageView } = await import("@/pages/SkillUsageView");
+    render(wrap(<SkillUsageView />));
+    expect(screen.getByRole("alert")).toHaveTextContent("source failed");
+    expect(screen.getAllByTestId(/^usage-row-/)).toHaveLength(3);
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /刷新|Refresh now/ })).toBeEnabled();
+  });
+
+  it("restores row focus when a failed detail is closed", async () => {
+    useUsageStore.setState({
+      overview: {
+        kpis: {
+          totalCalls: 40,
+          uniqueSkills: 3,
+          uniqueProjects: 2,
+          uniqueSources: 2,
+          uniqueSessions: 12,
+        },
+        topSkills: skills,
+        heatmap: [],
+        lastScanMs: Date.now(),
+      },
+      refresh: vi.fn(async () => null),
+      subscribeTargetChanged: vi.fn(async () => () => undefined),
+      loadDetail: vi.fn(async (skill) => {
+        useUsageStore.setState({
+          selectedSkill: skill,
+          detail: null,
+          detailLoading: false,
+          error: "detail failed",
+        });
+      }),
+    });
+    const { SkillUsageView } = await import("@/pages/SkillUsageView");
+    render(wrap(<SkillUsageView />));
+    const rowButton = within(screen.getByTestId("usage-row-review")).getByRole("button");
+    fireEvent.click(rowButton);
+    expect(screen.getByTestId("usage-detail-error")).toHaveTextContent("detail failed");
+    fireEvent.click(screen.getByRole("button", { name: /关闭|Close usage/ }));
+    await waitFor(() => expect(rowButton).toHaveFocus());
+    expect(screen.queryByTestId("usage-detail-error")).not.toBeInTheDocument();
+  });
+
+  it.each([true, false])("keeps a recent detail trigger mounted and restores its focus after closing: pending=%s", async (pending) => {
+    useUsageStore.setState({
+      overview: {
+        kpis: { totalCalls: 40, uniqueSkills: 3, uniqueProjects: 2, uniqueSources: 2, uniqueSessions: 12 },
+        topSkills: skills, heatmap: [], lastScanMs: Date.now(),
+      },
+      recent,
+      refresh: vi.fn(async () => null),
+      subscribeTargetChanged: vi.fn(async () => () => undefined),
+      loadDetail: vi.fn(async (skill) => {
+        useUsageStore.setState({
+          selectedSkill: skill, detail: null, detailLoading: pending,
+          error: pending ? null : "detail failed",
+        });
+      }),
+    });
+    const { SkillUsageView } = await import("@/pages/SkillUsageView");
+    render(wrap(<SkillUsageView />));
+    const rowButton = within(screen.getByTestId(`recent-row-${recent[0].skill}-${recent[0].timestampMs}`))
+      .getByRole("button", { name: /git-commit.*Codex CLI/ });
+    rowButton.focus();
+    fireEvent.click(rowButton);
+    expect(rowButton.isConnected).toBe(true);
+    fireEvent.click(screen.getByRole("button", { name: /关闭|Close usage/ }));
+    await waitFor(() => expect(rowButton).toHaveFocus());
   });
 
   it("shows remote cached state and keeps provider health secondary", async () => {
@@ -598,5 +830,8 @@ describe("SkillUsageView", () => {
     expect(topSkills?.className).not.toContain("row-span");
     expect(heatmap?.className).toContain("contain-layout");
     expect(unused?.className).not.toContain("contain-layout");
+    expect(
+      screen.getByRole("region", { name: /全部已记录|All recorded/ }).closest("header"),
+    ).toBeInTheDocument();
   });
 });

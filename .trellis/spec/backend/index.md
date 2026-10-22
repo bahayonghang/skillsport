@@ -3,8 +3,10 @@
 ## Guidelines
 
 - [Backend Layer Boundaries](./layer-boundaries.md)
+- [Rules 文件库与恢复契约](./rules-management.md)
 - [Central Skill Tags](./central-skill-tags.md)
 - [SQL-Backed Central Skill Pagination](./central-skills-pagination.md)
+- [Central Project Install Visibility Contract](./central-project-install-visibility.md)
 - [Best-Effort 写入约定](./best-effort-writes.md)
 - [重 IO 的 spawn_blocking 约定](./spawn-blocking-io.md)
 - [域错误枚举约定（thiserror）](./domain-error-enums.md)

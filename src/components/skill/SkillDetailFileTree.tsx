@@ -134,14 +134,14 @@ function TreeNode({
       <div
         data-testid={`file-tree-entry-${entry.name}`}
         data-file-kind={presentation.kind}
-        className="flex min-w-0 items-start gap-1 rounded-md py-1 pr-1 text-xs text-foreground hover:bg-muted/40"
+        className="flex min-w-0 items-start gap-1 rounded-control py-1 pr-1 text-xs text-foreground hover:bg-accent"
         style={{ paddingLeft: `${depth * 14 + 6}px` }}
       >
         {isDirectory ? (
           <button
             type="button"
             onClick={() => setExpanded((value) => !value)}
-            className="flex min-w-0 flex-1 items-start gap-1.5 rounded px-1 py-0.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+            className="flex min-w-0 flex-1 items-start gap-1.5 rounded-control px-1 py-0.5 text-left focus-ring"
             aria-label={t(expanded ? "detail.collapseDirectory" : "detail.expandDirectory", {
               name: entry.name,
             })}
@@ -159,7 +159,7 @@ function TreeNode({
           <button
             type="button"
             onClick={() => onOpenPath(entry.path)}
-            className="flex min-w-0 flex-1 items-start gap-1.5 rounded px-1 py-0.5 text-left hover:text-primary-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background"
+            className="flex min-w-0 flex-1 items-start gap-1.5 rounded-control px-1 py-0.5 text-left hover:text-primary-text focus-ring"
             title={entry.path}
             aria-label={t("detail.openTreePath", { name: entry.name })}
           >
@@ -172,7 +172,7 @@ function TreeNode({
           <button
             type="button"
             onClick={() => onOpenPath(entry.path)}
-            className="mt-0.5 shrink-0 rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="mt-0.5 shrink-0 rounded-control p-1 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-ring"
             title={entry.path}
             aria-label={t("detail.openTreePath", { name: entry.name })}
           >
@@ -214,7 +214,7 @@ export function SkillDetailFileTree({
 
   return (
     <section aria-label={t("detail.fileTreeTitle")} aria-busy={isLoading}>
-      <div className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+      <div className="mb-2 text-xs font-semibold text-muted-foreground">
         {t("detail.fileTreeTitle")}
       </div>
       <div className={cn("min-w-0", isLoading && "opacity-70")}>

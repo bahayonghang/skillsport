@@ -620,7 +620,7 @@ export function UpdateCenterDialog() {
             scopeEnabled={scopeEnabled}
           />
 
-          <div className="min-h-[20rem] rounded-xl border border-border p-4 text-sm">
+          <div className="bg-accent min-h-[20rem] rounded-inner p-4 text-sm">
             {error ? (
               <p className="mb-2 text-xs text-destructive-text" role="alert">
                 {formatBackendError(error, t)}

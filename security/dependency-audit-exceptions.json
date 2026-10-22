@@ -12,5 +12,26 @@
     "owner": "lyh",
     "reason": "rust_decimal 1.41.0 的可选 rkyv 0.7 闭包保留在 Cargo.lock；cargo tree --locked -i rkyv@0.7.46 与增加 --target all 后均为空。rkyv 0.7 线无修复版本，RustSec 的修复版本为 0.8.17 及以上。",
     "expires": "2026-11-30"
+  },
+  {
+    "ecosystem": "cargo",
+    "advisory": "RUSTSEC-2026-0367",
+    "owner": "lyh",
+    "reason": "zip 4.6.1 仅由 tauri-plugin-updater 2.10.1（当前最新稳定版，3.x 仍为 alpha）引入；应用直接依赖已升级到 zip 9.0.5。updater 只在 Windows 上、且下载内容通过 minisign 签名校验后为 .zip 时才调用 ZipArchive::extract；本仓库发布的 latest.json 指向原始 NSIS .exe，不走 zip 路径。该 advisory 描述的是 Unix SUID/SGID 位或符号链接越界解压，攻击面需要已签名的更新包。tauri-plugin-updater 发布使用 zip ≥ 9 的稳定版后移除。",
+    "expires": "2026-11-30"
+  },
+  {
+    "ecosystem": "cargo",
+    "advisory": "RUSTSEC-2026-0368",
+    "owner": "lyh",
+    "reason": "zip 4.6.1 仅由 tauri-plugin-updater 2.10.1（当前最新稳定版，3.x 仍为 alpha）引入；应用直接依赖已升级到 zip 9.0.5。updater 只在 Windows 上、且下载内容通过 minisign 签名校验后为 .zip 时才调用 ZipArchive::extract；本仓库发布的 latest.json 指向原始 NSIS .exe，不走 zip 路径。该 advisory 描述的是 Unix SUID/SGID 位或符号链接越界解压，攻击面需要已签名的更新包。tauri-plugin-updater 发布使用 zip ≥ 9 的稳定版后移除。",
+    "expires": "2026-11-30"
+  },
+  {
+    "ecosystem": "cargo",
+    "advisory": "RUSTSEC-2026-0369",
+    "owner": "lyh",
+    "reason": "zip 4.6.1 仅由 tauri-plugin-updater 2.10.1（当前最新稳定版，3.x 仍为 alpha）引入；应用直接依赖已升级到 zip 9.0.5。updater 只在 Windows 上、且下载内容通过 minisign 签名校验后为 .zip 时才调用 ZipArchive::extract；本仓库发布的 latest.json 指向原始 NSIS .exe，不走 zip 路径。该 advisory 描述的是 Unix SUID/SGID 位或符号链接越界解压，攻击面需要已签名的更新包。tauri-plugin-updater 发布使用 zip ≥ 9 的稳定版后移除。",
+    "expires": "2026-11-30"
   }
 ]

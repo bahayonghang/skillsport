@@ -36,7 +36,7 @@ export function PlatformDuplicatesTabPanel({
         return (
           <section
             key={key}
-            className="rounded-xl border border-border bg-background p-3"
+            className="rounded-inner bg-accent p-3"
           >
             <div className="flex items-center justify-between gap-2 text-sm font-medium text-foreground">
               <span>
@@ -55,7 +55,7 @@ export function PlatformDuplicatesTabPanel({
                 return (
                   <label
                     key={path}
-                    className="flex cursor-pointer items-center gap-2 rounded-lg border border-border/70 px-2 py-1.5 text-xs"
+                    className="flex cursor-pointer items-center gap-2 rounded-inner px-2 py-1.5 text-xs"
                   >
                     <Checkbox
                       checked={checked}

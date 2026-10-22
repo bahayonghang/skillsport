@@ -5,6 +5,10 @@ import { ArrowUpRight, Unlink } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { UnusedSkillUnlinkDialog } from "@/components/usage/UnusedSkillUnlinkDialog";
+import {
+  UsageFilterButton as Chip,
+  UsageFilterGroup as ChipGroup,
+} from "@/components/usage/UsageFilterControls";
 import { formatUsageRelativeTime } from "@/components/usage/usageFormat";
 import { UsageMatchStatus } from "@/components/usage/SkillUsageTable";
 import {
@@ -29,12 +33,8 @@ type SortMode = "idle" | "size" | "name";
 const DAY_MS = 86_400_000;
 const THRESHOLD_OPTIONS: ThresholdDays[] = [30, 60, 90];
 
-/**
- * <40px 图标按钮的 40px 热区扩展（icon-control-hit-area.md 基准模式）；
- * 行操作区按钮相邻排列时配合 gap-2 保证中心距 ≥40px。
- */
-const HIT_AREA_CLASS =
-  "relative after:absolute after:left-1/2 after:top-1/2 after:size-10 after:-translate-x-1/2 after:-translate-y-1/2 after:content-['']";
+/** 每个操作占独立 40px 按钮槽，根字号缩小时仍保留可见与有效热区。 */
+const ACTION_BUTTON_CLASS = "size-10 min-h-[40px] min-w-[40px] md:size-10";
 
 interface UnusedSkillsPanelProps {
   report: UnusedSkillsReport | null;
@@ -130,7 +130,7 @@ export function UnusedSkillsPanel({
       <div className={cn("px-3 py-3", className)}>
         <div className="animate-pulse space-y-2 motion-reduce:animate-none">
           {[0, 1, 2].map((index) => (
-            <div key={index} className="h-9 rounded bg-muted/30" />
+            <div key={index} className="h-9 rounded-control bg-accent" />
           ))}
         </div>
         <p className="mt-3 text-center text-xs text-muted-foreground">
@@ -151,7 +151,7 @@ export function UnusedSkillsPanel({
   }
 
   return (
-    <div className={cn("flex min-h-0 flex-col", className)}>
+    <div className={cn("@container/unused flex min-h-0 flex-col", className)}>
       <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-3 py-2">
         <span className="text-xs text-muted-foreground">
           {statusFilter === "all"
@@ -244,9 +244,9 @@ export function UnusedSkillsPanel({
 }
 
 // 行/表头共用网格：State 列加宽到 6.5rem 保证徽章全文可读，操作列 6.5rem
-// 稳定容纳 32px 打开按钮、gap-2 与 unlink 入口按钮。
+// 以卡片宽度切换列数，操作列容纳两个独立 40px 热区与 gap-2。
 const ROW_GRID =
-  "grid grid-cols-[minmax(8rem,1fr)_3.5rem_4.5rem_6.5rem] gap-2 md:grid-cols-[minmax(9rem,1fr)_5.5rem_4rem_6rem_5rem_6.5rem_6.5rem]";
+  "grid grid-cols-[minmax(8rem,1fr)_3.5rem_4.5rem_minmax(88px,6.5rem)] gap-2 @3xl/unused:grid-cols-[minmax(9rem,1fr)_5.5rem_4rem_6rem_5rem_6.5rem_minmax(88px,6.5rem)]";
 
 function UnusedSection({
   title,
@@ -268,29 +268,29 @@ function UnusedSection({
   if (items.length === 0) return null;
   return (
     <section>
-      <h3 className="border-b border-border bg-muted/20 px-3 py-1.5 text-xs font-medium text-muted-foreground">
+      <h3 className="border-b border-border bg-accent px-3 py-1.5 text-xs font-medium text-muted-foreground">
         {title} · {items.length}
       </h3>
       <div
         className={cn(
           ROW_GRID,
-          "border-b border-border px-3 py-2 text-ui-meta text-muted-foreground",
+          "border-b border-border px-3 py-2 text-xs text-muted-foreground",
         )}
       >
         <span>{t("skillUsage.unused.columns.skill")}</span>
-        <span className="hidden md:block">
+        <span className="hidden @3xl/unused:block">
           {t("skillUsage.unused.columns.match")}
         </span>
         <span className="text-right">
           {t("skillUsage.unused.columns.calls")}
         </span>
-        <span className="hidden text-right md:block">
+        <span className="hidden text-right @3xl/unused:block">
           {t("skillUsage.unused.columns.estimate")}
         </span>
         <span className="text-right">
           {t("skillUsage.unused.columns.lastUsed")}
         </span>
-        <span className="hidden md:block">
+        <span className="hidden @3xl/unused:block">
           {t("skillUsage.unused.columns.status")}
         </span>
         <span className="sr-only">{t("skillUsage.unused.columns.actions")}</span>
@@ -309,7 +309,7 @@ function UnusedSection({
             <li
               key={`${entry.origin}-${entry.name}`}
               data-testid={`unused-row-${entry.origin}-${entry.name}`}
-              className={cn("group/row", selected && "bg-primary/7")}
+              className={cn("hover:bg-accent", selected && "bg-primary-tint")}
             >
               <div className={cn(ROW_GRID, "items-stretch px-3")}>
                 <button
@@ -318,7 +318,7 @@ function UnusedSection({
                   onClick={(event) =>
                     onSelect(entry.name, event.currentTarget)
                   }
-                  className="col-span-3 grid min-w-0 grid-cols-subgrid items-center py-2.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring md:col-span-6"
+                  className="col-span-3 grid min-h-[40px] min-w-0 grid-cols-subgrid items-center py-2.5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring @3xl/unused:col-span-6"
                 >
                   <span className="min-w-0 pr-2">
                     <span className="block truncate text-sm font-medium text-foreground">
@@ -333,13 +333,13 @@ function UnusedSection({
                   </span>
                   <UsageMatchStatus
                     status={entry.matchStatus}
-                    className="hidden md:flex"
+                    className="hidden @3xl/unused:flex"
                   />
                   <span className="text-right text-sm font-medium tabular-nums">
                     {entry.callCount.toLocaleString()}
                   </span>
                   <span
-                    className="hidden text-right text-xs tabular-nums text-muted-foreground md:block"
+                    className="hidden text-right text-xs tabular-nums text-muted-foreground @3xl/unused:block"
                     title={
                       entry.staticTokenEstimate === null
                         ? t("skillUsage.staticEstimateUnavailable")
@@ -360,54 +360,56 @@ function UnusedSection({
                   </span>
                   <UnusedStatusBadge
                     status={status}
-                    className="hidden md:flex"
+                    className="hidden @3xl/unused:flex"
                   />
                 </button>
-                {/* 操作区：默认低透明度，行 hover / 内部聚焦时全显（focus-within
-                    是 focus-visible 的等价键盘路径，容器级避免子控件不可见聚焦） */}
-                <div className="flex items-center justify-end gap-2 opacity-50 transition-opacity group-hover/row:opacity-100 focus-within:opacity-100">
+                <div className="flex items-center justify-end gap-2">
                   {entry.skillId && (
+                    <div className="flex size-10 min-h-[40px] min-w-[40px] items-center justify-center">
+                      <Button
+                        type="button"
+                        size="icon-sm"
+                        variant="ghost"
+                        title={t("skillUsage.openSkill")}
+                        aria-label={t("skillUsage.openSkillNamed", {
+                          skill: entry.name,
+                        })}
+                        className={ACTION_BUTTON_CLASS}
+                        onClick={() =>
+                          navigate(
+                            `/skill/${encodeURIComponent(entry.skillId!)}`,
+                          )
+                        }
+                      >
+                        <ArrowUpRight className="size-3.5" />
+                      </Button>
+                    </div>
+                  )}
+                  {/* 行右统一 unlink 入口：整条目无可卸载项时禁用并给 title 原因 */}
+                  <div className="flex size-10 min-h-[40px] min-w-[40px] items-center justify-center">
                     <Button
                       type="button"
                       size="icon-sm"
                       variant="ghost"
-                      title={t("skillUsage.openSkill")}
-                      aria-label={t("skillUsage.openSkillNamed", {
-                        skill: entry.name,
-                      })}
-                      className={HIT_AREA_CLASS}
-                      onClick={() =>
-                        navigate(
-                          `/skill/${encodeURIComponent(entry.skillId!)}`,
-                        )
+                      data-testid={`unused-unlink-trigger-${entry.origin}-${entry.name}`}
+                      title={
+                        hasActionableUnlink
+                          ? t("skillUsage.unused.unlink.dialog.triggerLabel", {
+                              skill: entry.name,
+                            })
+                          : t("skillUsage.unused.unlink.dialog.allDisabledTitle")
                       }
+                      aria-label={t(
+                        "skillUsage.unused.unlink.dialog.triggerLabel",
+                        { skill: entry.name },
+                      )}
+                      disabled={!hasActionableUnlink}
+                      className={ACTION_BUTTON_CLASS}
+                      onClick={() => onOpenUnlink(entry)}
                     >
-                      <ArrowUpRight className="size-3.5" />
+                      <Unlink className="size-3.5" />
                     </Button>
-                  )}
-                  {/* 行右统一 unlink 入口：整条目无可卸载项时禁用并给 title 原因 */}
-                  <Button
-                    type="button"
-                    size="icon-sm"
-                    variant="ghost"
-                    data-testid={`unused-unlink-trigger-${entry.origin}-${entry.name}`}
-                    title={
-                      hasActionableUnlink
-                        ? t("skillUsage.unused.unlink.dialog.triggerLabel", {
-                            skill: entry.name,
-                          })
-                        : t("skillUsage.unused.unlink.dialog.allDisabledTitle")
-                    }
-                    aria-label={t(
-                      "skillUsage.unused.unlink.dialog.triggerLabel",
-                      { skill: entry.name },
-                    )}
-                    disabled={!hasActionableUnlink}
-                    className={HIT_AREA_CLASS}
-                    onClick={() => onOpenUnlink(entry)}
-                  >
-                    <Unlink className="size-3.5" />
-                  </Button>
+                  </div>
                 </div>
               </div>
             </li>
@@ -447,50 +449,6 @@ function UnusedStatusBadge({
       />
       {t(`skillUsage.unused.status.${status}`)}
     </span>
-  );
-}
-
-function ChipGroup({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      role="group"
-      aria-label={label}
-      className="inline-flex rounded-md border border-border p-0.5"
-    >
-      {children}
-    </div>
-  );
-}
-
-function Chip({
-  pressed,
-  onClick,
-  children,
-}: {
-  pressed: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-pressed={pressed}
-      onClick={onClick}
-      className={cn(
-        "min-h-7 rounded px-2.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        pressed
-          ? "bg-foreground text-background"
-          : "text-muted-foreground hover:text-foreground",
-      )}
-    >
-      {children}
-    </button>
   );
 }
 

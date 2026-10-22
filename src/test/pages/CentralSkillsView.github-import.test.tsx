@@ -20,8 +20,12 @@ describe("CentralSkillsView shared GitHub import + categorize handlers", () => {
     await S.openGitHubImportViaLauncher(screen);
 
     expect(
-      await screen.findByRole("radio", { name: "main" }),
+      await screen.findByRole("radio", { name: "Repo default" }),
     ).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("radio", { name: "main" })).toHaveAttribute(
+      "aria-checked",
+      "false",
+    );
     const devOption = screen.getByRole("radio", { name: "dev" });
     fireEvent.click(devOption);
     expect(devOption).toHaveAttribute("aria-checked", "true");

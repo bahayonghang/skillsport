@@ -131,12 +131,12 @@ export function SkillPickerDialog({
           {/* Search + Select All / Clear */}
           <div className="flex items-center gap-2">
             <div className="relative flex-1">
-              <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
               <Input
                 placeholder={t("skillPicker.searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-8"
+                className="h-9 rounded-full pl-9"
                 aria-label={t("skillPicker.searchPlaceholder")}
               />
             </div>
@@ -167,7 +167,7 @@ export function SkillPickerDialog({
 
           {/* Skill list */}
           <div
-            className="max-h-[60vh] overflow-y-auto grid grid-cols-2 gap-2 border border-border rounded-md p-2"
+            className="scrollbar-subtle grid max-h-[60vh] grid-cols-2 gap-1 overflow-y-auto rounded-inner bg-accent p-1.5"
             role="group"
             aria-label={t("skillPicker.selectSkills")}
           >
@@ -190,7 +190,7 @@ export function SkillPickerDialog({
                 return (
                   <div
                     key={skill.id}
-                    className="flex items-start gap-2.5 px-2 py-1.5 rounded hover:bg-hover-bg/20 cursor-pointer"
+                    className="flex cursor-pointer items-start gap-2.5 rounded-control px-2.5 py-2 transition-colors hover:bg-popover"
                     onClick={() => handleToggle(skill.id, !isChecked)}
                   >
                     <Checkbox

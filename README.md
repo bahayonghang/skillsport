@@ -26,8 +26,17 @@
 - Discover scan for project-level skill libraries on local disks.
 - Marketplace browsing and GitHub repository import with authenticated requests and retry fallback.
 - Fast search for large skill libraries with deferred queries, lazy indexing, and virtualization.
-- Bilingual UI, Catppuccin themes, accent colors, onboarding, and responsive navigation.
+- Light Glass interface: translucent panels on a mint-to-lavender canvas, with Glass Light and Glass Dark themes, a sans-serif (Geist) body font, and the Windows 11 Mica window material (opaque fallback on Windows 10).
+- Bilingual UI, onboarding, and responsive navigation.
 - **Central Library V2 (default)**: structured query syntax (`tag:`, `repo:`, `owner:`, `has:source`, etc.), URL-as-state, saved views, command palette (`Ctrl+K`), tag groups, group-by views (none / repository / owner / tag / status). Use the "Switch to classic layout" link in the Beta badge area, or set `featureFlag.central.newLayout=off` in DevTools localStorage, to fall back to the V1 layout.
+
+## Rules
+
+The Rules page manages flat, unconditional Markdown rules on the Local target. Preview and import existing rules from `~/.claude/rules/` and `~/.omp/agent/rules/` into `~/.skillport/rules/`, then edit and preview their shared body. Each shared file includes `alwaysApply: true` and a description for OMP.
+
+Import preserves source files. Enable Claude Code or OMP separately to create a file symlink to the shared rule. Replacing an equivalent ordinary file requires confirmation and creates a byte backup. Conflicting content and external links remain intact. Windows must permit file symlinks; SkillPort reports permission failures.
+
+Backups and recovery receipts stay under `~/.skillport/rules/.backups/` and `~/.skillport/rules/.state/`. Recovery stops when a destination has changed externally. Session drafts survive page and target changes until the application closes. Rules management currently excludes SSH, WSL, project rules, conditional rules, custom configuration roots, and OMP profiles.
 
 ## SSH Remote Mode
 
@@ -52,9 +61,9 @@ Remote mode manages the selected remote user's directories only. It does not mod
 
 ![Platform skill view](images/06.png)
 
-### Discover local project skill libraries
+### Manage project-local skills
 
-![Discover project skill libraries](images/03.png)
+![Project skills view](images/03.png)
 
 ### Browse marketplace publishers and skills
 
@@ -178,7 +187,7 @@ Custom platforms can be added through Settings.
 | State management | Zustand |
 | Markdown | react-markdown |
 | i18n | react-i18next, i18next-browser-languagedetector |
-| Theming | Catppuccin 4-flavor palette |
+| Theming | Light Glass design tokens (Glass Light / Glass Dark) |
 | Backend | Rust (serde, sqlx, chrono, uuid) |
 | Database | SQLite via sqlx (WAL mode) |
 | Routing | react-router-dom v7 |
@@ -188,11 +197,11 @@ Custom platforms can be added through Settings.
 ### Prerequisites
 
 - [Node.js](https://nodejs.org/) 26 (see `.node-version`)
-- [pnpm](https://pnpm.io/) 10.34.5
+- [pnpm](https://pnpm.io/), latest stable release
 - [Rust toolchain](https://rustup.rs/) 1.98.0 (see `rust-toolchain.toml`)
 - Tauri v2 system dependencies: <https://v2.tauri.app/start/prerequisites/>
 
-The repository toolchain is Node 26, pnpm 10.34.5, and Rust 1.98.0.
+The repository pins Node 26 and Rust 1.98.0. Prefer the latest stable pnpm; the repository does not pin a pnpm version.
 
 ### Install Dependencies
 

@@ -8,9 +8,13 @@ import {
   Loader2,
   Trash2,
   Download,
+  Folder,
+  AlertTriangle,
+  XCircle,
 } from "lucide-react";
 import { memo, useMemo, type MouseEventHandler, type Ref } from "react";
 import { useTranslation } from "react-i18next";
+import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { InlineConfirmAction } from "@/components/ui/inline-confirm-action";
 import { CompactCardMoreMenu } from "@/components/skill/CompactCardMoreMenu";
@@ -21,8 +25,9 @@ import {
 import { CardTagEditor } from "@/components/skill/CardTagEditor";
 import { SkillCardDenseRow } from "@/components/skill/SkillCardDenseRow";
 import { SkillCardMeta } from "@/components/skill/SkillCardMeta";
-import type { CentralSkillUpdateState, ClaudeSourceKind, SkillsCliPlacement } from "@/types";
+import type { CentralSkillUpdateState, ClaudeSourceKind, LinkedProject, SkillsCliPlacement } from "@/types";
 import { cn } from "@/lib/utils";
+import { formatPathForDisplay, getPathBasename } from "@/lib/path";
 import {
   getPlatformTargetInstallAgentIds,
   getPlatformTargetMemberIds,
@@ -86,6 +91,7 @@ interface SkillCardModel {
   statusChipLabel?: string;
   editableTags?: SkillCardTypes.SkillCardEditableTags;
   footer?: SkillCardTypes.SkillCardFooter;
+  linkedProjects?: LinkedProject[];
   layout?: "denseRow";
   path?: string | null;
   placements?: readonly SkillsCliPlacement[];
@@ -124,6 +130,7 @@ function toModel(props: SkillCardTypes.UnifiedSkillCardProps): SkillCardModel {
         density: props.density,
         platformIcons: props.platformIcons,
         footer: props.footer,
+        linkedProjects: props.linkedProjects,
       };
     case "platform":
       return {
@@ -237,6 +244,59 @@ function UnifiedSkillCardComponent(props: SkillCardTypes.UnifiedSkillCardProps) 
   return <SkillCardStandardCard model={model} />;
 }
 
+function LinkedProjectChips({
+  projects,
+}: {
+  projects: LinkedProject[] | undefined;
+}) {
+  const { t } = useTranslation();
+  if (!projects || projects.length === 0) {
+    return null;
+  }
+  const unique = uniqueLinkedProjectChips(projects);
+  if (unique.length === 0) {
+    return null;
+  }
+  const fallback = t("central.linkedProjectFallback");
+  return (
+    <div
+      className="flex flex-wrap gap-1"
+      data-testid="central-linked-projects"
+    >
+      {unique.map((project) => {
+        const name = getPathBasename(project.path) || fallback;
+        return (
+          <Badge
+            key={project.project_id}
+            tone="neutral"
+            size="sm"
+            icon={<Folder />}
+            title={formatPathForDisplay(project.path)}
+            aria-label={t("central.linkedProjectLabel", { name })}
+            data-testid={`central-linked-project-${project.project_id}`}
+            className="font-normal"
+          >
+            {name}
+          </Badge>
+        );
+      })}
+    </div>
+  );
+}
+
+function uniqueLinkedProjectChips(projects: LinkedProject[]): LinkedProject[] {
+  const seen = new Set<string>();
+  const unique: LinkedProject[] = [];
+  for (const project of projects) {
+    if (seen.has(project.project_id)) {
+      continue;
+    }
+    seen.add(project.project_id);
+    unique.push(project);
+  }
+  return unique;
+}
+
 function SkillCardStandardCard({ model }: { model: SkillCardModel }) {
   const { t } = useTranslation();
   const {
@@ -280,6 +340,7 @@ function SkillCardStandardCard({ model }: { model: SkillCardModel }) {
     statusChipLabel,
     editableTags,
     footer,
+    linkedProjects,
   } = model;
 
   // "default" 是旧别名，归一化为 "comfortable"
@@ -349,29 +410,25 @@ function SkillCardStandardCard({ model }: { model: SkillCardModel }) {
 
   return (
     <div
+      data-slot="skill-card"
+      // 来源（plugin / central / skillsCli）由 toModel 派生，经 data-origin 暴露；
+      // 视觉上由 meta 行的来源胶囊（图标 + 文字 + 语义 tint）表达——DESIGN.md
+      // 禁止彩色侧边条，所以不再画 3px 竖条。
+      data-origin={originSurface}
       className={cn(
         cardShellClass(checkbox?.checked),
-        "@container group/skill-card relative overflow-hidden gap-2 p-3.5",
-        isCompact ? "min-h-[168px]" : "min-h-[188px]",
-        originSurface === "plugin" && "bg-warning/5",
-        originSurface === "skillsCli" && "bg-primary/5",
+        "@container group/skill-card relative gap-2 overflow-hidden p-4",
+        // rem 下限（10.5rem / 11.75rem）随 --font-scale 缩放，保证 0.875 档时
+        // 卡片不会撑破 centralVirtualItemHeight 给出的固定行高。
+        isCompact ? "min-h-42" : "min-h-47",
         isLoading && "opacity-50",
         className
       )}
     >
-      {originSurface && (
-        <div
-          aria-hidden
-          className={cn(
-            "absolute inset-y-0 left-0 w-[3px]",
-            originSurface === "plugin" ? "bg-warning" : "bg-info",
-          )}
-        />
-      )}
       {lifetimeUsage && (
         <div
           data-testid="usage-rank"
-          className="absolute bottom-3.5 right-3.5 text-xs tabular-nums"
+          className="absolute right-4 bottom-4 text-xs tabular-nums"
           title={
             hasLifetimeRank
               ? t("platform.usageRank.tooltip", {
@@ -426,7 +483,7 @@ function SkillCardStandardCard({ model }: { model: SkillCardModel }) {
             {onDetail ? (
               <button
                 ref={detailButtonRef}
-                className="min-h-7 min-w-0 flex-1 truncate rounded-md text-left text-sm font-semibold tracking-[-0.01em] text-foreground underline-offset-4 transition-[color,box-shadow] hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                className="focus-ring min-h-7 min-w-0 flex-1 truncate rounded-control text-left text-base font-semibold tracking-[-0.01em] text-foreground underline-offset-4 transition-colors duration-150 hover:text-primary-text hover:underline"
                 onClick={onDetail}
                 aria-label={t("central.viewDetailsLabel", { name })}
                 title={name}
@@ -434,22 +491,20 @@ function SkillCardStandardCard({ model }: { model: SkillCardModel }) {
                 {name}
               </button>
             ) : (
-              <h3 title={name} className="min-w-0 flex-1 truncate text-sm font-semibold tracking-[-0.01em] text-foreground">
+              <h3 title={name} className="min-w-0 flex-1 truncate text-base font-semibold tracking-[-0.01em] text-foreground">
                 {name}
               </h3>
             )}
 
             {statusChipLabel && (
-              <span
-                className={cn(
-                  "shrink-0 rounded-full px-1.5 py-0.5 text-xs font-medium ring-1",
-                  statusAccent === "error"
-                    ? "bg-destructive/10 text-destructive-text ring-destructive/30"
-                    : "bg-warning/10 text-warning-foreground ring-warning/30"
-                )}
+              <Badge
+                tone={statusAccent === "error" ? "destructive" : "warning"}
+                size="sm"
+                icon={statusAccent === "error" ? <XCircle /> : <AlertTriangle />}
+                className="max-w-[45%]"
               >
                 {statusChipLabel}
-              </span>
+              </Badge>
             )}
 
             {hasActions && (
@@ -567,7 +622,7 @@ function SkillCardStandardCard({ model }: { model: SkillCardModel }) {
                     disabled={isLoading}
                     title={installLabel ?? t("marketplace.install")}
                     aria-label={installLabel ?? t("marketplace.install")}
-                    className="focus-ring inline-flex h-8 w-8 items-center justify-center rounded-lg transition-[scale,background-color,color] active:not-disabled:scale-[0.96] text-muted-foreground hover:bg-accent/40 hover:text-primary disabled:opacity-50 disabled:cursor-default"
+                    className="focus-ring inline-flex size-8 items-center justify-center rounded-control text-muted-foreground transition-[scale,background-color,color] duration-150 hover:bg-accent hover:text-primary-text active:not-disabled:scale-[0.96] disabled:cursor-default disabled:opacity-50"
                   >
                     {isLoading ? (
                       <Loader2 className="size-4 animate-spin" />
@@ -633,6 +688,8 @@ function SkillCardStandardCard({ model }: { model: SkillCardModel }) {
             </div>
           )}
 
+          <LinkedProjectChips projects={linkedProjects} />
+
           {/* Row 4: Footer (central 方案C) or Platform toggle icons */}
           {footer ? (
             <UnifiedSkillCardFooter
@@ -653,24 +710,23 @@ function SkillCardStandardCard({ model }: { model: SkillCardModel }) {
             targetAgents.length > 0 && (
               <div className="mt-auto pt-1">
                 {isCompact && (
-                  <span
+                  <Badge
+                    tone={linkedTargetCount > 0 ? "primary" : "neutral"}
+                    size="sm"
+                    icon={<Link2 />}
                     data-testid={`skill-card-linked-summary-${platformIcons.skillId}`}
-                    className={cn(
-                      "inline-flex items-center gap-1 rounded-full border border-border/70 bg-muted/40 px-2 py-0.5 text-xs font-medium tabular-nums text-muted-foreground",
-                      "group-hover/skill-card:hidden group-focus-within/skill-card:hidden",
-                    )}
+                    className="tabular-nums group-hover/skill-card:hidden group-focus-within/skill-card:hidden"
                   >
-                    <Link2 className="size-3" aria-hidden />
                     {linkedTargetCount > 0
                       ? t("common.skillCardLinkedSummary", {
                           count: linkedTargetCount,
                         })
                       : t("common.skillCardLinkedSummaryNone")}
-                  </span>
+                  </Badge>
                 )}
                 <div
                   className={cn(
-                    "flex items-center gap-1 flex-wrap",
+                    "flex flex-wrap items-center gap-1",
                     isCompact &&
                       "hidden group-hover/skill-card:flex group-focus-within/skill-card:flex",
                   )}

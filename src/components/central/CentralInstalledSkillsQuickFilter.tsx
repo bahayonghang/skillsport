@@ -51,7 +51,7 @@ export function CentralInstalledSkillsQuickFilter({
 
   return (
     <div
-      className="flex flex-wrap items-center gap-2 rounded-xl border border-border/70 bg-muted/20 px-3 py-2"
+      className="glass-panel flex flex-wrap items-center gap-2 rounded-card px-3 py-2"
       data-testid="central-installed-skills-filter"
     >
       <span className="text-xs font-medium text-muted-foreground">
@@ -70,10 +70,9 @@ export function CentralInstalledSkillsQuickFilter({
       <select
         aria-label={t("central.installedSkillsFilterPlatformAria")}
         className={cn(
-          "h-7 rounded-md border border-border bg-background px-2 text-xs text-foreground shadow-sm outline-none transition-colors",
-          "focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/35",
+          "focus-ring h-7 rounded-control border border-input bg-input-surface px-2 text-xs text-foreground outline-none transition-colors",
           selectedPlatformId
-            ? "border-primary/40 bg-primary/5 text-primary"
+            ? "border-primary-stroke bg-primary-tint text-primary-text"
             : null,
         )}
         value={selectedPlatformId ?? ""}
@@ -105,7 +104,7 @@ export function CentralInstalledSkillsQuickFilter({
       </select>
       {hasFilter && (
         <>
-          <span className="rounded-md border border-border/70 bg-background px-2 py-1 text-ui-meta text-muted-foreground">
+          <span className="rounded-full bg-accent px-2.5 py-1 text-ui-meta text-muted-foreground">
             {t("central.installedSkillsFilterResult", { count: filteredCount })}
           </span>
           <Button

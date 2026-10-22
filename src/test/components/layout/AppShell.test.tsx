@@ -8,6 +8,7 @@ import { useTargetStore } from "@/stores/targetStore";
 import { useSkillStore } from "@/stores/skillStore";
 import { useMarketplaceStore } from "@/stores/marketplaceStore";
 import { useImportIntentStore } from "@/stores/importIntentStore";
+import { useProjectsStore } from "@/stores/projectsStore";
 import type { TargetSummary } from "@/types";
 import { listen, isTauriRuntime } from "@/lib/ipc";
 import { toast } from "sonner";
@@ -32,6 +33,10 @@ vi.mock("@/stores/skillStore", () => ({
 
 vi.mock("@/stores/marketplaceStore", () => ({
   useMarketplaceStore: vi.fn(),
+}));
+
+vi.mock("@/stores/projectsStore", () => ({
+  useProjectsStore: vi.fn(),
 }));
 
 vi.mock("@/lib/ipc", () => ({
@@ -82,6 +87,9 @@ const mockUseCentralSkillsStore = vi.mocked(useCentralSkillsStore);
 const mockUseTargetStore = vi.mocked(useTargetStore);
 const mockUseSkillStore = vi.mocked(useSkillStore);
 const mockUseMarketplaceStore = vi.mocked(useMarketplaceStore);
+const mockUseProjectsStore = vi.mocked(useProjectsStore);
+const mockLoadProjects = vi.fn().mockResolvedValue(undefined);
+const mockResetProjectsForTargetChange = vi.fn();
 const mockListen = vi.mocked(listen);
 const mockIsTauriRuntime = vi.mocked(isTauriRuntime);
 
@@ -192,6 +200,19 @@ describe("AppShell", () => {
     });
     mockUseMarketplaceStore.mockImplementation((selector?: unknown) => {
       const state = createMarketplaceState();
+      if (typeof selector === "function") return selector(state);
+      return state;
+    });
+    mockLoadProjects.mockReset();
+    mockLoadProjects.mockResolvedValue(undefined);
+    mockResetProjectsForTargetChange.mockReset();
+    mockUseProjectsStore.mockImplementation((selector?: unknown) => {
+      const state = {
+        loadProjects: mockLoadProjects,
+        resetForTargetChange: mockResetProjectsForTargetChange,
+        projects: [],
+        scanningProjectIds: new Set<string>(),
+      };
       if (typeof selector === "function") return selector(state);
       return state;
     });
@@ -388,7 +409,9 @@ describe("AppShell", () => {
 
     await waitFor(() => {
       expect(mockInitialize).toHaveBeenCalledTimes(1);
+      expect(mockLoadProjects).toHaveBeenCalledTimes(1);
     });
+    expect(mockResetProjectsForTargetChange).not.toHaveBeenCalled();
 
     act(() => useImportIntentStore.getState().setGitHubBranch("dev"));
 
@@ -414,6 +437,8 @@ describe("AppShell", () => {
       expect(mockResetCentralForTargetChange).toHaveBeenCalledTimes(1);
       expect(mockResetSkillsForTargetChange).toHaveBeenCalledTimes(1);
       expect(mockResetMarketplaceForTargetChange).toHaveBeenCalledTimes(1);
+      expect(mockResetProjectsForTargetChange).toHaveBeenCalledTimes(1);
+      expect(mockLoadProjects).toHaveBeenCalledTimes(2);
       expect(mockRescan).toHaveBeenCalledTimes(1);
       expect(mockLoadCentralSkills).toHaveBeenCalledTimes(1);
       expect(useImportIntentStore.getState().githubBranch).toBe("");
@@ -501,6 +526,8 @@ describe("AppShell", () => {
     expect(mockResetCentralForTargetChange).not.toHaveBeenCalled();
     expect(mockResetSkillsForTargetChange).not.toHaveBeenCalled();
     expect(mockResetMarketplaceForTargetChange).not.toHaveBeenCalled();
+    expect(mockResetProjectsForTargetChange).not.toHaveBeenCalled();
+    expect(mockLoadProjects).toHaveBeenCalledTimes(1);
     expect(mockRescan).not.toHaveBeenCalled();
   });
 

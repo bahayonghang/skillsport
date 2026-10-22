@@ -1,0 +1,32 @@
+{
+  "id": "sidebar-project-sort-compact",
+  "name": "sidebar-project-sort-compact",
+  "title": "侧边栏项目排序入口轻量化",
+  "description": "侧栏项目排序改为轻量入口，保留排序、持久化和键盘可访问性",
+  "status": "completed",
+  "dev_type": "frontend",
+  "scope": "sidebar",
+  "package": null,
+  "priority": "P2",
+  "creator": "lyh",
+  "assignee": "lyh",
+  "createdAt": "2026-10-12",
+  "completedAt": "2026-10-12",
+  "branch": null,
+  "base_branch": "dev",
+  "worktree_path": null,
+  "commit": "e2a83f44",
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "10-12-sidebar-dashboard-visual-polish",
+  "relatedFiles": [
+    "src/components/layout/SidebarSection.tsx"
+  ],
+  "notes": "产品实施、Trellis 复核、浏览器矩阵和完整 just ci 已通过。用户已确认并完成两个本地代码提交，并明确授权归档三个任务。原生 WebView2 与安装器未验证。完整证据见父任务 research/implementation-validation.md。",
+  "meta": {
+    "work_commits": [
+      "e2a83f44"
+    ]
+  }
+}

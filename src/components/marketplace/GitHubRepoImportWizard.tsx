@@ -14,6 +14,7 @@ import {
   GitHubRepoImportResultHub,
 } from "@/components/marketplace/GitHubRepoImportWizardBody";
 import { GitHubRepoImportPreviewWorkspace } from "@/components/marketplace/GitHubRepoImportWizardPreview";
+import { GitHubRepoImportUrlInputBlock } from "@/components/marketplace/GitHubRepoImportWizardInput";
 import { isTauriRuntime } from "@/lib/ipc";
 import {
   buildInitialSelections,
@@ -326,6 +327,10 @@ export function GitHubRepoImportWizard({
     />
   ) : null;
 
+  // The URL form owns the body on the input step; once a preview toolbar is
+  // shown, the workspace takes over.
+  const showUrlInput = step === "input" && !(shellState.showRepoToolbar && preview);
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className={shellState.dialogContentClassName}>
@@ -336,14 +341,10 @@ export function GitHubRepoImportWizard({
           showRepoToolbar={shellState.showRepoToolbar}
           repoUrl={repoUrl}
           branch={branch}
-          previewError={previewError}
           isPreviewLoading={isPreviewLoading}
-          browserMode={browserMode}
           previewToolbarRepoHref={previewToolbarRepoHref}
           selectedSkillsCount={previewState.selectedSkills.length}
           activeTarget={activeTarget}
-          onRepoUrlChange={onRepoUrlChange}
-          onBranchChange={onBranchChange}
           onPreviewSubmit={handlePreviewSubmit}
         />
 
@@ -352,9 +353,21 @@ export function GitHubRepoImportWizard({
             "px-6 py-4",
             shellState.showSharedShellBody
               ? "min-h-0 flex-1 overflow-hidden"
-              : "overflow-visible",
+              : "overflow-y-auto",
           )}
         >
+          {showUrlInput ? (
+            <GitHubRepoImportUrlInputBlock
+              repoUrl={repoUrl}
+              branch={branch}
+              previewError={previewError}
+              isPreviewLoading={isPreviewLoading}
+              browserMode={browserMode}
+              onRepoUrlChange={onRepoUrlChange}
+              onBranchChange={onBranchChange}
+              onPreviewSubmit={handlePreviewSubmit}
+            />
+          ) : null}
           {preview ? (
             step === "confirm" ? (
               <GitHubRepoImportConfirmSummary

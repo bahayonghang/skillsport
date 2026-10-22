@@ -14,7 +14,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 import { useCollectionStore } from "@/stores/collectionStore";
 import { usePlatformStore } from "@/stores/platformStore";
 import { useCentralSkillsStore } from "@/stores/centralSkillsStore";
@@ -367,33 +369,35 @@ export function CollectionsListView() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="border-b border-border px-6 py-4">
-        <div className="flex items-center justify-between gap-4">
-          <h1 className="text-xl font-semibold">{t("sidebar.collections")}</h1>
-          <div className="flex items-center gap-2 shrink-0">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => importInputRef.current?.click()}
-            >
-              <FileInput className="size-3.5" />
-              <span>{t("sidebar.importCollection")}</span>
-            </Button>
-            <Button
-              variant="default"
-              size="sm"
-              onClick={() => setIsEditorOpen(true)}
-            >
-              <Plus className="size-3.5" />
-              <span>{t("sidebar.newCollectionLabel")}</span>
-            </Button>
-          </div>
-        </div>
+      {/* Header（PageHeader 直接坐在 canvas 上） */}
+      <div className="shrink-0 px-4 pt-4 pb-3 sm:px-6 sm:pt-5">
+        <PageHeader
+          title={t("sidebar.collections")}
+          actions={
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="glass"
+                size="sm"
+                onClick={() => importInputRef.current?.click()}
+              >
+                <FileInput className="size-3.5" />
+                <span>{t("sidebar.importCollection")}</span>
+              </Button>
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => setIsEditorOpen(true)}
+              >
+                <Plus className="size-3.5" />
+                <span>{t("sidebar.newCollectionLabel")}</span>
+              </Button>
+            </div>
+          }
+        />
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto">
+      <div className="flex min-h-0 flex-1 flex-col overflow-auto">
         {isLoading ? (
           <div className="flex items-center justify-center h-full gap-3 text-muted-foreground">
             <Loader2 className="size-5 animate-spin" />
@@ -401,8 +405,8 @@ export function CollectionsListView() {
           </div>
         ) : collections.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full gap-4 py-20">
-            <div className="p-4 rounded-full bg-muted/60">
-              <Layers className="size-12 text-muted-foreground opacity-60" />
+            <div className="rounded-full bg-accent p-4">
+              <Layers className="size-12 text-muted-foreground" aria-hidden />
             </div>
             <p className="text-sm font-medium text-muted-foreground">
               {t("collectionPicker.noCollections")}
@@ -419,7 +423,7 @@ export function CollectionsListView() {
         ) : (
           <>
             {/* Collection cards — horizontal row */}
-            <div className="flex items-center gap-2 px-6 py-4 border-b border-border overflow-x-auto">
+            <div className="scrollbar-subtle flex shrink-0 items-center gap-2 overflow-x-auto px-4 pt-0.5 pb-3 sm:px-6">
               {collections.map((col) => (
                 <CollectionChip
                   key={col.id}
@@ -433,8 +437,8 @@ export function CollectionsListView() {
             {/* Selected collection detail */}
             {selectedId && currentDetail && currentDetail.id === selectedId ? (
               <div className="flex flex-col flex-1 min-h-0">
-                {/* Detail header */}
-                <div className="flex items-center justify-between gap-4 px-6 py-3 border-b border-border">
+                {/* Detail header：玻璃面板承载集合信息 + 操作 */}
+                <div className="glass-panel mx-4 flex flex-wrap items-center justify-between gap-4 rounded-card px-4 py-3 sm:mx-6">
                   <div className="min-w-0">
                     <h2 className="text-sm font-semibold truncate">
                       {currentDetail.name}
@@ -447,23 +451,22 @@ export function CollectionsListView() {
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <Button
-                      variant="outline"
+                      variant="glass"
                       size="sm"
                       onClick={() => setIsEditOpen(true)}
                     >
                       <Pencil className="size-3.5" />
                       <span>{t("collection.edit")}</span>
                     </Button>
-                    <Button variant="outline" size="sm" onClick={handleExport}>
+                    <Button variant="glass" size="sm" onClick={handleExport}>
                       <Download className="size-3.5" />
                       <span>{t("collection.export")}</span>
                     </Button>
                     <Button
-                      variant="outline"
+                      variant="destructive"
                       size="sm"
                       onClick={handleDelete}
                       disabled={isDeleting}
-                      className="text-destructive-text hover:text-destructive-text hover:bg-destructive/10 border-destructive/30"
                     >
                       {isDeleting ? (
                         <Loader2 className="size-3.5 animate-spin" />
@@ -476,15 +479,15 @@ export function CollectionsListView() {
                 </div>
 
                 {/* Skills sub-header */}
-                <div className="flex items-center justify-between px-6 py-3 border-b border-border">
-                  <span className="text-sm font-medium text-muted-foreground">
+                <div className="flex flex-wrap items-center justify-between gap-2 px-4 pt-4 pb-3 sm:px-6">
+                  <Badge size="md" className="tabular-nums">
                     {t("collection.skills", {
                       count: currentDetail.skills.length,
                     })}
-                  </span>
+                  </Badge>
                   <div className="flex items-center gap-2">
                     <Button
-                      variant="outline"
+                      variant="glass"
                       size="sm"
                       onClick={() => setIsInstallOpen(true)}
                       disabled={currentDetail.skills.length === 0}
@@ -504,11 +507,11 @@ export function CollectionsListView() {
                 </div>
 
                 {/* Skills list */}
-                <div ref={skillsContainerRef} className="flex-1 overflow-auto">
+                <div ref={skillsContainerRef} className="scrollbar-subtle flex-1 overflow-auto">
                   {currentDetail.skills.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-full gap-4 py-20">
-                      <div className="p-4 rounded-full bg-muted/60">
-                        <BookOpen className="size-12 text-muted-foreground opacity-60" />
+                      <div className="rounded-full bg-accent p-4">
+                        <BookOpen className="size-12 text-muted-foreground" aria-hidden />
                       </div>
                       <p className="text-sm font-medium text-muted-foreground">
                         {t("collection.noSkillsTitle")}
@@ -526,7 +529,7 @@ export function CollectionsListView() {
                       </Button>
                     </div>
                   ) : (
-                    <div className="mx-6 my-3 grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 gap-5 px-4 pb-6 sm:px-6">
                       {currentDetail.skills.map((skill) => (
                         <UnifiedSkillCard
                           variant="collection"
@@ -648,21 +651,24 @@ function CollectionChip({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
+      aria-pressed={isActive}
       className={cn(
-        "flex items-center gap-2 px-4 py-2 rounded-md border transition-colors cursor-pointer shrink-0",
+        "focus-ring inline-flex h-8 shrink-0 cursor-pointer items-center gap-2 rounded-full border px-3.5 transition-colors",
         isActive
-          ? "bg-primary/15 border-primary text-foreground font-medium"
-          : "border-border hover:border-primary/40 hover:bg-hover-bg/10 text-muted-foreground",
+          ? "border-primary-stroke bg-primary-tint font-medium text-primary-text"
+          : "border-glass-stroke bg-popover text-muted-foreground ring-1 ring-glass-hairline hover:text-foreground",
       )}
     >
       <Layers
         className={cn(
           "size-4",
-          isActive ? "text-primary" : "text-muted-foreground",
+          isActive ? "text-primary-text" : "text-muted-foreground",
         )}
+        aria-hidden
       />
-      <span className="text-sm truncate max-w-[160px]">{collection.name}</span>
+      <span className="max-w-40 truncate text-sm">{collection.name}</span>
     </button>
   );
 }

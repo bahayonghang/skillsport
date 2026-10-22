@@ -110,7 +110,7 @@ const originNavItemName = (label: string, count: number) =>
 const getCardBadgeMatches = (matcher: RegExp) =>
   screen
     .queryAllByText(matcher, badgeQueryOptions)
-    .filter((element) => element.closest(".rounded-xl"));
+    .filter((element) => element.closest('[data-slot="skill-card"]'));
 
 // ─── Fixtures ─────────────────────────────────────────────────────────────────
 
@@ -1040,7 +1040,7 @@ describe("PlatformView", () => {
     const checkedCards = screen
       .getAllByLabelText("选择技能")
       .filter((checkbox) => checkbox.getAttribute("aria-checked") === "true")
-      .map((checkbox) => checkbox.closest(".rounded-xl"));
+      .map((checkbox) => checkbox.closest('[data-slot="skill-card"]'));
     expect(checkedCards).toHaveLength(1);
     expect(checkedCards[0]).toHaveTextContent("frontend-design");
   });
@@ -1229,7 +1229,7 @@ describe("PlatformView", () => {
     const checkedCards = screen
       .getAllByLabelText("选择技能")
       .filter((checkbox) => checkbox.getAttribute("aria-checked") === "true")
-      .map((checkbox) => checkbox.closest(".rounded-xl"));
+      .map((checkbox) => checkbox.closest('[data-slot="skill-card"]'));
     expect(checkedCards).toHaveLength(1);
     expect(checkedCards[0]).toHaveTextContent("Writable user copy B");
     expect(toast.error).toHaveBeenCalledWith(
@@ -1560,8 +1560,8 @@ describe("PlatformView", () => {
     expect(standaloneBadge).toBeDefined();
     expect(getCardBadgeMatches(userSourceText)).toHaveLength(0);
     expect(getCardBadgeMatches(readOnlyText)).toHaveLength(0);
-    const userCard = standaloneBadge.closest(".rounded-xl");
-    const pluginCard = pluginBadge.closest(".rounded-xl");
+    const userCard = standaloneBadge.closest('[data-slot="skill-card"]');
+    const pluginCard = pluginBadge.closest('[data-slot="skill-card"]');
 
     expect(userCard).not.toBeNull();
     expect(pluginCard).not.toBeNull();
@@ -1640,7 +1640,7 @@ describe("PlatformView", () => {
     renderPlatformView();
 
     const userBadge = getCardBadgeMatches(/独立安装|Standalone/)[0];
-    const userCard = userBadge.closest(".rounded-xl");
+    const userCard = userBadge.closest('[data-slot="skill-card"]');
     expect(userCard).not.toBeNull();
 
     fireEvent.click(
@@ -1876,8 +1876,8 @@ describe("PlatformView", () => {
 
     const userBadge = getCardBadgeMatches(/独立安装|Standalone/)[0];
     const pluginBadge = getCardBadgeMatches(pluginSourceText)[0];
-    const userCard = userBadge.closest(".rounded-xl");
-    const pluginCard = pluginBadge.closest(".rounded-xl");
+    const userCard = userBadge.closest('[data-slot="skill-card"]');
+    const pluginCard = pluginBadge.closest('[data-slot="skill-card"]');
     expect(userCard).not.toBeNull();
     expect(pluginCard).not.toBeNull();
 
@@ -2051,7 +2051,8 @@ describe("PlatformView", () => {
     const searchInput = screen.getByPlaceholderText(/搜索技能/);
     fireEvent.change(searchInput, { target: { value: "frontend" } });
 
-    const scroller = searchInput.closest(".flex.flex-col.h-full")?.querySelector(".flex-1.overflow-auto.p-6");
+    void searchInput;
+    const scroller = screen.queryByTestId("platform-content-scroll");
     expect(scroller).not.toBeNull();
     if (!scroller) return;
     (scroller as HTMLDivElement).scrollTop = 180;
@@ -2221,9 +2222,8 @@ describe("PlatformView", () => {
     expect(await screen.findByTestId("platform-batch-action-bar")).toBeInTheDocument();
 
     const searchInput = screen.getByPlaceholderText(/搜索技能/);
-    const scroller = searchInput
-      .closest(".flex.flex-col.h-full")
-      ?.querySelector(".flex-1.overflow-auto.p-6");
+    void searchInput;
+    const scroller = screen.queryByTestId("platform-content-scroll");
     expect(scroller).not.toBeNull();
     if (!scroller) return;
 

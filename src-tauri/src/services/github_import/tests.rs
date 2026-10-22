@@ -5578,4 +5578,124 @@ metadata:
             }
         }
     }
+
+    async fn status_error_from_direct_endpoint(status_line: &'static str) -> GithubImportError {
+        let (base_url, _requests, server) =
+            spawn_http_sequence(|_| vec![http_response(status_line, &[], b"{}")]);
+        let client = github_client().expect("client");
+        let endpoints = test_mirror_endpoints(base_url.clone(), base_url.clone());
+        let error = send_github_request_with_test_endpoints(
+            &client,
+            GitHubFetchSurface::Api,
+            &endpoints[..1],
+            |_| format!("{base_url}/repos/owner/repo/commits/main"),
+            "Failed to resolve GitHub repository commit",
+            None,
+        )
+        .await
+        .expect_err("non-success status must fail");
+        server.join().expect("server join");
+        error
+    }
+
+    #[tokio::test]
+    async fn commit_resolution_422_maps_to_branch_not_found_instead_of_transport() {
+        let error = status_error_from_direct_endpoint("422 Unprocessable Entity").await;
+        assert!(
+            matches!(error, GithubImportError::HttpStatus { status: 422, .. }),
+            "{error:?}"
+        );
+        assert_eq!(
+            error.to_string(),
+            "Failed to resolve GitHub repository commit: HTTP 422 Unprocessable Entity"
+        );
+
+        let error =
+            crate::services::github_import::snapshot::branch_not_found_from_commit_status(error);
+        assert!(matches!(error, GithubImportError::BranchNotFound));
+        assert_eq!(
+            error.ipc_error_code(),
+            Some("github_import.branch_not_found")
+        );
+        assert_eq!(
+            error.diagnostic_category(),
+            "github_import.branch_not_found"
+        );
+        assert_eq!(error.http_status(), Some(422));
+        let envelope = crate::ipc_error::IpcError::from(error.to_ipc_error());
+        assert_eq!(envelope.safe_code(), "github_import.branch_not_found");
+        assert!(!envelope.retryable);
+        assert!(!envelope.message.contains("main"));
+        assert!(!envelope.message.to_ascii_lowercase().contains("network"));
+    }
+
+    #[tokio::test]
+    async fn deterministic_client_status_maps_to_request_rejected() {
+        for status_line in ["400 Bad Request", "409 Conflict"] {
+            let error = status_error_from_direct_endpoint(status_line).await;
+            assert_eq!(
+                error.ipc_error_code(),
+                Some("github_import.request_rejected"),
+                "{status_line}"
+            );
+            assert_eq!(
+                error.snapshot_diagnostic_category(),
+                "github_import.http_client_error"
+            );
+            let envelope = crate::ipc_error::IpcError::from(error.to_ipc_error());
+            assert!(!envelope.retryable, "{status_line}");
+            // A commit 409 is not a missing branch.
+            assert!(!matches!(
+                crate::services::github_import::snapshot::branch_not_found_from_commit_status(
+                    error
+                ),
+                GithubImportError::BranchNotFound
+            ));
+        }
+    }
+
+    #[test]
+    fn server_status_and_missing_response_stay_transport_failed() {
+        let server = GithubImportError::HttpStatus {
+            message: "Failed to inspect GitHub repository: HTTP 503 Service Unavailable"
+                .to_string(),
+            status: 503,
+        };
+        assert_eq!(
+            server.ipc_error_code(),
+            Some("github_import.transport_failed")
+        );
+        assert_eq!(
+            server.snapshot_diagnostic_category(),
+            "github_import.http_server_error"
+        );
+        assert_eq!(server.http_status(), Some(503));
+        let envelope = crate::ipc_error::IpcError::from(server.to_ipc_error());
+        assert!(envelope.retryable);
+
+        let transport = GithubImportError::Http(
+            "Failed to inspect GitHub repository: connection failed".to_string(),
+        );
+        assert_eq!(
+            transport.ipc_error_code(),
+            Some("github_import.transport_failed")
+        );
+        assert_eq!(transport.http_status(), None);
+    }
+
+    #[test]
+    fn tree_fallback_treats_status_failures_like_legacy_transport() {
+        for error in [
+            GithubImportError::HttpStatus {
+                message: "Failed to fetch GitHub repository tree: HTTP 400 Bad Request".to_string(),
+                status: 400,
+            },
+            GithubImportError::BranchNotFound,
+        ] {
+            assert!(matches!(
+                crate::services::github_import::tree_manifest::fallback_reason_for(&error),
+                Some(crate::services::github_import::tree_manifest::FallbackReason::Transport)
+            ));
+        }
+    }
 }

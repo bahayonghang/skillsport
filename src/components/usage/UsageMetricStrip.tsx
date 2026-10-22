@@ -1,5 +1,8 @@
+import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { Activity, FolderOpen, Layers, Puzzle } from "lucide-react";
 
+import { StatTile, type StatTileTone } from "@/components/ui/stat-tile";
 import { cn } from "@/lib/utils";
 import type { UsageKpis } from "@/types/usage";
 
@@ -9,45 +12,75 @@ interface UsageMetricStripProps {
   className?: string;
 }
 
+/**
+ * Usage KPIs as compact stat tiles (C6 design §3): calls = mint (the input
+ * side of usage), distinct skills = lavender (secondary data), projects and
+ * sources / sessions = neutral. Must sit on a panel (tints are measured over
+ * panel composites, not the bare canvas).
+ */
 export function UsageMetricStrip({
   kpis,
   singlePlatform = false,
   className,
 }: UsageMetricStripProps) {
   const { t } = useTranslation();
-  const metrics = [
-    [t("skillUsage.kpi.calls"), kpis.totalCalls],
-    [t("skillUsage.kpi.skills"), kpis.uniqueSkills],
-    [t("skillUsage.kpi.projects"), kpis.uniqueProjects],
-    [
-      t(singlePlatform ? "skillUsage.kpi.sessions" : "skillUsage.kpi.sources"),
-      singlePlatform ? kpis.uniqueSessions : kpis.uniqueSources,
-    ],
-  ] as const;
+  const metrics: ReadonlyArray<{
+    key: string;
+    label: string;
+    value: number;
+    tone: StatTileTone;
+    icon: ReactNode;
+  }> = [
+    {
+      key: "calls",
+      label: t("skillUsage.kpi.calls"),
+      value: kpis.totalCalls,
+      tone: "primary",
+      icon: <Activity />,
+    },
+    {
+      key: "skills",
+      label: t("skillUsage.kpi.skills"),
+      value: kpis.uniqueSkills,
+      tone: "secondary",
+      icon: <Puzzle />,
+    },
+    {
+      key: "projects",
+      label: t("skillUsage.kpi.projects"),
+      value: kpis.uniqueProjects,
+      tone: "neutral",
+      icon: <FolderOpen />,
+    },
+    {
+      key: "sources",
+      label: t(
+        singlePlatform ? "skillUsage.kpi.sessions" : "skillUsage.kpi.sources",
+      ),
+      value: singlePlatform ? kpis.uniqueSessions : kpis.uniqueSources,
+      tone: "neutral",
+      icon: <Layers />,
+    },
+  ];
 
   return (
     <section
       aria-label={t("skillUsage.range.allRecorded")}
-      className={cn("border-y border-border bg-muted/15 px-4 py-3", className)}
+      className={cn(
+        "grid min-w-0 grid-cols-2 gap-2 sm:grid-cols-4",
+        className,
+      )}
     >
-      <div className="flex flex-wrap gap-y-2">
-        {metrics.map(([label, value], index) => (
-          <div
-            key={label}
-            className={cn(
-              "min-w-0 px-5 first:pl-0",
-              index > 0 && "border-l border-border",
-            )}
-          >
-            <div className="truncate text-xs text-muted-foreground">
-              {label}
-            </div>
-            <div className="mt-0.5 text-xl font-semibold tabular-nums text-foreground">
-              {value.toLocaleString()}
-            </div>
-          </div>
-        ))}
-      </div>
+      {metrics.map((metric) => (
+        <StatTile
+          key={metric.key}
+          size="compact"
+          tone={metric.tone}
+          icon={metric.icon}
+          label={metric.label}
+          value={metric.value}
+        />
+      ))}
     </section>
   );
 }

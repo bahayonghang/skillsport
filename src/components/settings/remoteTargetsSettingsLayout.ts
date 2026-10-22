@@ -1,11 +1,12 @@
 import { isWslTarget, requiresSshPasswordRepair } from "@/lib/targetKind";
+import type { BadgeTone } from "@/lib/statusTone";
 import type { TargetSummary } from "@/types";
 
 export const TARGET_ROW_ACTION_CLASS = "min-w-fit flex-1 sm:flex-none";
 export const TARGET_FORM_GRID_CLASS =
   "grid gap-3 md:grid-cols-2 xl:grid-cols-6";
 export const TARGET_EDIT_GRID_CLASS =
-  "grid gap-3 rounded-lg border border-border/70 bg-muted/20 p-3 md:grid-cols-2 xl:grid-cols-6";
+  "grid gap-3 rounded-inner bg-accent p-3 md:grid-cols-2 xl:grid-cols-6";
 export const WSL_FORM_GRID_CLASS = "grid gap-3 md:grid-cols-2 xl:grid-cols-4";
 
 type Translate = (key: string, options?: Record<string, unknown>) => string;
@@ -17,16 +18,16 @@ export function sshCredentialStatus(target: TargetSummary) {
   );
 }
 
-export function sshCredentialStatusClass(status: string | null) {
+export function sshCredentialStatusTone(status: string | null): BadgeTone {
   switch (status) {
     case "stored":
-      return "border-primary/30 bg-primary/10 text-primary";
+      return "success";
     case "session":
-      return "border-warning/40 bg-warning/10 text-warning-foreground";
+      return "warning";
     case "unreadable":
-      return "border-destructive/40 bg-destructive/10 text-destructive-text";
+      return "destructive";
     default:
-      return "border-muted-foreground/30 bg-muted text-muted-foreground";
+      return "neutral";
   }
 }
 

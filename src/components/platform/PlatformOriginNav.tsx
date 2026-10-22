@@ -39,12 +39,12 @@ function OriginNavItem({
       aria-current={isSelected ? "true" : undefined}
       title={title}
       className={cn(
-        "focus-ring flex w-full cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 text-sm transition-colors",
+        "focus-ring flex w-full cursor-pointer items-center gap-2 rounded-full border px-2.5 py-1.5 text-sm transition-colors",
         // 子项文本与父项标题（px-2.5 + size-3.5 图标 + gap-2）左对齐
         isChild && "pl-8 text-xs",
         isSelected
-          ? "bg-primary/15 font-medium text-foreground"
-          : "text-muted-foreground hover:bg-muted/40",
+          ? "border-primary-stroke bg-primary-tint font-medium text-primary-text"
+          : "border-transparent text-muted-foreground hover:bg-accent hover:text-foreground",
       )}
     >
       {Icon && (
@@ -52,12 +52,12 @@ function OriginNavItem({
           aria-hidden="true"
           className={cn(
             "size-3.5 shrink-0",
-            isSelected ? "text-primary" : "text-muted-foreground",
+            isSelected ? "text-primary-text" : "text-muted-foreground",
           )}
         />
       )}
       <span className="min-w-0 flex-1 truncate text-left">{label}</span>
-      <span className="text-xs tabular-nums opacity-75">{count}</span>
+      <span className="text-xs tabular-nums">{count}</span>
     </button>
   );
 }

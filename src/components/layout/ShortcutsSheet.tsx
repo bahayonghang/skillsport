@@ -2,13 +2,13 @@ import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 
 import {
-  Dialog,
-  DialogBody,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  Sheet,
+  SheetBody,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
 import { useHotkey } from "@/hooks/useHotkey";
 import { formatShortcut } from "@/lib/keyboardShortcuts";
 import { SHORTCUT_GROUPS } from "@/lib/shortcutRegistry";
@@ -37,7 +37,7 @@ function KeyCombo({ combo }: { combo: string }) {
               +
             </span>
           )}
-          <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-sm bg-muted px-1.5 font-mono text-xs leading-none text-foreground ring-1 ring-border">
+          <span className="inline-flex h-5 min-w-5 items-center justify-center rounded-full border border-border bg-accent px-1.5 font-mono text-xs leading-none text-foreground">
             {token}
           </span>
         </Fragment>
@@ -47,8 +47,9 @@ function KeyCombo({ combo }: { combo: string }) {
 }
 
 /**
- * Keyboard shortcuts quick-reference overlay. Opens on "?" (outside text
- * inputs) or mod+/ anywhere; closes with Esc via the dialog primitive.
+ * Keyboard shortcuts quick-reference drawer (`ui/sheet`, right side, L3
+ * glass). Opens on "?" (outside text inputs) or mod+/ anywhere; closes with
+ * Esc and returns focus to the trigger via the sheet primitive.
  * Content is rendered from the central registry in lib/shortcutRegistry.ts.
  */
 export function ShortcutsSheet({ open, onOpenChange }: ShortcutsSheetProps) {
@@ -58,16 +59,16 @@ export function ShortcutsSheet({ open, onOpenChange }: ShortcutsSheetProps) {
   useHotkey("mod+/", () => onOpenChange(!open));
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{t("shortcuts.title")}</DialogTitle>
-          <DialogDescription>{t("shortcuts.description")}</DialogDescription>
-        </DialogHeader>
-        <DialogBody className="space-y-4">
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent side="right">
+        <SheetHeader>
+          <SheetTitle>{t("shortcuts.title")}</SheetTitle>
+          <SheetDescription>{t("shortcuts.description")}</SheetDescription>
+        </SheetHeader>
+        <SheetBody className="space-y-5">
           {SHORTCUT_GROUPS.map((group) => (
             <section key={group.id} aria-label={t(group.titleKey)}>
-              <h3 className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              <h3 className="text-xs font-medium text-muted-foreground">
                 {t(group.titleKey)}
               </h3>
               <ul className="mt-1.5">
@@ -103,8 +104,8 @@ export function ShortcutsSheet({ open, onOpenChange }: ShortcutsSheetProps) {
               </ul>
             </section>
           ))}
-        </DialogBody>
-      </DialogContent>
-    </Dialog>
+        </SheetBody>
+      </SheetContent>
+    </Sheet>
   );
 }

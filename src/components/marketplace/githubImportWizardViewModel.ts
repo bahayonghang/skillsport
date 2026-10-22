@@ -209,7 +209,7 @@ export function getGitHubImportWizardShellState({
   const dialogContentClassName = cn(
     "flex flex-col overflow-hidden p-0",
     isInputStep
-      ? "h-auto max-h-[min(92vh,32rem)] !w-[min(92vw,48rem)] !max-w-[min(92vw,48rem)]"
+      ? "h-auto max-h-[min(92vh,40rem)] !w-[min(92vw,60rem)] !max-w-[min(92vw,60rem)]"
       : "h-[min(90vh,760px)] !w-[min(94vw,1180px)] !max-w-[min(94vw,1180px)] xl:!w-[min(95vw,1280px)] xl:!max-w-[min(95vw,1280px)]",
   );
   const importProgressPercent = getImportProgressPercent(importProgress);

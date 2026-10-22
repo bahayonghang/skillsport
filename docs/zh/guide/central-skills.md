@@ -68,9 +68,9 @@ Saved Views 和 Tag Groups 都存储在本地 SkillPort 数据库中。它们只
 
 ![中央技能库视图](/images/01.png)
 
-![技能详情与平台安装状态](/images/02.png)
+![GitHub 仓库导入向导](/images/02.png)
 
-![集合与批量工作流](/images/03.png)
+![技能集合视图](/images/05.png)
 
 ## 自动中央化
 

@@ -19,8 +19,7 @@ import { useTranslation } from "react-i18next";
 import { LogsActivityCard } from "@/components/logs/LogsActivityCard";
 import { LogsEmptyState } from "@/components/logs/LogsEmptyState";
 import { LogsKpiRow } from "@/components/logs/LogsKpiRow";
-import { LogsListRow } from "@/components/logs/LogsListRow";
-import type { LogsListDensity } from "@/components/logs/LogsListRow";
+import { LogsListRow, type LogsListDensity } from "@/components/logs/LogsListRow";
 import { LogsListSkeleton } from "@/components/logs/LogsListSkeleton";
 import { LogsLoadMore } from "@/components/logs/LogsLoadMore";
 import { LogsQuickFilters } from "@/components/logs/LogsQuickFilters";
@@ -36,10 +35,14 @@ import {
   fromStartDateInput,
   loadLogDensity,
   LOG_DENSITY_STORAGE_KEY,
+  LOG_FILTER_SELECT_CLASS,
+  LOG_TABLE_HEAD_CLASS,
+  LOG_TEXT_BUTTON_CLASS,
   toDateInput,
 } from "@/components/logs/logViewUtils";
 import { useLogsKeyboard } from "@/components/logs/useLogsKeyboard";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -50,6 +53,8 @@ import {
 } from "@/components/ui/dialog";
 import { InlineConfirmAction } from "@/components/ui/inline-confirm-action";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
+import { cn } from "@/lib/utils";
 import { RuntimeLogsPanel } from "@/components/logs/RuntimeLogsPanel";
 import { formatLogUiError } from "@/components/logs/logDiagnostics";
 import { useOperationLogStore } from "@/stores/operationLogStore";
@@ -129,14 +134,14 @@ function PendingRecoveryBand() {
   return (
     <section
       aria-label={t("logs.recovery.title")}
-      className="shrink-0 border-b border-amber-500/30 bg-amber-500/8 px-5 py-3"
+      className="glass-panel tint-warning mx-4 mb-4 shrink-0 rounded-card px-4 py-3 lg:mx-6"
     >
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="flex min-w-0 items-start gap-3">
           {isLoading ? (
-            <Loader2 className="mt-0.5 size-4 shrink-0 animate-spin text-amber-700 dark:text-amber-300" />
+            <Loader2 className="mt-0.5 size-4 shrink-0 animate-spin text-warning-foreground" />
           ) : (
-            <AlertTriangle className="mt-0.5 size-4 shrink-0 text-amber-700 dark:text-amber-300" />
+            <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning-foreground" />
           )}
           <div className="min-w-0">
             <div className="text-sm font-medium">
@@ -160,7 +165,7 @@ function PendingRecoveryBand() {
               className="flex items-center gap-1"
             >
               <Button
-                variant="outline"
+                variant="glass"
                 size="sm"
                 disabled={
                   retryingId !== null ||
@@ -237,7 +242,7 @@ function PendingRecoveryBand() {
             </DialogDescription>
           </DialogHeader>
           {preview && preview.blockerCodes.length > 0 && (
-            <ul className="space-y-1 text-sm text-destructive">
+            <ul className="space-y-1 text-sm text-destructive-text">
               {preview.blockerCodes.map((code) => (
                 <li key={code}>
                   {t(`backendErrors.${code}`, {
@@ -248,7 +253,7 @@ function PendingRecoveryBand() {
             </ul>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={closeReconciliation}>
+            <Button variant="glass" onClick={closeReconciliation}>
               {t("common.cancel")}
             </Button>
             {preview?.eligible && (
@@ -412,216 +417,219 @@ function OperationLogsPanel({
   return (
     <div className="flex h-full min-h-0 flex-col">
       <PendingRecoveryBand />
-      <div className="shrink-0 border-b border-border px-5 py-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              {t("logs.title")}
-            </h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {t("logs.description")}
-            </p>
+      <div className="shrink-0 px-4 pb-4 lg:px-6">
+        <Card className="gap-0 p-4">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+            <div>
+              <h2 className="text-base font-semibold">{t("logs.title")}</h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t("logs.description")}
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  loadLogs().catch((err) =>
+                    toast.error(
+                      t("logs.loadError", {
+                        error: formatLogUiError(err, t),
+                      }),
+                    ),
+                  )
+                }
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <RefreshCw className="size-4" />
+                )}
+                {t("common.refresh")}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleExport}
+                disabled={isExporting || isLoading}
+              >
+                {isExporting ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <Download className="size-4" />
+                )}
+                {t("common.export")}
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  setDensity((current) =>
+                    current === "compact" ? "comfortable" : "compact",
+                  )
+                }
+                aria-label={t("logs.density.toggleLabel")}
+                title={`${t("logs.density.toggleLabel")} · ${t(`logs.density.${density}`)}`}
+                data-testid="logs-density-toggle"
+              >
+                <Rows3 className="size-4" />
+                {t(`logs.density.${density}`)}
+              </Button>
+              <InlineConfirmAction
+                idleAriaLabel={t("logs.clear")}
+                idleTitle={t("logs.clear")}
+                confirmLabel={t("logs.confirmClear")}
+                onConfirm={handleClear}
+                icon={<Trash2 className="size-4" />}
+                disabled={isClearing || isLoading}
+                isLoading={isClearing}
+              />
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() =>
-                loadLogs().catch((err) =>
-                  toast.error(
-                    t("logs.loadError", {
-                      error: formatLogUiError(err, t),
-                    }),
-                  ),
-                )
-              }
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <RefreshCw className="size-4" />
-              )}
-              {t("common.refresh")}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleExport}
-              disabled={isExporting || isLoading}
-            >
-              {isExporting ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <Download className="size-4" />
-              )}
-              {t("common.export")}
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() =>
-                setDensity((current) =>
-                  current === "compact" ? "comfortable" : "compact",
-                )
-              }
-              aria-label={t("logs.density.toggleLabel")}
-              title={`${t("logs.density.toggleLabel")} · ${t(`logs.density.${density}`)}`}
-              data-testid="logs-density-toggle"
-            >
-              <Rows3 className="size-4" />
-              {t(`logs.density.${density}`)}
-            </Button>
-            <InlineConfirmAction
-              idleAriaLabel={t("logs.clear")}
-              idleTitle={t("logs.clear")}
-              confirmLabel={t("logs.confirmClear")}
-              onConfirm={handleClear}
-              icon={<Trash2 className="size-4" />}
-              disabled={isClearing || isLoading}
-              isLoading={isClearing}
-            />
-          </div>
-        </div>
 
-        <form
-          onSubmit={handleSearch}
-          className="mt-4 grid gap-2 lg:grid-cols-[minmax(15rem,1.4fr)_repeat(3,minmax(8rem,0.9fr))_auto]"
-        >
-          <div ref={searchContainerRef} className="relative">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder={t("logs.searchPlaceholder")}
-              className="pl-8"
-            />
-          </div>
-          <select
-            value={filter.targetKind ?? ""}
-            onChange={(event) =>
-              updateFilter({ targetKind: event.target.value as never })
-            }
-            aria-label={t("logs.filters.target")}
-            className="h-8 rounded-lg border border-input bg-background px-2 text-sm"
+          <form
+            onSubmit={handleSearch}
+            className="mt-4 grid gap-2 lg:grid-cols-[minmax(15rem,1.4fr)_repeat(3,minmax(8rem,0.9fr))_auto]"
           >
-            <option value="">{t("logs.filters.allTargets")}</option>
-            <option value="local">{t("logs.targets.local")}</option>
-            <option value="ssh">{t("logs.targets.ssh")}</option>
-            <option value="wsl">{t("logs.targets.wsl")}</option>
-          </select>
-          <select
-            value={filter.level ?? ""}
-            onChange={(event) =>
-              updateFilter({ level: event.target.value as never })
-            }
-            aria-label={t("logs.filters.level")}
-            className="h-8 rounded-lg border border-input bg-background px-2 text-sm"
-          >
-            <option value="">{t("logs.filters.allLevels")}</option>
-            <option value="info">info</option>
-            <option value="warn">warn</option>
-            <option value="error">error</option>
-          </select>
-          <select
-            value={filter.status ?? ""}
-            onChange={(event) =>
-              updateFilter({ status: event.target.value as never })
-            }
-            aria-label={t("logs.filters.status")}
-            className="h-8 rounded-lg border border-input bg-background px-2 text-sm"
-          >
-            <option value="">{t("logs.filters.allStatuses")}</option>
-            <option value="started">{t("logs.status.started")}</option>
-            <option value="succeeded">{t("logs.status.succeeded")}</option>
-            <option value="failed">{t("logs.status.failed")}</option>
-            <option value="partial">{t("logs.status.partial")}</option>
-            <option value="cancelled">{t("logs.status.cancelled")}</option>
-            <option value="interrupted">{t("logs.status.interrupted")}</option>
-          </select>
-          <Button type="submit" size="sm" disabled={isLoading}>
-            {t("common.search")}
-          </Button>
-        </form>
-
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-          <LogsQuickFilters filter={filter} onApply={updateFilter} />
-          <button
-            type="button"
-            onClick={() => setAdvancedManual((value) => !value)}
-            aria-expanded={showAdvanced}
-            className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          >
-            {showAdvanced ? (
-              <ChevronUp className="size-3.5" />
-            ) : (
-              <ChevronDown className="size-3.5" />
-            )}
-            {t(
-              showAdvanced
-                ? "logs.advancedFilters.hide"
-                : "logs.advancedFilters.show",
-            )}
-          </button>
-        </div>
-
-        {showAdvanced && (
-          <div className="mt-3 grid gap-2 lg:grid-cols-4">
-            <Input
-              value={operationIdDraft}
-              onChange={(event) => setOperationIdDraft(event.target.value)}
-              placeholder={t("logs.filters.operationId")}
-              aria-label={t("logs.filters.operationId")}
-              className="font-mono"
-            />
-            <Input
-              value={filter.action ?? ""}
-              onChange={(event) => updateFilter({ action: event.target.value })}
-              placeholder={t("logs.filters.action")}
-              aria-label={t("logs.filters.action")}
-            />
-            <Input
-              type="date"
-              value={toDateInput(filter.createdAfter)}
+            <div ref={searchContainerRef} className="relative">
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={t("logs.searchPlaceholder")}
+                className="pl-8"
+              />
+            </div>
+            <select
+              value={filter.targetKind ?? ""}
               onChange={(event) =>
-                updateFilter({
-                  createdAfter: fromStartDateInput(event.target.value),
-                })
+                updateFilter({ targetKind: event.target.value as never })
               }
-              aria-label={t("logs.filters.from")}
-            />
-            <Input
-              type="date"
-              value={toDateInput(filter.createdBefore)}
+              aria-label={t("logs.filters.target")}
+              className={LOG_FILTER_SELECT_CLASS}
+            >
+              <option value="">{t("logs.filters.allTargets")}</option>
+              <option value="local">{t("logs.targets.local")}</option>
+              <option value="ssh">{t("logs.targets.ssh")}</option>
+              <option value="wsl">{t("logs.targets.wsl")}</option>
+            </select>
+            <select
+              value={filter.level ?? ""}
               onChange={(event) =>
-                updateFilter({
-                  createdBefore: fromEndDateInput(event.target.value),
-                })
+                updateFilter({ level: event.target.value as never })
               }
-              aria-label={t("logs.filters.to")}
-            />
+              aria-label={t("logs.filters.level")}
+              className={LOG_FILTER_SELECT_CLASS}
+            >
+              <option value="">{t("logs.filters.allLevels")}</option>
+              <option value="info">info</option>
+              <option value="warn">warn</option>
+              <option value="error">error</option>
+            </select>
+            <select
+              value={filter.status ?? ""}
+              onChange={(event) =>
+                updateFilter({ status: event.target.value as never })
+              }
+              aria-label={t("logs.filters.status")}
+              className={LOG_FILTER_SELECT_CLASS}
+            >
+              <option value="">{t("logs.filters.allStatuses")}</option>
+              <option value="started">{t("logs.status.started")}</option>
+              <option value="succeeded">{t("logs.status.succeeded")}</option>
+              <option value="failed">{t("logs.status.failed")}</option>
+              <option value="partial">{t("logs.status.partial")}</option>
+              <option value="cancelled">{t("logs.status.cancelled")}</option>
+              <option value="interrupted">{t("logs.status.interrupted")}</option>
+            </select>
+            <Button type="submit" size="sm" disabled={isLoading}>
+              {t("common.search")}
+            </Button>
+          </form>
+
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+            <LogsQuickFilters filter={filter} onApply={updateFilter} />
+            <button
+              type="button"
+              onClick={() => setAdvancedManual((value) => !value)}
+              aria-expanded={showAdvanced}
+              className="focus-ring inline-flex h-7 items-center gap-1 rounded-pill border border-glass-stroke bg-popover px-3 text-xs text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground"
+            >
+              {showAdvanced ? (
+                <ChevronUp className="size-3.5" />
+              ) : (
+                <ChevronDown className="size-3.5" />
+              )}
+              {t(
+                showAdvanced
+                  ? "logs.advancedFilters.hide"
+                  : "logs.advancedFilters.show",
+              )}
+            </button>
           </div>
-        )}
-        <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
-          <span>{t("logs.total", { count: total })}</span>
-          <button
-            type="button"
-            onClick={handleResetFilters}
-            className="inline-flex items-center gap-1 rounded px-2 py-1 hover:bg-muted"
-          >
-            <RotateCcw className="size-3" />
-            {t("logs.resetFilters")}
-          </button>
-        </div>
+
+          {showAdvanced && (
+            <div className="mt-3 grid gap-2 lg:grid-cols-4">
+              <Input
+                value={operationIdDraft}
+                onChange={(event) => setOperationIdDraft(event.target.value)}
+                placeholder={t("logs.filters.operationId")}
+                aria-label={t("logs.filters.operationId")}
+                className="font-mono"
+              />
+              <Input
+                value={filter.action ?? ""}
+                onChange={(event) => updateFilter({ action: event.target.value })}
+                placeholder={t("logs.filters.action")}
+                aria-label={t("logs.filters.action")}
+              />
+              <Input
+                type="date"
+                value={toDateInput(filter.createdAfter)}
+                onChange={(event) =>
+                  updateFilter({
+                    createdAfter: fromStartDateInput(event.target.value),
+                  })
+                }
+                aria-label={t("logs.filters.from")}
+              />
+              <Input
+                type="date"
+                value={toDateInput(filter.createdBefore)}
+                onChange={(event) =>
+                  updateFilter({
+                    createdBefore: fromEndDateInput(event.target.value),
+                  })
+                }
+                aria-label={t("logs.filters.to")}
+              />
+            </div>
+          )}
+          <div className="mt-2 flex items-center justify-between text-xs text-muted-foreground">
+            <span>{t("logs.total", { count: total })}</span>
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className={LOG_TEXT_BUTTON_CLASS}
+            >
+              <RotateCcw className="size-3" />
+              {t("logs.resetFilters")}
+            </button>
+          </div>
+        </Card>
       </div>
 
       {error && (
-        <div className="mx-5 mt-3 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive-text">
+        <div
+          role="alert"
+          className="glass-panel tint-destructive mx-4 mb-4 rounded-card px-4 py-2.5 text-sm text-destructive-text lg:mx-6"
+        >
           {t("logs.loadError", { error: formatLogUiError(error, t) })}
         </div>
       )}
 
-      <div className="min-h-0 flex-1 space-y-5 overflow-auto p-5">
+      <div className="min-h-0 flex-1 space-y-5 overflow-auto px-4 pb-4 lg:px-6 lg:pb-6">
         <LogsKpiRow kpi={kpi} total={total} loadedCount={entries.length} />
 
         {entries.length > 0 && (
@@ -638,8 +646,13 @@ function OperationLogsPanel({
           />
         )}
 
-        <div className="overflow-hidden rounded-xl border border-border">
-          <div className="grid grid-cols-[9rem_4.5rem_minmax(0,1fr)_minmax(0,1.6fr)_5rem_7rem] gap-3 border-b border-border bg-muted/40 px-3 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <div className="glass-panel overflow-hidden rounded-card">
+          <div
+            className={cn(
+              "grid grid-cols-[9rem_4.5rem_minmax(0,1fr)_minmax(0,1.6fr)_5rem_7rem] gap-3",
+              LOG_TABLE_HEAD_CLASS,
+            )}
+          >
             <div>{t("logs.columns.time")}</div>
             <div>{t("logs.columns.level")}</div>
             <div>{t("logs.columns.target")}</div>
@@ -659,7 +672,7 @@ function OperationLogsPanel({
             <div ref={rowsContainerRef}>
               {groups.map((group) => (
                 <div key={group.key}>
-                  <div className="border-b border-border/70 bg-muted/30 px-3 py-1.5 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  <div className="border-b border-border bg-accent px-3 py-1.5 text-xs font-medium text-muted-foreground">
                     {t(`logs.groups.${group.key}`)} · {group.entries.length}
                   </div>
                   {group.entries.map((entry) => (
@@ -733,45 +746,46 @@ export function OperationLogsView() {
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-background">
-      <div className="shrink-0 border-b border-border px-5 py-4">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              {t("logs.console.title")}
-            </h1>
-            <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+    <div className="flex h-full min-h-0 flex-col">
+      <div className="shrink-0 px-4 pt-4 pb-4 lg:px-6 lg:pt-6">
+        <PageHeader
+          title={t("logs.console.title")}
+          meta={
+            <span className="block max-w-3xl">
               {t("logs.console.description")}
-            </p>
-          </div>
-          <div
-            role="tablist"
-            aria-label={t("logs.console.modeLabel")}
-            className="inline-flex rounded-xl border border-border bg-card/80 p-1 shadow-sm"
-          >
-            {(["operation", "runtime"] as const).map((item) => (
-              <button
-                key={item}
-                type="button"
-                role="tab"
-                aria-selected={mode === item}
-                onClick={() => setMode(item)}
-                className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                  mode === item
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                }`}
-              >
-                {item === "operation" ? (
-                  <Rows3 className="size-4" />
-                ) : (
-                  <Terminal className="size-4" />
-                )}
-                {t(`logs.console.modes.${item}`)}
-              </button>
-            ))}
-          </div>
-        </div>
+            </span>
+          }
+          actions={
+            <div
+              role="tablist"
+              aria-label={t("logs.console.modeLabel")}
+              className="glass-panel inline-flex rounded-pill p-1"
+            >
+              {(["operation", "runtime"] as const).map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  role="tab"
+                  aria-selected={mode === item}
+                  onClick={() => setMode(item)}
+                  className={cn(
+                    "focus-ring inline-flex h-8 items-center gap-2 rounded-pill border px-3.5 text-sm font-medium transition-colors duration-150",
+                    mode === item
+                      ? "border-primary-stroke bg-primary-tint text-primary-text"
+                      : "border-transparent text-muted-foreground hover:bg-accent hover:text-foreground",
+                  )}
+                >
+                  {item === "operation" ? (
+                    <Rows3 className="size-4" />
+                  ) : (
+                    <Terminal className="size-4" />
+                  )}
+                  {t(`logs.console.modes.${item}`)}
+                </button>
+              ))}
+            </div>
+          }
+        />
       </div>
 
       <div className="min-h-0 flex-1">

@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-2.md`
-- **Total Sessions**: 114
-- **Last Active**: 2026-08-31
+- **Total Sessions**: 121
+- **Last Active**: 2026-10-20
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-2.md` | ~1737 | Active |
+| `journal-2.md` | ~1934 | Active |
 | `journal-1.md` | ~1994 | Archived |
 <!-- @@@/auto:active-documents -->
 
@@ -30,6 +30,13 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 121 | 2026-10-20 | GitHub 导入：缺失分支误报修复、失败审计与输入卡片优化 | `b5d53bc6`, `09ec111b`, `fe3f1160` | `fix/github-import-branch-default` |
+| 120 | 2026-10-13 | Skill Usage 界面与增量扫描优化收尾 | `98502384` | `codex/skill-usage-optimization` |
+| 119 | 2026-10-12 | 侧栏排序与首页库存布局优化 | `e2a83f44`, `9205fd7b` | `dev` |
+| 118 | 2026-10-12 | 主题切换去掉误触发的颜色插值 | `fd78ce5c`, `6f2df388` | `dev` |
+| 117 | 2026-10-12 | 主侧栏 Global 与 Project Workspaces | `69401b1ab1b3c0319e0884ba3f6b3d9e98336ce8` | `feat/sidebar-global-project-workspaces` |
+| 116 | 2026-10-08 | 提交 Rules 管理并归档已完成任务 | `a03951e1`, `d7e57ac4` | `dev` |
+| 115 | 2026-10-08 | 小文件性能优化提交与归档 | `112120cb130c31e195f3fdf497f33fd13eb514e7`, `48d983e0e30edfdf27c9fbc908c2e3b747be5fda` | `dev` |
 | 114 | 2026-08-31 | 风险导向测试覆盖第二轮 | `130ab3d10f5be9f1f0dc907ef6a00057200ef1e1`, `b4265f7a`, `ac3b9c61`, `ab2e6c27`, `f740aaf3`, `53db6a54` | `dev` |
 | 113 | 2026-08-30 | 风险导向测试覆盖补强 | `3678384a8ad23a2f06f49af4a068b5ce07220fc6`, `11fdac905a65602095716a93c1116b4b6b5c3e37`, `7a5a657b2f8fa76340f53f3b2146a9acb0a6aadb`, `817be67f5b347b64dbea6791c4d3fda9e042a3e0`, `18586b1977aa7dd054435f45e45da3e20025352c` | `dev` |
 | 112 | 2026-08-30 | 全项目依赖审计与分批升级 | `5e63eb02e0cf5e2a31e92048d3eea244afe1339f` | `dev` |

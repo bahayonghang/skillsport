@@ -1,7 +1,5 @@
 import type { TFunction } from "i18next";
 
-import type { CatppuccinAccent, ThemeFlavor } from "@/stores/themeStore";
-import { THEME_FLAVORS } from "@/stores/themeStore";
 import type { AiSettings } from "@/stores/settingsStore";
 import { deriveHomeDir, joinPathForDisplay } from "@/lib/path";
 import {
@@ -40,34 +38,6 @@ export const EMPTY_WSL_TARGET_FORM: WslTargetFormState = {
   label: "",
   distribution: "",
 };
-
-export const FLAVOR_COLORS: Record<ThemeFlavor, string> = {
-  mocha: "#b4befe",
-  macchiato: "#b7bdf8",
-  frappe: "#babbf1",
-  latte: "#7287fd",
-  "claude-light": "#cc785c",
-  "claude-dark": "#cc785c",
-};
-
-export const CTP_VAR_MAP: Record<CatppuccinAccent, string> = {
-  rosewater: "--ctp-rosewater",
-  flamingo: "--ctp-flamingo",
-  pink: "--ctp-pink",
-  mauve: "--ctp-mauve",
-  red: "--ctp-red",
-  maroon: "--ctp-maroon",
-  peach: "--ctp-peach",
-  yellow: "--ctp-yellow",
-  green: "--ctp-green",
-  teal: "--ctp-teal",
-  sky: "--ctp-sky",
-  sapphire: "--ctp-sapphire",
-  blue: "--ctp-blue",
-  lavender: "--ctp-lavender",
-};
-
-export const FLAVOR_ORDER: ThemeFlavor[] = THEME_FLAVORS;
 
 export interface PlatformVisibilityGroupViewModel {
   agents: PlatformTarget[];

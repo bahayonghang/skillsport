@@ -43,10 +43,7 @@ Cross-platform shortcuts wired by `react-router` plus the global command palette
 
 ## Theme
 
-| Shortcut | Action |
-| --- | --- |
-| `Ctrl+Shift+L` | Cycle Catppuccin variant |
-| `Ctrl+Shift+A` | Cycle accent color |
+There is no theme keyboard shortcut. Use **Dark mode / Light mode** at the bottom of the sidebar (reachable with `Tab`) or **Settings → Appearance**.
 
 ## Notes
 

@@ -86,7 +86,7 @@ export function SkillsCliToolbar({
             type="button"
             className={cn(
               ICON_HIT,
-              "absolute right-0.5 top-1/2 -translate-y-1/2 rounded-md text-muted-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              "focus-ring absolute right-0.5 top-1/2 -translate-y-1/2 rounded-control text-muted-foreground",
             )}
             onClick={() => onQueryChange("")}
             aria-label={t("skillsCli.searchClear")}
@@ -106,10 +106,10 @@ export function SkillsCliToolbar({
             type="button"
             aria-pressed={groupBy === option.id}
             className={cn(
-              "rounded-md border px-2 py-1 text-xs font-medium",
+              "focus-ring rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
               groupBy === option.id
-                ? "border-primary bg-primary/10 text-primary-text"
-                : "border-border text-muted-foreground hover:bg-accent/40",
+                ? "border-primary-stroke bg-primary-tint text-primary-text"
+                : "border-glass-stroke bg-popover text-muted-foreground hover:bg-accent hover:text-foreground",
             )}
             onClick={() => onGroupByChange(option.id)}
           >
@@ -131,8 +131,8 @@ export function SkillsCliToolbar({
             className={cn(
               "rounded-full border px-2 py-1 text-xs font-medium",
               platformFilter === target.id
-                ? "border-primary bg-primary/10 text-primary-text"
-                : "border-border text-muted-foreground hover:bg-accent/40",
+                ? "border-primary-stroke bg-primary-tint text-primary-text"
+                : "border-glass-stroke bg-popover text-muted-foreground hover:bg-accent hover:text-foreground",
             )}
             onClick={() =>
               onPlatformFilterChange(
@@ -148,10 +148,10 @@ export function SkillsCliToolbar({
         type="button"
         aria-pressed={unlinkedOnly}
         className={cn(
-          "rounded-md border px-2 py-1 text-xs font-medium",
+          "focus-ring rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
           unlinkedOnly
-            ? "border-primary bg-primary/10 text-primary-text"
-            : "border-border text-muted-foreground hover:bg-accent/40",
+            ? "border-primary-stroke bg-primary-tint text-primary-text"
+            : "border-glass-stroke bg-popover text-muted-foreground hover:bg-accent hover:text-foreground",
         )}
         onClick={() => onUnlinkedOnlyChange(!unlinkedOnly)}
       >
@@ -161,10 +161,10 @@ export function SkillsCliToolbar({
         type="button"
         aria-pressed={selectMode}
         className={cn(
-          "rounded-md border px-2 py-1 text-xs font-medium",
+          "focus-ring rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
           selectMode
-            ? "border-primary bg-primary/10 text-primary-text"
-            : "border-border text-muted-foreground hover:bg-accent/40",
+            ? "border-primary-stroke bg-primary-tint text-primary-text"
+            : "border-glass-stroke bg-popover text-muted-foreground hover:bg-accent hover:text-foreground",
         )}
         onClick={() => onSelectModeChange(!selectMode)}
       >
@@ -172,7 +172,7 @@ export function SkillsCliToolbar({
       </button>
       <Button
         type="button"
-        variant="outline"
+        variant="glass"
         disabled={cleanupUnavailableDisabled}
         title={mutationLockReason}
         onClick={() => onCleanupUnavailable?.()}
@@ -183,7 +183,7 @@ export function SkillsCliToolbar({
       </Button>
       <Button
         type="button"
-        variant="outline"
+        variant="glass"
         disabled={exportDisabled}
         onClick={() => onExportAll?.()}
         aria-label={t("skillsCli.exportAll")}

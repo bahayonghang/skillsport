@@ -1,9 +1,17 @@
-import { Globe2, Palette, SlidersHorizontal, Type, type LucideIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import {
+  CheckCircle2,
+  Globe2,
+  Palette,
+  SlidersHorizontal,
+  Type,
+  type LucideIcon,
+} from "lucide-react";
+import { useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { WindowMaterialSetting } from "@/components/settings/WindowMaterialSetting";
 import {
   BODY_FONT_OPTIONS,
   CHINESE_FALLBACK_OPTIONS,
@@ -27,19 +35,13 @@ import {
 import { cn } from "@/lib/utils";
 import {
   fontThemeModeForFlavor,
-  type CatppuccinAccent,
+  THEME_FLAVORS,
   type FontThemeMode,
   type ThemeFlavor,
 } from "@/stores/themeStore";
 
 interface AppearanceSettingsSectionProps {
-  accent: CatppuccinAccent;
-  accentNames: CatppuccinAccent[];
-  ctpVarMap: Record<CatppuccinAccent, string>;
   flavor: ThemeFlavor;
-  flavorColors: Record<ThemeFlavor, string>;
-  flavorOrder: ThemeFlavor[];
-  onSetAccent: (accent: CatppuccinAccent) => void;
   onSetFlavor: (flavor: ThemeFlavor) => void;
 }
 
@@ -49,13 +51,7 @@ interface FontOption {
 }
 
 export function AppearanceSettingsSection({
-  accent,
-  accentNames,
-  ctpVarMap,
   flavor,
-  flavorColors,
-  flavorOrder,
-  onSetAccent,
   onSetFlavor,
 }: AppearanceSettingsSectionProps) {
   const { t, i18n } = useTranslation();
@@ -161,78 +157,28 @@ export function AppearanceSettingsSection({
   }
 
   return (
-    <div
-      className="divide-y divide-border/70 border-y border-border/70"
-      data-settings-section="appearance"
-    >
+    <div className="space-y-4" data-settings-section="appearance">
       <SettingGroup
         icon={Palette}
         title={t("settings.appearance.themeGroup")}
         description={t("settings.appearance.themeGroupDesc")}
       >
         <div className="space-y-5">
-          <ControlField label={t("settings.flavor")}>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {flavorOrder.map((item) => {
-                const active = flavor === item;
-                return (
-                  <button
-                    key={item}
-                    type="button"
-                    aria-pressed={active}
-                    onClick={() => onSetFlavor(item)}
-                    className={cn(
-                      "focus-ring flex min-h-10 items-center gap-2 rounded-lg px-3 text-left text-sm transition-[scale,background-color,color] active:scale-[0.96]",
-                      active
-                        ? "bg-primary/12 text-foreground"
-                        : "bg-muted/35 text-muted-foreground hover:bg-muted/65 hover:text-foreground",
-                    )}
-                  >
-                    <span
-                      className="size-2.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: flavorColors[item] }}
-                      aria-hidden="true"
-                    />
-                    <span className="truncate">{t(`settings.${item}`)}</span>
-                  </button>
-                );
-              })}
+          <ControlField label={t("settings.appearance.themeMode")}>
+            <div className="grid max-w-xl gap-3 sm:grid-cols-2">
+              {THEME_FLAVORS.map((item) => (
+                <ThemePreviewCard
+                  key={item}
+                  flavor={item}
+                  selected={item === flavor}
+                  onSelect={() => onSetFlavor(item)}
+                />
+              ))}
             </div>
           </ControlField>
-
-          <ControlField label={t("settings.accentColor")}>
-            <div
-              className="flex flex-wrap gap-1.5"
-              role="radiogroup"
-              aria-label={t("settings.accentColor")}
-            >
-              {accentNames.map((name) => {
-                const selected = accent === name;
-                return (
-                  <button
-                    key={name}
-                    type="button"
-                    role="radio"
-                    aria-checked={selected}
-                    aria-label={t(`settings.accent.${name}`)}
-                    onClick={() => onSetAccent(name)}
-                    className={cn(
-                      "focus-ring relative grid size-10 place-items-center rounded-full transition-[scale,box-shadow] active:scale-[0.96]",
-                      selected
-                        ? "shadow-[0_0_0_2px_var(--background),0_0_0_4px_var(--ring)]"
-                        : "hover:shadow-[0_0_0_2px_var(--background),0_0_0_3px_var(--border)]",
-                    )}
-                  >
-                    <span
-                      className="size-6 rounded-full"
-                      style={{ backgroundColor: `var(${ctpVarMap[name]})` }}
-                      aria-hidden="true"
-                    />
-                  </button>
-                );
-              })}
-            </div>
-          </ControlField>
+          <div className="border-t border-border pt-4">
+            <WindowMaterialSetting />
+          </div>
         </div>
       </SettingGroup>
 
@@ -257,7 +203,7 @@ export function AppearanceSettingsSection({
         description={t("settings.appearance.typographyGroupDesc")}
       >
         <div className="space-y-5">
-          <ControlField label={t("settings.appearance.fontThemeMode") }>
+          <ControlField label={t("settings.appearance.fontThemeMode")}>
             <SegmentedControl
               options={(["light", "dark"] as const).map((mode) => ({
                 value: mode,
@@ -274,7 +220,7 @@ export function AppearanceSettingsSection({
             />
           </ControlField>
 
-          <div className="grid gap-5 divide-y divide-border/70 xl:grid-cols-2 xl:divide-x xl:divide-y-0 [&>*+*]:pt-5 xl:[&>*+*]:pt-0 xl:[&>*+*]:pl-5">
+          <div className="grid gap-5 divide-y divide-border xl:grid-cols-2 xl:gap-0 xl:divide-x xl:divide-y-0 [&>*+*]:pt-5 xl:[&>*+*]:pt-0 xl:[&>*+*]:pl-5 xl:[&>*:first-child]:pr-5">
             <FontRoleControl
               groupLabel={t("settings.appearance.displayFontOptionsLabel")}
               title={t("settings.appearance.displayFont")}
@@ -347,10 +293,8 @@ export function AppearanceSettingsSection({
             value={String(prefs.scale)}
             onChange={(value) => void handleScale(Number(value))}
           />
-          <div className="flex min-h-16 items-center justify-between gap-4 rounded-lg bg-muted/35 px-4 py-3 ring-1 ring-border/60">
-            <span
-              className="font-display text-base font-semibold tabular-nums"
-            >
+          <div className="flex min-h-16 items-center justify-between gap-4 rounded-inner bg-accent px-4 py-3">
+            <span className="font-display text-base font-semibold tabular-nums">
               {t("settings.appearance.scaleSpecimen")}
             </span>
             <span className="text-sm tabular-nums text-muted-foreground">
@@ -360,6 +304,90 @@ export function AppearanceSettingsSection({
         </div>
       </SettingGroup>
     </div>
+  );
+}
+
+/**
+ * Theme choice as a preview card (DESIGN.md Settings · Appearance): a
+ * miniature canvas with a sidebar and two panels painted from the target
+ * theme's own tokens (the preview subtree carries that `data-theme`, so the
+ * swatch is right whichever theme is active). No real blur. Selected = mint
+ * stroke + check icon + `aria-pressed`; the accessible name is the theme
+ * label only, the description is wired through `aria-describedby`.
+ */
+function ThemePreviewCard({
+  flavor,
+  selected,
+  onSelect,
+}: {
+  flavor: ThemeFlavor;
+  selected: boolean;
+  onSelect: () => void;
+}) {
+  const { t } = useTranslation();
+  const labelId = useId();
+  const descriptionId = useId();
+
+  return (
+    <button
+      type="button"
+      aria-pressed={selected}
+      aria-labelledby={labelId}
+      aria-describedby={descriptionId}
+      data-theme-preview={flavor}
+      onClick={onSelect}
+      className={cn(
+        "focus-ring group flex min-w-0 flex-col gap-3 rounded-inner border p-2 text-left transition-[border-color,background-color,scale] duration-150 active:scale-[0.98] motion-reduce:active:scale-100",
+        selected
+          ? "tint-primary border-primary-stroke"
+          : "border-border hover:bg-accent",
+      )}
+    >
+      <span
+        aria-hidden="true"
+        data-theme={flavor}
+        className="relative block h-24 overflow-hidden rounded-control bg-(--background) bg-[radial-gradient(10rem_6rem_at_10%_0%,var(--canvas-blob-1),transparent_70%),radial-gradient(10rem_6rem_at_95%_100%,var(--canvas-blob-2),transparent_70%),linear-gradient(135deg,var(--canvas-from),var(--canvas-to))]"
+      >
+        <span className="absolute inset-y-2 left-2 flex w-1/4 flex-col gap-1.5 rounded-control border border-glass-stroke bg-sidebar p-1.5">
+          <span className="h-2 w-full rounded-full border border-primary-stroke bg-primary-tint" />
+          <span className="h-1.5 w-3/4 rounded-full bg-muted-foreground/30" />
+          <span className="h-1.5 w-2/3 rounded-full bg-muted-foreground/30" />
+        </span>
+        <span className="absolute top-2 right-2 left-[calc(25%+1rem)] flex h-9 items-center gap-1.5 rounded-control border border-glass-stroke bg-card px-2">
+          <span className="h-1.5 w-1/3 rounded-full bg-foreground/70" />
+          <span className="ml-auto h-3 w-6 rounded-full bg-primary" />
+        </span>
+        <span className="absolute right-2 bottom-2 left-[calc(25%+1rem)] grid h-9 grid-cols-2 gap-1.5">
+          <span className="rounded-control bg-card tint-primary" />
+          <span className="rounded-control bg-card tint-secondary" />
+        </span>
+      </span>
+      <span className="flex min-w-0 items-start justify-between gap-2 px-1 pb-1">
+        <span className="min-w-0">
+          <span
+            id={labelId}
+            className={cn(
+              "block text-sm font-medium",
+              selected ? "text-primary-text" : "text-foreground",
+            )}
+          >
+            {t(`settings.appearance.themeOption.${flavor}`)}
+          </span>
+          <span
+            id={descriptionId}
+            className="mt-0.5 block text-xs text-muted-foreground"
+          >
+            {t(`settings.appearance.themeOptionDesc.${flavor}`)}
+          </span>
+        </span>
+        {selected ? (
+          <CheckCircle2
+            className="mt-0.5 size-4 shrink-0 text-primary-text"
+            aria-hidden="true"
+          />
+        ) : null}
+      </span>
+    </button>
   );
 }
 
@@ -375,7 +403,7 @@ function SettingGroup({
   children: React.ReactNode;
 }) {
   return (
-    <section className="grid gap-4 py-6 md:grid-cols-[minmax(10rem,12rem)_minmax(0,1fr)] md:gap-6">
+    <section className="glass-panel grid gap-4 rounded-card px-5 py-5 md:grid-cols-[minmax(10rem,12rem)_minmax(0,1fr)] md:gap-6">
       <div className="flex items-start gap-2.5">
         <Icon className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
         <div className="min-w-0">
@@ -407,6 +435,8 @@ function ControlField({
   );
 }
 
+// Segmented pill group (same language as the Usage filter groups): neutral
+// `bg-accent` track, selected item = mint tint + 1px mint stroke + mint text.
 function SegmentedControl({
   options,
   value,
@@ -417,7 +447,7 @@ function SegmentedControl({
   onChange: (value: string) => void;
 }) {
   return (
-    <div className="inline-flex min-h-10 max-w-full flex-wrap gap-1 rounded-lg bg-muted/45 p-1">
+    <div className="inline-flex max-w-full flex-wrap gap-0.5 rounded-pill bg-accent p-0.5">
       {options.map((option) => {
         const active = value === option.value;
         return (
@@ -429,9 +459,9 @@ function SegmentedControl({
             aria-pressed={active}
             onClick={() => onChange(option.value)}
             className={cn(
-              "min-h-10 px-3",
+              "h-10 min-h-10 px-4 text-sm md:h-10",
               active
-                ? "bg-background text-foreground shadow-sm hover:bg-background"
+                ? "border-primary-stroke bg-primary-tint text-primary-text hover:bg-primary-tint hover:text-primary-text"
                 : "text-muted-foreground hover:text-foreground",
             )}
           >
@@ -481,9 +511,9 @@ function FontRoleControl({
   const { t } = useTranslation();
 
   return (
-    <div className="grid min-w-0 gap-4" role="group" aria-label={groupLabel}>
+    <div className="grid min-w-0 content-start gap-4" role="group" aria-label={groupLabel}>
       <h3 className="font-heading text-sm font-semibold leading-5">{title}</h3>
-      <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(14rem,1fr))]">
+      <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(min(14rem,100%),1fr))]">
         <div className="space-y-3">
           <label className="block space-y-1.5">
             <span className="text-xs text-muted-foreground">
@@ -493,7 +523,7 @@ function FontRoleControl({
               value={primary}
               onChange={(event) => onPrimaryChange(event.target.value)}
               aria-label={title}
-              className="focus-ring h-10 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground"
+              className="focus-ring h-10 w-full rounded-control border border-input bg-input-surface px-3 text-sm text-foreground transition-colors hover:border-muted-foreground"
             >
               {primaryOptions.map((option) => (
                 <option key={option.key} value={option.key}>
@@ -527,7 +557,7 @@ function FontRoleControl({
                 )
               }
               aria-label={chineseFallbackLabel}
-              className="focus-ring h-10 w-full rounded-lg border border-input bg-background px-3 text-sm text-foreground"
+              className="focus-ring h-10 w-full rounded-control border border-input bg-input-surface px-3 text-sm text-foreground transition-colors hover:border-muted-foreground"
             >
               {CHINESE_FALLBACK_OPTIONS.map((option) => (
                 <option key={option.key} value={option.key}>
@@ -553,7 +583,7 @@ function FontRoleControl({
       </div>
 
       <div
-        className="min-h-14 rounded-lg bg-muted/35 px-3 py-2.5 ring-1 ring-border/60"
+        className="min-h-14 rounded-inner bg-accent px-3 py-2.5"
         style={{ fontFamily: specimenFontFamily }}
       >
         <div className="text-base font-semibold">

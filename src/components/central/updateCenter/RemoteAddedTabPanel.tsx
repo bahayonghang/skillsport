@@ -69,7 +69,7 @@ export function RemoteAddedTabPanel({
         return (
           <article
             key={key}
-            className="rounded-xl bg-background/80 p-3 ring-1 ring-border/80"
+            className="rounded-inner bg-popover p-3"
           >
             <div className="flex flex-wrap items-start gap-3">
               <Checkbox
@@ -105,7 +105,7 @@ export function RemoteAddedTabPanel({
                   <button
                     key={resolution}
                     type="button"
-                    className={`rounded-lg border px-2 py-1 ${
+                    className={`rounded-inner border px-2 py-1 ${
                       decision.resolution === resolution
                         ? "border-primary bg-primary text-primary-foreground"
                         : "border-border text-muted-foreground"
@@ -119,7 +119,7 @@ export function RemoteAddedTabPanel({
             </div>
             {decision.resolution === "rename" && (
               <input
-                className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                className="focus-ring mt-2 w-full rounded-control border border-input bg-input-surface px-3 py-2 text-sm"
                 value={decision.renamedSkillId}
                 onChange={(event) =>
                   onChange(key, { renamedSkillId: event.target.value })

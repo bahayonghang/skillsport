@@ -1,0 +1,12 @@
+{
+  "variant": "after",
+  "storage": "memory",
+  "files": 10,
+  "rowsPerFile": 20,
+  "binary": "skillport_lib-db9d63c9887dde3a.exe",
+  "peakWorkingSetBytes": 19263488,
+  "exitCode": 0,
+  "sampleIntervalMs": 5,
+  "osPageCacheFlushed": false,
+  "evidence": "direct compiled Rust test binary after canonical locked release compilation"
+}

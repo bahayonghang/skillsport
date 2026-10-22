@@ -1,0 +1,97 @@
+{
+  "before": {
+    "theme": "glass-light",
+    "storedTheme": "glass-light",
+    "displayFont": "geist",
+    "bodyFont": "geist",
+    "fontScale": "1",
+    "rootFontSize": "16px",
+    "bg": "rgb(238, 243, 244)",
+    "pressed": [
+      "glass-light:true",
+      "glass-dark:false"
+    ],
+    "selects": [
+      "标题字体=geist",
+      "标题中文 fallback=system",
+      "正文字体=geist",
+      "正文中文 fallback=system"
+    ]
+  },
+  "afterFontAndScale": {
+    "theme": "glass-light",
+    "storedTheme": "glass-light",
+    "displayFont": "jetbrains",
+    "bodyFont": "geist",
+    "fontScale": "1.125",
+    "rootFontSize": "18px",
+    "bg": "rgb(238, 243, 244)",
+    "pressed": [
+      "glass-light:true",
+      "glass-dark:false"
+    ],
+    "selects": [
+      "标题字体=jetbrains",
+      "标题中文 fallback=system",
+      "正文字体=geist",
+      "正文中文 fallback=system"
+    ]
+  },
+  "afterTheme": {
+    "theme": "glass-dark",
+    "storedTheme": "glass-dark",
+    "displayFont": "geist",
+    "bodyFont": "geist",
+    "fontScale": "1.125",
+    "rootFontSize": "18px",
+    "bg": "rgb(18, 26, 32)",
+    "pressed": [
+      "glass-light:false",
+      "glass-dark:true"
+    ],
+    "selects": [
+      "标题字体=jetbrains",
+      "标题中文 fallback=system",
+      "正文字体=geist",
+      "正文中文 fallback=system"
+    ]
+  },
+  "afterReload": {
+    "theme": "glass-dark",
+    "storedTheme": "glass-dark",
+    "displayFont": "geist",
+    "bodyFont": "geist",
+    "fontScale": "1",
+    "rootFontSize": "16px",
+    "bg": "rgb(18, 26, 32)",
+    "pressed": [
+      "glass-light:false",
+      "glass-dark:true"
+    ],
+    "selects": [
+      "标题字体=geist",
+      "标题中文 fallback=system",
+      "正文字体=geist",
+      "正文中文 fallback=system"
+    ]
+  },
+  "restored": {
+    "theme": "glass-light",
+    "storedTheme": "glass-light",
+    "displayFont": "geist",
+    "bodyFont": "geist",
+    "fontScale": "1",
+    "rootFontSize": "16px",
+    "bg": "rgb(238, 243, 244)",
+    "pressed": [
+      "glass-light:true",
+      "glass-dark:false"
+    ],
+    "selects": [
+      "标题字体=geist",
+      "标题中文 fallback=system",
+      "正文字体=geist",
+      "正文中文 fallback=system"
+    ]
+  }
+}

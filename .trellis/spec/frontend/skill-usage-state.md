@@ -34,6 +34,8 @@ type SkillUsageSummary = {
   staticByteCount: number | null;
 };
 
+invoke("usage_get_page", { source }); // one read generation: { overview, recent, providers }
+invoke("usage_refresh", { force, source }); // page payload uses the same selected source
 invoke("usage_get_skill_detail", { skill, source });
 invoke("uninstall_skill_from_agent", { skillId, agentId, rowId? });
 
@@ -51,8 +53,13 @@ type UnusedUnlinkResult = { skillId: string; agentId: string; rowId: string | nu
 - Platform list sort/rank uses `useSkillUsageStats` (`usage_get_skill_usage_stats`,
   `days: null`). Do not subscribe `PlatformView` to `usageStore` source/skeleton
   state. The 30-day card badge stays on `useSkillCallCounts(..., 30)`.
-- Source selection requests overview + recent with `Promise.all` and commits both
-  in one `set`. Keep the previous source/data visible until the new pair succeeds.
+- Source selection reads `usage_get_page` and commits overview, complete ranking,
+  recent, providers and `overview.lastScanMs` in one `set`. Keep the previous
+  source/data visible until that snapshot succeeds. A missing/zero-call source
+  requires a second All snapshot; never relabel a filtered payload as All.
+- The retained page stays interactive while a new source is pending. At source
+  commit, invalidate detail requests again and clear any detail opened from the
+  retained source, including already-resolved detail and its loading state.
 - Page, refresh, and detail requests each have a sequence. A response commits only
   when sequence, active target id, source, and selected skill still match.
 - The unused-skills slice (`unused`, `refreshUnused`) has its own sequence and
@@ -61,9 +68,12 @@ type UnusedUnlinkResult = { skillId: string; agentId: string; rowId: string | nu
   `lastUsedMs` and must not enter the store or change backend requests.
 - A local-target refresh may return a stale cached page with `scanning: true`
   (exposed as `backgroundScanning`). When `usage://scan-completed` arrives with
-  the active target id, the store silently refetches overview + recent + unused
-  through the existing sequence guards: no skeleton, no `loading`/`refreshing`
-  flip, no toast, and failures are swallowed until the next explicit refresh.
+  the active target id, the store silently refetches one page snapshot, then unused
+  through the existing sequence guards: provider health and freshness update with
+  the facts panels, no skeleton, no `loading`/`refreshing` flip, no toast, and
+  failures are swallowed until the next explicit refresh. An in-progress source
+  intent survives the background event; its older request cannot override this
+  replacement read or leave `loading` stuck.
 - `overview === null` is the first-load authority even before the bootstrap effect
   sets `refreshing`. Render the final-layout scanning skeleton and withhold numeric
   KPI output until an overview exists or a page-level error is available.
@@ -72,17 +82,41 @@ type UnusedUnlinkResult = { skillId: string; agentId: string; rowId: string | nu
   and source selection before starting a forced refresh. Never leave an old
   source request loading or render panels from the previous target during the
   rescan.
-- A filtered refresh must not briefly publish the unfiltered refresh payload.
-  Update provider/scope/freshness first, retain the filtered page, then refetch it.
+- Refresh requests the current source and publishes that complete filtered page.
+  If source selection or a background read overtakes refresh, retain the current
+  page and refetch the latest intended source rather than republishing the delayed
+  payload. Recheck target/refresh sequence after the awaited read before triggering
+  unused reads or cached-data notifications. Detail success and failure use the
+  same target/source/sequence/selected-skill guards.
 - Ranking install-state filtering is view-local: `installed` keeps only `matched`,
   while `unlinked` keeps `ambiguous` plus `unmatched`. It must not enter the store,
   change backend requests, or filter the recent-calls feed.
+- Ranking filter/sort operate on the complete array. Above 60 visible results,
+  use the shared `VirtualizedList` inside a real `26rem` scroll viewport with the
+  existing overscan; retain at most one extra focused/detail-origin row. The list
+  uses `ul/li` with `aria-posinset`/`aria-setsize`; legacy consumers keep the
+  default `div` structure, spacing, overscan and viewport behavior.
+- Fixed ranking row heights subscribe to the applied font scale. Full/narrow
+  column layout follows the card's container width through one ResizeObserver;
+  row height is `ceil(max(40, (full ? 40 : 58) * scale) + 1)`. Do not measure or
+  observe every row, and do not infer scale from DOM/computed styles.
+- The virtual ranking has one active row in the Tab path plus its separate open
+  action. ArrowUp/Down and Home/End reveal and focus results across the whole set;
+  Tab/Shift+Tab traverse every result/action and exit at the boundaries. Keep the
+  focused row mounted during pointer scrolling. Detail close resolves its origin
+  by skill at the current sort index, reveals it and restores focus; if filtering
+  removes it, focus the ranking group. Recent sections use a stable key across
+  their detail-dependent positions so a recent trigger survives the move.
 - Match status remains readable without color. Pair translated status text with
   semantic `statusTone` dots for matched/success and ambiguous/warning; unmatched
   uses the neutral muted token.
 - Selecting any ranking/recent row opens inline statistics. Only rows with a
   returned `resolvedSkillId` render a separate open-skill action; never invoke a
   resolver on click.
+- Recent preserves identical-call multiplicity: React keys combine the five fact
+  fields with an ordinal within that identical group. Do not deduplicate calls or
+  use only skill/time/session as the key; adding a new call must not duplicate rows
+  or replace otherwise-stable detail triggers.
 - Project paths display only their basename. Prompt text, assistant responses,
   tool arguments, credentials, and full paths are not rendered.
 - Fixed ranges are visible in UI: all history, last 16 weeks, and latest 20.
@@ -92,6 +126,23 @@ type UnusedUnlinkResult = { skillId: string; agentId: string; rowId: string | nu
   container width. The `xl` two-column page must not use `row-span` to bind the
   Top skills card height to the heatmap. Top skills and heatmap cards use
   `contain-layout`; Unused does not (unlink dialog + hit-area).
+- The default heatmap uses fixed `1rem` tracks; inline detail keeps the fixed
+  `0.625rem` compact variant. Weekday axis, month week spans, and legend share
+  an intrinsic-width plot. Single-week residual month labels are omitted without
+  dropping any dates. The desktop side rail is bounded at `24rem`; ranking,
+  unused, and detail columns respond to their own card width, not viewport width.
+- Page KPIs live in the header summary alongside target and freshness controls;
+  initial-load metric placeholders reserve the same geometry without numeric zero.
+  Platform/ranking/unused filters share `UsageFilterControls` and `aria-pressed`;
+  ordinary controls reserve non-overlapping hit areas of at least 40 CSS pixels
+  at every supported font scale. Heatmap cells retain the dense-chart exception.
+- Page `error` remains visible with a cached overview (including failed source
+  loads). A failed detail replaces its skeleton with an inline error; pending and
+  failed details both keep the close action and restore focus to the triggering row.
+- Usage controls that override shared Button variants must override matching
+  responsive/dark variants too: preserve the desktop minimum target width and the
+  selected fill on dark hover. Provider disclosure and interactive provider rows
+  retain the same 40px minimum target height and keyboard focus path.
 - Browser fixtures run the real store and include matched, ambiguous, unmatched,
   missing static metrics, filtered sources, and non-empty heatmap data.
 - `usageStore.unlinkUnusedSkillFromAgents` owns typed IPC for the whole batch: sequential
@@ -112,7 +163,8 @@ type UnusedUnlinkResult = { skillId: string; agentId: string; rowId: string | nu
   confirm shows the selected count and stays disabled below one or while busy. On partial failure
   the dialog stays open, failed rows show their formatted reason and become the reselected set.
   Central-origin descriptions state that only Agent copies are removed and Central remains. The
-  row trigger keeps the 40px pseudo hit area and a keyboard-visible focus path.
+  row open/unlink actions keep independent visible 40px button slots and a
+  keyboard-visible focus path, including the root font scale minimum.
 
 ## 4. Validation & Error Matrix
 
@@ -125,8 +177,15 @@ type UnusedUnlinkResult = { skillId: string; agentId: string; rowId: string | nu
 | refresh fails with cache | keep page; set `usedCachedData`; show freshness warning |
 | refresh fails without cache | page-level error with retry action |
 | target/source changes during detail load | discard stale detail result |
+| source commits after opening a retained-page detail | invalidate and clear old-source detail, no stuck loading |
+| target changes before a stale detail rejection arrives | discard the error as well as successful data |
+| pending detail | close remains reachable and restores triggering-row focus |
+| detail request fails | inline error, no perpetual skeleton, reachable close action |
 | ambiguous/unmatched row | inline detail works; no open-skill button |
 | installed/unlinked ranking filter | filter only ranking rows; show filtered/total count and a distinct empty state |
+| 10k ranking results | bounded mounted rows, full count/sort/filter, first and last reachable |
+| detail origin moves or leaves the virtual window | restore its current position/focus; filtered origin falls back to ranking group |
+| recent trigger opens pending/failed detail | trigger stays mounted and regains focus on close |
 | static estimate `null` | explicit unavailable state, never numeric zero |
 | unlink target rejects | inline row reason in dialog + summary toast; that target's pending key clears |
 | batch partially fails | dialog stays open, failed rows show reason and are reselected; one refresh after the batch |
@@ -153,10 +212,17 @@ type UnusedUnlinkResult = { skillId: string; agentId: string; rowId: string | nu
 
 - Store: rapid A->B source completion, target change, filtered refresh, cached
   failure, detail source args, stale detail, atomic overview/recent commit, and
-  target-change clearing of page data plus `loading`.
+  target-change clearing of page data plus `loading`; 51/144/1k complete rankings
+  on entry/TTL/force/source/background paths, atomic provider/freshness updates,
+  disappearing-source All fallback, pending source/background handoff, source
+  commit after a retained-page detail, and stale target errors/notifications.
 - Components: three match states, explicit sort controls, row keyboard behavior,
   separate open action, basename-only projects, detail close/focus return,
-  pre-refresh skeleton, install-state filters/counts, and filtered empty state.
+  pre-refresh skeleton, install-state filters/counts, and filtered empty state;
+  10k bounded DOM, scale/column row geometry, first/last and bidirectional Tab,
+  off-window focus pinning, reordered/filtered origin restoration and recent
+  pending/failed-detail trigger identity. Shared virtualizer default consumers
+  retain their previous viewport/spacing/overscan behavior.
 - Heatmap: 112 cells, quantile top level, numeric aria labels, roving arrow focus,
   month labels, legend, and empty state.
 - Browser: 1440x900 and 1280x720 dark, 1024x768 light, narrow desktop, Chinese

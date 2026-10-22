@@ -1,8 +1,11 @@
 import { useTranslation } from "react-i18next";
-import type { CSSProperties, ReactNode } from "react";
-import { CheckCircle2, CircleAlert, CircleDashed } from "lucide-react";
+import type { ReactNode } from "react";
+import { CheckCircle2, CircleAlert, CircleDashed, Gauge } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { PanelHeader } from "@/components/dashboard/DashboardPanels";
+import { Badge, type BadgeTone } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
+import { StatTile } from "@/components/ui/stat-tile";
 import type { DashboardReadiness } from "@/types";
 
 interface HealthOrbitProps {
@@ -12,28 +15,20 @@ interface HealthOrbitProps {
 interface FactorProps {
   label: string;
   value: number;
-  tone: "primary" | "accent" | "neutral" | "success";
 }
 
 type ReadinessStatus = "ready" | "review" | "triage";
 
-const FACTOR_TONE_CLASS: Record<FactorProps["tone"], string> = {
-  primary: "from-primary to-primary/55",
-  accent: "from-chart-1 to-chart-1/45",
-  neutral: "from-muted-foreground/70 to-muted-foreground/35",
-  success: "from-success to-success/45",
-};
-
-const STATUS_CLASS: Record<ReadinessStatus, string> = {
-  ready: "border-success/30 bg-success/10 text-success-foreground",
-  review: "border-primary/35 bg-primary/10 text-primary-text",
-  triage: "border-destructive/30 bg-destructive/10 text-destructive-text",
+const STATUS_TONE: Record<ReadinessStatus, BadgeTone> = {
+  ready: "success",
+  review: "warning",
+  triage: "destructive",
 };
 
 const STATUS_ICON: Record<ReadinessStatus, ReactNode> = {
-  ready: <CheckCircle2 className="size-3.5" />,
-  review: <CircleDashed className="size-3.5" />,
-  triage: <CircleAlert className="size-3.5" />,
+  ready: <CheckCircle2 />,
+  review: <CircleDashed />,
+  triage: <CircleAlert />,
 };
 
 function toPercent(value: number) {
@@ -46,26 +41,22 @@ function getReadinessStatus(score: number): ReadinessStatus {
   return "triage";
 }
 
-function FactorRail({ label, value, tone }: FactorProps) {
+/** One readiness factor: label + percentage + thin mint bar (no nested box). */
+function FactorRail({ label, value }: FactorProps) {
   const safeValue = Math.max(0, Math.min(1, value));
   const percent = toPercent(safeValue);
 
   return (
-    <div className="py-1.5">
+    <div className="py-1">
       <div className="flex items-center justify-between gap-3">
         <span className="min-w-0 truncate text-xs font-medium text-muted-foreground">
           {label}
         </span>
-        <span className="font-display text-xs font-semibold tabular-nums">
-          {percent}
-        </span>
+        <span className="text-xs font-semibold tabular-nums">{percent}</span>
       </div>
-      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-muted/70">
+      <div className="mt-1.5 h-1.5 overflow-hidden rounded-pill bg-accent">
         <span
-          className={cn(
-            "block h-full origin-left rounded-full bg-gradient-to-r transition-transform duration-500 ease-out",
-            FACTOR_TONE_CLASS[tone],
-          )}
+          className="block h-full origin-left rounded-pill bg-primary transition-transform duration-200 ease-out"
           style={{ transform: `scaleX(${safeValue})` }}
         />
       </div>
@@ -73,6 +64,11 @@ function FactorRail({ label, value, tone }: FactorProps) {
   );
 }
 
+/**
+ * Readiness panel (DESIGN.md Signature: Dashboard): the score is a mint
+ * StatTile (completion semantics) — no conic score plaque, no grid mask —
+ * and the four quality factors are flat rows with thin mint bars.
+ */
 export function HealthOrbit({ readiness }: HealthOrbitProps) {
   const { t } = useTranslation();
   const score = Math.max(0, Math.min(100, Math.round(readiness.score)));
@@ -81,70 +77,47 @@ export function HealthOrbit({ readiness }: HealthOrbitProps) {
     {
       label: t("dashboard.readiness.factors.categorized"),
       value: readiness.categorizedRatio,
-      tone: "primary",
     },
     {
       label: t("dashboard.readiness.factors.described"),
       value: readiness.describedRatio,
-      tone: "accent",
     },
     {
       label: t("dashboard.readiness.factors.sourced"),
       value: readiness.sourcedRatio,
-      tone: "neutral",
     },
     {
       label: t("dashboard.readiness.factors.installHealth"),
       value: readiness.installHealthRatio,
-      tone: "success",
     },
   ];
 
   return (
-    <section
-      className="readiness-card surface-glass rounded-2xl p-5"
+    <Card
+      className="p-0"
+      role="region"
       aria-label={t("dashboard.readiness.label")}
     >
-      <div className="relative z-10 flex h-full flex-col gap-4">
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-              {t("dashboard.readiness.label")}
-            </div>
-            <div
-              className="readiness-score-plaque mt-3 inline-flex items-end gap-2 rounded-xl px-4 py-3"
-              aria-label={t("dashboard.readiness.ariaLabel", { score })}
-              role="img"
-              style={
-                {
-                  "--score-angle": `${Math.round((score / 100) * 360)}deg`,
-                } as CSSProperties
-              }
-            >
-              <span className="font-display text-display-score font-semibold leading-none tabular-nums">
-                {score}
-              </span>
-              <span className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
-                {t("dashboard.readiness.scoreUnit")}
-              </span>
-            </div>
-          </div>
-          <span
-            className={cn(
-              "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold uppercase tracking-wide",
-              STATUS_CLASS[status],
-            )}
-          >
-            {STATUS_ICON[status]}
+      <PanelHeader
+        title={t("dashboard.readiness.label")}
+        description={t("dashboard.readiness.description")}
+        action={
+          <Badge tone={STATUS_TONE[status]} icon={STATUS_ICON[status]}>
             {t(`dashboard.readiness.status.${status}`)}
-          </span>
-        </div>
-
-        <p className="max-w-md text-xs leading-5 text-muted-foreground">
-          {t("dashboard.readiness.description")}
-        </p>
-
+          </Badge>
+        }
+      />
+      <CardContent className="grid gap-4 px-4 pb-4 sm:grid-cols-[minmax(8.5rem,11rem)_minmax(0,1fr)] sm:items-center">
+        <StatTile
+          tone="primary"
+          icon={<Gauge />}
+          label={t("dashboard.readiness.scoreLabel")}
+          value={score}
+          hint={t("dashboard.readiness.scoreHint")}
+          title={t("dashboard.readiness.ariaLabel", { score })}
+        />
         <div
+          role="group"
           className="grid gap-1"
           aria-label={t("dashboard.readiness.factors.ariaLabel")}
         >
@@ -152,7 +125,7 @@ export function HealthOrbit({ readiness }: HealthOrbitProps) {
             <FactorRail key={factor.label} {...factor} />
           ))}
         </div>
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   );
 }

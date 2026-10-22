@@ -117,11 +117,7 @@ export function InstallDialog({
         return;
       }
       resetSelection();
-      setInstallMethod(
-        effectiveTargetMode === "project" || !canUseSymlink
-          ? "copy"
-          : "symlink",
-      );
+      setInstallMethod(canUseSymlink ? "symlink" : "copy");
       if (effectiveTargetMode === "platform") {
         setProjectPath("");
       }
@@ -144,7 +140,7 @@ export function InstallDialog({
       return;
     }
     setTargetMode(mode);
-    setInstallMethod(mode === "project" || !canUseSymlink ? "copy" : "symlink");
+    setInstallMethod(canUseSymlink ? "symlink" : "copy");
     if (mode === "platform") {
       setProjectPath("");
     }
@@ -209,7 +205,7 @@ export function InstallDialog({
 
           {canInstallToProject && (
             <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              <p className="text-xs font-medium text-muted-foreground">
                 {t("central.batchInstallTargetMode")}
               </p>
               <RadioGroup
@@ -234,7 +230,7 @@ export function InstallDialog({
 
           {targetMode === "project" && canInstallToProject && (
             <div className="space-y-2">
-              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              <label className="text-xs font-medium text-muted-foreground">
                 {t("central.batchInstallProjectPath")}
               </label>
               <ProjectPathPicker
@@ -281,13 +277,13 @@ export function InstallDialog({
               return (
                 <>
                   {isSharedRoot && (
-                    <span className="text-xs text-primary shrink-0">
+                    <span className="text-xs text-primary-text shrink-0">
                       {t("platformTargets.alwaysIncluded")}
                     </span>
                   )}
                   {isLinked && !isSharedRoot && (
                     <span
-                      className="inline-flex size-4 shrink-0 items-center justify-center rounded-full border border-primary/30 bg-primary/10 text-primary"
+                      className="inline-flex size-4 shrink-0 items-center justify-center rounded-full border border-primary-stroke bg-primary-tint text-primary-text"
                       aria-label={t("installDialog.alreadyLinkedLabel", {
                         platform: displayName,
                       })}
@@ -315,7 +311,7 @@ export function InstallDialog({
 
           {/* Install method selector */}
           <div className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            <p className="text-xs font-medium text-muted-foreground">
               {t("installDialog.installMethod")}
             </p>
             <RadioGroup

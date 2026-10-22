@@ -1,0 +1,20 @@
+    Finished `test` profile [unoptimized] target(s) in 1.50s
+     Running unittests src\lib.rs (src-tauri\target\debug\deps\skillport_lib-19191d11cb877c5b.exe)
+
+running 1 test
+
+thread 'cli_api::tests::exact_shorthand_fixture_runs_import_list_show_and_sync_preview' (56676) panicked at src\cli_api\mod.rs:641:9:
+assertion `left == right` failed
+  left: 0
+ right: 1
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test cli_api::tests::exact_shorthand_fixture_runs_import_list_show_and_sync_preview ... FAILED
+
+failures:
+
+failures:
+    cli_api::tests::exact_shorthand_fixture_runs_import_list_show_and_sync_preview
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 1587 filtered out; finished in 0.05s
+
+error: test failed, to rerun pass `--lib`

@@ -110,7 +110,7 @@ describe("MarketplaceSkillDetailDrawer", () => {
       expect(modal).toHaveAttribute("role", "dialog");
       expect(modal).toHaveAttribute("aria-modal", "true");
 
-      expect(screen.getByTestId("skill-detail-modal-overlay")).toBeInTheDocument();
+      expect(document.querySelector("[data-slot=\"dialog-overlay\"]")).toBeInTheDocument();
     });
 
     it("does not render modal content when closed", () => {

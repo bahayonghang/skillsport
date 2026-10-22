@@ -97,7 +97,7 @@ export const DEFAULT_FONT_PROFILE: FontProfile = {
   displayCustom: "",
   displayChineseFallback: "system",
   displayChineseFallbackCustom: "",
-  body: "jetbrains",
+  body: "geist",
   bodyCustom: "",
   bodyChineseFallback: "system",
   bodyChineseFallbackCustom: "",
@@ -125,6 +125,15 @@ const STORAGE_KEYS = {
   bodyChineseFallbackCustom: "body_chinese_fallback_custom_v1",
   scale: "font_scale_v1",
 } as const;
+
+/**
+ * One-time 1.1.0 marker (D-F1 option A). Until it is set, a persisted body
+ * font of `jetbrains` with an empty custom family is treated as the old
+ * default that the v1→v2 migration wrote back, and is rewritten to `geist`.
+ */
+const FONT_DEFAULTS_V1_1_MARKER_KEY = "font_defaults_v1_1_applied";
+const FONT_DEFAULTS_V1_1_MARKER_VALUE = "1";
+const LEGACY_DEFAULT_BODY_FONT: BodyFontKey = "jetbrains";
 
 const LEGACY_PROFILE_STORAGE_KEYS: Record<keyof FontProfile, string> = {
   display: STORAGE_KEYS.display,
@@ -242,7 +251,7 @@ function bodyFontChain(key: BodyFontKey, customFamily: string): string {
   if (key === "custom" && customFamily.trim()) {
     return `${quoteFontFamily(customFamily.trim())}, ${fallbackChain()}`;
   }
-  return BODY_FONT_CHAINS[key === "custom" ? "jetbrains" : key];
+  return BODY_FONT_CHAINS[key === "custom" ? "geist" : key];
 }
 
 function resolveFontFamily(
@@ -320,7 +329,7 @@ export function applyBodyFont(
   const html = getHtml();
   if (!html) return;
 
-  html.dataset.bodyFont = key === "custom" ? "jetbrains" : key;
+  html.dataset.bodyFont = key === "custom" ? "geist" : key;
   if (key === "custom" && customFamily.trim()) {
     html.dataset.bodyFont = "custom";
   }
@@ -395,33 +404,6 @@ export function applyFontProfile(profile: FontProfile) {
     profile.bodyChineseFallback,
     profile.bodyChineseFallbackCustom,
   );
-}
-
-function coerceDisplay(value: unknown): DisplayFontKey {
-  if (
-    typeof value === "string" &&
-    DISPLAY_FONT_KEYS.has(value as DisplayFontKey)
-  ) {
-    return value as DisplayFontKey;
-  }
-  return DEFAULT_FONT_PREFERENCES.display;
-}
-
-function coerceBody(value: unknown): BodyFontKey {
-  if (typeof value === "string" && BODY_FONT_KEYS.has(value as BodyFontKey)) {
-    return value as BodyFontKey;
-  }
-  return DEFAULT_FONT_PREFERENCES.body;
-}
-
-function coerceChineseFallback(value: unknown): ChineseFallbackKey {
-  if (
-    typeof value === "string" &&
-    CHINESE_FALLBACK_KEYS.has(value as ChineseFallbackKey)
-  ) {
-    return value as ChineseFallbackKey;
-  }
-  return "system";
 }
 
 function coerceScale(value: unknown): number {
@@ -500,6 +482,12 @@ function resolveFontProfile(
   };
 }
 
+function isLegacyDefaultBody(profile: FontProfile): boolean {
+  return (
+    profile.body === LEGACY_DEFAULT_BODY_FONT && profile.bodyCustom.trim() === ""
+  );
+}
+
 function rawProfileNeedsMigration(raw: RawFontProfile): boolean {
   return (
     !isDisplayFontKey(raw.display) ||
@@ -511,42 +499,6 @@ function rawProfileNeedsMigration(raw: RawFontProfile): boolean {
     !isChineseFallbackKey(raw.bodyChineseFallback) ||
     raw.bodyChineseFallbackCustom === null
   );
-}
-
-export async function loadFontPreferences(): Promise<FontPreferences> {
-  const [
-    display,
-    displayCustom,
-    displayChineseFallback,
-    displayChineseFallbackCustom,
-    body,
-    bodyCustom,
-    bodyChineseFallback,
-    bodyChineseFallbackCustom,
-    scale,
-  ] = await Promise.all([
-    readSetting(STORAGE_KEYS.display),
-    readSetting(STORAGE_KEYS.displayCustom),
-    readSetting(STORAGE_KEYS.displayChineseFallback),
-    readSetting(STORAGE_KEYS.displayChineseFallbackCustom),
-    readSetting(STORAGE_KEYS.body),
-    readSetting(STORAGE_KEYS.bodyCustom),
-    readSetting(STORAGE_KEYS.bodyChineseFallback),
-    readSetting(STORAGE_KEYS.bodyChineseFallbackCustom),
-    readSetting(STORAGE_KEYS.scale),
-  ]);
-
-  return {
-    display: coerceDisplay(display),
-    displayCustom: displayCustom ?? "",
-    displayChineseFallback: coerceChineseFallback(displayChineseFallback),
-    displayChineseFallbackCustom: displayChineseFallbackCustom ?? "",
-    body: coerceBody(body),
-    bodyCustom: bodyCustom ?? "",
-    bodyChineseFallback: coerceChineseFallback(bodyChineseFallback),
-    bodyChineseFallbackCustom: bodyChineseFallbackCustom ?? "",
-    scale: coerceScale(scale),
-  };
 }
 
 let themedLoadPromise: Promise<ThemedFontPreferences> | null = null;
@@ -646,15 +598,36 @@ async function performThemedFontPreferencesLoad(): Promise<ThemedFontPreferences
     dark: { ...profileRevisions.dark },
     scale: scaleRevision,
   };
-  const [legacyRaw, lightRaw, darkRaw, scale] = await Promise.all([
-    readRawFontProfile(LEGACY_PROFILE_STORAGE_KEYS),
-    readRawFontProfile(THEMED_STORAGE_KEYS.light),
-    readRawFontProfile(THEMED_STORAGE_KEYS.dark),
-    readSetting(STORAGE_KEYS.scale),
-  ]);
+  const [legacyRaw, lightRaw, darkRaw, scale, defaultsMarker] =
+    await Promise.all([
+      readRawFontProfile(LEGACY_PROFILE_STORAGE_KEYS),
+      readRawFontProfile(THEMED_STORAGE_KEYS.light),
+      readRawFontProfile(THEMED_STORAGE_KEYS.dark),
+      readSetting(STORAGE_KEYS.scale),
+      readSetting(FONT_DEFAULTS_V1_1_MARKER_KEY),
+    ]);
   const legacy = resolveFontProfile(legacyRaw, DEFAULT_FONT_PROFILE);
-  const loadedLight = resolveFontProfile(lightRaw, legacy);
-  const loadedDark = resolveFontProfile(darkRaw, legacy);
+  const needsDefaultsMigration =
+    defaultsMarker !== FONT_DEFAULTS_V1_1_MARKER_VALUE;
+  const migratedBody = { light: false, dark: false };
+  const applyBodyDefault = (
+    mode: FontThemeMode,
+    profile: FontProfile,
+  ): FontProfile => {
+    if (!needsDefaultsMigration || !isLegacyDefaultBody(profile)) {
+      return profile;
+    }
+    migratedBody[mode] = true;
+    return { ...profile, body: DEFAULT_FONT_PROFILE.body };
+  };
+  const loadedLight = applyBodyDefault(
+    "light",
+    resolveFontProfile(lightRaw, legacy),
+  );
+  const loadedDark = applyBodyDefault(
+    "dark",
+    resolveFontProfile(darkRaw, legacy),
+  );
   const preferences: ThemedFontPreferences = {
     light: mergeLoadedFontProfile(
       "light",
@@ -669,14 +642,36 @@ async function performThemedFontPreferencesLoad(): Promise<ThemedFontPreferences
   };
   cachedThemedPreferences = cloneThemedFontPreferences(preferences);
 
+  const persistProfile = (mode: FontThemeMode, raw: RawFontProfile) => {
+    if (rawProfileNeedsMigration(raw)) {
+      return writeFontProfile(mode, preferences[mode]);
+    }
+    // A body edit made while reads were in flight already wins the merge and
+    // has its own queued write; only persist the rewrite when it survived.
+    if (
+      migratedBody[mode] &&
+      profileRevisions[mode].body === revisionsAtStart[mode].body
+    ) {
+      return writeSetting(
+        THEMED_STORAGE_KEYS[mode].body,
+        preferences[mode].body,
+      );
+    }
+    return Promise.resolve();
+  };
+
   await Promise.all([
-    rawProfileNeedsMigration(lightRaw)
-      ? writeFontProfile("light", preferences.light)
-      : Promise.resolve(),
-    rawProfileNeedsMigration(darkRaw)
-      ? writeFontProfile("dark", preferences.dark)
-      : Promise.resolve(),
+    persistProfile("light", lightRaw),
+    persistProfile("dark", darkRaw),
   ]);
+  if (needsDefaultsMigration) {
+    // Written after the profile writes settle, so the marker never lands
+    // before the rewrite it records.
+    await writeSetting(
+      FONT_DEFAULTS_V1_1_MARKER_KEY,
+      FONT_DEFAULTS_V1_1_MARKER_VALUE,
+    );
+  }
   return cloneThemedFontPreferences(cachedThemedPreferences);
 }
 

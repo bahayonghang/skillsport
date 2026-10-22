@@ -26,10 +26,10 @@ function QuickChip({
       aria-pressed={active}
       data-testid={testId}
       className={cn(
-        "inline-flex h-7 items-center rounded-full border px-3 text-xs font-medium transition-colors",
+        "focus-ring inline-flex h-7 items-center rounded-pill border px-3 text-xs font-medium transition-colors duration-150",
         active
-          ? "border-primary/40 bg-primary/15 text-primary"
-          : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground",
+          ? "border-primary-stroke bg-primary-tint text-primary-text"
+          : "border-glass-stroke bg-popover text-muted-foreground hover:bg-accent hover:text-foreground",
       )}
     >
       {label}
@@ -63,7 +63,7 @@ export function LogsQuickFilters({ filter, onApply }: LogsQuickFiltersProps) {
       aria-label={t("logs.quickFilters.label")}
       className="flex flex-wrap items-center gap-2"
     >
-      <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+      <span className="text-xs font-medium text-muted-foreground">
         {t("logs.quickFilters.label")}
       </span>
       <QuickChip

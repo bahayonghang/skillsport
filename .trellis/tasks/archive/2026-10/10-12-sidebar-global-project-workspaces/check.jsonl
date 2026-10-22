@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/frontend/module-boundaries.md", "reason": "核对侧栏没有直接 invoke，文案键 en/zh 成对。"}
+{"file": ".trellis/spec/frontend/icon-control-hit-area.md", "reason": "核对分组标题和排序控件的热区，以及没有只靠 hover 出现的控件。"}
+{"file": ".trellis/spec/frontend/typography-tokens.md", "reason": "核对新标题没有引入字号或对比度例外。"}
+{"file": ".trellis/spec/frontend/async-ui-test-stability.md", "reason": "侧栏点击、折叠和 store 刷新测试要等稳定状态，避免定时器竞态。"}
+{"file": ".trellis/tasks/10-12-sidebar-global-project-workspaces/research/skills-manager-sidebar.md", "reason": "检查没有把上游拖拽、删除和 All Agents 做进实现。"}

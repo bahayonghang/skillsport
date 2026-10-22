@@ -6,6 +6,15 @@
 macro_rules! __skillport_runtime_commands {
     ($callback:ident) => {
         $callback! {
+            list_rules => (commands::rules::list_rules, runtime_only(ReadOnly)),
+            read_rule => (commands::rules::read_rule, runtime_only(ReadOnly)),
+            preview_rules_import => (commands::rules::preview_rules_import, runtime_only(Preview)),
+            import_existing_rules => (commands::rules::import_existing_rules, operation(Central, Filesystem, StartedThenTerminal)),
+            create_rule => (commands::rules::create_rule, operation(Central, Filesystem, StartedThenTerminal)),
+            save_rule => (commands::rules::save_rule, operation(Central, Filesystem, StartedThenTerminal)),
+            set_rule_target_enabled => (commands::rules::set_rule_target_enabled, operation(Central, Filesystem, StartedThenTerminal)),
+            delete_rule => (commands::rules::delete_rule, operation(Central, Filesystem, StartedThenTerminal)),
+            recover_rule_operation => (commands::rules::recover_rule_operation, operation(Central, Recovery, StartedThenTerminal)),
             get_startup_status => (commands::startup::get_startup_status, runtime_only(ReadOnly)),
             retry_startup => (commands::startup::retry_startup, operation(Startup, Startup, StartedThenTerminal)),
             rebuild_startup_database => (commands::startup::rebuild_startup_database, operation(Startup, Recovery, StartedThenTerminal)),
@@ -15,6 +24,7 @@ macro_rules! __skillport_runtime_commands {
             get_skill_counts_summary => (commands::bootstrap::get_skill_counts_summary, runtime_only(ReadOnly)),
             get_dashboard_central_summary => (commands::bootstrap::get_dashboard_central_summary, runtime_only(ReadOnly)),
             get_app_runtime_info => (commands::app_runtime::get_app_runtime_info, runtime_only(ReadOnly)),
+            set_window_material => (commands::window_material::set_window_material, runtime_only(InternalRefresh)),
             list_targets => (commands::targets::list_targets, runtime_only(ReadOnly)),
             get_target_config_quarantine_status => (commands::targets::get_target_config_quarantine_status, runtime_only(ReadOnly)),
             list_wsl_distributions => (commands::targets::list_wsl_distributions, runtime_only(ReadOnly)),
@@ -135,7 +145,7 @@ macro_rules! __skillport_runtime_commands {
             open_obsidian_path => (commands::obsidian::open_obsidian_path, operation(Obsidian, Filesystem, TerminalOnly)),
             import_obsidian_skill_to_central => (commands::obsidian::import_obsidian_skill_to_central, operation(Obsidian, Filesystem, StartedThenTerminal)),
             import_obsidian_skill_to_platform => (commands::obsidian::import_obsidian_skill_to_platform, operation(Obsidian, Filesystem, StartedThenTerminal)),
-            preview_github_repo_import => (commands::github_import::preview_github_repo_import, runtime_only(Preview)),
+            preview_github_repo_import => (commands::github_import::preview_github_repo_import, operation(Import, Network, FailureOnly)),
             import_github_repo_skills => (commands::github_import::import_github_repo_skills, operation(Import, Network, StartedThenTerminal)),
             fetch_github_skill_markdown => (commands::github_import::fetch_github_skill_markdown, runtime_only(ReadOnly)),
             discard_github_repo_preview_snapshot => (commands::github_import::discard_github_repo_preview_snapshot, runtime_only(InternalRefresh)),
@@ -188,6 +198,7 @@ macro_rules! __skillport_runtime_commands {
             reorder_tag_groups => (commands::tag_groups::reorder_tag_groups, operation(Catalog, Database, TerminalOnly)),
             set_tag_group => (commands::tag_groups::set_tag_group, operation(Catalog, Database, TerminalOnly)),
             usage_refresh => (commands::usage::usage_refresh, operation(Usage, Database, TerminalOnly)),
+            usage_get_page => (commands::usage::usage_get_page, runtime_only(ReadOnly)),
             usage_get_overview => (commands::usage::usage_get_overview, runtime_only(ReadOnly)),
             usage_get_recent => (commands::usage::usage_get_recent, runtime_only(ReadOnly)),
             usage_get_providers => (commands::usage::usage_get_providers, runtime_only(ReadOnly)),
@@ -226,6 +237,16 @@ macro_rules! __skillport_runtime_commands {
 macro_rules! __skillport_generated_commands {
     ($callback:ident) => {
         $callback! {
+            usage_get_page => commands::usage::usage_get_page,
+            list_rules => commands::rules::list_rules,
+            read_rule => commands::rules::read_rule,
+            preview_rules_import => commands::rules::preview_rules_import,
+            import_existing_rules => commands::rules::import_existing_rules,
+            create_rule => commands::rules::create_rule,
+            save_rule => commands::rules::save_rule,
+            set_rule_target_enabled => commands::rules::set_rule_target_enabled,
+            delete_rule => commands::rules::delete_rule,
+            recover_rule_operation => commands::rules::recover_rule_operation,
             preview_local_remote_sync => commands::local_remote_sync::preview_local_remote_sync,
             apply_local_remote_sync => commands::local_remote_sync::apply_local_remote_sync,
             install_skill_to_agent => commands::linker::install_skill_to_agent,
@@ -273,6 +294,7 @@ macro_rules! __skillport_generated_commands {
             export_collection => commands::collections::export_collection,
             import_collection => commands::collections::import_collection,
             get_app_runtime_info => commands::app_runtime::get_app_runtime_info,
+            set_window_material => commands::window_material::set_window_material,
             record_frontend_runtime_log => commands::logs::record_frontend_runtime_log,
             get_scan_directories => commands::settings::get_scan_directories,
             add_scan_directory => commands::settings::add_scan_directory,
@@ -466,10 +488,12 @@ mod tests {
             command_policy("get_central_skills").unwrap().policy,
             CommandLogPolicy::RuntimeOnly(RuntimeOnlyReason::ReadOnly)
         ));
-        assert!(matches!(
-            command_policy("preview_github_repo_import").unwrap().policy,
-            CommandLogPolicy::RuntimeOnly(RuntimeOnlyReason::Preview)
-        ));
+        let policy = command_policy("preview_github_repo_import").unwrap().policy;
+        let CommandLogPolicy::Operation(definition) = policy else {
+            panic!("GitHub preview failures must be auditable");
+        };
+        assert_eq!(definition.category(), OperationCategory::Import);
+        assert_eq!(definition.lifecycle(), OperationLifecycle::FailureOnly);
         let policy = command_policy("update_central_skills").unwrap().policy;
         let CommandLogPolicy::Operation(definition) = policy else {
             panic!("update command must be auditable");

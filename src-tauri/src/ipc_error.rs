@@ -364,6 +364,12 @@ fn legacy_code_message(code: &str) -> Option<&'static str> {
             "GitHub denied the authenticated request. Check that the token owner can read the repository and that the token has the required permissions.",
         ),
         "github_import.repo_not_found" => Some("The GitHub repository was not found."),
+        "github_import.branch_not_found" => {
+            Some("The selected branch was not found in the GitHub repository.")
+        }
+        "github_import.request_rejected" => {
+            Some("GitHub rejected the request. Check the repository URL and branch, then try again.")
+        }
         "github_import.archive_unavailable" => {
             Some("The GitHub repository archive is unavailable.")
         }

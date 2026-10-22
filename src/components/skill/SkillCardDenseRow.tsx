@@ -1,10 +1,10 @@
 import type { MouseEventHandler } from "react";
-import { Link2, Trash2 } from "lucide-react";
+import { AlertTriangle, Download, Info, Link2, Trash2, XCircle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { PlatformIcon } from "@/components/platform/PlatformIcon";
+import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { statusChipClass } from "@/lib/statusTone";
 import { cn } from "@/lib/utils";
 import { allPlacementsUnavailable } from "@/pages/skillsCliBatchModel";
 import type { SkillsCliPlacement } from "@/types";
@@ -64,11 +64,18 @@ function denseRowStatus(
   return status;
 }
 
-const DENSE_STATUS_TONE: Record<DenseRowStatus, "warning" | "error" | "info"> = {
+const DENSE_STATUS_TONE: Record<DenseRowStatus, BadgeTone> = {
   copy: "warning",
-  conflict: "error",
+  conflict: "destructive",
   missing: "info",
   unavailable: "warning",
+};
+
+const DENSE_STATUS_ICON: Record<DenseRowStatus, typeof Info> = {
+  copy: AlertTriangle,
+  conflict: XCircle,
+  missing: Info,
+  unavailable: AlertTriangle,
 };
 
 export function SkillCardDenseRow({
@@ -98,7 +105,7 @@ export function SkillCardDenseRow({
       data-testid={`skills-cli-dense-card-${name}`}
       className={cn(
         cardShellClass(checkbox?.checked),
-        "group/skill-card relative flex h-auto min-h-[76px] flex-col justify-center gap-1 px-3 py-2",
+        "group/skill-card relative flex h-auto min-h-[76px] flex-col justify-center gap-1 px-4 py-2",
         checkbox && "cursor-pointer",
         isLoading && "opacity-50",
         className,
@@ -130,7 +137,7 @@ export function SkillCardDenseRow({
         ) : onDetail ? (
           <button
             type="button"
-            className="min-h-7 min-w-0 flex-1 truncate rounded-md text-left text-sm font-semibold tracking-[-0.01em] text-foreground underline-offset-4 transition-[color,box-shadow] hover:text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+            className="focus-ring min-h-7 min-w-0 flex-1 truncate rounded-control text-left text-sm font-semibold tracking-[-0.01em] text-foreground underline-offset-4 transition-colors duration-150 hover:text-primary-text hover:underline"
             onClick={onDetail}
             aria-label={t("central.viewDetailsLabel", { name })}
             title={name}
@@ -146,14 +153,9 @@ export function SkillCardDenseRow({
           </h3>
         )}
         {updateAvailable && (
-          <span
-            className={cn(
-              "shrink-0 rounded-full border px-1.5 py-0.5 text-xs font-medium",
-              statusChipClass.warning,
-            )}
-          >
+          <Badge tone="secondary" size="sm" icon={<Download />}>
             {t("skillsCli.updateAvailable")}
-          </span>
+          </Badge>
         )}
         <div
           className={cn(
@@ -211,25 +213,21 @@ export function SkillCardDenseRow({
             )}
           </>
         ) : status ? (
-          <span
-            className={cn(
-              "rounded-full border px-1.5 py-0.5 text-xs font-medium",
-              statusChipClass[DENSE_STATUS_TONE[status]],
-            )}
-          >
-            {t(`skillsCli.placement.${status}`)}
-          </span>
+          <DenseStatusBadge status={status} />
         ) : (
-          <span
-            className={cn(
-              "rounded-full border px-1.5 py-0.5 text-xs font-medium",
-              statusChipClass.info,
-            )}
-          >
-            {t("skillsCli.placement.missing")}
-          </span>
+          <DenseStatusBadge status="missing" />
         )}
       </div>
     </div>
+  );
+}
+
+function DenseStatusBadge({ status }: { status: DenseRowStatus }) {
+  const { t } = useTranslation();
+  const Icon = DENSE_STATUS_ICON[status];
+  return (
+    <Badge tone={DENSE_STATUS_TONE[status]} size="sm" icon={<Icon />}>
+      {t(`skillsCli.placement.${status}`)}
+    </Badge>
   );
 }

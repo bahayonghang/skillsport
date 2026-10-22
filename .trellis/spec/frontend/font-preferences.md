@@ -38,7 +38,7 @@ saveBodyFont(mode, key, custom): Promise<void>;
 saveBodyChineseFallback(mode, key, custom): Promise<void>;
 ```
 
-`fontThemeModeForFlavor()` 是 flavor 到 mode 的唯一分类边界：`latte`、`claude-light` 为 `light`，其余四个 flavor 为 `dark`。
+`fontThemeModeForFlavor()` 是 flavor 到 mode 的唯一分类边界：`glass-light` 为 `light`，`glass-dark` 为 `dark`（1.1.0 起只有这两个主题）。
 
 ## 3. Contracts
 
@@ -48,13 +48,16 @@ saveBodyChineseFallback(mode, key, custom): Promise<void>;
 | Display Custom | `display_font_custom_light_v2` | `display_font_custom_dark_v2` | 空 |
 | Display Chinese Fallback | `display_chinese_fallback_light_v2` | `display_chinese_fallback_dark_v2` | `system` |
 | Display Fallback Custom | `display_chinese_fallback_custom_light_v2` | `display_chinese_fallback_custom_dark_v2` | 空 |
-| Body Primary | `body_font_light_v2` | `body_font_dark_v2` | `jetbrains` |
+| Body Primary | `body_font_light_v2` | `body_font_dark_v2` | `geist`（1.1.0 起；1.0.x 为 `jetbrains`） |
 | Body Custom | `body_font_custom_light_v2` | `body_font_custom_dark_v2` | 空 |
 | Body Chinese Fallback | `body_chinese_fallback_light_v2` | `body_chinese_fallback_dark_v2` | `system` |
 | Body Fallback Custom | `body_chinese_fallback_custom_light_v2` | `body_chinese_fallback_custom_dark_v2` | 空 |
 | Scale | `font_scale_v1` | `font_scale_v1` | `1` |
+| 1.1.0 默认值迁移标记 | `font_defaults_v1_1_applied` | 同左（全局一个） | 未设置；迁移完成写 `1` |
 
 - 同明暗类别 flavor 共享 profile；Scale 保持全局，不按 mode 拆分。
+- **1.1.0 正文默认值迁移（D-F1 方案 A）**：v1→v2 迁移会把整份 profile（含默认 `jetbrains`）落盘，无法区分主动选择与默认值。因此加载时若 `font_defaults_v1_1_applied` 不等于 `1`，对每个 mode：解析后的 Body Primary 为 `jetbrains` 且 Body Custom 去空白后为空，则改为 `geist`；有 Custom family 的不改。改写走同一 per-key 写入队列：profile 需要补写时随整份写入，否则只写 `body_font_{mode}_v2`；读取期间用户改过 body 的 mode 不写（revision 合并已保留用户值）。profile 写入完成后再写标记 `1`，之后永不再执行；主动选择 JetBrains Mono 的老用户需要重选一次（CHANGELOG 明示）。
+- 空 Custom 的 Body 回退链与 `data-body-font` 均为 `geist`（与默认值一致）。
 - 加载优先级固定为有效 v2 -> 旧全局 v1 -> 默认值。首次迁移把同一份旧 profile 同时写入 light/dark v2，旧 key 保留。
 - 部分迁移按字段回退；加载期间发生的用户编辑必须通过 revision/合并保护，不得被迁移补写覆盖。
 - 所有 `set_setting` 写入必须按 setting key 串行；迁移补写先入队，后续用户保存后入队并最终获胜。加载 Promise 在迁移写入结束后返回当时的最新缓存，不能返回写入前捕获的旧快照。
@@ -78,21 +81,24 @@ saveBodyChineseFallback(mode, key, custom): Promise<void>;
 | scale 非数字 | 回落默认值；有效数字限制在 `0.75..1.5` |
 | 迁移读取期间保存某字段 | 最终缓存和 v2 值保留用户新值，不被旧值/默认值覆盖 |
 | 迁移补写期间再次保存同一 key | 新保存等待该 key 的迁移写入结束，最终持久化值与返回缓存都采用新值 |
+| 标记缺失、Body=`jetbrains` 且 Custom 非空 | 不改写 Body，仍写标记 |
+| 标记读取失败（视为缺失） | 迁移重跑一次；只影响 Body=`jetbrains` 且无 Custom 的 mode |
 
 ## 5. Good / Base / Bad Cases
 
-- Good：active=`dark`，编辑 light Display 只更新 light specimen；切到 Latte 后立即应用该 light profile。
-- Base：新安装的 light/dark 均为 Display=`geist`、Body=`jetbrains`、两个 fallback=`system`，Scale=`1`。
+- Good：active=`dark`，编辑 light Display 只更新 light specimen；切到 glass-light 后立即应用该 light profile。
+- Base：新安装的 light/dark 均为 Display=`geist`、Body=`geist`、两个 fallback=`system`，Scale=`1`。
+- 1.1.0 upgrade：老用户 v2 落盘 Body=`jetbrains`、Custom 为空且无标记，首次加载后 light/dark Body 均为 `geist`，标记写入；再次把 Body 选回 `jetbrains` 后不会被改写。
 - Migration：旧 v1 Display=`serif` 时，首次加载的 light/dark 都为 `serif`，后续可独立修改。
 - Bad：在 Appearance 组件里拼 `font-family`、把用户输入当逗号 stack，或保存 inactive mode 时修改当前 DOM。
 
 ## 6. Tests Required
 
-- `src/test/stores/themeStore.test.ts`：六个 flavor 到 light/dark 的完整映射。
-- `src/test/lib/displayFont.test.ts`：默认值、三种 fallback、v1 双份迁移、部分/非法 v2、并发编辑保护、mode 隔离、安全字体链与全局 Scale。
+- `src/test/stores/themeStore.test.ts`：两个 flavor 到 light/dark 的完整映射。
+- `src/test/lib/displayFont.test.ts`：默认值、三种 fallback、v1 双份迁移、部分/非法 v2、并发编辑保护、mode 隔离、安全字体链与全局 Scale；1.1.0 迁移：旧默认 `jetbrains` → `geist`、v1-only `jetbrains`、有 Custom 不改、标记已存在不重复、读取期间与改写期间的用户保存获胜。
 - 并发编辑测试必须分别覆盖读取阶段和迁移写回阶段，并断言未编辑字段仍从持久化结果合并、同 key 的最新用户值最终落盘。
 - `src/test/pages/SettingsView.test.tsx`：亮/暗 editor、当前标识、不切 Theme、Custom 渐进显示、mode-specific key 写入、specimen 与可访问名称。
-- `src/test/contracts/fontContract.test.ts`：CSS token 生效且没有 fallback `@font-face` 声明。
+- `src/test/contracts/fontContract.test.ts`：CSS token 生效、根 `--font-body` 默认 Geist，且没有 fallback `@font-face` 声明。
 - 改动后至少运行定向 Vitest、`pnpm build` 与 `just ci`。
 
 ## 7. Wrong vs Correct

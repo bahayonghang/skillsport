@@ -146,6 +146,10 @@ function canonicalMessage(code: string): string | null {
       return "Could not reach GitHub. Check the network and try again.";
     case "github_import.repo_not_found":
       return "The GitHub repository was not found.";
+    case "github_import.branch_not_found":
+      return "The selected branch was not found in the GitHub repository.";
+    case "github_import.request_rejected":
+      return "GitHub rejected the request. Check the repository URL and branch, then try again.";
     case "github_import.archive_unavailable":
       return "The GitHub repository archive is unavailable.";
     case "github_import.response_invalid":

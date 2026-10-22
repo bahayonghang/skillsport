@@ -33,7 +33,7 @@ export function ProviderHealthList({
     return (
       <div
         className={cn(
-          "rounded border border-dashed border-border/60 p-6",
+          "rounded-inner bg-accent p-6",
           className,
         )}
       >
@@ -45,10 +45,10 @@ export function ProviderHealthList({
   }
 
   const rowClass =
-    "flex w-full items-center justify-between px-3 py-2 text-left";
+    "flex min-h-[40px] w-full items-center justify-between px-3 py-2 text-left";
 
   return (
-    <ul className={cn("divide-y divide-border/60", className)}>
+    <ul className={cn("divide-y divide-border", className)}>
       {providers.map((p) => {
         const interactive = Boolean(onSelect) && p.callCount > 0;
         const active = activeSource != null && activeSource === p.displayName;
@@ -97,16 +97,17 @@ export function ProviderHealthList({
             key={p.providerId}
             data-testid={`provider-row-${p.providerId}`}
             data-active={active}
-            className={cn(active && "bg-primary/5")}
+            className={cn(active && "bg-primary-tint")}
           >
             {interactive ? (
               <button
                 type="button"
+                aria-pressed={active}
                 onClick={() => onSelect?.(p.displayName)}
                 className={cn(
                   rowClass,
-                  "transition-colors hover:bg-muted/40",
-                  active && "text-primary",
+                  "transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+                  active && "text-primary-text",
                 )}
               >
                 {left}

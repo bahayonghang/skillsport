@@ -1,6 +1,7 @@
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { FrontmatterValue } from "@/lib/frontmatter";
 
@@ -41,7 +42,7 @@ function FrontmatterValueView({
           </span>
         </button>
         {expanded && (
-          <div className={cn("space-y-2 border-l border-border/60 pl-4", depth > 0 && "ml-1")}>
+          <div className={cn("space-y-2 border-l border-border pl-4", depth > 0 && "ml-1")}>
             {items.map((item, index) => (
               <FrontmatterValueView
                 key={`${label}-${index}`}
@@ -69,7 +70,7 @@ function FrontmatterValueView({
           <span className="font-medium text-foreground">{label}</span>
         </button>
         {expanded && (
-          <div className={cn("space-y-2 border-l border-border/60 pl-4", depth > 0 && "ml-1")}>
+          <div className={cn("space-y-2 border-l border-border pl-4", depth > 0 && "ml-1")}>
             {entries.map(([key, entryValue]) => (
               <FrontmatterValueView
                 key={`${label}-${key}`}
@@ -86,7 +87,7 @@ function FrontmatterValueView({
 
   return (
     <div className="grid gap-1 sm:grid-cols-[minmax(9rem,12rem)_minmax(0,1fr)] sm:gap-3">
-      <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="text-xs font-medium text-muted-foreground">
         {label}
       </div>
       <div className={cn("text-sm leading-6 text-foreground break-words", isNested && "font-mono")}>
@@ -129,7 +130,7 @@ export function SkillFrontmatterCard({ data, raw, className }: SkillFrontmatterC
   return (
     <section
       aria-label={t("detail.frontmatter")}
-      className={cn("rounded-xl border border-border/70 bg-muted/20 p-5 space-y-4", className)}
+      className={cn("rounded-inner bg-accent p-5 space-y-4", className)}
     >
       <div className="sr-only">
         <h2>{t("detail.frontmatter")}</h2>
@@ -152,16 +153,16 @@ export function SkillFrontmatterCard({ data, raw, className }: SkillFrontmatterC
                 )}
               </div>
               {summaryVersion && (
-                <span className="inline-flex items-center rounded-full border border-border/70 bg-background/75 px-2.5 py-1 text-xs font-medium tracking-wide text-foreground">
+                <Badge className="shrink-0 font-mono tabular-nums">
                   v{summaryVersion}
-                </span>
+                </Badge>
               )}
             </div>
           )}
 
           {additionalEntries.length > 0 && (
-            <section className="space-y-3 border-t border-border/60 pt-4">
-              <div className="text-xs font-medium uppercase tracking-[0.18em] text-muted-foreground">
+            <section className="space-y-3 border-t border-border pt-4">
+              <div className="text-xs font-medium text-muted-foreground">
                 {t("detail.frontmatterAdditional")}
               </div>
               <div className="space-y-3">
@@ -175,7 +176,7 @@ export function SkillFrontmatterCard({ data, raw, className }: SkillFrontmatterC
       ) : (
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground">{t("detail.frontmatterRawFallback")}</p>
-          <pre className="overflow-auto whitespace-pre-wrap rounded-lg border border-border/60 bg-background/70 p-3 text-ui-meta leading-5 text-foreground">
+          <pre className="overflow-auto whitespace-pre-wrap rounded-inner bg-popover p-3 text-ui-meta leading-5 text-foreground">
             {trimmedRaw}
           </pre>
         </div>

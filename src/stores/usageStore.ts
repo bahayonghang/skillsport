@@ -13,6 +13,7 @@ import type {
   UnusedUnlinkRequest,
   UnusedUnlinkResult,
   UsageOverview,
+  UsagePageSnapshot,
   UsageRefreshResult,
   UsageScopeInfo,
 } from "@/types/usage";
@@ -44,7 +45,7 @@ interface UsageState {
   selectSource: (source: string | null) => Promise<void>;
   loadDetail: (skill: string) => Promise<void>;
   clearDetail: () => void;
-  refreshUnused: () => Promise<void>;
+  refreshUnused: (silent?: boolean) => Promise<void>;
   unlinkUnusedSkillFromAgents: (
     targets: UnusedUnlinkRequest[],
   ) => Promise<UnusedUnlinkResult[]>;
@@ -61,6 +62,10 @@ let refreshSequence = 0;
 let pageSequence = 0;
 let detailSequence = 0;
 let unusedSequence = 0;
+let pendingSourceRequest: {
+  source: string | null;
+  targetId: string;
+} | null = null;
 
 /**
  * 未使用面板只向后端请求一次最严阈值（30 天）。30/60/90 天切换是视图本地的
@@ -75,6 +80,14 @@ function activeUsageTargetId(): string {
 
 function pageRequestMatches(request: number, targetId: string): boolean {
   return request === pageSequence && targetId === activeUsageTargetId();
+}
+
+async function loadPageForSource(source: string | null) {
+  const page: UsagePageSnapshot = await invoke("usage_get_page", { source });
+  if (source && !page.providers.some((provider) => provider.displayName === source && provider.callCount > 0)) {
+    return { page: await invoke("usage_get_page", { source: null }), source: null };
+  }
+  return { page, source };
 }
 
 /** 与 skillStore 的 skillActionKey 同一约定：rowId 唯一标识 observation 行。 */
@@ -114,7 +127,8 @@ export const useUsageStore = create<UsageState>((set, get) => ({
     }
 
     const requestSequence = ++refreshSequence;
-    ++pageSequence;
+    const source = get().selectedSource;
+    const pageAtRefreshStart = pageSequence;
     const refreshPromise = (async () => {
       const stillLatestRequest = () =>
         requestSequence === refreshSequence &&
@@ -122,11 +136,10 @@ export const useUsageStore = create<UsageState>((set, get) => ({
 
       set({ refreshing: true, error: null, refreshError: null });
       try {
-        const result = await invoke("usage_refresh", { force });
+        const result = await invoke("usage_refresh", { force, source });
         if (!stillLatestRequest()) return result;
 
         const commonState = {
-          providers: result.providers,
           scope: result.scope,
           refreshing: false,
           refreshError: result.refreshError,
@@ -136,10 +149,11 @@ export const useUsageStore = create<UsageState>((set, get) => ({
             result.refreshError && !result.usedCachedData
               ? result.refreshError
               : null,
-          lastRefreshMs:
-            result.summary.scannedAtMs > 0 ? result.summary.scannedAtMs : null,
         };
-        const selected = get().selectedSource;
+        const sourceRequest = pendingSourceRequest;
+        const selected = sourceRequest?.targetId === targetId
+          ? sourceRequest.source
+          : get().selectedSource;
         const selectedStillExists = selected
           ? result.providers.some(
               (provider) =>
@@ -147,38 +161,53 @@ export const useUsageStore = create<UsageState>((set, get) => ({
             )
           : false;
 
-        if (selected && selectedStillExists) {
+        const nextSource = selectedStillExists ? selected : null;
+        const pageWasReplaced = pageSequence !== pageAtRefreshStart;
+        const pageRequest = ++pageSequence;
+        if (pendingSourceRequest === sourceRequest) pendingSourceRequest = null;
+        if (nextSource !== source || pageWasReplaced) {
           set(commonState);
-          const filteredRequest = ++pageSequence;
           try {
-            const [overview, recent] = await Promise.all([
-              invoke("usage_get_overview", {
-                topSkillsLimit: 0,
-                source: selected,
-              }),
-              invoke("usage_get_recent", { limit: 20, source: selected }),
-            ]);
+            const { page, source: pageSource } = await loadPageForSource(nextSource);
             if (
               stillLatestRequest() &&
-              pageRequestMatches(filteredRequest, targetId) &&
-              get().selectedSource === selected
+              pageRequestMatches(pageRequest, targetId)
             ) {
-              set({ overview, recent });
+              if (pageSource !== get().selectedSource) {
+                ++detailSequence;
+                set({ selectedSkill: null, detail: null, detailLoading: false });
+              }
+              set({
+                ...page,
+                selectedSource: pageSource,
+                loading: false,
+                lastRefreshMs: page.overview.lastScanMs,
+              });
             }
           } catch (error) {
-            if (stillLatestRequest()) {
-              set({ error: errorMessage(error) });
+            if (stillLatestRequest() && pageRequestMatches(pageRequest, targetId)) {
+              set({ loading: false, error: errorMessage(error) });
             }
           }
         } else {
+          if (nextSource !== get().selectedSource) {
+            ++detailSequence;
+          }
           set({
             ...commonState,
             overview: result.overview,
             recent: result.recent,
-            selectedSource: selectedStillExists ? selected : null,
+            providers: result.providers,
+            lastRefreshMs: result.overview.lastScanMs,
+            selectedSource: nextSource,
+            loading: false,
+            ...(nextSource !== get().selectedSource
+              ? { selectedSkill: null, detail: null, detailLoading: false }
+              : {}),
           });
         }
 
+        if (!stillLatestRequest()) return result;
         // 未使用清单派生自 skill_calls，只在成功扫描后刷新；面板自身有序列号防陈旧。
         void get().refreshUnused();
 
@@ -210,10 +239,12 @@ export const useUsageStore = create<UsageState>((set, get) => ({
   },
 
   async selectSource(source) {
-    if (source === get().selectedSource) return;
+    if (source === get().selectedSource && pendingSourceRequest === null) return;
 
     const targetId = activeUsageTargetId();
     const requestSequence = ++pageSequence;
+    const sourceRequest = { source, targetId };
+    pendingSourceRequest = sourceRequest;
     ++detailSequence;
     set({
       loading: true,
@@ -224,16 +255,18 @@ export const useUsageStore = create<UsageState>((set, get) => ({
     });
 
     try {
-      const [overview, recent] = await Promise.all([
-        invoke("usage_get_overview", { topSkillsLimit: 0, source }),
-        invoke("usage_get_recent", { limit: 20, source }),
-      ]);
+      const { page, source: pageSource } = await loadPageForSource(source);
       if (pageRequestMatches(requestSequence, targetId)) {
+        const sourceChanged = pageSource !== get().selectedSource;
+        if (sourceChanged) ++detailSequence;
         set({
-          overview,
-          recent,
-          selectedSource: source,
+          ...page,
+          lastRefreshMs: page.overview.lastScanMs,
+          selectedSource: pageSource,
           loading: false,
+          ...(sourceChanged
+            ? { selectedSkill: null, detail: null, detailLoading: false }
+            : {}),
         });
         // source 口径同样作用于未使用报告的 calls 聚合，随 source 切换重取。
         void get().refreshUnused();
@@ -242,6 +275,8 @@ export const useUsageStore = create<UsageState>((set, get) => ({
       if (pageRequestMatches(requestSequence, targetId)) {
         set({ loading: false, error: errorMessage(error) });
       }
+    } finally {
+      if (pendingSourceRequest === sourceRequest) pendingSourceRequest = null;
     }
   },
 
@@ -266,7 +301,12 @@ export const useUsageStore = create<UsageState>((set, get) => ({
         set({ detail, detailLoading: false });
       }
     } catch (error) {
-      if (requestSequence === detailSequence) {
+      if (
+        requestSequence === detailSequence &&
+        targetId === activeUsageTargetId() &&
+        source === get().selectedSource &&
+        skill === get().selectedSkill
+      ) {
         set({ detailLoading: false, error: errorMessage(error) });
       }
     }
@@ -277,11 +317,11 @@ export const useUsageStore = create<UsageState>((set, get) => ({
     set({ selectedSkill: null, detail: null, detailLoading: false });
   },
 
-  async refreshUnused() {
+  async refreshUnused(silent = false) {
     const targetId = activeUsageTargetId();
     const source = get().selectedSource;
     const requestSequence = ++unusedSequence;
-    set({ unusedLoading: true, unusedError: null });
+    if (!silent) set({ unusedLoading: true, unusedError: null });
     try {
       const unused = await invoke("usage_get_unused_skills", {
         source,
@@ -299,7 +339,10 @@ export const useUsageStore = create<UsageState>((set, get) => ({
         requestSequence === unusedSequence &&
         targetId === activeUsageTargetId()
       ) {
-        set({ unusedLoading: false, unusedError: errorMessage(error) });
+        set({
+          unusedLoading: false,
+          ...(!silent ? { unusedError: errorMessage(error) } : {}),
+        });
       }
     }
   },
@@ -370,10 +413,16 @@ export const useUsageStore = create<UsageState>((set, get) => ({
   },
 
   async loadScope() {
+    const targetId = activeUsageTargetId();
     try {
       const scope = await invoke("usage_get_scope_info");
-      set({ scope });
-      return scope;
+      if (targetId !== activeUsageTargetId() || scope.targetId !== targetId) return null;
+      const current = get().scope;
+      const next = current?.targetId === targetId && current.isRemote
+        ? { ...scope, remoteReachable: current.remoteReachable }
+        : scope;
+      set({ scope: next });
+      return next;
     } catch {
       return null;
     }
@@ -386,6 +435,7 @@ export const useUsageStore = create<UsageState>((set, get) => ({
         ++pageSequence;
         ++detailSequence;
         ++unusedSequence;
+        pendingSourceRequest = null;
         // 连同页面数据一起清空：重扫期间不得继续展示上一个 target 的面板
         set({
           overview: null,
@@ -434,25 +484,34 @@ export const useUsageStore = create<UsageState>((set, get) => ({
           // 后台重扫完成：静默重取页面数据——不动 refreshing/loading、不清空
           // 现有面板、不弹 toast，提交仍走 pageSequence/unusedSequence 守卫。
           set({ backgroundScanning: false });
-          const source = get().selectedSource;
+          const sourceRequest = pendingSourceRequest;
+          const source = sourceRequest?.targetId === targetId
+            ? sourceRequest.source
+            : get().selectedSource;
           const requestSequence = ++pageSequence;
+          if (pendingSourceRequest === sourceRequest) pendingSourceRequest = null;
           void (async () => {
             try {
-              const [overview, recent] = await Promise.all([
-                invoke("usage_get_overview", { topSkillsLimit: 0, source }),
-                invoke("usage_get_recent", { limit: 20, source }),
-              ]);
-              if (
-                pageRequestMatches(requestSequence, targetId) &&
-                source === get().selectedSource
-              ) {
-                set({ overview, recent });
+              const { page, source: pageSource } = await loadPageForSource(source);
+              if (pageRequestMatches(requestSequence, targetId)) {
+                const sourceChanged = pageSource !== get().selectedSource;
+                if (sourceChanged) ++detailSequence;
+                set({
+                  ...page,
+                  selectedSource: pageSource,
+                  lastRefreshMs: page.overview.lastScanMs,
+                  ...(sourceRequest ? { loading: false } : {}),
+                  ...(sourceChanged ? { selectedSkill: null, detail: null, detailLoading: false } : {}),
+                });
+                void get().refreshUnused(true);
               }
             } catch {
               // 静默更新失败不打扰用户；下次手动/进入页面的刷新会重试
+              if (sourceRequest && pageRequestMatches(requestSequence, targetId)) {
+                set({ loading: false });
+              }
             }
           })();
-          void get().refreshUnused();
         },
       );
       return () => {

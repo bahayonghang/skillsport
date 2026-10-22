@@ -19,7 +19,7 @@ export type UnifiedSkillCardProps =
   | SkillsCliSkillCardProps; // variant: "skillsCli"   Skills CLI 全局技能（卸载确认由页面完成）
 ```
 
-平台场景可有 `lifetimeUsage?: { rank: number | null; count: number }`（全历史当前列表名次）。`undefined` = 未就绪，不画右下角；`rank < 1` 或 `null` = 「无记录」；`rank >= 1` = `#N · count`。来源竖条由 `toModel` 从 `originKind` / `installOrigin` / `sourceType` 派生（plugin / central / skillsCli）。**`link_type === "symlink"` 不再等于 Central**：Skills CLI junction/symlink 必须传 `installOrigin: "skillsCli"`。不要把 `statusAccent` 挪来表达来源。
+平台场景可有 `lifetimeUsage?: { rank: number | null; count: number }`（全历史当前列表名次）。`undefined` = 未就绪，不画右下角；`rank < 1` 或 `null` = 「无记录」；`rank >= 1` = `#N · count`。来源（plugin / central / skillsCli）由 `toModel` 从 `originKind` / `installOrigin` / `sourceType` 派生，卡片根节点以 `data-slot="skill-card"` + `data-origin` 暴露；视觉上只由 meta 行的来源胶囊（图标 + 文字 + 语义 tint）表达——1.1.0 起 DESIGN.md 禁止彩色侧边条，不再画 3px 竖条。**`link_type === "symlink"` 不再等于 Central**：Skills CLI junction/symlink 必须传 `installOrigin: "skillsCli"`。不要把 `statusAccent` 挪来表达来源。
 
 **Why**：单场景可见 props 从 40 收敛到 9–23；隐式组合判定内化后，调用点不再可能拼出无名义的 prop 组合。「唯一卡片实现」约束不变——一个 module 一份渲染实现。
 
@@ -42,6 +42,23 @@ export type UnifiedSkillCardProps =
 **What**：`src/test/components/skill/unifiedSkillCardVariants.test.tsx` 持有每场景最小正例 + 跨场景 `@ts-expect-error` 负例（带中文描述）。`pnpm typecheck` 双向强制：互斥失效时 directive 报 Unused 错误。新增场景 / 移动 prop 归属时同步增删负例。
 
 **Why**：类型互斥是本约定的核心交付物，负例是它唯一的回归探测器。
+
+## 约定 4：Central 项目落点用 `linkedProjects`，不用 `projectBadge`
+
+**What**：中央库卡片上「已装到哪些项目」只走 central 场景的 `linkedProjects`（`project_id` + `path`）。可见名是 `getPathBasename(path)`，完整路径只放 `title`。空数组不渲染。compact 不得 idle-hide 这些 chips。
+
+`projectBadge` 仍是 Obsidian/import 单值徽章，禁止拿来堆多个项目。构造方只有 `buildCentralSkillCardProps`。禁止在卡片或 list content 里 `invoke("list_projects_using_skill")`。后端合同见 [Central Project Install Visibility](../backend/central-project-install-visibility.md)。
+
+**Wrong vs Correct**：
+
+```tsx
+// ❌ Wrong
+<UnifiedSkillCard variant="central" projectBadge="PromptHub" />
+await invoke("list_projects_using_skill", { skillId: skill.id });
+
+// ✅ Correct
+linkedProjects: uniqueLinkedProjects(skill.linked_projects)
+```
 
 ## 参考
 

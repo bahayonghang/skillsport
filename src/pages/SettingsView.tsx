@@ -15,6 +15,7 @@ import {
   resolveSettingsPageId,
 } from "@/components/settings/settingsPages";
 import { SettingsSideNav } from "@/components/settings/SettingsSideNav";
+import { PageHeader } from "@/components/ui/page-header";
 import { AI_PROVIDERS } from "@/data/aiProviders";
 import { createSettingsViewActions } from "@/pages/settingsViewActions";
 import { useSettingsViewBindings } from "@/pages/settingsViewBindings";
@@ -22,11 +23,8 @@ import { SettingsPageSections } from "@/pages/settingsPageSections";
 import { useLocalRemoteSyncStore } from "@/stores/localRemoteSyncStore";
 import { isRemoteLikeTarget } from "@/lib/targetKind";
 import {
-  CTP_VAR_MAP,
   EMPTY_SSH_TARGET_FORM,
   EMPTY_WSL_TARGET_FORM,
-  FLAVOR_COLORS,
-  FLAVOR_ORDER,
   REPO_URL,
   getAiProviderViewModel,
   getCustomAgents,
@@ -116,8 +114,6 @@ export function SettingsView() {
     switchTarget,
     flavor,
     setFlavor,
-    accent,
-    setAccent,
   } = useSettingsViewBindings();
 
   const customAgents = useMemo(() => getCustomAgents(agents), [agents]);
@@ -455,41 +451,30 @@ export function SettingsView() {
     }
   }
 
-  const PageIcon = activePage.icon;
-
   return (
-    <div className="flex h-full min-h-0 flex-col bg-background">
+    <div className="flex h-full min-h-0 flex-col">
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row">
         <SettingsSideNav activePageId={activePageId} />
         <main
           ref={settingsContentRef}
-          className="min-h-0 flex-1 overflow-auto px-4 py-5 sm:px-6 lg:px-8 lg:py-7 xl:px-10"
+          className="min-h-0 flex-1 overflow-auto px-4 py-5 sm:px-6 lg:py-6"
         >
-          <div className="mx-auto w-full max-w-6xl space-y-7">
-            <header className="border-b border-border/70 pb-5">
-              <div className="flex items-start gap-2.5">
-                <PageIcon
-                  className="mt-1 size-5 shrink-0 text-muted-foreground"
-                  aria-hidden="true"
-                />
-                <div className="min-w-0">
-                  <h1 className="text-balance font-heading text-2xl font-semibold">
-                    {t(activePage.titleKey)}
-                  </h1>
-                  <p className="mt-1 max-w-3xl text-pretty text-sm leading-6 text-muted-foreground">
-                    {t(activePage.descriptionKey)}
-                  </p>
+          <div className="mx-auto w-full max-w-6xl space-y-6">
+            <PageHeader
+              title={t(activePage.titleKey)}
+              meta={
+                <>
+                  {t(activePage.descriptionKey)}
                   {!isKnownSettingsSubpath ? (
-                    <p className="mt-2 text-xs text-muted-foreground">
+                    <span className="block">
                       {t("settings.pages.legacyFallback")}
-                    </p>
+                    </span>
                   ) : null}
-                </div>
-              </div>
-            </header>
+                </>
+              }
+            />
 
             <SettingsPageSections
-              accent={accent}
               activeTarget={resolvedActiveTarget}
               aiApiKeyState={aiApiKeyState}
               aiSaveError={aiSaveError}
@@ -498,15 +483,12 @@ export function SettingsView() {
               aiTestResult={aiTestResult}
               aiTesting={aiTesting}
               appVersion={APP_VERSION}
-              ctpVarMap={CTP_VAR_MAP}
               customAgents={customAgents}
               dbPathDisplay={dbPathDisplay}
               deletingTargetId={deletingTargetId}
               editingPlatform={editingPlatform}
               editingTargetId={editingTargetId}
               flavor={flavor}
-              flavorColors={FLAVOR_COLORS}
-              flavorOrder={FLAVOR_ORDER}
               githubPatInput={githubPatInput}
               githubPatMessage={githubPatMessage}
               githubPatState={githubPatState}
@@ -609,7 +591,6 @@ export function SettingsView() {
               onSaveGitHubPat={() => {
                 void handleSaveGitHubPat();
               }}
-              onSetAccent={setAccent}
               onSetFlavor={setFlavor}
               onSetPlatformVisibilityQuery={setPlatformVisibilityQuery}
               onSetShowAiTestDetails={setShowAiTestDetails}

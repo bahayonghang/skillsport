@@ -57,6 +57,7 @@ pub struct CachedFileUpsert {
 /// 即「全量扫描且不落缓存」。
 #[derive(Debug, Default)]
 pub struct ProviderFileCache {
+    delta: Option<super::delta::FileManifest>,
     /// 扫描开始时从 DB 载入的既有指纹与 calls。
     existing: HashMap<String, CachedFileCalls>,
     /// 本次扫描实际见到的全部文件路径（缓存命中与新解析都算）。
@@ -84,6 +85,7 @@ impl ProviderFileCache {
             })
             .collect();
         Self {
+            delta: None,
             existing,
             seen_paths: HashSet::new(),
             upserts: Vec::new(),
@@ -93,6 +95,9 @@ impl ProviderFileCache {
     /// 指纹未变 → 返回缓存 calls 的克隆；未知文件或指纹变化 → None。
     /// 无论命中与否，path 都会计入 seen（用于 vanished 计算）。
     pub fn lookup(&mut self, path: &str, mtime_ms: i64, size: i64) -> Option<Vec<SkillCall>> {
+        if let Some(delta) = &mut self.delta {
+            return delta.observe(path, mtime_ms, size).then(Vec::new);
+        }
         self.seen_paths.insert(path.to_string());
         let entry = self
             .existing
@@ -103,6 +108,10 @@ impl ProviderFileCache {
 
     /// 登记一个新解析的文件（内容归调用方所有，缓存克隆一份）。
     pub fn record(&mut self, path: String, mtime_ms: i64, size: i64, calls: Vec<SkillCall>) {
+        if let Some(delta) = &mut self.delta {
+            delta.record(path, mtime_ms, size, calls);
+            return;
+        }
         self.seen_paths.insert(path.clone());
         self.upserts.push(CachedFileUpsert {
             file_path: path,
@@ -124,6 +133,36 @@ impl ProviderFileCache {
     /// 本次扫描产生的待 upsert 行。
     pub fn upserts(&self) -> &[CachedFileUpsert] {
         &self.upserts
+    }
+
+    pub(super) fn fingerprints(rows: Vec<super::delta::FileFingerprint>) -> Self {
+        Self {
+            delta: Some(super::delta::FileManifest {
+                existing: rows.into_iter().map(|r| (r.file_path.clone(), r)).collect(),
+                files: Vec::new(),
+            }),
+            ..Self::default()
+        }
+    }
+
+    pub fn record_or_replay(
+        &mut self,
+        path: String,
+        mtime_ms: i64,
+        size: i64,
+        calls: Vec<SkillCall>,
+    ) -> Vec<SkillCall> {
+        if self.delta.is_some() {
+            self.record(path, mtime_ms, size, calls);
+            Vec::new()
+        } else {
+            self.record(path, mtime_ms, size, calls.clone());
+            calls
+        }
+    }
+
+    pub(super) fn into_manifest(self) -> super::delta::FileManifest {
+        self.delta.expect("fingerprint scan")
     }
 
     /// 既有指纹与本次新解析的合并视图（同 path 时新解析覆盖旧指纹）。

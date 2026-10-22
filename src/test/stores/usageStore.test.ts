@@ -13,6 +13,7 @@ import { UNUSED_REQUEST_THRESHOLD_DAYS, useUsageStore } from "@/stores/usageStor
 import { useTargetStore } from "@/stores/targetStore";
 import { ipcFixtureError } from "@/lib/ipc/errors";
 import { useUsageBootstrap } from "@/pages/skillUsageBindings";
+import type { UsagePageSnapshot, SkillUsageDetail, SkillUsageSummary, UsageRefreshResult } from "@/types/usage";
 import {
   ipcInvokeCalls,
   ipcInvokedCommands,
@@ -53,7 +54,7 @@ function overviewFixture() {
   };
 }
 
-function refreshPayload(overrides: Record<string, unknown> = {}) {
+function refreshPayload(overrides: Partial<UsageRefreshResult> = {}) {
   return {
     summary: {
       cached: false,
@@ -77,6 +78,17 @@ function refreshPayload(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function pageFixture(overrides: Partial<UsagePageSnapshot> = {}): UsagePageSnapshot {
+  return {
+    overview: overviewFixture(), recent: [],
+    providers: [
+      { providerId: "claude-code", displayName: "Claude Code", available: true, callCount: 4, scannedAtMs: 1700000000000 },
+      { providerId: "codex", displayName: "Codex CLI", available: true, callCount: 4, scannedAtMs: 1700000000000 },
+    ],
+    ...overrides,
+  };
+}
+
 function deferred<T>() {
   let resolve!: (value: T) => void;
   let reject!: (reason?: unknown) => void;
@@ -85,6 +97,24 @@ function deferred<T>() {
     reject = fail;
   });
   return { promise, resolve, reject };
+}
+
+function skillRows(count: number): SkillUsageSummary[] {
+  return Array.from({ length: count }, (_, index) => ({
+    skill: `skill-${index}`, count: count - index, projects: 1, sessions: 1,
+    lastUsedMs: 1700000000000, matchStatus: "unmatched", resolvedSkillId: null,
+    staticTokenEstimate: null, staticByteCount: null,
+  }));
+}
+
+async function scanCompletionListener() {
+  let handler!: (event: { payload: string }) => void;
+  mockTauriListen.mockImplementation(async (event: string, callback: unknown) => {
+    if (event === "usage://scan-completed") handler = callback as typeof handler;
+    return () => undefined;
+  });
+  await useUsageStore.getState().subscribeScanCompleted();
+  return handler;
 }
 
 beforeEach(() => {
@@ -122,6 +152,253 @@ beforeEach(() => {
       label: "Local",
       isActive: true,
     },
+  });
+});
+
+describe("usage page snapshot correctness", () => {
+  it.each([false, true])("clears a detail opened from the retained source while the next source is loading: resolved=%s", async (resolved) => {
+    const nextPage = deferred<UsagePageSnapshot>();
+    const oldDetail = deferred<SkillUsageDetail>();
+    const detail: SkillUsageDetail = {
+      skill: "old-source-skill", count: 4, sessions: 2,
+      firstUsedMs: 1700000000000, lastUsedMs: 1700000000000,
+      byProject: [], weekly: [], matchStatus: "unmatched",
+      resolvedSkillId: null, staticTokenEstimate: null, staticByteCount: null,
+    };
+    useUsageStore.setState({ selectedSource: "Claude Code", overview: overviewFixture() });
+    mockIpcCommands({
+      usage_get_page: () => nextPage.promise,
+      usage_get_skill_detail: () => oldDetail.promise,
+      usage_get_unused_skills: { central: [], platforms: [] },
+    });
+    const selection = useUsageStore.getState().selectSource("Codex CLI");
+    const readingDetail = useUsageStore.getState().loadDetail(detail.skill);
+    if (resolved) {
+      oldDetail.resolve(detail);
+      await readingDetail;
+      expect(useUsageStore.getState().detail).toEqual(detail);
+    }
+    nextPage.resolve(pageFixture());
+    await selection;
+    expect(useUsageStore.getState().selectedSource).toBe("Codex CLI");
+    expect(useUsageStore.getState().selectedSkill).toBeNull();
+    expect(useUsageStore.getState().detail).toBeNull();
+    expect(useUsageStore.getState().detailLoading).toBe(false);
+    if (!resolved) {
+      oldDetail.resolve(detail);
+      await readingDetail;
+      expect(useUsageStore.getState().detail).toBeNull();
+      expect(useUsageStore.getState().detailLoading).toBe(false);
+    }
+  });
+
+  it.each([51, 144, 1000])("keeps all %i ranking rows across entry, TTL, force, source and background paths", async (count) => {
+    const topSkills = skillRows(count);
+    const page = pageFixture({ overview: {
+      ...overviewFixture(), topSkills,
+      kpis: { ...overviewFixture().kpis, uniqueSkills: count },
+    } });
+    mockIpcCommands({
+      usage_refresh: refreshPayload(page), usage_get_page: page,
+      usage_get_unused_skills: { central: [], platforms: [] },
+    });
+    for (const force of [false, false, true]) {
+      await useUsageStore.getState().refresh(force);
+      expect(useUsageStore.getState().overview?.topSkills).toEqual(topSkills);
+    }
+    await useUsageStore.getState().selectSource("Claude Code");
+    expect(useUsageStore.getState().overview?.topSkills).toEqual(topSkills);
+    const completed = await scanCompletionListener();
+    completed({ payload: "local" });
+    await waitFor(() => expect(ipcInvokeCalls("usage_get_page")).toHaveLength(2));
+    expect(useUsageStore.getState().overview?.topSkills).toEqual(topSkills);
+  });
+
+  it("publishes provider health and freshness atomically with a silent background page", async () => {
+    useUsageStore.setState({
+      overview: overviewFixture(), providers: pageFixture().providers,
+      lastRefreshMs: 1700000000000, backgroundScanning: true,
+      unused: { central: [], platforms: [] }, unusedError: null,
+      scope: { targetId: "local", label: "Local", isRemote: false, remoteReachable: false },
+    });
+    const page = pageFixture({
+      overview: { ...overviewFixture(), lastScanMs: 1700000005000, kpis: { ...overviewFixture().kpis, totalCalls: 42 } },
+      providers: [{ ...pageFixture().providers[0], callCount: 42, scannedAtMs: 1700000005000 }],
+    });
+    mockIpcCommands({
+      usage_get_page: page,
+      usage_get_unused_skills: () => Promise.reject(ipcFixtureError("storage.unavailable", "silent failure")),
+    });
+    const snapshots: Array<[number | undefined, number | undefined, number | null, boolean, boolean, boolean]> = [];
+    const unsubscribe = useUsageStore.subscribe((state) => snapshots.push([
+      state.overview?.kpis.totalCalls, state.providers[0]?.callCount,
+      state.lastRefreshMs, state.loading, state.refreshing, state.unusedLoading,
+    ]));
+    const completed = await scanCompletionListener();
+    completed({ payload: "local" });
+    await waitFor(() => expect(useUsageStore.getState().lastRefreshMs).toBe(1700000005000));
+    await waitFor(() => expect(ipcInvokeCalls("usage_get_unused_skills")).toHaveLength(1));
+    unsubscribe();
+    expect(snapshots.filter(([calls]) => calls === 42).every((snapshot) =>
+      snapshot[1] === 42 && snapshot[2] === 1700000005000 && snapshot.slice(3).every((flag) => flag === false),
+    )).toBe(true);
+    expect(useUsageStore.getState().unusedError).toBeNull();
+    expect(useUsageStore.getState().scope?.remoteReachable).toBe(false);
+    expect(toastInfoMock).not.toHaveBeenCalled();
+    expect(toastErrorMock).not.toHaveBeenCalled();
+  });
+
+  it("coherently refetches the new source when it changes during a filtered refresh", async () => {
+    const pending = deferred<ReturnType<typeof refreshPayload>>();
+    useUsageStore.setState({ selectedSource: "Claude Code", overview: overviewFixture() });
+    let reads = 0;
+    mockIpcCommands({
+      usage_refresh: () => pending.promise,
+      usage_get_page: () => pageFixture({ overview: {
+        ...overviewFixture(), kpis: { ...overviewFixture().kpis, totalCalls: ++reads + 1 },
+      } }),
+      usage_get_unused_skills: { central: [], platforms: [] },
+    });
+    const refresh = useUsageStore.getState().refresh(true);
+    await useUsageStore.getState().selectSource("Codex CLI");
+    expect(useUsageStore.getState().overview?.kpis.totalCalls).toBe(2);
+    pending.resolve(refreshPayload({
+      overview: { ...overviewFixture(), kpis: { ...overviewFixture().kpis, totalCalls: 81 } },
+      providers: pageFixture().providers,
+    }));
+    await refresh;
+    expect(useUsageStore.getState().selectedSource).toBe("Codex CLI");
+    expect(useUsageStore.getState().overview?.kpis.totalCalls).toBe(3);
+    expect(ipcInvokeCalls("usage_get_page").map((call) => call.args)).toEqual([
+      { source: "Codex CLI" }, { source: "Codex CLI" },
+    ]);
+  });
+
+  it("never relabels an empty filtered refresh payload as an all-platform page", async () => {
+    useUsageStore.setState({ selectedSource: "Claude Code", overview: overviewFixture() });
+    const allPage = deferred<UsagePageSnapshot>();
+    mockIpcCommands({
+      usage_refresh: refreshPayload({
+        overview: { ...overviewFixture(), kpis: { ...overviewFixture().kpis, totalCalls: 0 } },
+        providers: [{ ...pageFixture().providers[1], callCount: 144 }],
+      }),
+      usage_get_page: () => allPage.promise,
+      usage_get_unused_skills: { central: [], platforms: [] },
+    });
+    const refresh = useUsageStore.getState().refresh(true);
+    await waitFor(() => expect(ipcInvokeCalls("usage_get_page")).toHaveLength(1));
+    expect(useUsageStore.getState().selectedSource).toBe("Claude Code");
+    expect(useUsageStore.getState().overview?.kpis.totalCalls).toBe(4);
+    allPage.resolve(pageFixture({ overview: { ...overviewFixture(), kpis: { ...overviewFixture().kpis, totalCalls: 144 } } }));
+    await refresh;
+    expect(useUsageStore.getState().selectedSource).toBeNull();
+    expect(useUsageStore.getState().overview?.kpis.totalCalls).toBe(144);
+    expect(ipcInvokeCalls("usage_get_page")[0].args).toEqual({ source: null });
+  });
+
+  it("retains a pending source intent when scan-completed overtakes its older read", async () => {
+    const old = deferred<UsagePageSnapshot>();
+    let reads = 0;
+    mockIpcCommands({
+      usage_get_page: () => ++reads === 1 ? old.promise : pageFixture({ overview: {
+        ...overviewFixture(), kpis: { ...overviewFixture().kpis, totalCalls: 8 },
+      } }),
+      usage_get_unused_skills: { central: [], platforms: [] },
+    });
+    const completed = await scanCompletionListener();
+    const selection = useUsageStore.getState().selectSource("Codex CLI");
+    completed({ payload: "local" });
+    await waitFor(() => expect(useUsageStore.getState().selectedSource).toBe("Codex CLI"));
+    old.resolve(pageFixture({ overview: { ...overviewFixture(), kpis: { ...overviewFixture().kpis, totalCalls: 99 } } }));
+    await selection;
+    expect(useUsageStore.getState().loading).toBe(false);
+    expect(useUsageStore.getState().overview?.kpis.totalCalls).toBe(8);
+    expect(ipcInvokeCalls("usage_get_page")[1].args).toEqual({ source: "Codex CLI" });
+  });
+
+  it("preserves refresh-confirmed remote reachability and discards a scope read for an old target", async () => {
+    const remote = { targetId: "ssh-a", label: "Remote", isRemote: true, remoteReachable: false };
+    useTargetStore.setState({ activeTarget: { id: "ssh-a", kind: "ssh", label: "Remote", isActive: true } });
+    useUsageStore.setState({ scope: remote });
+    mockIpcCommand("usage_get_scope_info", { ...remote, remoteReachable: true });
+    expect((await useUsageStore.getState().loadScope())?.remoteReachable).toBe(false);
+    const stale = deferred<typeof remote>();
+    mockIpcCommand("usage_get_scope_info", () => stale.promise);
+    const reading = useUsageStore.getState().loadScope();
+    useTargetStore.setState({ activeTarget: { id: "local", kind: "local", label: "Local", isActive: true } });
+    useUsageStore.setState({ scope: null });
+    stale.resolve(remote);
+    expect(await reading).toBeNull();
+    expect(useUsageStore.getState().scope).toBeNull();
+  });
+
+  it("settles a pending source loading state when its replacement silent read fails", async () => {
+    const old = deferred<UsagePageSnapshot>();
+    let reads = 0;
+    useUsageStore.setState({ overview: overviewFixture() });
+    mockIpcCommand("usage_get_page", () => ++reads === 1
+      ? old.promise
+      : Promise.reject(ipcFixtureError("storage.unavailable", "silent failure")));
+    const completed = await scanCompletionListener();
+    const selection = useUsageStore.getState().selectSource("Codex CLI");
+    completed({ payload: "local" });
+    await waitFor(() => expect(useUsageStore.getState().loading).toBe(false));
+    old.resolve(pageFixture());
+    await selection;
+    expect(useUsageStore.getState().selectedSource).toBeNull();
+    expect(useUsageStore.getState().overview?.kpis.totalCalls).toBe(4);
+    expect(useUsageStore.getState().error).toBeNull();
+    expect(toastInfoMock).not.toHaveBeenCalled();
+  });
+
+  it("refetches instead of overwriting a newer background page with a delayed refresh payload", async () => {
+    const pending = deferred<ReturnType<typeof refreshPayload>>();
+    const fresh = pageFixture({ overview: { ...overviewFixture(), kpis: { ...overviewFixture().kpis, totalCalls: 42 } } });
+    useUsageStore.setState({ overview: overviewFixture() });
+    mockIpcCommands({
+      usage_refresh: () => pending.promise, usage_get_page: fresh,
+      usage_get_unused_skills: { central: [], platforms: [] },
+    });
+    const completed = await scanCompletionListener();
+    const refresh = useUsageStore.getState().refresh(true);
+    completed({ payload: "local" });
+    await waitFor(() => expect(useUsageStore.getState().overview?.kpis.totalCalls).toBe(42));
+    const published: number[] = [];
+    const unsubscribe = useUsageStore.subscribe((state) => published.push(state.overview?.kpis.totalCalls ?? 0));
+    pending.resolve(refreshPayload());
+    await refresh;
+    unsubscribe();
+    expect(published.every((value) => value === 42)).toBe(true);
+    expect(ipcInvokeCalls("usage_get_page")).toHaveLength(2);
+  });
+
+  it("discards a stale detail rejection when the active target changes before its event arrives", async () => {
+    const pending = deferred<SkillUsageDetail>();
+    mockIpcCommand("usage_get_skill_detail", () => pending.promise);
+    const reading = useUsageStore.getState().loadDetail("old-target-skill");
+    useTargetStore.setState({ activeTarget: { id: "ssh-a", kind: "ssh", label: "Remote", isActive: true } });
+    useUsageStore.setState({ error: null, selectedSkill: null, detail: null, detailLoading: false });
+    pending.reject(ipcFixtureError("storage.unavailable", "old target failed"));
+    await reading;
+    expect(useUsageStore.getState().error).toBeNull();
+    expect(useUsageStore.getState().detailLoading).toBe(false);
+  });
+
+  it("does not refresh unused or toast after a filtered refresh read becomes stale across targets", async () => {
+    const page = deferred<UsagePageSnapshot>();
+    useUsageStore.setState({ overview: overviewFixture(), selectedSource: "Claude Code" });
+    mockIpcCommands({
+      usage_refresh: refreshPayload({ usedCachedData: true, refreshError: "cached failure" }),
+      usage_get_page: () => page.promise,
+      usage_get_unused_skills: { central: [], platforms: [] },
+    });
+    const refresh = useUsageStore.getState().refresh(true);
+    await waitFor(() => expect(ipcInvokeCalls("usage_get_page")).toHaveLength(1));
+    useTargetStore.setState({ activeTarget: { id: "ssh-a", kind: "ssh", label: "Remote", isActive: true } });
+    page.resolve(pageFixture());
+    await refresh;
+    expect(ipcInvokeCalls("usage_get_unused_skills")).toHaveLength(0);
+    expect(toastInfoMock).not.toHaveBeenCalled();
   });
 });
 
@@ -269,7 +546,7 @@ describe("usageStore", () => {
     const result = await useUsageStore.getState().refresh(true);
 
     expect(result?.summary.callsWritten).toBe(4);
-    expect(ipcInvokeCalls("usage_refresh")[0].args).toEqual({ force: true });
+    expect(ipcInvokeCalls("usage_refresh")[0].args).toEqual({ force: true, source: null });
 
     const state = useUsageStore.getState();
     expect(state.overview?.kpis.totalCalls).toBe(4);
@@ -371,17 +648,16 @@ describe("usageStore", () => {
     expect(state.refreshing).toBe(false);
   });
 
-  it("selectSource reloads overview and recent with the selected source", async () => {
+  it("selectSource reloads a coherent page with the selected source", async () => {
     mockIpcCommands({
-      usage_get_overview: {
+      usage_get_page: pageFixture({ overview: {
         ...overviewFixture(),
         kpis: {
           ...overviewFixture().kpis,
           totalCalls: 2,
           uniqueSessions: 2,
         },
-      },
-      usage_get_recent: [],
+      } }),
       usage_get_unused_skills: { central: [], platforms: [] },
     });
 
@@ -389,16 +665,10 @@ describe("usageStore", () => {
 
     expect(useUsageStore.getState().selectedSource).toBe("Claude Code");
     expect(ipcInvokedCommands()).toEqual([
-      "usage_get_overview",
-      "usage_get_recent",
+      "usage_get_page",
       "usage_get_unused_skills",
     ]);
-    expect(ipcInvokeCalls("usage_get_overview")[0].args).toEqual({
-      topSkillsLimit: 0,
-      source: "Claude Code",
-    });
-    expect(ipcInvokeCalls("usage_get_recent")[0].args).toEqual({
-      limit: 20,
+    expect(ipcInvokeCalls("usage_get_page")[0].args).toEqual({
       source: "Claude Code",
     });
     // source 切换同样作用于未使用报告
@@ -422,30 +692,18 @@ describe("usageStore", () => {
           },
         ],
       }),
-      usage_get_overview: {
-        ...overviewFixture(),
-        kpis: {
-          ...overviewFixture().kpis,
-          totalCalls: 4,
-          uniqueSessions: 2,
-        },
-      },
-      usage_get_recent: [],
       usage_get_unused_skills: { central: [], platforms: [] },
     });
 
     await useUsageStore.getState().refresh(true);
-    await waitFor(() => expect(ipcInvokeCalls()).toHaveLength(4));
+    await waitFor(() => expect(ipcInvokeCalls()).toHaveLength(2));
 
     expect(useUsageStore.getState().selectedSource).toBe("Claude Code");
-    expect(ipcInvokeCalls("usage_get_overview")[0].args).toEqual({
-      topSkillsLimit: 0,
+    expect(ipcInvokeCalls("usage_refresh")[0].args).toEqual({
+      force: true,
       source: "Claude Code",
     });
-    expect(ipcInvokeCalls("usage_get_recent")[0].args).toEqual({
-      limit: 20,
-      source: "Claude Code",
-    });
+    expect(ipcInvokeCalls("usage_get_page")).toHaveLength(0);
     // 未使用报告沿用同一 source 口径
     expect(ipcInvokeCalls("usage_get_unused_skills")[0].args).toEqual({
       source: "Claude Code",
@@ -474,6 +732,7 @@ describe("usageStore", () => {
         ],
       }),
       usage_get_unused_skills: { central: [], platforms: [] },
+      usage_get_page: pageFixture(),
     });
 
     await useUsageStore.getState().refresh(true);
@@ -555,86 +814,61 @@ describe("usageStore", () => {
   });
 
   it("prevents a slow source request from overwriting the latest selection", async () => {
-    const claudeOverview = deferred<ReturnType<typeof overviewFixture>>();
-    const claudeRecent = deferred<never[]>();
-    const codexOverview = deferred<ReturnType<typeof overviewFixture>>();
-    const codexRecent = deferred<never[]>();
+    const claudePage = deferred<UsagePageSnapshot>();
+    const codexPage = deferred<UsagePageSnapshot>();
     mockIpcCommand(
-      "usage_get_overview",
+      "usage_get_page",
       ({ source }: { source: string | null }) =>
         source === "Claude Code"
-          ? claudeOverview.promise
-          : codexOverview.promise,
-    );
-    mockIpcCommand(
-      "usage_get_recent",
-      ({ source }: { source: string | null }) =>
-        source === "Claude Code" ? claudeRecent.promise : codexRecent.promise,
+          ? claudePage.promise
+          : codexPage.promise,
     );
 
     const first = useUsageStore.getState().selectSource("Claude Code");
     const second = useUsageStore.getState().selectSource("Codex CLI");
-    codexOverview.resolve({
+    codexPage.resolve(pageFixture({ overview: {
       ...overviewFixture(),
       kpis: { ...overviewFixture().kpis, totalCalls: 2 },
-    });
-    codexRecent.resolve([]);
+    } }));
     await second;
     expect(useUsageStore.getState().selectedSource).toBe("Codex CLI");
     expect(useUsageStore.getState().overview?.kpis.totalCalls).toBe(2);
 
-    claudeOverview.resolve({
+    claudePage.resolve(pageFixture({ overview: {
       ...overviewFixture(),
       kpis: { ...overviewFixture().kpis, totalCalls: 99 },
-    });
-    claudeRecent.resolve([]);
+    } }));
     await first;
     expect(useUsageStore.getState().selectedSource).toBe("Codex CLI");
     expect(useUsageStore.getState().overview?.kpis.totalCalls).toBe(2);
   });
 
-  it("keeps filtered data visible during refresh and commits the refetch atomically", async () => {
+  it("keeps filtered data visible during refresh and commits the returned filtered page atomically", async () => {
     useUsageStore.setState({
       selectedSource: "Claude Code",
       overview: overviewFixture(),
       recent: [],
     });
-    const filteredOverview = deferred<ReturnType<typeof overviewFixture>>();
-    const filteredRecent = deferred<never[]>();
+    const filteredRefresh = deferred<ReturnType<typeof refreshPayload>>();
     mockIpcCommands({
-      usage_refresh: refreshPayload({
-        overview: {
-          ...overviewFixture(),
-          kpis: { ...overviewFixture().kpis, totalCalls: 100 },
-        },
-        providers: [
-          {
-            providerId: "claude-code",
-            displayName: "Claude Code",
-            available: true,
-            callCount: 4,
-            scannedAtMs: 1_700_000_000_000,
-          },
-        ],
-      }),
-      usage_get_overview: () => filteredOverview.promise,
-      usage_get_recent: () => filteredRecent.promise,
+      usage_refresh: () => filteredRefresh.promise,
+      usage_get_unused_skills: { central: [], platforms: [] },
     });
 
     const refresh = useUsageStore.getState().refresh(true);
-    await waitFor(() =>
-      expect(ipcInvokeCalls("usage_get_overview")).toHaveLength(1),
-    );
     expect(useUsageStore.getState().overview?.kpis.totalCalls).toBe(4);
 
-    filteredOverview.resolve({
+    filteredRefresh.resolve(refreshPayload({ overview: {
       ...overviewFixture(),
       kpis: { ...overviewFixture().kpis, totalCalls: 3 },
-    });
-    filteredRecent.resolve([]);
+    }, providers: [{
+      providerId: "claude-code", displayName: "Claude Code", available: true,
+      callCount: 3, scannedAtMs: 1700000000000,
+    }] }));
     await refresh;
     expect(useUsageStore.getState().overview?.kpis.totalCalls).toBe(3);
     expect(useUsageStore.getState().selectedSource).toBe("Claude Code");
+    expect(ipcInvokeCalls("usage_get_page")).toHaveLength(0);
   });
 
   it("passes the selected source to detail and ignores stale detail results", async () => {
@@ -891,8 +1125,7 @@ describe("usageStore", () => {
       kpis: { ...overviewFixture().kpis, totalCalls: 42 },
     };
     mockIpcCommands({
-      usage_get_overview: freshOverview,
-      usage_get_recent: [],
+      usage_get_page: pageFixture({ overview: freshOverview }),
       usage_get_unused_skills: { central: [], platforms: [] },
     });
     useUsageStore.setState({
@@ -909,12 +1142,7 @@ describe("usageStore", () => {
     await waitFor(() =>
       expect(useUsageStore.getState().overview?.kpis.totalCalls).toBe(42),
     );
-    expect(ipcInvokeCalls("usage_get_overview")[0].args).toEqual({
-      topSkillsLimit: 0,
-      source: null,
-    });
-    expect(ipcInvokeCalls("usage_get_recent")[0].args).toEqual({
-      limit: 20,
+    expect(ipcInvokeCalls("usage_get_page")[0].args).toEqual({
       source: null,
     });
     expect(ipcInvokeCalls("usage_get_unused_skills")).toHaveLength(1);
@@ -938,7 +1166,7 @@ describe("usageStore", () => {
         return () => undefined;
       },
     );
-    mockIpcCommand("usage_get_overview", overviewFixture());
+    mockIpcCommand("usage_get_page", pageFixture());
     useUsageStore.setState({
       overview: overviewFixture(),
       backgroundScanning: true,
@@ -964,16 +1192,15 @@ describe("usageStore", () => {
         return () => undefined;
       },
     );
-    const staleOverview = deferred<ReturnType<typeof overviewFixture>>();
+    const stalePage = deferred<UsagePageSnapshot>();
     mockIpcCommands({
-      usage_get_overview: ({ source }: { source: string | null }) =>
+      usage_get_page: ({ source }: { source: string | null }) =>
         source === null
-          ? staleOverview.promise
-          : {
+          ? stalePage.promise
+          : pageFixture({ overview: {
               ...overviewFixture(),
               kpis: { ...overviewFixture().kpis, totalCalls: 7 },
-            },
-      usage_get_recent: [],
+            } }),
       usage_get_unused_skills: { central: [], platforms: [] },
     });
     useUsageStore.setState({ overview: overviewFixture() });
@@ -981,19 +1208,19 @@ describe("usageStore", () => {
     await useUsageStore.getState().subscribeScanCompleted();
     scanCompletedHandler!({ payload: "local" });
     await waitFor(() =>
-      expect(ipcInvokeCalls("usage_get_overview")).toHaveLength(1),
+      expect(ipcInvokeCalls("usage_get_page")).toHaveLength(1),
     );
 
     // 静默重取尚未返回时用户切换 source：旧响应必须被序列号守卫丢弃
     await useUsageStore.getState().selectSource("Codex CLI");
     expect(useUsageStore.getState().overview?.kpis.totalCalls).toBe(7);
 
-    staleOverview.resolve({
+    stalePage.resolve(pageFixture({ overview: {
       ...overviewFixture(),
       kpis: { ...overviewFixture().kpis, totalCalls: 99 },
-    });
+    } }));
     await waitFor(() =>
-      expect(ipcInvokeCalls("usage_get_overview")).toHaveLength(2),
+      expect(ipcInvokeCalls("usage_get_page")).toHaveLength(2),
     );
     await new Promise((resolve) => setTimeout(resolve, 0));
 

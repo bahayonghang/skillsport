@@ -44,7 +44,7 @@
 │ operationLogStore            │ Operation Log 分页 + 过滤       │
 │ runtimeLogStore              │ Runtime Log 文件 + tail 读取    │
 │ settingsStore                │ 键值设置 + 扫描目录             │
-│ themeStore                   │ Catppuccin 风格 + accent        │
+│ themeStore                   │ 浅色 / 深色玻璃主题             │
 └──────────────────────────────┴─────────────────────────────────┘
 ```
 

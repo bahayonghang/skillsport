@@ -315,7 +315,10 @@ fn stage_archive_blocking(
         let entry = zip.by_index_raw(index).map_err(|e| {
             LocalArchiveImportError::ArchiveReadFailed(format!("entry {index}: {e}"))
         })?;
-        entry_lookup.insert(entry.name().to_string(), index);
+        let name = entry.name().map_err(|e| {
+            LocalArchiveImportError::ArchiveReadFailed(format!("entry {index} name: {e}"))
+        })?;
+        entry_lookup.insert(name.into_owned(), index);
     }
     let prefix = if root_directory.is_empty() {
         String::new()

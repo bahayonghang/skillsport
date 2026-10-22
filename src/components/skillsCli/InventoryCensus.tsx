@@ -1,4 +1,8 @@
+import type { ReactNode } from "react";
+import { GitBranch, Link2, Package } from "lucide-react";
 import { useTranslation } from "react-i18next";
+
+import { StatTile, type StatTileTone } from "@/components/ui/stat-tile";
 
 import type { SkillsCliGlobalSkill, SkillsCliInstallTarget } from "@/types";
 
@@ -34,15 +38,6 @@ const BUCKET_COLOR: Record<string, string> = {
   unknown: "var(--muted-foreground)",
 };
 
-// Compact platform bars: fixed pixel geometry, never scaled by the container.
-const ROW_HEIGHT = 16;
-const BAR_HEIGHT = 8;
-const LABEL_WIDTH = 88;
-const BAR_AREA_WIDTH = 120;
-const COUNT_WIDTH = 22;
-const COLUMN_GAP = 6;
-const CHART_PADDING_Y = 2;
-
 // Donut geometry.
 const DONUT_SIZE = 120;
 const DONUT_RADIUS = 44;
@@ -60,62 +55,57 @@ function SourceDonut({ rows, total }: { rows: CensusRow[]; total: number }) {
   const circumference = 2 * Math.PI * DONUT_RADIUS;
   let accumulatedLength = 0;
   return (
-    <svg
-      width={DONUT_SIZE}
-      height={DONUT_SIZE}
-      viewBox={`0 0 ${DONUT_SIZE} ${DONUT_SIZE}`}
-      role="img"
-      aria-label={t("skillsCli.census.donutAria", { count: total })}
-    >
-      <g transform={`rotate(-90 ${DONUT_SIZE / 2} ${DONUT_SIZE / 2})`}>
-        {rows.map((row) => {
-          const fraction = total > 0 ? row.count / total : 0;
-          const segmentLength = fraction * circumference;
-          const dashOffset = -accumulatedLength;
-          accumulatedLength += segmentLength;
-          return (
-            <circle
-              key={row.key}
-              cx={DONUT_SIZE / 2}
-              cy={DONUT_SIZE / 2}
-              r={DONUT_RADIUS}
-              fill="none"
-              stroke={row.color}
-              strokeWidth={DONUT_STROKE}
-              strokeDasharray={`${segmentLength} ${circumference - segmentLength}`}
-              strokeDashoffset={dashOffset}
-            >
-              <title>
-                {t("skillsCli.census.donutTitle", {
-                  label: row.label,
-                  count: row.count,
-                  percent: Math.round(fraction * 100),
-                })}
-              </title>
-            </circle>
-          );
-        })}
-      </g>
-      <text
-        x={DONUT_SIZE / 2}
-        y={DONUT_SIZE / 2 + 2}
-        textAnchor="middle"
-        fontSize={18}
-        fontWeight={600}
-        className="fill-foreground"
+    <div className="relative size-32 shrink-0">
+      <svg
+        width={DONUT_SIZE}
+        height={DONUT_SIZE}
+        viewBox={`0 0 ${DONUT_SIZE} ${DONUT_SIZE}`}
+        role="img"
+        aria-label={t("skillsCli.census.donutAria", { count: total })}
+        className="size-full"
       >
-        {total}
-      </text>
-      <text
-        x={DONUT_SIZE / 2}
-        y={DONUT_SIZE / 2 + 16}
-        textAnchor="middle"
-        fontSize={9}
-        className="fill-muted-foreground"
+        <g transform={`rotate(-90 ${DONUT_SIZE / 2} ${DONUT_SIZE / 2})`}>
+          {rows.map((row) => {
+            const fraction = total > 0 ? row.count / total : 0;
+            const segmentLength = fraction * circumference;
+            const dashOffset = -accumulatedLength;
+            accumulatedLength += segmentLength;
+            return (
+              <circle
+                key={row.key}
+                cx={DONUT_SIZE / 2}
+                cy={DONUT_SIZE / 2}
+                r={DONUT_RADIUS}
+                fill="none"
+                stroke={row.color}
+                strokeWidth={DONUT_STROKE}
+                strokeDasharray={`${segmentLength} ${circumference - segmentLength}`}
+                strokeDashoffset={dashOffset}
+              >
+                <title>
+                  {t("skillsCli.census.donutTitle", {
+                    label: row.label,
+                    count: row.count,
+                    percent: Math.round(fraction * 100),
+                  })}
+                </title>
+              </circle>
+            );
+          })}
+        </g>
+      </svg>
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center text-center"
       >
-        {t("skillsCli.census.donutCenterLabel")}
-      </text>
-    </svg>
+        <span className="max-w-20 break-all text-lg font-semibold leading-tight tabular-nums">
+          {total.toLocaleString()}
+        </span>
+        <span className="text-xs text-muted-foreground">
+          {t("skillsCli.census.donutCenterLabel")}
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -130,64 +120,58 @@ function PlatformBarChart({
   if (rows.length === 0) {
     return null;
   }
-  const width =
-    LABEL_WIDTH + COLUMN_GAP + BAR_AREA_WIDTH + COLUMN_GAP + COUNT_WIDTH;
-  const height = rows.length * ROW_HEIGHT + CHART_PADDING_Y * 2;
   const maxCount = Math.max(...rows.map((row) => row.count), 1);
+  const midpoint = Math.ceil(rows.length / 2);
+  const groups = [rows.slice(0, midpoint), rows.slice(midpoint)];
+  // Both columns reserve the same count width, so equal counts have equal bars.
+  const countWidth = Math.max(3, maxCount.toLocaleString().length);
   return (
-    <svg
-      width={width}
-      height={height}
-      role="img"
+    <div
+      role="group"
       aria-label={ariaLabel}
-      className="text-primary-text"
+      className="grid gap-y-1 @min-[44rem]/platform:grid-cols-2 @min-[44rem]/platform:gap-x-6"
     >
-      {rows.map((row, index) => {
-        const rowTop = CHART_PADDING_Y + index * ROW_HEIGHT;
-        const barY = rowTop + (ROW_HEIGHT - BAR_HEIGHT) / 2;
-        const barWidth =
-          row.count > 0
-            ? Math.max((row.count / maxCount) * BAR_AREA_WIDTH, 2)
-            : 1;
-        const textY = rowTop + (ROW_HEIGHT + BAR_HEIGHT) / 2 - 1;
-        return (
-          <g key={row.key}>
-            <text
-              x={0}
-              y={textY}
-              fontSize={9}
-              className="fill-muted-foreground"
-            >
-              {row.label}
-            </text>
-            <rect
-              x={LABEL_WIDTH + COLUMN_GAP}
-              y={barY}
-              width={barWidth}
-              height={BAR_HEIGHT}
-              rx={2}
-              fill="currentColor"
-              opacity={row.count > 0 ? 1 : 0.3}
-            >
-              <title>
-                {t("skillsCli.census.barTitle", {
-                  label: row.label,
-                  count: row.count,
-                })}
-              </title>
-            </rect>
-            <text
-              x={LABEL_WIDTH + COLUMN_GAP + BAR_AREA_WIDTH + COLUMN_GAP}
-              y={textY}
-              fontSize={9}
-              className="fill-foreground tabular-nums"
-            >
-              {row.count}
-            </text>
-          </g>
-        );
-      })}
-    </svg>
+      {groups.filter((group) => group.length > 0).map((group) => (
+        <ul key={group[0].key} className="min-w-0 space-y-1">
+          {group.map((row) => {
+            const title = t("skillsCli.census.barTitle", {
+              label: row.label,
+              count: row.count,
+            });
+            return (
+              <li
+                key={row.key}
+                className="grid min-h-7 items-center gap-x-3 text-xs tabular-nums"
+                style={{
+                  gridTemplateColumns: `minmax(0, 1fr) minmax(0, 1fr) ${countWidth}ch`,
+                }}
+              >
+                <span aria-hidden className="min-w-0 break-words text-muted-foreground">
+                  {row.label}
+                </span>
+                <svg
+                  role="img"
+                  aria-label={title}
+                  className="h-2 w-full overflow-visible text-primary-text"
+                >
+                  <title>{title}</title>
+                  <rect
+                    width={row.count > 0 ? `${(row.count / maxCount) * 100}%` : 1}
+                    height="100%"
+                    rx={2}
+                    fill="currentColor"
+                    opacity={row.count > 0 ? 1 : 0.3}
+                  />
+                </svg>
+                <span aria-hidden className="text-right text-foreground">
+                  {row.count.toLocaleString()}
+                </span>
+              </li>
+            );
+          })}
+        </ul>
+      ))}
+    </div>
   );
 }
 
@@ -213,10 +197,30 @@ export function InventoryCensus({ skills, targets }: InventoryCensusProps) {
   }
   const sourceKindCount = Object.keys(sourceKindPresence).length;
 
-  const kpis = [
-    { label: t("skillsCli.census.kpiInstalled"), value: skills.length },
-    { label: t("skillsCli.census.kpiLinked"), value: linkedCount },
-    { label: t("skillsCli.census.kpiSourceKinds"), value: sourceKindCount },
+  const kpis: Array<{
+    label: string;
+    value: number;
+    tone: StatTileTone;
+    icon: ReactNode;
+  }> = [
+    {
+      label: t("skillsCli.census.kpiInstalled"),
+      value: skills.length,
+      tone: "neutral",
+      icon: <Package />,
+    },
+    {
+      label: t("skillsCli.census.kpiLinked"),
+      value: linkedCount,
+      tone: "primary",
+      icon: <Link2 />,
+    },
+    {
+      label: t("skillsCli.census.kpiSourceKinds"),
+      value: sourceKindCount,
+      tone: "secondary",
+      icon: <GitBranch />,
+    },
   ];
 
   const platformRows: CensusRow[] = targets.map((target) => ({
@@ -246,43 +250,48 @@ export function InventoryCensus({ skills, targets }: InventoryCensusProps) {
   });
 
   return (
-    <section className="rounded-lg border border-border p-4">
+    <div className="@container/census">
       <div
+        role="group"
         aria-label={t("skillsCli.census.kpiAria")}
-        className="flex flex-wrap gap-x-10 gap-y-2 border-b border-border pb-3"
+        className="grid grid-cols-3 gap-2"
       >
         {kpis.map((kpi) => (
-          <div key={kpi.label}>
-            <div className="text-xs text-muted-foreground">{kpi.label}</div>
-            <div className="mt-0.5 text-lg font-semibold tabular-nums text-foreground">
-              {kpi.value.toLocaleString()}
-            </div>
-          </div>
+          <StatTile
+            key={kpi.label}
+            size="compact"
+            tone={kpi.tone}
+            icon={kpi.icon}
+            label={kpi.label}
+            value={kpi.value}
+          />
         ))}
       </div>
-      <div className="mt-4 grid gap-6 md:grid-cols-[auto_minmax(0,1fr)]">
-        <figure className="flex items-center gap-4">
-          <SourceDonut rows={donutRows} total={skills.length} />
-          <figcaption className="space-y-1.5">
-            <div className="text-xs font-medium">
-              {t("skillsCli.census.sourceHeading")}
-            </div>
-            {donutRows.map((row) => (
-              <div key={row.key} className="flex items-center gap-1.5 text-xs">
-                <span
-                  aria-hidden
-                  className="size-2.5 rounded-full"
-                  style={{ background: row.color }}
-                />
-                <span>{row.label}</span>
-                <span className="tabular-nums text-muted-foreground">
-                  {row.count}
-                </span>
-              </div>
-            ))}
+      <div className="mt-5 grid items-start gap-6 @min-[60rem]/census:grid-cols-[13rem_minmax(0,1fr)]">
+        <figure className="min-w-0 space-y-3">
+          <figcaption className="text-xs font-medium">
+            {t("skillsCli.census.sourceHeading")}
           </figcaption>
+          <div className="flex flex-wrap items-start gap-4 @min-[60rem]/census:flex-col">
+            <SourceDonut rows={donutRows} total={skills.length} />
+            <ul className="min-w-0 space-y-2 py-1">
+              {donutRows.map((row) => (
+                <li key={row.key} className="flex items-center gap-2 text-xs">
+                  <span
+                    aria-hidden
+                    className="size-2.5 shrink-0 rounded-full"
+                    style={{ background: row.color }}
+                  />
+                  <span className="min-w-0 break-words">{row.label}</span>
+                  <span className="ml-auto text-right tabular-nums text-muted-foreground">
+                    {row.count.toLocaleString()}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </figure>
-        <figure className="space-y-2">
+        <figure className="@container/platform min-w-0 space-y-3">
           <figcaption className="text-xs font-medium">
             {t("skillsCli.census.platformHeading")}
           </figcaption>
@@ -294,6 +303,6 @@ export function InventoryCensus({ skills, targets }: InventoryCensusProps) {
           />
         </figure>
       </div>
-    </section>
+    </div>
   );
 }

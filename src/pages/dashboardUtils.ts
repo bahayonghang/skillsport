@@ -53,7 +53,7 @@ function dayKey(value: Date) {
 }
 
 export function heatCellClass(count: number, max: number) {
-  if (count <= 0) return "bg-muted/45";
+  if (count <= 0) return "bg-accent";
   const level = Math.ceil((count / Math.max(max, 1)) * 4);
   if (level >= 4) return "bg-primary";
   if (level === 3) return "bg-primary/70";

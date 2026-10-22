@@ -227,7 +227,7 @@ export const HANDWRITTEN_IPC_COMMANDS = {
     BatchUninstallSkillResult
   >(),
   // ── usage ─────────────────────────────────────────────────────────────────
-  usage_refresh: command<{ force: boolean }, UsageRefreshResult>(),
+  usage_refresh: command<{ force: boolean; source?: string | null }, UsageRefreshResult>(),
   usage_get_overview: command<
     { topSkillsLimit: number; source: string | null },
     UsageOverview

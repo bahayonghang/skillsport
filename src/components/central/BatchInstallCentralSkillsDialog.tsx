@@ -101,11 +101,9 @@ export function BatchInstallCentralSkillsDialog({
     resetSelection();
     setError(null);
     setResult(null);
+    setInstallMethod(canUseSymlink ? "symlink" : "copy");
     if (targetMode === "platform") {
-      setInstallMethod(canUseSymlink ? "symlink" : "copy");
       setProjectPath("");
-    } else {
-      setInstallMethod("copy");
     }
   }, [
     open,
@@ -119,7 +117,7 @@ export function BatchInstallCentralSkillsDialog({
 
   function handleModeChange(mode: TargetMode) {
     setTargetMode(mode);
-    setInstallMethod(mode === "project" || !canUseSymlink ? "copy" : "symlink");
+    setInstallMethod(canUseSymlink ? "symlink" : "copy");
     setError(null);
     setResult(null);
   }
@@ -166,7 +164,7 @@ export function BatchInstallCentralSkillsDialog({
           </DialogDescription>
 
           <div className="space-y-2">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <p className="text-xs font-medium text-muted-foreground">
               {t("central.batchInstallTargetMode")}
             </p>
             <RadioGroup
@@ -195,7 +193,7 @@ export function BatchInstallCentralSkillsDialog({
 
           {targetMode === "project" && (
             <div className="space-y-2">
-              <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <label className="text-xs font-medium text-muted-foreground">
                 {t("central.batchInstallProjectPath")}
               </label>
               <ProjectPathPicker
@@ -219,7 +217,7 @@ export function BatchInstallCentralSkillsDialog({
           )}
 
           <div className="flex items-center justify-between gap-3">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <p className="text-xs font-medium text-muted-foreground">
               {t("central.batchInstallPlatformsLabel")}
             </p>
             {onManagePlatforms && (
@@ -256,7 +254,7 @@ export function BatchInstallCentralSkillsDialog({
           />
 
           <div className="space-y-2">
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <p className="text-xs font-medium text-muted-foreground">
               {t("central.batchInstallInstallMethod")}
             </p>
             <RadioGroup
@@ -299,7 +297,7 @@ export function BatchInstallCentralSkillsDialog({
               </p>
               {skippedSummary.length > 0 && (
                 <div
-                  className="rounded-md border border-border/70 bg-muted/35 p-2 text-xs text-muted-foreground"
+                  className="rounded-control bg-muted/35 p-2 text-xs text-muted-foreground"
                   data-testid="batch-install-skipped-summary"
                 >
                   <p className="font-medium text-foreground">

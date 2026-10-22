@@ -41,11 +41,9 @@ pub(crate) async fn resolve_repo_source_with_branch(
         return Err(
             classify_github_denial_response(response, "inspecting the repository")
                 .await
-                .unwrap_or_else(|| {
-                    GithubImportError::Http(format!(
-                        "Failed to inspect GitHub repository: HTTP {}",
-                        status
-                    ))
+                .unwrap_or_else(|| GithubImportError::HttpStatus {
+                    message: format!("Failed to inspect GitHub repository: HTTP {}", status),
+                    status: status.as_u16(),
                 }),
         );
     }

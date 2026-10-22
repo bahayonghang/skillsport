@@ -8,6 +8,7 @@ import { InstallDialog } from "@/components/central/InstallDialog";
 import { SkillDetailDrawer } from "@/components/skill/SkillDetailDrawer";
 import { UnifiedSkillCard } from "@/components/skill/UnifiedSkillCard";
 import { Input } from "@/components/ui/input";
+import { PageHeader } from "@/components/ui/page-header";
 import { VirtualizedList } from "@/components/ui/virtualized-list";
 import { useSkillExplanationSummaries } from "@/hooks/useSkillExplanationSummaries";
 import { getPathBasename } from "@/lib/path";
@@ -32,7 +33,7 @@ import type {
 function EmptyState({ message }: { message: string }) {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-4 py-20">
-      <div className="rounded-full bg-muted/60 p-4">
+      <div className="rounded-full bg-accent p-4">
         <Blocks className="size-12 text-muted-foreground opacity-60" />
       </div>
       <p className="text-sm font-medium text-muted-foreground">{message}</p>
@@ -265,16 +266,15 @@ export function ObsidianVaultView() {
   }, [decodedVaultId, restorationState?.scrollTop]);
 
   return (
-    <div className="flex h-full flex-col">
-      <div className="border-b border-border px-6 py-4">
-        <h1 className="text-xl font-semibold">{t("obsidian.title")}</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          {t("obsidian.desc")}
-        </p>
-      </div>
+    <div className="flex h-full min-h-0 flex-col gap-4 px-6 pt-6 pb-4">
+      <PageHeader
+        className="shrink-0"
+        title={t("obsidian.title")}
+        meta={t("obsidian.desc")}
+      />
 
-      <div className="flex min-h-0 flex-1">
-        <div className="w-72 shrink-0 border-r border-border">
+      <div className="flex min-h-0 flex-1 gap-4">
+        <div className="glass-panel flex w-56 shrink-0 flex-col overflow-hidden rounded-card xl:w-72">
           <div className="border-b border-border px-4 py-3">
             <div className="relative">
               <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -291,25 +291,25 @@ export function ObsidianVaultView() {
                   onClick={() => setSearchQuery("")}
                   aria-label={t("obsidian.clearSearch")}
                   title={t("obsidian.clearSearch")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  className="focus-ring absolute right-2 top-1/2 -translate-y-1/2 rounded-control p-0.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                 >
                   <X className="size-3.5" />
                 </button>
               ) : null}
             </div>
           </div>
-          <div className="overflow-auto p-3">
+          <div className="scrollbar-subtle min-h-0 flex-1 overflow-auto p-2">
             {isLoadingVaults ? (
               <div className="flex items-center gap-2 px-2 py-3 text-sm text-muted-foreground">
-                <Blocks className="size-4 animate-pulse" />
+                <Blocks className="size-4 animate-pulse motion-reduce:animate-none" />
                 {t("obsidian.loadingVaults")}
               </div>
             ) : vaults.length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
+              <div className="rounded-inner bg-accent px-4 py-6 text-sm text-muted-foreground">
                 {t("obsidian.empty")}
               </div>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-1">
                 {vaults.map((vault) => {
                   const isActive = vault.id === decodedVaultId;
                   return (
@@ -320,16 +320,16 @@ export function ObsidianVaultView() {
                         navigate(`/obsidian/${encodeURIComponent(vault.id)}`)
                       }
                       className={cn(
-                        "flex w-full items-center gap-2 rounded-md border px-3 py-2 text-left transition-colors",
+                        "focus-ring flex w-full items-center gap-2 rounded-control border px-3 py-2 text-left transition-colors",
                         isActive
-                          ? "border-primary/60 bg-primary/10 text-foreground shadow-sm"
-                          : "border-border hover:bg-muted/40",
+                          ? "border-primary-stroke bg-primary-tint text-foreground"
+                          : "border-transparent hover:bg-accent",
                       )}
                     >
                       <Folder
                         className={cn(
                           "size-4 shrink-0",
-                          isActive ? "text-primary" : "text-muted-foreground",
+                          isActive ? "text-primary-text" : "text-muted-foreground",
                         )}
                       />
                       <div className="min-w-0 flex-1">
@@ -348,10 +348,10 @@ export function ObsidianVaultView() {
           </div>
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex min-w-0 flex-1 flex-col gap-3">
           {selectedVault ? (
             <>
-              <div className="flex items-center gap-3 border-b border-border px-6 py-3">
+              <div className="glass-panel flex shrink-0 items-center gap-3 rounded-card px-5 py-3">
                 <div className="min-w-0 flex-1">
                   <h2 className="truncate text-sm font-semibold">
                     {selectedVault.name}
@@ -359,7 +359,7 @@ export function ObsidianVaultView() {
                   <button
                     type="button"
                     onClick={() => void handleOpenVaultPath(selectedVault.path)}
-                    className="block max-w-full truncate text-left text-xs text-muted-foreground hover:text-primary hover:underline"
+                    className="focus-ring block max-w-full truncate rounded-control text-left font-mono text-ui-meta text-muted-foreground hover:text-primary-text hover:underline"
                     title={t("obsidian.openInFileManager")}
                   >
                     {selectedVault.path}
@@ -369,7 +369,7 @@ export function ObsidianVaultView() {
                   {t("collection.skills", { count: filteredSkills.length })}
                 </span>
               </div>
-              <div ref={contentRef} className="flex-1 overflow-auto p-4">
+              <div ref={contentRef} className="-mx-1 min-h-0 flex-1 overflow-auto px-1 pb-1">
                 {isLoadingSkills ? (
                   <EmptyState message={t("obsidian.loadingSkills")} />
                 ) : filteredSkills.length === 0 ? (

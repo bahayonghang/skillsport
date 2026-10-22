@@ -20,6 +20,8 @@ import { resetStartupStoreForTests, useStartupStore } from "@/stores/startupStor
 import { useTagGroupsStore } from "@/stores/tagGroupsStore";
 import { useTargetStore } from "@/stores/targetStore";
 import { useUsageStore } from "@/stores/usageStore";
+import { useRulesStore } from "@/stores/rulesStore";
+import { useWindowMaterialStore } from "@/stores/windowMaterialStore";
 
 const DESKTOP_ONLY_UNINSTALL_ERROR =
   "Uninstalling skills requires the Tauri desktop runtime.";
@@ -52,6 +54,29 @@ afterAll(() => {
 });
 
 describe("browser fixtures drive real store loaders", () => {
+  it("Rules fixtures drive real loading and file-link mutations", async () => {
+    useTargetStore.setState({ activeTarget: { id: "local", kind: "local", label: "Local", isActive: true } });
+    await useRulesStore.getState().load();
+    expect(useRulesStore.getState().snapshot?.rootPath).toBe("C:/fixture-home/.skillport/rules");
+    await useRulesStore.getState().select("review-checklist.md");
+    await useRulesStore.getState().setTargetEnabled("omp", true, "fixture-equivalent-omp");
+    expect(useRulesStore.getState().detail?.targets.find((item) => item.tool === "omp")?.state).toBe("linked");
+    useRulesStore.getState().editBody("# Synthetic edited content\n");
+    await useRulesStore.getState().save();
+    expect(useRulesStore.getState().detail?.body).toBe("# Synthetic edited content\n");
+    expect(useRulesStore.getState().errorCode).toBeNull();
+  });
+  it("windowMaterialStore stays opaque in the browser", async () => {
+    useWindowMaterialStore.getState().reset();
+    await useWindowMaterialStore.getState().init();
+    expect(useWindowMaterialStore.getState().state).toEqual({
+      applied: "none",
+      reason: "unsupportedPlatform",
+      supported: false,
+    });
+    expect(document.documentElement.dataset.windowMaterial).toBe("none");
+    useWindowMaterialStore.getState().reset();
+  });
   it("startupStore enters ready before DB-backed loaders run", async () => {
     resetStartupStoreForTests();
     await useStartupStore.getState().loadStatus();

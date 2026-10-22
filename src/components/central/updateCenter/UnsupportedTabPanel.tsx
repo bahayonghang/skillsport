@@ -41,7 +41,7 @@ export function UnsupportedTabPanel({
         {items.map((item) => (
           <div
             key={item.skillId}
-            className="rounded-lg border border-border bg-muted/30 p-3"
+            className="rounded-inner border border-border bg-accent p-3"
           >
             <div className="break-all text-sm font-medium">{item.skillId}</div>
             <p className="mt-1 text-xs text-muted-foreground">

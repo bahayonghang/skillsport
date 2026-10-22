@@ -1,0 +1,618 @@
+[
+  {
+    "name": "marketplace-light-1280x800-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "技能市场"
+    ],
+    "errors": []
+  },
+  {
+    "name": "marketplace-light-900x600-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "技能市场"
+    ],
+    "errors": []
+  },
+  {
+    "name": "marketplace-dark-1280x800-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "技能市场"
+    ],
+    "errors": []
+  },
+  {
+    "name": "marketplace-dark-900x600-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "技能市场"
+    ],
+    "errors": []
+  },
+  {
+    "name": "rules-light-1280x800-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "规则管理"
+    ],
+    "errors": []
+  },
+  {
+    "name": "rules-light-900x600-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "规则管理"
+    ],
+    "errors": []
+  },
+  {
+    "name": "rules-dark-1280x800-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "规则管理"
+    ],
+    "errors": []
+  },
+  {
+    "name": "rules-dark-900x600-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "规则管理"
+    ],
+    "errors": []
+  },
+  {
+    "name": "skills-cli-light-1280x800-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "Skills CLI 全局"
+    ],
+    "errors": []
+  },
+  {
+    "name": "skills-cli-light-900x600-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "Skills CLI 全局"
+    ],
+    "errors": []
+  },
+  {
+    "name": "skills-cli-dark-1280x800-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "Skills CLI 全局"
+    ],
+    "errors": []
+  },
+  {
+    "name": "skills-cli-dark-900x600-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "Skills CLI 全局"
+    ],
+    "errors": []
+  },
+  {
+    "name": "obsidian-light-1280x800-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "Obsidian 仓库技能"
+    ],
+    "errors": []
+  },
+  {
+    "name": "obsidian-light-900x600-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "Obsidian 仓库技能"
+    ],
+    "errors": []
+  },
+  {
+    "name": "obsidian-dark-1280x800-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "Obsidian 仓库技能"
+    ],
+    "errors": []
+  },
+  {
+    "name": "obsidian-dark-900x600-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "Obsidian 仓库技能"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-appearance-light-1280x800-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "外观"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-appearance-light-900x600-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "外观"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-appearance-dark-1280x800-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "外观"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-appearance-dark-900x600-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "外观"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-connections-light-1280x800-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "连接与同步"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-connections-light-900x600-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "连接与同步"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-connections-dark-1280x800-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "连接与同步"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-connections-dark-900x600-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "连接与同步"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-platforms-light-1280x800-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "平台管理"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-platforms-light-900x600-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "平台管理"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-platforms-dark-1280x800-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "平台管理"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-platforms-dark-900x600-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "平台管理"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-integrations-light-1280x800-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "集成与密钥"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-integrations-light-900x600-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "集成与密钥"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-integrations-dark-1280x800-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "集成与密钥"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-integrations-dark-900x600-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "集成与密钥"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-skill-sources-light-1280x800-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "技能来源"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-skill-sources-light-900x600-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "技能来源"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-skill-sources-dark-1280x800-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "技能来源"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-skill-sources-dark-900x600-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "技能来源"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-about-light-1280x800-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "帮助与关于"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-about-light-900x600-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "帮助与关于"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-about-dark-1280x800-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "帮助与关于"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-about-dark-900x600-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "帮助与关于"
+    ],
+    "errors": []
+  },
+  {
+    "name": "marketplace-light-1280x800-en",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "Marketplace"
+    ],
+    "errors": []
+  },
+  {
+    "name": "rules-light-1280x800-en",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "Rules"
+    ],
+    "errors": []
+  },
+  {
+    "name": "skills-cli-light-1280x800-en",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "Skills CLI global"
+    ],
+    "errors": []
+  },
+  {
+    "name": "obsidian-light-1280x800-en",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "Obsidian Vault Skills"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-appearance-light-1280x800-en",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "Appearance"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-connections-light-1280x800-en",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "Connections & Sync"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-platforms-light-1280x800-en",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "Platform Management"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-integrations-light-1280x800-en",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "Integrations & Keys"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-skill-sources-light-1280x800-en",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "Skill Sources"
+    ],
+    "errors": []
+  },
+  {
+    "name": "settings-about-light-1280x800-en",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "Help & About"
+    ],
+    "errors": []
+  },
+  {
+    "name": "marketplace-wizard-input-light-1280x800-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "技能市场"
+    ],
+    "errors": []
+  },
+  {
+    "name": "marketplace-wizard-input-dark-1280x800-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "技能市场"
+    ],
+    "errors": []
+  },
+  {
+    "name": "marketplace-wizard-preview-light-1280x800-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "技能市场"
+    ],
+    "errors": []
+  },
+  {
+    "name": "marketplace-wizard-preview-dark-1280x800-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "技能市场"
+    ],
+    "errors": []
+  },
+  {
+    "name": "skills-cli-detail-light-1280x800-zh",
+    "theme": "glass-light",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "Skills CLI 全局"
+    ],
+    "errors": []
+  },
+  {
+    "name": "skills-cli-detail-dark-1280x800-zh",
+    "theme": "glass-dark",
+    "lang": "zh",
+    "pageOverflowX": false,
+    "mainOverflowX": false,
+    "h1": [
+      "Skills CLI 全局"
+    ],
+    "errors": []
+  }
+]

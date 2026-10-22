@@ -3,6 +3,7 @@ import { ChevronRight } from "lucide-react";
 
 import { PanelHeader } from "@/components/dashboard/DashboardPanels";
 import { PlatformIcon } from "@/components/platform/PlatformIcon";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -31,7 +32,7 @@ export function AgentsPanel({
   const { t } = useTranslation();
 
   return (
-    <Card className="surface-glass overflow-hidden rounded-2xl border-0 bg-transparent p-0 shadow-none">
+    <Card className="p-0">
       <PanelHeader
         title={t("dashboard.agents.title", {
           enabled: enabledTargetsCount,
@@ -42,7 +43,7 @@ export function AgentsPanel({
           <Button
             variant="ghost"
             size="sm"
-            className="min-h-10 transition-[scale,background-color,border-color,color] active:scale-[0.96]"
+            className="min-h-10"
             onClick={() => onNavigate("/settings/platforms")}
           >
             {t("dashboard.agents.manage")}
@@ -71,12 +72,12 @@ export function AgentsPanel({
                   <button
                     type="button"
                     onClick={() => onNavigate(`/platform/${agent.id}`)}
-                    className={`focus-ring grid w-full grid-cols-[2rem_minmax(0,1fr)_auto_auto] items-center gap-3 border-t border-border/70 px-4 py-3 text-left first:border-t-0 hover:bg-muted/25 ${dashboardControlMotion}`}
+                    className={`focus-ring grid w-full grid-cols-[2rem_minmax(0,1fr)_auto_auto] items-center gap-3 border-t border-border px-4 py-3 text-left first:border-t-0 hover:bg-accent ${dashboardControlMotion}`}
                     aria-label={t("dashboard.agents.openLabel", {
                       name: label,
                     })}
                   >
-                    <span className="grid size-8 place-items-center rounded-xl border border-border/70 bg-card/70 text-primary-text">
+                    <span className="grid size-8 place-items-center rounded-control bg-accent text-foreground">
                       <PlatformIcon agentId={agent.id} className="size-4" />
                     </span>
                     <span className="min-w-0">
@@ -85,9 +86,13 @@ export function AgentsPanel({
                           {label}
                         </span>
                         {!agent.is_enabled && (
-                          <span className="hidden rounded border border-border bg-muted/40 px-1.5 py-0.5 text-xs font-medium uppercase tracking-wide text-muted-foreground sm:inline">
+                          <Badge
+                            tone="neutral"
+                            size="sm"
+                            className="hidden sm:inline-flex"
+                          >
                             {t("dashboard.agents.hidden")}
-                          </span>
+                          </Badge>
                         )}
                       </span>
                       <span className="mt-1 block truncate text-xs text-muted-foreground">
@@ -97,16 +102,16 @@ export function AgentsPanel({
                     <span className="flex w-20 items-center gap-2">
                       <span
                         aria-hidden="true"
-                        className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-full bg-muted"
+                        className="h-1.5 min-w-0 flex-1 overflow-hidden rounded-pill bg-accent"
                       >
                         <span
-                          className="block h-full origin-left rounded-full bg-primary"
+                          className="block h-full origin-left rounded-pill bg-primary"
                           style={{
                             transform: `scaleX(${Math.min(1, count / maxCount)})`,
                           }}
                         />
                       </span>
-                      <span className="font-display text-sm font-semibold tabular-nums">
+                      <span className="text-sm font-semibold tabular-nums">
                         {count}
                       </span>
                     </span>

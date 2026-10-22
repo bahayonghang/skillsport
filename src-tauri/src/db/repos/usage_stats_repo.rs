@@ -5,6 +5,16 @@ use sqlx::{FromRow, QueryBuilder, Sqlite};
 
 use crate::db::types::DbPool;
 
+pub(crate) async fn list_usage_skill_names(
+    pool: &DbPool,
+    target_id: &str,
+) -> Result<Vec<String>, sqlx::Error> {
+    sqlx::query_scalar("SELECT DISTINCT skill FROM skill_calls WHERE target_id=?")
+        .bind(target_id)
+        .fetch_all(pool)
+        .await
+}
+
 /// Per-skill call count + last-used timestamp for a named skill set.
 /// `cutoff_ms = None` means all recorded history (no `timestamp_ms >=` filter).
 #[derive(Debug, Clone, Serialize, Deserialize, FromRow, PartialEq, Eq, Default)]

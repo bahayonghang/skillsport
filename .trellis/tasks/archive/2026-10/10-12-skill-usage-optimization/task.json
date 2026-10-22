@@ -1,0 +1,45 @@
+{
+  "id": "skill-usage-optimization",
+  "name": "skill-usage-optimization",
+  "title": "Skill Usage 界面与性能优化",
+  "description": "父任务：协调视觉与性能两子任务，拥有原始截图、源码研究、跨任务验收和集成。",
+  "status": "completed",
+  "dev_type": "fullstack",
+  "scope": "usage",
+  "package": null,
+  "priority": "P1",
+  "creator": "lyh",
+  "assignee": "lyh",
+  "createdAt": "2026-10-12",
+  "completedAt": "2026-10-13",
+  "branch": "codex/skill-usage-optimization",
+  "base_branch": "dev",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [
+    "10-12-skill-usage-visual-polish",
+    "10-12-skill-usage-performance"
+  ],
+  "parent": null,
+  "relatedFiles": [
+    "src/pages/SkillUsageView.tsx",
+    "src/components/usage/ActivityHeatmap.tsx",
+    "src/stores/usageStore.ts",
+    "src-tauri/src/services/usage/mod.rs"
+  ],
+  "notes": "2026-10-13 用户人工验证并要求按当前结果收尾；just ci 与 Windows x64 NSIS build 通过，接受并保留 memory 冷扫19.2%和生产分阶段计时缺口。",
+  "meta": {
+    "planning_only": false,
+    "planning_base_commit": "a77acc92",
+    "execution_order": [
+      "10-12-skill-usage-visual-polish",
+      "10-12-skill-usage-performance"
+    ],
+    "implementation_approved": true,
+    "human_validation_accepted": true,
+    "closure_kind": "accepted_with_known_limits",
+    "acceptance_record": "research/integration-verification.md"
+  }
+}

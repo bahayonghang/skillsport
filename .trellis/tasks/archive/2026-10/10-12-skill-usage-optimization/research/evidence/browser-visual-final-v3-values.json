@@ -1,0 +1,4196 @@
+[
+  {
+    "width": 1360,
+    "height": 900,
+    "language": "en",
+    "theme": "mocha",
+    "scale": 1,
+    "header": {
+      "x": 208,
+      "y": 48,
+      "width": 1152,
+      "height": 104.80000305175781,
+      "right": 1360,
+      "bottom": 152.8000030517578
+    },
+    "title": {
+      "x": 260,
+      "y": 56,
+      "width": 113.9749984741211,
+      "height": 24,
+      "right": 373.9749984741211,
+      "bottom": 80
+    },
+    "ranking": {
+      "x": 228,
+      "y": 164.8000030517578,
+      "width": 701.6000366210938,
+      "height": 512,
+      "right": 929.6000366210938,
+      "bottom": 676.8000030517578
+    },
+    "topOverhead": 108.80000305175781,
+    "heatmap": {
+      "x": 945.6000366210938,
+      "y": 420.8000183105469,
+      "width": 384,
+      "height": 260.6000061035156,
+      "right": 1329.6000366210938,
+      "bottom": 681.4000244140625
+    },
+    "plot": {
+      "x": 958.4000244140625,
+      "y": 477.6000061035156,
+      "width": 352,
+      "height": 187,
+      "right": 1310.4000244140625,
+      "bottom": 664.6000061035156
+    },
+    "grid": {
+      "x": 994.4000244140625,
+      "y": 505.6000061035156,
+      "width": 316,
+      "height": 136,
+      "right": 1310.4000244140625,
+      "bottom": 641.6000061035156
+    },
+    "cell": {
+      "x": 994.4000244140625,
+      "y": 505.6000061035156,
+      "width": 16,
+      "height": 16,
+      "right": 1010.4000244140625,
+      "bottom": 521.6000061035156
+    },
+    "legend": {
+      "x": 958.4000244140625,
+      "y": 649.6000366210938,
+      "width": 352,
+      "height": 15,
+      "right": 1310.4000244140625,
+      "bottom": 664.6000366210938
+    },
+    "plotFraction": 0.9832402234636871,
+    "legendRightDelta": 0,
+    "months": [
+      {
+        "label": "Jun",
+        "x": 994.4000244140625,
+        "y": 477.6000061035156,
+        "width": 36,
+        "height": 24,
+        "right": 1030.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      },
+      {
+        "label": "Jul",
+        "x": 1034.4000244140625,
+        "y": 477.6000061035156,
+        "width": 76,
+        "height": 24,
+        "right": 1110.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      },
+      {
+        "label": "Aug",
+        "x": 1114.4000244140625,
+        "y": 477.6000061035156,
+        "width": 76,
+        "height": 24,
+        "right": 1190.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      },
+      {
+        "label": "Sep",
+        "x": 1194.4000244140625,
+        "y": 477.6000061035156,
+        "width": 96,
+        "height": 24,
+        "right": 1290.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      }
+    ],
+    "controls": [
+      {
+        "label": "Refresh",
+        "x": 1300,
+        "y": 56,
+        "width": 40,
+        "height": 40,
+        "right": 1340,
+        "bottom": 96,
+        "disabled": false
+      },
+      {
+        "label": "All platforms",
+        "x": 228,
+        "y": 104,
+        "width": 101.0625,
+        "height": 40,
+        "right": 329.0625,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "Claude Code",
+        "x": 335.0625,
+        "y": 104,
+        "width": 97.48750305175781,
+        "height": 40,
+        "right": 432.5500030517578,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "Codex CLI",
+        "x": 438.5500183105469,
+        "y": 104,
+        "width": 84.30000305175781,
+        "height": 40,
+        "right": 522.8500213623047,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "droid",
+        "x": 528.8500366210938,
+        "y": 104,
+        "width": 56.60000228881836,
+        "height": 40,
+        "right": 585.4500389099121,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "opencode",
+        "x": 591.4500122070312,
+        "y": 104,
+        "width": 81.45000457763672,
+        "height": 40,
+        "right": 672.900016784668,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "grok",
+        "x": 678.9000244140625,
+        "y": 104,
+        "width": 51.73749923706055,
+        "height": 40,
+        "right": 730.637523651123,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "antigravity",
+        "x": 736.6375122070312,
+        "y": 104,
+        "width": 87.6624984741211,
+        "height": 40,
+        "right": 824.3000106811523,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "kiro",
+        "x": 830.2999877929688,
+        "y": 104,
+        "width": 48.98749923706055,
+        "height": 40,
+        "right": 879.2874870300293,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "zed",
+        "x": 885.2875366210938,
+        "y": 104,
+        "width": 45.3125,
+        "height": 40,
+        "right": 930.6000366210938,
+        "bottom": 144,
+        "disabled": true
+      }
+    ],
+    "pageWidth": 1360,
+    "scrollWidth": 1360,
+    "regionWidth": 1142,
+    "regionScrollWidth": 1142,
+    "rankingViewport": {
+      "x": 228.8000030517578,
+      "y": 320.7749938964844,
+      "width": 700,
+      "height": 272.82501220703125,
+      "right": 928.8000030517578,
+      "bottom": 593.6000061035156
+    },
+    "rankingClientWidth": 690,
+    "rankingScrollWidth": 690,
+    "cells": 112
+  },
+  {
+    "width": 1380,
+    "height": 900,
+    "language": "en",
+    "theme": "mocha",
+    "scale": 1,
+    "header": {
+      "x": 208,
+      "y": 48,
+      "width": 1172,
+      "height": 104.80000305175781,
+      "right": 1380,
+      "bottom": 152.8000030517578
+    },
+    "title": {
+      "x": 260,
+      "y": 56,
+      "width": 113.9749984741211,
+      "height": 24,
+      "right": 373.9749984741211,
+      "bottom": 80
+    },
+    "ranking": {
+      "x": 228,
+      "y": 164.8000030517578,
+      "width": 721.6000366210938,
+      "height": 512,
+      "right": 949.6000366210938,
+      "bottom": 676.8000030517578
+    },
+    "topOverhead": 108.80000305175781,
+    "heatmap": {
+      "x": 965.6000366210938,
+      "y": 420.8000183105469,
+      "width": 384,
+      "height": 260.6000061035156,
+      "right": 1349.6000366210938,
+      "bottom": 681.4000244140625
+    },
+    "plot": {
+      "x": 978.4000244140625,
+      "y": 477.6000061035156,
+      "width": 352,
+      "height": 187,
+      "right": 1330.4000244140625,
+      "bottom": 664.6000061035156
+    },
+    "grid": {
+      "x": 1014.4000244140625,
+      "y": 505.6000061035156,
+      "width": 316,
+      "height": 136,
+      "right": 1330.4000244140625,
+      "bottom": 641.6000061035156
+    },
+    "cell": {
+      "x": 1014.4000244140625,
+      "y": 505.6000061035156,
+      "width": 16,
+      "height": 16,
+      "right": 1030.4000244140625,
+      "bottom": 521.6000061035156
+    },
+    "legend": {
+      "x": 978.4000244140625,
+      "y": 649.6000366210938,
+      "width": 352,
+      "height": 15,
+      "right": 1330.4000244140625,
+      "bottom": 664.6000366210938
+    },
+    "plotFraction": 0.9832402234636871,
+    "legendRightDelta": 0,
+    "months": [
+      {
+        "label": "Jun",
+        "x": 1014.4000244140625,
+        "y": 477.6000061035156,
+        "width": 36,
+        "height": 24,
+        "right": 1050.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      },
+      {
+        "label": "Jul",
+        "x": 1054.4000244140625,
+        "y": 477.6000061035156,
+        "width": 76,
+        "height": 24,
+        "right": 1130.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      },
+      {
+        "label": "Aug",
+        "x": 1134.4000244140625,
+        "y": 477.6000061035156,
+        "width": 76,
+        "height": 24,
+        "right": 1210.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      },
+      {
+        "label": "Sep",
+        "x": 1214.4000244140625,
+        "y": 477.6000061035156,
+        "width": 96,
+        "height": 24,
+        "right": 1310.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      }
+    ],
+    "controls": [
+      {
+        "label": "Refresh",
+        "x": 1320,
+        "y": 56,
+        "width": 40,
+        "height": 40,
+        "right": 1360,
+        "bottom": 96,
+        "disabled": false
+      },
+      {
+        "label": "All platforms",
+        "x": 228,
+        "y": 104,
+        "width": 101.0625,
+        "height": 40,
+        "right": 329.0625,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "Claude Code",
+        "x": 335.0625,
+        "y": 104,
+        "width": 97.48750305175781,
+        "height": 40,
+        "right": 432.5500030517578,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "Codex CLI",
+        "x": 438.5500183105469,
+        "y": 104,
+        "width": 84.30000305175781,
+        "height": 40,
+        "right": 522.8500213623047,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "droid",
+        "x": 528.8500366210938,
+        "y": 104,
+        "width": 56.60000228881836,
+        "height": 40,
+        "right": 585.4500389099121,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "opencode",
+        "x": 591.4500122070312,
+        "y": 104,
+        "width": 81.45000457763672,
+        "height": 40,
+        "right": 672.900016784668,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "grok",
+        "x": 678.9000244140625,
+        "y": 104,
+        "width": 51.73749923706055,
+        "height": 40,
+        "right": 730.637523651123,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "antigravity",
+        "x": 736.6375122070312,
+        "y": 104,
+        "width": 87.6624984741211,
+        "height": 40,
+        "right": 824.3000106811523,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "kiro",
+        "x": 830.2999877929688,
+        "y": 104,
+        "width": 48.98749923706055,
+        "height": 40,
+        "right": 879.2874870300293,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "zed",
+        "x": 885.2875366210938,
+        "y": 104,
+        "width": 45.3125,
+        "height": 40,
+        "right": 930.6000366210938,
+        "bottom": 144,
+        "disabled": true
+      }
+    ],
+    "pageWidth": 1380,
+    "scrollWidth": 1380,
+    "regionWidth": 1162,
+    "regionScrollWidth": 1162,
+    "rankingViewport": {
+      "x": 228.8000030517578,
+      "y": 320.7749938964844,
+      "width": 720,
+      "height": 272.82501220703125,
+      "right": 948.8000030517578,
+      "bottom": 593.6000061035156
+    },
+    "rankingClientWidth": 710,
+    "rankingScrollWidth": 710,
+    "cells": 112
+  },
+  {
+    "width": 1400,
+    "height": 900,
+    "language": "en",
+    "theme": "mocha",
+    "scale": 1,
+    "header": {
+      "x": 208,
+      "y": 48,
+      "width": 1192,
+      "height": 104.80000305175781,
+      "right": 1400,
+      "bottom": 152.8000030517578
+    },
+    "title": {
+      "x": 260,
+      "y": 56,
+      "width": 113.9749984741211,
+      "height": 24,
+      "right": 373.9749984741211,
+      "bottom": 80
+    },
+    "ranking": {
+      "x": 228,
+      "y": 164.8000030517578,
+      "width": 741.6000366210938,
+      "height": 512,
+      "right": 969.6000366210938,
+      "bottom": 676.8000030517578
+    },
+    "topOverhead": 108.80000305175781,
+    "heatmap": {
+      "x": 985.6000366210938,
+      "y": 420.8000183105469,
+      "width": 384,
+      "height": 260.6000061035156,
+      "right": 1369.6000366210938,
+      "bottom": 681.4000244140625
+    },
+    "plot": {
+      "x": 998.4000244140625,
+      "y": 477.6000061035156,
+      "width": 352,
+      "height": 187,
+      "right": 1350.4000244140625,
+      "bottom": 664.6000061035156
+    },
+    "grid": {
+      "x": 1034.4000244140625,
+      "y": 505.6000061035156,
+      "width": 316,
+      "height": 136,
+      "right": 1350.4000244140625,
+      "bottom": 641.6000061035156
+    },
+    "cell": {
+      "x": 1034.4000244140625,
+      "y": 505.6000061035156,
+      "width": 16,
+      "height": 16,
+      "right": 1050.4000244140625,
+      "bottom": 521.6000061035156
+    },
+    "legend": {
+      "x": 998.4000244140625,
+      "y": 649.6000366210938,
+      "width": 352,
+      "height": 15,
+      "right": 1350.4000244140625,
+      "bottom": 664.6000366210938
+    },
+    "plotFraction": 0.9832402234636871,
+    "legendRightDelta": 0,
+    "months": [
+      {
+        "label": "Jun",
+        "x": 1034.4000244140625,
+        "y": 477.6000061035156,
+        "width": 36,
+        "height": 24,
+        "right": 1070.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      },
+      {
+        "label": "Jul",
+        "x": 1074.4000244140625,
+        "y": 477.6000061035156,
+        "width": 76,
+        "height": 24,
+        "right": 1150.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      },
+      {
+        "label": "Aug",
+        "x": 1154.4000244140625,
+        "y": 477.6000061035156,
+        "width": 76,
+        "height": 24,
+        "right": 1230.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      },
+      {
+        "label": "Sep",
+        "x": 1234.4000244140625,
+        "y": 477.6000061035156,
+        "width": 96,
+        "height": 24,
+        "right": 1330.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      }
+    ],
+    "controls": [
+      {
+        "label": "Refresh",
+        "x": 1340,
+        "y": 56,
+        "width": 40,
+        "height": 40,
+        "right": 1380,
+        "bottom": 96,
+        "disabled": false
+      },
+      {
+        "label": "All platforms",
+        "x": 228,
+        "y": 104,
+        "width": 101.0625,
+        "height": 40,
+        "right": 329.0625,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "Claude Code",
+        "x": 335.0625,
+        "y": 104,
+        "width": 97.48750305175781,
+        "height": 40,
+        "right": 432.5500030517578,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "Codex CLI",
+        "x": 438.5500183105469,
+        "y": 104,
+        "width": 84.30000305175781,
+        "height": 40,
+        "right": 522.8500213623047,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "droid",
+        "x": 528.8500366210938,
+        "y": 104,
+        "width": 56.60000228881836,
+        "height": 40,
+        "right": 585.4500389099121,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "opencode",
+        "x": 591.4500122070312,
+        "y": 104,
+        "width": 81.45000457763672,
+        "height": 40,
+        "right": 672.900016784668,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "grok",
+        "x": 678.9000244140625,
+        "y": 104,
+        "width": 51.73749923706055,
+        "height": 40,
+        "right": 730.637523651123,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "antigravity",
+        "x": 736.6375122070312,
+        "y": 104,
+        "width": 87.6624984741211,
+        "height": 40,
+        "right": 824.3000106811523,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "kiro",
+        "x": 830.2999877929688,
+        "y": 104,
+        "width": 48.98749923706055,
+        "height": 40,
+        "right": 879.2874870300293,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "zed",
+        "x": 885.2875366210938,
+        "y": 104,
+        "width": 45.3125,
+        "height": 40,
+        "right": 930.6000366210938,
+        "bottom": 144,
+        "disabled": true
+      }
+    ],
+    "pageWidth": 1400,
+    "scrollWidth": 1400,
+    "regionWidth": 1182,
+    "regionScrollWidth": 1182,
+    "rankingViewport": {
+      "x": 228.8000030517578,
+      "y": 320.7749938964844,
+      "width": 740,
+      "height": 272.82501220703125,
+      "right": 968.8000030517578,
+      "bottom": 593.6000061035156
+    },
+    "rankingClientWidth": 730,
+    "rankingScrollWidth": 730,
+    "cells": 112
+  },
+  {
+    "width": 1920,
+    "height": 1080,
+    "language": "en",
+    "theme": "mocha",
+    "scale": 1,
+    "header": {
+      "x": 208,
+      "y": 48,
+      "width": 1712,
+      "height": 104.80000305175781,
+      "right": 1920,
+      "bottom": 152.8000030517578
+    },
+    "title": {
+      "x": 260,
+      "y": 56,
+      "width": 113.9749984741211,
+      "height": 24,
+      "right": 373.9749984741211,
+      "bottom": 80
+    },
+    "ranking": {
+      "x": 228,
+      "y": 164.8000030517578,
+      "width": 1261.5999755859375,
+      "height": 512,
+      "right": 1489.5999755859375,
+      "bottom": 676.8000030517578
+    },
+    "topOverhead": 108.80000305175781,
+    "heatmap": {
+      "x": 1505.5999755859375,
+      "y": 420.8000183105469,
+      "width": 384,
+      "height": 260.6000061035156,
+      "right": 1889.5999755859375,
+      "bottom": 681.4000244140625
+    },
+    "plot": {
+      "x": 1518.4000244140625,
+      "y": 477.6000061035156,
+      "width": 352,
+      "height": 187,
+      "right": 1870.4000244140625,
+      "bottom": 664.6000061035156
+    },
+    "grid": {
+      "x": 1554.4000244140625,
+      "y": 505.6000061035156,
+      "width": 316,
+      "height": 136,
+      "right": 1870.4000244140625,
+      "bottom": 641.6000061035156
+    },
+    "cell": {
+      "x": 1554.4000244140625,
+      "y": 505.6000061035156,
+      "width": 16,
+      "height": 16,
+      "right": 1570.4000244140625,
+      "bottom": 521.6000061035156
+    },
+    "legend": {
+      "x": 1518.4000244140625,
+      "y": 649.6000366210938,
+      "width": 352,
+      "height": 15,
+      "right": 1870.4000244140625,
+      "bottom": 664.6000366210938
+    },
+    "plotFraction": 0.9832402234636871,
+    "legendRightDelta": 0,
+    "months": [
+      {
+        "label": "Jun",
+        "x": 1554.4000244140625,
+        "y": 477.6000061035156,
+        "width": 36,
+        "height": 24,
+        "right": 1590.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      },
+      {
+        "label": "Jul",
+        "x": 1594.4000244140625,
+        "y": 477.6000061035156,
+        "width": 76,
+        "height": 24,
+        "right": 1670.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      },
+      {
+        "label": "Aug",
+        "x": 1674.4000244140625,
+        "y": 477.6000061035156,
+        "width": 76,
+        "height": 24,
+        "right": 1750.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      },
+      {
+        "label": "Sep",
+        "x": 1754.4000244140625,
+        "y": 477.6000061035156,
+        "width": 96,
+        "height": 24,
+        "right": 1850.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      }
+    ],
+    "controls": [
+      {
+        "label": "Refresh",
+        "x": 1860,
+        "y": 56,
+        "width": 40,
+        "height": 40,
+        "right": 1900,
+        "bottom": 96,
+        "disabled": false
+      },
+      {
+        "label": "All platforms",
+        "x": 228,
+        "y": 104,
+        "width": 101.0625,
+        "height": 40,
+        "right": 329.0625,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "Claude Code",
+        "x": 335.0625,
+        "y": 104,
+        "width": 97.48750305175781,
+        "height": 40,
+        "right": 432.5500030517578,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "Codex CLI",
+        "x": 438.5500183105469,
+        "y": 104,
+        "width": 84.30000305175781,
+        "height": 40,
+        "right": 522.8500213623047,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "droid",
+        "x": 528.8500366210938,
+        "y": 104,
+        "width": 56.60000228881836,
+        "height": 40,
+        "right": 585.4500389099121,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "opencode",
+        "x": 591.4500122070312,
+        "y": 104,
+        "width": 81.45000457763672,
+        "height": 40,
+        "right": 672.900016784668,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "grok",
+        "x": 678.9000244140625,
+        "y": 104,
+        "width": 51.73749923706055,
+        "height": 40,
+        "right": 730.637523651123,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "antigravity",
+        "x": 736.6375122070312,
+        "y": 104,
+        "width": 87.6624984741211,
+        "height": 40,
+        "right": 824.3000106811523,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "kiro",
+        "x": 830.2999877929688,
+        "y": 104,
+        "width": 48.98749923706055,
+        "height": 40,
+        "right": 879.2874870300293,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "zed",
+        "x": 885.2875366210938,
+        "y": 104,
+        "width": 45.3125,
+        "height": 40,
+        "right": 930.6000366210938,
+        "bottom": 144,
+        "disabled": true
+      }
+    ],
+    "pageWidth": 1920,
+    "scrollWidth": 1920,
+    "regionWidth": 1702,
+    "regionScrollWidth": 1702,
+    "rankingViewport": {
+      "x": 228.8000030517578,
+      "y": 320.7749938964844,
+      "width": 1260,
+      "height": 272.82501220703125,
+      "right": 1488.8000030517578,
+      "bottom": 593.6000061035156
+    },
+    "rankingClientWidth": 1250,
+    "rankingScrollWidth": 1250,
+    "cells": 112
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "language": "en",
+    "theme": "mocha",
+    "scale": 1,
+    "header": {
+      "x": 208,
+      "y": 48,
+      "width": 1232,
+      "height": 104.80000305175781,
+      "right": 1440,
+      "bottom": 152.8000030517578
+    },
+    "title": {
+      "x": 260,
+      "y": 56,
+      "width": 113.9749984741211,
+      "height": 24,
+      "right": 373.9749984741211,
+      "bottom": 80
+    },
+    "ranking": {
+      "x": 228,
+      "y": 164.8000030517578,
+      "width": 781.6000366210938,
+      "height": 512,
+      "right": 1009.6000366210938,
+      "bottom": 676.8000030517578
+    },
+    "topOverhead": 108.80000305175781,
+    "heatmap": {
+      "x": 1025.5999755859375,
+      "y": 420.8000183105469,
+      "width": 384,
+      "height": 260.6000061035156,
+      "right": 1409.5999755859375,
+      "bottom": 681.4000244140625
+    },
+    "plot": {
+      "x": 1038.4000244140625,
+      "y": 477.6000061035156,
+      "width": 352,
+      "height": 187,
+      "right": 1390.4000244140625,
+      "bottom": 664.6000061035156
+    },
+    "grid": {
+      "x": 1074.4000244140625,
+      "y": 505.6000061035156,
+      "width": 316,
+      "height": 136,
+      "right": 1390.4000244140625,
+      "bottom": 641.6000061035156
+    },
+    "cell": {
+      "x": 1074.4000244140625,
+      "y": 505.6000061035156,
+      "width": 16,
+      "height": 16,
+      "right": 1090.4000244140625,
+      "bottom": 521.6000061035156
+    },
+    "legend": {
+      "x": 1038.4000244140625,
+      "y": 649.6000366210938,
+      "width": 352,
+      "height": 15,
+      "right": 1390.4000244140625,
+      "bottom": 664.6000366210938
+    },
+    "plotFraction": 0.9832402234636871,
+    "legendRightDelta": 0,
+    "months": [
+      {
+        "label": "Jun",
+        "x": 1074.4000244140625,
+        "y": 477.6000061035156,
+        "width": 36,
+        "height": 24,
+        "right": 1110.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      },
+      {
+        "label": "Jul",
+        "x": 1114.4000244140625,
+        "y": 477.6000061035156,
+        "width": 76,
+        "height": 24,
+        "right": 1190.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      },
+      {
+        "label": "Aug",
+        "x": 1194.4000244140625,
+        "y": 477.6000061035156,
+        "width": 76,
+        "height": 24,
+        "right": 1270.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      },
+      {
+        "label": "Sep",
+        "x": 1274.4000244140625,
+        "y": 477.6000061035156,
+        "width": 96,
+        "height": 24,
+        "right": 1370.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      }
+    ],
+    "controls": [
+      {
+        "label": "Refresh",
+        "x": 1380,
+        "y": 56,
+        "width": 40,
+        "height": 40,
+        "right": 1420,
+        "bottom": 96,
+        "disabled": false
+      },
+      {
+        "label": "All platforms",
+        "x": 228,
+        "y": 104,
+        "width": 101.0625,
+        "height": 40,
+        "right": 329.0625,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "Claude Code",
+        "x": 335.0625,
+        "y": 104,
+        "width": 97.48750305175781,
+        "height": 40,
+        "right": 432.5500030517578,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "Codex CLI",
+        "x": 438.5500183105469,
+        "y": 104,
+        "width": 84.30000305175781,
+        "height": 40,
+        "right": 522.8500213623047,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "droid",
+        "x": 528.8500366210938,
+        "y": 104,
+        "width": 56.60000228881836,
+        "height": 40,
+        "right": 585.4500389099121,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "opencode",
+        "x": 591.4500122070312,
+        "y": 104,
+        "width": 81.45000457763672,
+        "height": 40,
+        "right": 672.900016784668,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "grok",
+        "x": 678.9000244140625,
+        "y": 104,
+        "width": 51.73749923706055,
+        "height": 40,
+        "right": 730.637523651123,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "antigravity",
+        "x": 736.6375122070312,
+        "y": 104,
+        "width": 87.6624984741211,
+        "height": 40,
+        "right": 824.3000106811523,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "kiro",
+        "x": 830.2999877929688,
+        "y": 104,
+        "width": 48.98749923706055,
+        "height": 40,
+        "right": 879.2874870300293,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "zed",
+        "x": 885.2875366210938,
+        "y": 104,
+        "width": 45.3125,
+        "height": 40,
+        "right": 930.6000366210938,
+        "bottom": 144,
+        "disabled": true
+      }
+    ],
+    "pageWidth": 1440,
+    "scrollWidth": 1440,
+    "regionWidth": 1222,
+    "regionScrollWidth": 1222,
+    "rankingViewport": {
+      "x": 228.8000030517578,
+      "y": 320.7749938964844,
+      "width": 780,
+      "height": 272.82501220703125,
+      "right": 1008.8000030517578,
+      "bottom": 593.6000061035156
+    },
+    "rankingClientWidth": 770,
+    "rankingScrollWidth": 770,
+    "cells": 112
+  },
+  {
+    "width": 1280,
+    "height": 720,
+    "language": "en",
+    "theme": "mocha",
+    "scale": 1,
+    "header": {
+      "x": 208,
+      "y": 48,
+      "width": 1072,
+      "height": 104.80000305175781,
+      "right": 1280,
+      "bottom": 152.8000030517578
+    },
+    "title": {
+      "x": 260,
+      "y": 56,
+      "width": 113.9749984741211,
+      "height": 24,
+      "right": 373.9749984741211,
+      "bottom": 80
+    },
+    "ranking": {
+      "x": 228,
+      "y": 164.8000030517578,
+      "width": 621.6000366210938,
+      "height": 512,
+      "right": 849.6000366210938,
+      "bottom": 676.8000030517578
+    },
+    "topOverhead": 108.80000305175781,
+    "heatmap": {
+      "x": 865.6000366210938,
+      "y": 420.8000183105469,
+      "width": 384,
+      "height": 260.6000061035156,
+      "right": 1249.6000366210938,
+      "bottom": 681.4000244140625
+    },
+    "plot": {
+      "x": 878.4000244140625,
+      "y": 477.6000061035156,
+      "width": 352,
+      "height": 187,
+      "right": 1230.4000244140625,
+      "bottom": 664.6000061035156
+    },
+    "grid": {
+      "x": 914.4000244140625,
+      "y": 505.6000061035156,
+      "width": 316,
+      "height": 136,
+      "right": 1230.4000244140625,
+      "bottom": 641.6000061035156
+    },
+    "cell": {
+      "x": 914.4000244140625,
+      "y": 505.6000061035156,
+      "width": 16,
+      "height": 16,
+      "right": 930.4000244140625,
+      "bottom": 521.6000061035156
+    },
+    "legend": {
+      "x": 878.4000244140625,
+      "y": 649.6000366210938,
+      "width": 352,
+      "height": 15,
+      "right": 1230.4000244140625,
+      "bottom": 664.6000366210938
+    },
+    "plotFraction": 0.9832402234636871,
+    "legendRightDelta": 0,
+    "months": [
+      {
+        "label": "Jun",
+        "x": 914.4000244140625,
+        "y": 477.6000061035156,
+        "width": 36,
+        "height": 24,
+        "right": 950.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      },
+      {
+        "label": "Jul",
+        "x": 954.4000244140625,
+        "y": 477.6000061035156,
+        "width": 76,
+        "height": 24,
+        "right": 1030.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      },
+      {
+        "label": "Aug",
+        "x": 1034.4000244140625,
+        "y": 477.6000061035156,
+        "width": 76,
+        "height": 24,
+        "right": 1110.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      },
+      {
+        "label": "Sep",
+        "x": 1114.4000244140625,
+        "y": 477.6000061035156,
+        "width": 96,
+        "height": 24,
+        "right": 1210.4000244140625,
+        "bottom": 501.6000061035156,
+        "clipped": false
+      }
+    ],
+    "controls": [
+      {
+        "label": "Refresh",
+        "x": 1220,
+        "y": 56,
+        "width": 40,
+        "height": 40,
+        "right": 1260,
+        "bottom": 96,
+        "disabled": false
+      },
+      {
+        "label": "All platforms",
+        "x": 228,
+        "y": 104,
+        "width": 101.0625,
+        "height": 40,
+        "right": 329.0625,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "Claude Code",
+        "x": 335.0625,
+        "y": 104,
+        "width": 97.48750305175781,
+        "height": 40,
+        "right": 432.5500030517578,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "Codex CLI",
+        "x": 438.5500183105469,
+        "y": 104,
+        "width": 84.30000305175781,
+        "height": 40,
+        "right": 522.8500213623047,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "droid",
+        "x": 528.8500366210938,
+        "y": 104,
+        "width": 56.60000228881836,
+        "height": 40,
+        "right": 585.4500389099121,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "opencode",
+        "x": 591.4500122070312,
+        "y": 104,
+        "width": 81.45000457763672,
+        "height": 40,
+        "right": 672.900016784668,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "grok",
+        "x": 678.9000244140625,
+        "y": 104,
+        "width": 51.73749923706055,
+        "height": 40,
+        "right": 730.637523651123,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "antigravity",
+        "x": 736.6375122070312,
+        "y": 104,
+        "width": 87.6624984741211,
+        "height": 40,
+        "right": 824.3000106811523,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "kiro",
+        "x": 830.2999877929688,
+        "y": 104,
+        "width": 48.98749923706055,
+        "height": 40,
+        "right": 879.2874870300293,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "zed",
+        "x": 885.2875366210938,
+        "y": 104,
+        "width": 45.3125,
+        "height": 40,
+        "right": 930.6000366210938,
+        "bottom": 144,
+        "disabled": true
+      }
+    ],
+    "pageWidth": 1280,
+    "scrollWidth": 1280,
+    "regionWidth": 1062,
+    "regionScrollWidth": 1062,
+    "rankingViewport": {
+      "x": 228.8000030517578,
+      "y": 304.7875061035156,
+      "width": 620,
+      "height": 288.8125,
+      "right": 848.8000030517578,
+      "bottom": 593.6000061035156
+    },
+    "rankingClientWidth": 610,
+    "rankingScrollWidth": 610,
+    "cells": 112
+  },
+  {
+    "width": 1279,
+    "height": 720,
+    "language": "en",
+    "theme": "mocha",
+    "scale": 1,
+    "header": {
+      "x": 208,
+      "y": 48,
+      "width": 1071.2000732421875,
+      "height": 104.80000305175781,
+      "right": 1279.2000732421875,
+      "bottom": 152.8000030517578
+    },
+    "title": {
+      "x": 260,
+      "y": 56,
+      "width": 113.9749984741211,
+      "height": 24,
+      "right": 373.9749984741211,
+      "bottom": 80
+    },
+    "ranking": {
+      "x": 228,
+      "y": 164.8000030517578,
+      "width": 1020.7999877929688,
+      "height": 512,
+      "right": 1248.7999877929688,
+      "bottom": 676.8000030517578
+    },
+    "topOverhead": 108.80000305175781,
+    "heatmap": {
+      "x": 228,
+      "y": 948.7999877929688,
+      "width": 384,
+      "height": 260.6000061035156,
+      "right": 612,
+      "bottom": 1209.3999938964844
+    },
+    "plot": {
+      "x": 240.8000030517578,
+      "y": 1005.6000366210938,
+      "width": 352,
+      "height": 187,
+      "right": 592.8000030517578,
+      "bottom": 1192.6000366210938
+    },
+    "grid": {
+      "x": 276.8000183105469,
+      "y": 1033.5999755859375,
+      "width": 316,
+      "height": 136,
+      "right": 592.8000183105469,
+      "bottom": 1169.5999755859375
+    },
+    "cell": {
+      "x": 276.8000183105469,
+      "y": 1033.5999755859375,
+      "width": 16,
+      "height": 16,
+      "right": 292.8000183105469,
+      "bottom": 1049.5999755859375
+    },
+    "legend": {
+      "x": 240.8000030517578,
+      "y": 1177.5999755859375,
+      "width": 352,
+      "height": 15,
+      "right": 592.8000030517578,
+      "bottom": 1192.5999755859375
+    },
+    "plotFraction": 0.9832402234636871,
+    "legendRightDelta": -1.52587890625E-05,
+    "months": [
+      {
+        "label": "Jun",
+        "x": 276.8000183105469,
+        "y": 1005.6000366210938,
+        "width": 36,
+        "height": 24,
+        "right": 312.8000183105469,
+        "bottom": 1029.6000366210938,
+        "clipped": false
+      },
+      {
+        "label": "Jul",
+        "x": 316.8000183105469,
+        "y": 1005.6000366210938,
+        "width": 76,
+        "height": 24,
+        "right": 392.8000183105469,
+        "bottom": 1029.6000366210938,
+        "clipped": false
+      },
+      {
+        "label": "Aug",
+        "x": 396.8000183105469,
+        "y": 1005.6000366210938,
+        "width": 76,
+        "height": 24,
+        "right": 472.8000183105469,
+        "bottom": 1029.6000366210938,
+        "clipped": false
+      },
+      {
+        "label": "Sep",
+        "x": 476.8000183105469,
+        "y": 1005.6000366210938,
+        "width": 96,
+        "height": 24,
+        "right": 572.8000183105469,
+        "bottom": 1029.6000366210938,
+        "clipped": false
+      }
+    ],
+    "controls": [
+      {
+        "label": "Refresh",
+        "x": 1219.2000732421875,
+        "y": 56,
+        "width": 40,
+        "height": 40,
+        "right": 1259.2000732421875,
+        "bottom": 96,
+        "disabled": false
+      },
+      {
+        "label": "All platforms",
+        "x": 228,
+        "y": 104,
+        "width": 101.0625,
+        "height": 40,
+        "right": 329.0625,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "Claude Code",
+        "x": 335.0625,
+        "y": 104,
+        "width": 97.48750305175781,
+        "height": 40,
+        "right": 432.5500030517578,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "Codex CLI",
+        "x": 438.5500183105469,
+        "y": 104,
+        "width": 84.30000305175781,
+        "height": 40,
+        "right": 522.8500213623047,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "droid",
+        "x": 528.8500366210938,
+        "y": 104,
+        "width": 56.60000228881836,
+        "height": 40,
+        "right": 585.4500389099121,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "opencode",
+        "x": 591.4500122070312,
+        "y": 104,
+        "width": 81.45000457763672,
+        "height": 40,
+        "right": 672.900016784668,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "grok",
+        "x": 678.9000244140625,
+        "y": 104,
+        "width": 51.73749923706055,
+        "height": 40,
+        "right": 730.637523651123,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "antigravity",
+        "x": 736.6375122070312,
+        "y": 104,
+        "width": 87.6624984741211,
+        "height": 40,
+        "right": 824.3000106811523,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "kiro",
+        "x": 830.2999877929688,
+        "y": 104,
+        "width": 48.98749923706055,
+        "height": 40,
+        "right": 879.2874870300293,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "zed",
+        "x": 885.2875366210938,
+        "y": 104,
+        "width": 45.3125,
+        "height": 40,
+        "right": 930.6000366210938,
+        "bottom": 144,
+        "disabled": true
+      }
+    ],
+    "pageWidth": 1279,
+    "scrollWidth": 1279,
+    "regionWidth": 1061,
+    "regionScrollWidth": 1061,
+    "rankingViewport": {
+      "x": 228.8000030517578,
+      "y": 320.7749938964844,
+      "width": 1019.2000122070312,
+      "height": 272.82501220703125,
+      "right": 1248.000015258789,
+      "bottom": 593.6000061035156
+    },
+    "rankingClientWidth": 1009,
+    "rankingScrollWidth": 1009,
+    "cells": 112
+  },
+  {
+    "width": 1024,
+    "height": 768,
+    "language": "en",
+    "theme": "mocha",
+    "scale": 1,
+    "header": {
+      "x": 208,
+      "y": 48,
+      "width": 816,
+      "height": 104.80000305175781,
+      "right": 1024,
+      "bottom": 152.8000030517578
+    },
+    "title": {
+      "x": 260,
+      "y": 56,
+      "width": 113.9749984741211,
+      "height": 24,
+      "right": 373.9749984741211,
+      "bottom": 80
+    },
+    "ranking": {
+      "x": 228,
+      "y": 164.8000030517578,
+      "width": 765.6000366210938,
+      "height": 512,
+      "right": 993.6000366210938,
+      "bottom": 676.8000030517578
+    },
+    "topOverhead": 108.80000305175781,
+    "heatmap": {
+      "x": 228,
+      "y": 948.7999877929688,
+      "width": 384,
+      "height": 260.6000061035156,
+      "right": 612,
+      "bottom": 1209.3999938964844
+    },
+    "plot": {
+      "x": 240.8000030517578,
+      "y": 1005.6000366210938,
+      "width": 352,
+      "height": 187,
+      "right": 592.8000030517578,
+      "bottom": 1192.6000366210938
+    },
+    "grid": {
+      "x": 276.8000183105469,
+      "y": 1033.5999755859375,
+      "width": 316,
+      "height": 136,
+      "right": 592.8000183105469,
+      "bottom": 1169.5999755859375
+    },
+    "cell": {
+      "x": 276.8000183105469,
+      "y": 1033.5999755859375,
+      "width": 16,
+      "height": 16,
+      "right": 292.8000183105469,
+      "bottom": 1049.5999755859375
+    },
+    "legend": {
+      "x": 240.8000030517578,
+      "y": 1177.5999755859375,
+      "width": 352,
+      "height": 15,
+      "right": 592.8000030517578,
+      "bottom": 1192.5999755859375
+    },
+    "plotFraction": 0.9832402234636871,
+    "legendRightDelta": -1.52587890625E-05,
+    "months": [
+      {
+        "label": "Jun",
+        "x": 276.8000183105469,
+        "y": 1005.6000366210938,
+        "width": 36,
+        "height": 24,
+        "right": 312.8000183105469,
+        "bottom": 1029.6000366210938,
+        "clipped": false
+      },
+      {
+        "label": "Jul",
+        "x": 316.8000183105469,
+        "y": 1005.6000366210938,
+        "width": 76,
+        "height": 24,
+        "right": 392.8000183105469,
+        "bottom": 1029.6000366210938,
+        "clipped": false
+      },
+      {
+        "label": "Aug",
+        "x": 396.8000183105469,
+        "y": 1005.6000366210938,
+        "width": 76,
+        "height": 24,
+        "right": 472.8000183105469,
+        "bottom": 1029.6000366210938,
+        "clipped": false
+      },
+      {
+        "label": "Sep",
+        "x": 476.8000183105469,
+        "y": 1005.6000366210938,
+        "width": 96,
+        "height": 24,
+        "right": 572.8000183105469,
+        "bottom": 1029.6000366210938,
+        "clipped": false
+      }
+    ],
+    "controls": [
+      {
+        "label": "Refresh",
+        "x": 964,
+        "y": 56,
+        "width": 40,
+        "height": 40,
+        "right": 1004,
+        "bottom": 96,
+        "disabled": false
+      },
+      {
+        "label": "All platforms",
+        "x": 228,
+        "y": 104,
+        "width": 101.0625,
+        "height": 40,
+        "right": 329.0625,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "Claude Code",
+        "x": 335.0625,
+        "y": 104,
+        "width": 97.48750305175781,
+        "height": 40,
+        "right": 432.5500030517578,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "Codex CLI",
+        "x": 438.5500183105469,
+        "y": 104,
+        "width": 84.30000305175781,
+        "height": 40,
+        "right": 522.8500213623047,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "droid",
+        "x": 528.8500366210938,
+        "y": 104,
+        "width": 56.60000228881836,
+        "height": 40,
+        "right": 585.4500389099121,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "opencode",
+        "x": 591.4500122070312,
+        "y": 104,
+        "width": 81.45000457763672,
+        "height": 40,
+        "right": 672.900016784668,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "grok",
+        "x": 678.9000244140625,
+        "y": 104,
+        "width": 51.73749923706055,
+        "height": 40,
+        "right": 730.637523651123,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "antigravity",
+        "x": 736.6375122070312,
+        "y": 104,
+        "width": 87.6624984741211,
+        "height": 40,
+        "right": 824.3000106811523,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "kiro",
+        "x": 830.2999877929688,
+        "y": 104,
+        "width": 48.98749923706055,
+        "height": 40,
+        "right": 879.2874870300293,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "zed",
+        "x": 885.2875366210938,
+        "y": 104,
+        "width": 45.3125,
+        "height": 40,
+        "right": 930.6000366210938,
+        "bottom": 144,
+        "disabled": true
+      }
+    ],
+    "pageWidth": 1024,
+    "scrollWidth": 1024,
+    "regionWidth": 806,
+    "regionScrollWidth": 806,
+    "rankingViewport": {
+      "x": 228.8000030517578,
+      "y": 320.7749938964844,
+      "width": 764,
+      "height": 272.82501220703125,
+      "right": 992.8000030517578,
+      "bottom": 593.6000061035156
+    },
+    "rankingClientWidth": 754,
+    "rankingScrollWidth": 754,
+    "cells": 112
+  },
+  {
+    "width": 900,
+    "height": 600,
+    "language": "en",
+    "theme": "mocha",
+    "scale": 1,
+    "header": {
+      "x": 208,
+      "y": 48,
+      "width": 692,
+      "height": 202.78750610351562,
+      "right": 900,
+      "bottom": 250.78750610351562
+    },
+    "title": {
+      "x": 260,
+      "y": 56,
+      "width": 113.9749984741211,
+      "height": 24,
+      "right": 373.9749984741211,
+      "bottom": 80
+    },
+    "ranking": {
+      "x": 228,
+      "y": 262.7875061035156,
+      "width": 641.6000366210938,
+      "height": 512,
+      "right": 869.6000366210938,
+      "bottom": 774.7875061035156
+    },
+    "topOverhead": 206.78750610351562,
+    "heatmap": {
+      "x": 228,
+      "y": 1046.7874755859375,
+      "width": 384,
+      "height": 260.6000061035156,
+      "right": 612,
+      "bottom": 1307.3874816894531
+    },
+    "plot": {
+      "x": 240.8000030517578,
+      "y": 1103.5875244140625,
+      "width": 352,
+      "height": 187,
+      "right": 592.8000030517578,
+      "bottom": 1290.5875244140625
+    },
+    "grid": {
+      "x": 276.8000183105469,
+      "y": 1131.5875244140625,
+      "width": 316,
+      "height": 136,
+      "right": 592.8000183105469,
+      "bottom": 1267.5875244140625
+    },
+    "cell": {
+      "x": 276.8000183105469,
+      "y": 1131.5875244140625,
+      "width": 16,
+      "height": 16,
+      "right": 292.8000183105469,
+      "bottom": 1147.5875244140625
+    },
+    "legend": {
+      "x": 240.8000030517578,
+      "y": 1275.5875244140625,
+      "width": 352,
+      "height": 15,
+      "right": 592.8000030517578,
+      "bottom": 1290.5875244140625
+    },
+    "plotFraction": 0.9832402234636871,
+    "legendRightDelta": -1.52587890625E-05,
+    "months": [
+      {
+        "label": "Jun",
+        "x": 276.8000183105469,
+        "y": 1103.5875244140625,
+        "width": 36,
+        "height": 24,
+        "right": 312.8000183105469,
+        "bottom": 1127.5875244140625,
+        "clipped": false
+      },
+      {
+        "label": "Jul",
+        "x": 316.8000183105469,
+        "y": 1103.5875244140625,
+        "width": 76,
+        "height": 24,
+        "right": 392.8000183105469,
+        "bottom": 1127.5875244140625,
+        "clipped": false
+      },
+      {
+        "label": "Aug",
+        "x": 396.8000183105469,
+        "y": 1103.5875244140625,
+        "width": 76,
+        "height": 24,
+        "right": 472.8000183105469,
+        "bottom": 1127.5875244140625,
+        "clipped": false
+      },
+      {
+        "label": "Sep",
+        "x": 476.8000183105469,
+        "y": 1103.5875244140625,
+        "width": 96,
+        "height": 24,
+        "right": 572.8000183105469,
+        "bottom": 1127.5875244140625,
+        "clipped": false
+      }
+    ],
+    "controls": [
+      {
+        "label": "Refresh",
+        "x": 840,
+        "y": 107.98750305175781,
+        "width": 40,
+        "height": 40,
+        "right": 880,
+        "bottom": 147.9875030517578,
+        "disabled": false
+      },
+      {
+        "label": "All platforms",
+        "x": 228,
+        "y": 155.9875030517578,
+        "width": 101.0625,
+        "height": 40,
+        "right": 329.0625,
+        "bottom": 195.9875030517578,
+        "disabled": false
+      },
+      {
+        "label": "Claude Code",
+        "x": 335.0625,
+        "y": 155.9875030517578,
+        "width": 97.48750305175781,
+        "height": 40,
+        "right": 432.5500030517578,
+        "bottom": 195.9875030517578,
+        "disabled": false
+      },
+      {
+        "label": "Codex CLI",
+        "x": 438.5500183105469,
+        "y": 155.9875030517578,
+        "width": 84.30000305175781,
+        "height": 40,
+        "right": 522.8500213623047,
+        "bottom": 195.9875030517578,
+        "disabled": false
+      },
+      {
+        "label": "droid",
+        "x": 528.8500366210938,
+        "y": 155.9875030517578,
+        "width": 56.60000228881836,
+        "height": 40,
+        "right": 585.4500389099121,
+        "bottom": 195.9875030517578,
+        "disabled": true
+      },
+      {
+        "label": "opencode",
+        "x": 591.4500122070312,
+        "y": 155.9875030517578,
+        "width": 81.45000457763672,
+        "height": 40,
+        "right": 672.900016784668,
+        "bottom": 195.9875030517578,
+        "disabled": true
+      },
+      {
+        "label": "grok",
+        "x": 678.9000244140625,
+        "y": 155.9875030517578,
+        "width": 51.73749923706055,
+        "height": 40,
+        "right": 730.637523651123,
+        "bottom": 195.9875030517578,
+        "disabled": true
+      },
+      {
+        "label": "antigravity",
+        "x": 736.6375122070312,
+        "y": 155.9875030517578,
+        "width": 87.6624984741211,
+        "height": 40,
+        "right": 824.3000106811523,
+        "bottom": 195.9875030517578,
+        "disabled": true
+      },
+      {
+        "label": "kiro",
+        "x": 830.2999877929688,
+        "y": 155.9875030517578,
+        "width": 48.98749923706055,
+        "height": 40,
+        "right": 879.2874870300293,
+        "bottom": 195.9875030517578,
+        "disabled": true
+      },
+      {
+        "label": "zed",
+        "x": 228,
+        "y": 201.9875030517578,
+        "width": 45.3125,
+        "height": 40,
+        "right": 273.3125,
+        "bottom": 241.9875030517578,
+        "disabled": true
+      }
+    ],
+    "pageWidth": 900,
+    "scrollWidth": 900,
+    "regionWidth": 682,
+    "regionScrollWidth": 682,
+    "rankingViewport": {
+      "x": 228.8000030517578,
+      "y": 402.7749938964844,
+      "width": 640,
+      "height": 288.8125,
+      "right": 868.8000030517578,
+      "bottom": 691.5874938964844
+    },
+    "rankingClientWidth": 630,
+    "rankingScrollWidth": 630,
+    "cells": 112
+  },
+  {
+    "width": 900,
+    "height": 800,
+    "language": "en",
+    "theme": "mocha",
+    "scale": 1,
+    "header": {
+      "x": 208,
+      "y": 48,
+      "width": 692,
+      "height": 202.78750610351562,
+      "right": 900,
+      "bottom": 250.78750610351562
+    },
+    "title": {
+      "x": 260,
+      "y": 56,
+      "width": 113.9749984741211,
+      "height": 24,
+      "right": 373.9749984741211,
+      "bottom": 80
+    },
+    "ranking": {
+      "x": 228,
+      "y": 262.7875061035156,
+      "width": 641.6000366210938,
+      "height": 512,
+      "right": 869.6000366210938,
+      "bottom": 774.7875061035156
+    },
+    "topOverhead": 206.78750610351562,
+    "heatmap": {
+      "x": 228,
+      "y": 1046.7874755859375,
+      "width": 384,
+      "height": 260.6000061035156,
+      "right": 612,
+      "bottom": 1307.3874816894531
+    },
+    "plot": {
+      "x": 240.8000030517578,
+      "y": 1103.5875244140625,
+      "width": 352,
+      "height": 187,
+      "right": 592.8000030517578,
+      "bottom": 1290.5875244140625
+    },
+    "grid": {
+      "x": 276.8000183105469,
+      "y": 1131.5875244140625,
+      "width": 316,
+      "height": 136,
+      "right": 592.8000183105469,
+      "bottom": 1267.5875244140625
+    },
+    "cell": {
+      "x": 276.8000183105469,
+      "y": 1131.5875244140625,
+      "width": 16,
+      "height": 16,
+      "right": 292.8000183105469,
+      "bottom": 1147.5875244140625
+    },
+    "legend": {
+      "x": 240.8000030517578,
+      "y": 1275.5875244140625,
+      "width": 352,
+      "height": 15,
+      "right": 592.8000030517578,
+      "bottom": 1290.5875244140625
+    },
+    "plotFraction": 0.9832402234636871,
+    "legendRightDelta": -1.52587890625E-05,
+    "months": [
+      {
+        "label": "Jun",
+        "x": 276.8000183105469,
+        "y": 1103.5875244140625,
+        "width": 36,
+        "height": 24,
+        "right": 312.8000183105469,
+        "bottom": 1127.5875244140625,
+        "clipped": false
+      },
+      {
+        "label": "Jul",
+        "x": 316.8000183105469,
+        "y": 1103.5875244140625,
+        "width": 76,
+        "height": 24,
+        "right": 392.8000183105469,
+        "bottom": 1127.5875244140625,
+        "clipped": false
+      },
+      {
+        "label": "Aug",
+        "x": 396.8000183105469,
+        "y": 1103.5875244140625,
+        "width": 76,
+        "height": 24,
+        "right": 472.8000183105469,
+        "bottom": 1127.5875244140625,
+        "clipped": false
+      },
+      {
+        "label": "Sep",
+        "x": 476.8000183105469,
+        "y": 1103.5875244140625,
+        "width": 96,
+        "height": 24,
+        "right": 572.8000183105469,
+        "bottom": 1127.5875244140625,
+        "clipped": false
+      }
+    ],
+    "controls": [
+      {
+        "label": "Refresh",
+        "x": 840,
+        "y": 107.98750305175781,
+        "width": 40,
+        "height": 40,
+        "right": 880,
+        "bottom": 147.9875030517578,
+        "disabled": false
+      },
+      {
+        "label": "All platforms",
+        "x": 228,
+        "y": 155.9875030517578,
+        "width": 101.0625,
+        "height": 40,
+        "right": 329.0625,
+        "bottom": 195.9875030517578,
+        "disabled": false
+      },
+      {
+        "label": "Claude Code",
+        "x": 335.0625,
+        "y": 155.9875030517578,
+        "width": 97.48750305175781,
+        "height": 40,
+        "right": 432.5500030517578,
+        "bottom": 195.9875030517578,
+        "disabled": false
+      },
+      {
+        "label": "Codex CLI",
+        "x": 438.5500183105469,
+        "y": 155.9875030517578,
+        "width": 84.30000305175781,
+        "height": 40,
+        "right": 522.8500213623047,
+        "bottom": 195.9875030517578,
+        "disabled": false
+      },
+      {
+        "label": "droid",
+        "x": 528.8500366210938,
+        "y": 155.9875030517578,
+        "width": 56.60000228881836,
+        "height": 40,
+        "right": 585.4500389099121,
+        "bottom": 195.9875030517578,
+        "disabled": true
+      },
+      {
+        "label": "opencode",
+        "x": 591.4500122070312,
+        "y": 155.9875030517578,
+        "width": 81.45000457763672,
+        "height": 40,
+        "right": 672.900016784668,
+        "bottom": 195.9875030517578,
+        "disabled": true
+      },
+      {
+        "label": "grok",
+        "x": 678.9000244140625,
+        "y": 155.9875030517578,
+        "width": 51.73749923706055,
+        "height": 40,
+        "right": 730.637523651123,
+        "bottom": 195.9875030517578,
+        "disabled": true
+      },
+      {
+        "label": "antigravity",
+        "x": 736.6375122070312,
+        "y": 155.9875030517578,
+        "width": 87.6624984741211,
+        "height": 40,
+        "right": 824.3000106811523,
+        "bottom": 195.9875030517578,
+        "disabled": true
+      },
+      {
+        "label": "kiro",
+        "x": 830.2999877929688,
+        "y": 155.9875030517578,
+        "width": 48.98749923706055,
+        "height": 40,
+        "right": 879.2874870300293,
+        "bottom": 195.9875030517578,
+        "disabled": true
+      },
+      {
+        "label": "zed",
+        "x": 228,
+        "y": 201.9875030517578,
+        "width": 45.3125,
+        "height": 40,
+        "right": 273.3125,
+        "bottom": 241.9875030517578,
+        "disabled": true
+      }
+    ],
+    "pageWidth": 900,
+    "scrollWidth": 900,
+    "regionWidth": 682,
+    "regionScrollWidth": 682,
+    "rankingViewport": {
+      "x": 228.8000030517578,
+      "y": 402.7749938964844,
+      "width": 640,
+      "height": 288.8125,
+      "right": 868.8000030517578,
+      "bottom": 691.5874938964844
+    },
+    "rankingClientWidth": 630,
+    "rankingScrollWidth": 630,
+    "cells": 112
+  },
+  {
+    "width": 1200,
+    "height": 600,
+    "language": "en",
+    "theme": "mocha",
+    "scale": 1,
+    "header": {
+      "x": 208,
+      "y": 48,
+      "width": 992,
+      "height": 104.80000305175781,
+      "right": 1200,
+      "bottom": 152.8000030517578
+    },
+    "title": {
+      "x": 260,
+      "y": 56,
+      "width": 113.9749984741211,
+      "height": 24,
+      "right": 373.9749984741211,
+      "bottom": 80
+    },
+    "ranking": {
+      "x": 228,
+      "y": 164.8000030517578,
+      "width": 941.6000366210938,
+      "height": 512,
+      "right": 1169.6000366210938,
+      "bottom": 676.8000030517578
+    },
+    "topOverhead": 108.80000305175781,
+    "heatmap": {
+      "x": 228,
+      "y": 948.7999877929688,
+      "width": 384,
+      "height": 260.6000061035156,
+      "right": 612,
+      "bottom": 1209.3999938964844
+    },
+    "plot": {
+      "x": 240.8000030517578,
+      "y": 1005.6000366210938,
+      "width": 352,
+      "height": 187,
+      "right": 592.8000030517578,
+      "bottom": 1192.6000366210938
+    },
+    "grid": {
+      "x": 276.8000183105469,
+      "y": 1033.5999755859375,
+      "width": 316,
+      "height": 136,
+      "right": 592.8000183105469,
+      "bottom": 1169.5999755859375
+    },
+    "cell": {
+      "x": 276.8000183105469,
+      "y": 1033.5999755859375,
+      "width": 16,
+      "height": 16,
+      "right": 292.8000183105469,
+      "bottom": 1049.5999755859375
+    },
+    "legend": {
+      "x": 240.8000030517578,
+      "y": 1177.5999755859375,
+      "width": 352,
+      "height": 15,
+      "right": 592.8000030517578,
+      "bottom": 1192.5999755859375
+    },
+    "plotFraction": 0.9832402234636871,
+    "legendRightDelta": -1.52587890625E-05,
+    "months": [
+      {
+        "label": "Jun",
+        "x": 276.8000183105469,
+        "y": 1005.6000366210938,
+        "width": 36,
+        "height": 24,
+        "right": 312.8000183105469,
+        "bottom": 1029.6000366210938,
+        "clipped": false
+      },
+      {
+        "label": "Jul",
+        "x": 316.8000183105469,
+        "y": 1005.6000366210938,
+        "width": 76,
+        "height": 24,
+        "right": 392.8000183105469,
+        "bottom": 1029.6000366210938,
+        "clipped": false
+      },
+      {
+        "label": "Aug",
+        "x": 396.8000183105469,
+        "y": 1005.6000366210938,
+        "width": 76,
+        "height": 24,
+        "right": 472.8000183105469,
+        "bottom": 1029.6000366210938,
+        "clipped": false
+      },
+      {
+        "label": "Sep",
+        "x": 476.8000183105469,
+        "y": 1005.6000366210938,
+        "width": 96,
+        "height": 24,
+        "right": 572.8000183105469,
+        "bottom": 1029.6000366210938,
+        "clipped": false
+      }
+    ],
+    "controls": [
+      {
+        "label": "Refresh",
+        "x": 1140,
+        "y": 56,
+        "width": 40,
+        "height": 40,
+        "right": 1180,
+        "bottom": 96,
+        "disabled": false
+      },
+      {
+        "label": "All platforms",
+        "x": 228,
+        "y": 104,
+        "width": 101.0625,
+        "height": 40,
+        "right": 329.0625,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "Claude Code",
+        "x": 335.0625,
+        "y": 104,
+        "width": 97.48750305175781,
+        "height": 40,
+        "right": 432.5500030517578,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "Codex CLI",
+        "x": 438.5500183105469,
+        "y": 104,
+        "width": 84.30000305175781,
+        "height": 40,
+        "right": 522.8500213623047,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "droid",
+        "x": 528.8500366210938,
+        "y": 104,
+        "width": 56.60000228881836,
+        "height": 40,
+        "right": 585.4500389099121,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "opencode",
+        "x": 591.4500122070312,
+        "y": 104,
+        "width": 81.45000457763672,
+        "height": 40,
+        "right": 672.900016784668,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "grok",
+        "x": 678.9000244140625,
+        "y": 104,
+        "width": 51.73749923706055,
+        "height": 40,
+        "right": 730.637523651123,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "antigravity",
+        "x": 736.6375122070312,
+        "y": 104,
+        "width": 87.6624984741211,
+        "height": 40,
+        "right": 824.3000106811523,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "kiro",
+        "x": 830.2999877929688,
+        "y": 104,
+        "width": 48.98749923706055,
+        "height": 40,
+        "right": 879.2874870300293,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "zed",
+        "x": 885.2875366210938,
+        "y": 104,
+        "width": 45.3125,
+        "height": 40,
+        "right": 930.6000366210938,
+        "bottom": 144,
+        "disabled": true
+      }
+    ],
+    "pageWidth": 1200,
+    "scrollWidth": 1200,
+    "regionWidth": 982,
+    "regionScrollWidth": 982,
+    "rankingViewport": {
+      "x": 228.8000030517578,
+      "y": 320.7749938964844,
+      "width": 940,
+      "height": 272.82501220703125,
+      "right": 1168.8000030517578,
+      "bottom": 593.6000061035156
+    },
+    "rankingClientWidth": 930,
+    "rankingScrollWidth": 930,
+    "cells": 112
+  },
+  {
+    "width": 1280,
+    "height": 720,
+    "language": "en",
+    "theme": "mocha",
+    "scale": 1.125,
+    "header": {
+      "x": 208,
+      "y": 54,
+      "width": 1072,
+      "height": 117.80000305175781,
+      "right": 1280,
+      "bottom": 171.8000030517578
+    },
+    "title": {
+      "x": 266.5,
+      "y": 63,
+      "width": 128.1750030517578,
+      "height": 27,
+      "right": 394.6750030517578,
+      "bottom": 90
+    },
+    "ranking": {
+      "x": 230.5,
+      "y": 185.3000030517578,
+      "width": 566.6000366210938,
+      "height": 576,
+      "right": 797.1000366210938,
+      "bottom": 761.3000030517578
+    },
+    "topOverhead": 122.30000305175781,
+    "heatmap": {
+      "x": 815.1000366210938,
+      "y": 464.9250183105469,
+      "width": 432,
+      "height": 292.9750061035156,
+      "right": 1247.1000366210938,
+      "bottom": 757.9000244140625
+    },
+    "plot": {
+      "x": 829.4000244140625,
+      "y": 528.7250366210938,
+      "width": 396,
+      "height": 210.375,
+      "right": 1225.4000244140625,
+      "bottom": 739.1000366210938
+    },
+    "grid": {
+      "x": 869.9000244140625,
+      "y": 560.2250366210938,
+      "width": 355.5,
+      "height": 153,
+      "right": 1225.4000244140625,
+      "bottom": 713.2250366210938
+    },
+    "cell": {
+      "x": 869.9000244140625,
+      "y": 560.2250366210938,
+      "width": 18,
+      "height": 18,
+      "right": 887.9000244140625,
+      "bottom": 578.2250366210938
+    },
+    "legend": {
+      "x": 829.4000244140625,
+      "y": 722.2250366210938,
+      "width": 396,
+      "height": 16.875,
+      "right": 1225.4000244140625,
+      "bottom": 739.1000366210938
+    },
+    "plotFraction": 0.9753694581280788,
+    "legendRightDelta": 0,
+    "months": [
+      {
+        "label": "Jun",
+        "x": 869.9000244140625,
+        "y": 528.7250366210938,
+        "width": 40.5,
+        "height": 27,
+        "right": 910.4000244140625,
+        "bottom": 555.7250366210938,
+        "clipped": false
+      },
+      {
+        "label": "Jul",
+        "x": 914.9000244140625,
+        "y": 528.7250366210938,
+        "width": 85.5,
+        "height": 27,
+        "right": 1000.4000244140625,
+        "bottom": 555.7250366210938,
+        "clipped": false
+      },
+      {
+        "label": "Aug",
+        "x": 1004.9000244140625,
+        "y": 528.7250366210938,
+        "width": 85.5,
+        "height": 27,
+        "right": 1090.4000244140625,
+        "bottom": 555.7250366210938,
+        "clipped": false
+      },
+      {
+        "label": "Sep",
+        "x": 1094.9000244140625,
+        "y": 528.7250366210938,
+        "width": 108,
+        "height": 27,
+        "right": 1202.9000244140625,
+        "bottom": 555.7250366210938,
+        "clipped": false
+      }
+    ],
+    "controls": [
+      {
+        "label": "Refresh",
+        "x": 1212.5,
+        "y": 63,
+        "width": 45,
+        "height": 45,
+        "right": 1257.5,
+        "bottom": 108,
+        "disabled": false
+      },
+      {
+        "label": "All platforms",
+        "x": 230.5,
+        "y": 117,
+        "width": 113.4749984741211,
+        "height": 45,
+        "right": 343.9749984741211,
+        "bottom": 162,
+        "disabled": false
+      },
+      {
+        "label": "Claude Code",
+        "x": 350.7250061035156,
+        "y": 117,
+        "width": 109.45000457763672,
+        "height": 45,
+        "right": 460.17501068115234,
+        "bottom": 162,
+        "disabled": false
+      },
+      {
+        "label": "Codex CLI",
+        "x": 466.9250183105469,
+        "y": 117,
+        "width": 94.61250305175781,
+        "height": 45,
+        "right": 561.5375213623047,
+        "bottom": 162,
+        "disabled": false
+      },
+      {
+        "label": "droid",
+        "x": 568.2875366210938,
+        "y": 117,
+        "width": 63.462501525878906,
+        "height": 45,
+        "right": 631.7500381469727,
+        "bottom": 162,
+        "disabled": true
+      },
+      {
+        "label": "opencode",
+        "x": 638.5,
+        "y": 117,
+        "width": 91.4124984741211,
+        "height": 45,
+        "right": 729.9124984741211,
+        "bottom": 162,
+        "disabled": true
+      },
+      {
+        "label": "grok",
+        "x": 736.6625366210938,
+        "y": 117,
+        "width": 58,
+        "height": 45,
+        "right": 794.6625366210938,
+        "bottom": 162,
+        "disabled": true
+      },
+      {
+        "label": "antigravity",
+        "x": 801.4125366210938,
+        "y": 117,
+        "width": 98.4000015258789,
+        "height": 45,
+        "right": 899.8125381469727,
+        "bottom": 162,
+        "disabled": true
+      },
+      {
+        "label": "kiro",
+        "x": 906.5625,
+        "y": 117,
+        "width": 54.900001525878906,
+        "height": 45,
+        "right": 961.4625015258789,
+        "bottom": 162,
+        "disabled": true
+      },
+      {
+        "label": "zed",
+        "x": 968.2125244140625,
+        "y": 117,
+        "width": 50.76250076293945,
+        "height": 45,
+        "right": 1018.975025177002,
+        "bottom": 162,
+        "disabled": true
+      }
+    ],
+    "pageWidth": 1280,
+    "scrollWidth": 1280,
+    "regionWidth": 1062,
+    "regionScrollWidth": 1062,
+    "rankingViewport": {
+      "x": 231.3000030517578,
+      "y": 342.3000183105469,
+      "width": 565,
+      "height": 325.3000183105469,
+      "right": 796.3000030517578,
+      "bottom": 667.6000366210938
+    },
+    "rankingClientWidth": 555,
+    "rankingScrollWidth": 555,
+    "cells": 112
+  },
+  {
+    "width": 900,
+    "height": 600,
+    "language": "en",
+    "theme": "mocha",
+    "scale": 1.125,
+    "header": {
+      "x": 208,
+      "y": 54,
+      "width": 692,
+      "height": 228.0500030517578,
+      "right": 900,
+      "bottom": 282.0500030517578
+    },
+    "title": {
+      "x": 266.5,
+      "y": 63,
+      "width": 128.1750030517578,
+      "height": 27,
+      "right": 394.6750030517578,
+      "bottom": 90
+    },
+    "ranking": {
+      "x": 230.5,
+      "y": 295.5500183105469,
+      "width": 636.6000366210938,
+      "height": 576,
+      "right": 867.1000366210938,
+      "bottom": 871.5500183105469
+    },
+    "topOverhead": 232.55001831054688,
+    "heatmap": {
+      "x": 230.5,
+      "y": 1169.175048828125,
+      "width": 432,
+      "height": 292.9750061035156,
+      "right": 662.5,
+      "bottom": 1462.1500549316406
+    },
+    "plot": {
+      "x": 244.8000030517578,
+      "y": 1232.9749755859375,
+      "width": 396,
+      "height": 210.375,
+      "right": 640.8000030517578,
+      "bottom": 1443.3499755859375
+    },
+    "grid": {
+      "x": 285.3000183105469,
+      "y": 1264.4749755859375,
+      "width": 355.5,
+      "height": 153,
+      "right": 640.8000183105469,
+      "bottom": 1417.4749755859375
+    },
+    "cell": {
+      "x": 285.3000183105469,
+      "y": 1264.4749755859375,
+      "width": 18,
+      "height": 18,
+      "right": 303.3000183105469,
+      "bottom": 1282.4749755859375
+    },
+    "legend": {
+      "x": 244.8000030517578,
+      "y": 1426.4749755859375,
+      "width": 396,
+      "height": 16.875,
+      "right": 640.8000030517578,
+      "bottom": 1443.3499755859375
+    },
+    "plotFraction": 0.9753694581280788,
+    "legendRightDelta": -1.52587890625E-05,
+    "months": [
+      {
+        "label": "Jun",
+        "x": 285.3000183105469,
+        "y": 1232.9749755859375,
+        "width": 40.5,
+        "height": 27,
+        "right": 325.8000183105469,
+        "bottom": 1259.9749755859375,
+        "clipped": false
+      },
+      {
+        "label": "Jul",
+        "x": 330.3000183105469,
+        "y": 1232.9749755859375,
+        "width": 85.5,
+        "height": 27,
+        "right": 415.8000183105469,
+        "bottom": 1259.9749755859375,
+        "clipped": false
+      },
+      {
+        "label": "Aug",
+        "x": 420.3000183105469,
+        "y": 1232.9749755859375,
+        "width": 85.5,
+        "height": 27,
+        "right": 505.8000183105469,
+        "bottom": 1259.9749755859375,
+        "clipped": false
+      },
+      {
+        "label": "Sep",
+        "x": 510.3000183105469,
+        "y": 1232.9749755859375,
+        "width": 108,
+        "height": 27,
+        "right": 618.3000183105469,
+        "bottom": 1259.9749755859375,
+        "clipped": false
+      }
+    ],
+    "controls": [
+      {
+        "label": "Refresh",
+        "x": 832.5,
+        "y": 121.5,
+        "width": 45,
+        "height": 45,
+        "right": 877.5,
+        "bottom": 166.5,
+        "disabled": false
+      },
+      {
+        "label": "All platforms",
+        "x": 230.5,
+        "y": 175.5,
+        "width": 113.4749984741211,
+        "height": 45,
+        "right": 343.9749984741211,
+        "bottom": 220.5,
+        "disabled": false
+      },
+      {
+        "label": "Claude Code",
+        "x": 350.7250061035156,
+        "y": 175.5,
+        "width": 109.45000457763672,
+        "height": 45,
+        "right": 460.17501068115234,
+        "bottom": 220.5,
+        "disabled": false
+      },
+      {
+        "label": "Codex CLI",
+        "x": 466.9250183105469,
+        "y": 175.5,
+        "width": 94.61250305175781,
+        "height": 45,
+        "right": 561.5375213623047,
+        "bottom": 220.5,
+        "disabled": false
+      },
+      {
+        "label": "droid",
+        "x": 568.2875366210938,
+        "y": 175.5,
+        "width": 63.462501525878906,
+        "height": 45,
+        "right": 631.7500381469727,
+        "bottom": 220.5,
+        "disabled": true
+      },
+      {
+        "label": "opencode",
+        "x": 638.5,
+        "y": 175.5,
+        "width": 91.4124984741211,
+        "height": 45,
+        "right": 729.9124984741211,
+        "bottom": 220.5,
+        "disabled": true
+      },
+      {
+        "label": "grok",
+        "x": 736.6625366210938,
+        "y": 175.5,
+        "width": 58,
+        "height": 45,
+        "right": 794.6625366210938,
+        "bottom": 220.5,
+        "disabled": true
+      },
+      {
+        "label": "antigravity",
+        "x": 230.5,
+        "y": 227.25,
+        "width": 98.4000015258789,
+        "height": 45,
+        "right": 328.9000015258789,
+        "bottom": 272.25,
+        "disabled": true
+      },
+      {
+        "label": "kiro",
+        "x": 335.6499938964844,
+        "y": 227.25,
+        "width": 54.900001525878906,
+        "height": 45,
+        "right": 390.5499954223633,
+        "bottom": 272.25,
+        "disabled": true
+      },
+      {
+        "label": "zed",
+        "x": 397.3000183105469,
+        "y": 227.25,
+        "width": 50.76250076293945,
+        "height": 45,
+        "right": 448.0625190734863,
+        "bottom": 272.25,
+        "disabled": true
+      }
+    ],
+    "pageWidth": 900,
+    "scrollWidth": 900,
+    "regionWidth": 682,
+    "regionScrollWidth": 682,
+    "rankingViewport": {
+      "x": 231.3000030517578,
+      "y": 452.5500183105469,
+      "width": 635,
+      "height": 325.3000183105469,
+      "right": 866.3000030517578,
+      "bottom": 777.8500366210938
+    },
+    "rankingClientWidth": 625,
+    "rankingScrollWidth": 625,
+    "cells": 112
+  },
+  {
+    "width": 900,
+    "height": 600,
+    "language": "en",
+    "theme": "mocha",
+    "scale": 0.875,
+    "header": {
+      "x": 208,
+      "y": 42,
+      "width": 692,
+      "height": 101.80000305175781,
+      "right": 900,
+      "bottom": 143.8000030517578
+    },
+    "title": {
+      "x": 253.5,
+      "y": 51.5,
+      "width": 99.6875,
+      "height": 21,
+      "right": 353.1875,
+      "bottom": 72.5
+    },
+    "ranking": {
+      "x": 225.5,
+      "y": 154.3000030517578,
+      "width": 646.6000366210938,
+      "height": 448,
+      "right": 872.1000366210938,
+      "bottom": 602.3000030517578
+    },
+    "topOverhead": 102.80000305175781,
+    "heatmap": {
+      "x": 225.5,
+      "y": 860.7999877929688,
+      "width": 336,
+      "height": 228.22500610351562,
+      "right": 561.5,
+      "bottom": 1089.0249938964844
+    },
+    "plot": {
+      "x": 236.8000030517578,
+      "y": 910.6000366210938,
+      "width": 308,
+      "height": 163.625,
+      "right": 544.8000030517578,
+      "bottom": 1074.2250366210938
+    },
+    "grid": {
+      "x": 268.3000183105469,
+      "y": 935.1000366210938,
+      "width": 276.5,
+      "height": 119,
+      "right": 544.8000183105469,
+      "bottom": 1054.1000366210938
+    },
+    "cell": {
+      "x": 268.3000183105469,
+      "y": 935.1000366210938,
+      "width": 14,
+      "height": 14,
+      "right": 282.3000183105469,
+      "bottom": 949.1000366210938
+    },
+    "legend": {
+      "x": 236.8000030517578,
+      "y": 1061.0999755859375,
+      "width": 308,
+      "height": 13.125,
+      "right": 544.8000030517578,
+      "bottom": 1074.2249755859375
+    },
+    "plotFraction": 0.9935483870967742,
+    "legendRightDelta": -1.52587890625E-05,
+    "months": [
+      {
+        "label": "Jun",
+        "x": 268.3000183105469,
+        "y": 910.6000366210938,
+        "width": 31.5,
+        "height": 21,
+        "right": 299.8000183105469,
+        "bottom": 931.6000366210938,
+        "clipped": false
+      },
+      {
+        "label": "Jul",
+        "x": 303.3000183105469,
+        "y": 910.6000366210938,
+        "width": 66.5,
+        "height": 21,
+        "right": 369.8000183105469,
+        "bottom": 931.6000366210938,
+        "clipped": false
+      },
+      {
+        "label": "Aug",
+        "x": 373.3000183105469,
+        "y": 910.6000366210938,
+        "width": 66.5,
+        "height": 21,
+        "right": 439.8000183105469,
+        "bottom": 931.6000366210938,
+        "clipped": false
+      },
+      {
+        "label": "Sep",
+        "x": 443.3000183105469,
+        "y": 910.6000366210938,
+        "width": 84,
+        "height": 21,
+        "right": 527.3000183105469,
+        "bottom": 931.6000366210938,
+        "clipped": false
+      }
+    ],
+    "controls": [
+      {
+        "label": "Refresh",
+        "x": 842.5,
+        "y": 49,
+        "width": 40,
+        "height": 40,
+        "right": 882.5,
+        "bottom": 89,
+        "disabled": false
+      },
+      {
+        "label": "All platforms",
+        "x": 225.5,
+        "y": 96,
+        "width": 88.5999984741211,
+        "height": 40,
+        "right": 314.0999984741211,
+        "bottom": 136,
+        "disabled": false
+      },
+      {
+        "label": "Claude Code",
+        "x": 319.3500061035156,
+        "y": 96,
+        "width": 85.4749984741211,
+        "height": 40,
+        "right": 404.8250045776367,
+        "bottom": 136,
+        "disabled": false
+      },
+      {
+        "label": "Codex CLI",
+        "x": 410.07501220703125,
+        "y": 96,
+        "width": 73.9375,
+        "height": 40,
+        "right": 484.01251220703125,
+        "bottom": 136,
+        "disabled": false
+      },
+      {
+        "label": "droid",
+        "x": 489.26251220703125,
+        "y": 96,
+        "width": 49.712501525878906,
+        "height": 40,
+        "right": 538.9750137329102,
+        "bottom": 136,
+        "disabled": true
+      },
+      {
+        "label": "opencode",
+        "x": 544.2250366210938,
+        "y": 96,
+        "width": 71.45000457763672,
+        "height": 40,
+        "right": 615.6750411987305,
+        "bottom": 136,
+        "disabled": true
+      },
+      {
+        "label": "grok",
+        "x": 620.9249877929688,
+        "y": 96,
+        "width": 45.462501525878906,
+        "height": 40,
+        "right": 666.3874893188477,
+        "bottom": 136,
+        "disabled": true
+      },
+      {
+        "label": "antigravity",
+        "x": 671.6375122070312,
+        "y": 96,
+        "width": 76.875,
+        "height": 40,
+        "right": 748.5125122070312,
+        "bottom": 136,
+        "disabled": true
+      },
+      {
+        "label": "kiro",
+        "x": 753.7625122070312,
+        "y": 96,
+        "width": 43.04999923706055,
+        "height": 40,
+        "right": 796.8125114440918,
+        "bottom": 136,
+        "disabled": true
+      },
+      {
+        "label": "zed",
+        "x": 802.0625,
+        "y": 96,
+        "width": 40,
+        "height": 40,
+        "right": 842.0625,
+        "bottom": 136,
+        "disabled": true
+      }
+    ],
+    "pageWidth": 900,
+    "scrollWidth": 900,
+    "regionWidth": 682,
+    "regionScrollWidth": 682,
+    "rankingViewport": {
+      "x": 226.3000030517578,
+      "y": 296.2749938964844,
+      "width": 645,
+      "height": 233.3249969482422,
+      "right": 871.3000030517578,
+      "bottom": 529.5999908447266
+    },
+    "rankingClientWidth": 635,
+    "rankingScrollWidth": 635,
+    "cells": 112
+  },
+  {
+    "width": 1440,
+    "height": 900,
+    "language": "zh",
+    "theme": "mocha",
+    "scale": 1.125,
+    "header": {
+      "x": 208,
+      "y": 54,
+      "width": 1232,
+      "height": 117.80000305175781,
+      "right": 1440,
+      "bottom": 171.8000030517578
+    },
+    "title": {
+      "x": 266.5,
+      "y": 63,
+      "width": 94.4749984741211,
+      "height": 27,
+      "right": 360.9749984741211,
+      "bottom": 90
+    },
+    "ranking": {
+      "x": 230.5,
+      "y": 185.3000030517578,
+      "width": 726.6000366210938,
+      "height": 576,
+      "right": 957.1000366210938,
+      "bottom": 761.3000030517578
+    },
+    "topOverhead": 122.30000305175781,
+    "heatmap": {
+      "x": 975.1000366210938,
+      "y": 464.9250183105469,
+      "width": 432,
+      "height": 292.9750061035156,
+      "right": 1407.1000366210938,
+      "bottom": 757.9000244140625
+    },
+    "plot": {
+      "x": 989.4000244140625,
+      "y": 528.7250366210938,
+      "width": 396,
+      "height": 210.375,
+      "right": 1385.4000244140625,
+      "bottom": 739.1000366210938
+    },
+    "grid": {
+      "x": 1029.9000244140625,
+      "y": 560.2250366210938,
+      "width": 355.5,
+      "height": 153,
+      "right": 1385.4000244140625,
+      "bottom": 713.2250366210938
+    },
+    "cell": {
+      "x": 1029.9000244140625,
+      "y": 560.2250366210938,
+      "width": 18,
+      "height": 18,
+      "right": 1047.9000244140625,
+      "bottom": 578.2250366210938
+    },
+    "legend": {
+      "x": 989.4000244140625,
+      "y": 722.2250366210938,
+      "width": 396,
+      "height": 16.875,
+      "right": 1385.4000244140625,
+      "bottom": 739.1000366210938
+    },
+    "plotFraction": 0.9753694581280788,
+    "legendRightDelta": 0,
+    "months": [
+      {
+        "label": "6月",
+        "x": 1029.9000244140625,
+        "y": 528.7250366210938,
+        "width": 40.5,
+        "height": 27,
+        "right": 1070.4000244140625,
+        "bottom": 555.7250366210938,
+        "clipped": false
+      },
+      {
+        "label": "7月",
+        "x": 1074.9000244140625,
+        "y": 528.7250366210938,
+        "width": 85.5,
+        "height": 27,
+        "right": 1160.4000244140625,
+        "bottom": 555.7250366210938,
+        "clipped": false
+      },
+      {
+        "label": "8月",
+        "x": 1164.9000244140625,
+        "y": 528.7250366210938,
+        "width": 85.5,
+        "height": 27,
+        "right": 1250.4000244140625,
+        "bottom": 555.7250366210938,
+        "clipped": false
+      },
+      {
+        "label": "9月",
+        "x": 1254.9000244140625,
+        "y": 528.7250366210938,
+        "width": 108,
+        "height": 27,
+        "right": 1362.9000244140625,
+        "bottom": 555.7250366210938,
+        "clipped": false
+      }
+    ],
+    "controls": [
+      {
+        "label": "刷新",
+        "x": 1372.5,
+        "y": 63,
+        "width": 45,
+        "height": 45,
+        "right": 1417.5,
+        "bottom": 108,
+        "disabled": false
+      },
+      {
+        "label": "全部平台",
+        "x": 230.5,
+        "y": 117,
+        "width": 82.5875015258789,
+        "height": 45,
+        "right": 313.0875015258789,
+        "bottom": 162,
+        "disabled": false
+      },
+      {
+        "label": "Claude Code",
+        "x": 319.8374938964844,
+        "y": 117,
+        "width": 109.45000457763672,
+        "height": 45,
+        "right": 429.2874984741211,
+        "bottom": 162,
+        "disabled": false
+      },
+      {
+        "label": "Codex CLI",
+        "x": 436.0375061035156,
+        "y": 117,
+        "width": 94.61250305175781,
+        "height": 45,
+        "right": 530.6500091552734,
+        "bottom": 162,
+        "disabled": false
+      },
+      {
+        "label": "droid",
+        "x": 537.4000244140625,
+        "y": 117,
+        "width": 63.462501525878906,
+        "height": 45,
+        "right": 600.8625259399414,
+        "bottom": 162,
+        "disabled": true
+      },
+      {
+        "label": "opencode",
+        "x": 607.6124877929688,
+        "y": 117,
+        "width": 91.4124984741211,
+        "height": 45,
+        "right": 699.0249862670898,
+        "bottom": 162,
+        "disabled": true
+      },
+      {
+        "label": "grok",
+        "x": 705.7750244140625,
+        "y": 117,
+        "width": 58,
+        "height": 45,
+        "right": 763.7750244140625,
+        "bottom": 162,
+        "disabled": true
+      },
+      {
+        "label": "antigravity",
+        "x": 770.5250244140625,
+        "y": 117,
+        "width": 98.4000015258789,
+        "height": 45,
+        "right": 868.9250259399414,
+        "bottom": 162,
+        "disabled": true
+      },
+      {
+        "label": "kiro",
+        "x": 875.6749877929688,
+        "y": 117,
+        "width": 54.900001525878906,
+        "height": 45,
+        "right": 930.5749893188477,
+        "bottom": 162,
+        "disabled": true
+      },
+      {
+        "label": "zed",
+        "x": 937.3250122070312,
+        "y": 117,
+        "width": 50.76250076293945,
+        "height": 45,
+        "right": 988.0875129699707,
+        "bottom": 162,
+        "disabled": true
+      }
+    ],
+    "pageWidth": 1440,
+    "scrollWidth": 1440,
+    "regionWidth": 1222,
+    "regionScrollWidth": 1222,
+    "rankingViewport": {
+      "x": 231.3000030517578,
+      "y": 342.3000183105469,
+      "width": 725,
+      "height": 325.3000183105469,
+      "right": 956.3000030517578,
+      "bottom": 667.6000366210938
+    },
+    "rankingClientWidth": 715,
+    "rankingScrollWidth": 715,
+    "cells": 112
+  },
+  {
+    "width": 900,
+    "height": 600,
+    "language": "zh",
+    "theme": "mocha",
+    "scale": 1.125,
+    "header": {
+      "x": 208,
+      "y": 54,
+      "width": 692,
+      "height": 228.0500030517578,
+      "right": 900,
+      "bottom": 282.0500030517578
+    },
+    "title": {
+      "x": 266.5,
+      "y": 63,
+      "width": 94.4749984741211,
+      "height": 27,
+      "right": 360.9749984741211,
+      "bottom": 90
+    },
+    "ranking": {
+      "x": 230.5,
+      "y": 295.5500183105469,
+      "width": 636.6000366210938,
+      "height": 576,
+      "right": 867.1000366210938,
+      "bottom": 871.5500183105469
+    },
+    "topOverhead": 232.55001831054688,
+    "heatmap": {
+      "x": 230.5,
+      "y": 1169.175048828125,
+      "width": 432,
+      "height": 292.9750061035156,
+      "right": 662.5,
+      "bottom": 1462.1500549316406
+    },
+    "plot": {
+      "x": 244.8000030517578,
+      "y": 1232.9749755859375,
+      "width": 396,
+      "height": 210.375,
+      "right": 640.8000030517578,
+      "bottom": 1443.3499755859375
+    },
+    "grid": {
+      "x": 285.3000183105469,
+      "y": 1264.4749755859375,
+      "width": 355.5,
+      "height": 153,
+      "right": 640.8000183105469,
+      "bottom": 1417.4749755859375
+    },
+    "cell": {
+      "x": 285.3000183105469,
+      "y": 1264.4749755859375,
+      "width": 18,
+      "height": 18,
+      "right": 303.3000183105469,
+      "bottom": 1282.4749755859375
+    },
+    "legend": {
+      "x": 244.8000030517578,
+      "y": 1426.4749755859375,
+      "width": 396,
+      "height": 16.875,
+      "right": 640.8000030517578,
+      "bottom": 1443.3499755859375
+    },
+    "plotFraction": 0.9753694581280788,
+    "legendRightDelta": -1.52587890625E-05,
+    "months": [
+      {
+        "label": "6月",
+        "x": 285.3000183105469,
+        "y": 1232.9749755859375,
+        "width": 40.5,
+        "height": 27,
+        "right": 325.8000183105469,
+        "bottom": 1259.9749755859375,
+        "clipped": false
+      },
+      {
+        "label": "7月",
+        "x": 330.3000183105469,
+        "y": 1232.9749755859375,
+        "width": 85.5,
+        "height": 27,
+        "right": 415.8000183105469,
+        "bottom": 1259.9749755859375,
+        "clipped": false
+      },
+      {
+        "label": "8月",
+        "x": 420.3000183105469,
+        "y": 1232.9749755859375,
+        "width": 85.5,
+        "height": 27,
+        "right": 505.8000183105469,
+        "bottom": 1259.9749755859375,
+        "clipped": false
+      },
+      {
+        "label": "9月",
+        "x": 510.3000183105469,
+        "y": 1232.9749755859375,
+        "width": 108,
+        "height": 27,
+        "right": 618.3000183105469,
+        "bottom": 1259.9749755859375,
+        "clipped": false
+      }
+    ],
+    "controls": [
+      {
+        "label": "刷新",
+        "x": 832.5,
+        "y": 121.5,
+        "width": 45,
+        "height": 45,
+        "right": 877.5,
+        "bottom": 166.5,
+        "disabled": false
+      },
+      {
+        "label": "全部平台",
+        "x": 230.5,
+        "y": 175.5,
+        "width": 82.5875015258789,
+        "height": 45,
+        "right": 313.0875015258789,
+        "bottom": 220.5,
+        "disabled": false
+      },
+      {
+        "label": "Claude Code",
+        "x": 319.8374938964844,
+        "y": 175.5,
+        "width": 109.45000457763672,
+        "height": 45,
+        "right": 429.2874984741211,
+        "bottom": 220.5,
+        "disabled": false
+      },
+      {
+        "label": "Codex CLI",
+        "x": 436.0375061035156,
+        "y": 175.5,
+        "width": 94.61250305175781,
+        "height": 45,
+        "right": 530.6500091552734,
+        "bottom": 220.5,
+        "disabled": false
+      },
+      {
+        "label": "droid",
+        "x": 537.4000244140625,
+        "y": 175.5,
+        "width": 63.462501525878906,
+        "height": 45,
+        "right": 600.8625259399414,
+        "bottom": 220.5,
+        "disabled": true
+      },
+      {
+        "label": "opencode",
+        "x": 607.6124877929688,
+        "y": 175.5,
+        "width": 91.4124984741211,
+        "height": 45,
+        "right": 699.0249862670898,
+        "bottom": 220.5,
+        "disabled": true
+      },
+      {
+        "label": "grok",
+        "x": 705.7750244140625,
+        "y": 175.5,
+        "width": 58,
+        "height": 45,
+        "right": 763.7750244140625,
+        "bottom": 220.5,
+        "disabled": true
+      },
+      {
+        "label": "antigravity",
+        "x": 770.5250244140625,
+        "y": 175.5,
+        "width": 98.4000015258789,
+        "height": 45,
+        "right": 868.9250259399414,
+        "bottom": 220.5,
+        "disabled": true
+      },
+      {
+        "label": "kiro",
+        "x": 230.5,
+        "y": 227.25,
+        "width": 54.900001525878906,
+        "height": 45,
+        "right": 285.4000015258789,
+        "bottom": 272.25,
+        "disabled": true
+      },
+      {
+        "label": "zed",
+        "x": 292.1499938964844,
+        "y": 227.25,
+        "width": 50.76250076293945,
+        "height": 45,
+        "right": 342.9124946594238,
+        "bottom": 272.25,
+        "disabled": true
+      }
+    ],
+    "pageWidth": 900,
+    "scrollWidth": 900,
+    "regionWidth": 682,
+    "regionScrollWidth": 682,
+    "rankingViewport": {
+      "x": 231.3000030517578,
+      "y": 452.5500183105469,
+      "width": 635,
+      "height": 325.3000183105469,
+      "right": 866.3000030517578,
+      "bottom": 777.8500366210938
+    },
+    "rankingClientWidth": 625,
+    "rankingScrollWidth": 625,
+    "cells": 112
+  },
+  {
+    "width": 1024,
+    "height": 768,
+    "language": "zh",
+    "theme": "latte",
+    "scale": 1,
+    "header": {
+      "x": 208,
+      "y": 48,
+      "width": 816,
+      "height": 104.80000305175781,
+      "right": 1024,
+      "bottom": 152.8000030517578
+    },
+    "title": {
+      "x": 260,
+      "y": 56,
+      "width": 84,
+      "height": 24,
+      "right": 344,
+      "bottom": 80
+    },
+    "ranking": {
+      "x": 228,
+      "y": 164.8000030517578,
+      "width": 765.6000366210938,
+      "height": 512,
+      "right": 993.6000366210938,
+      "bottom": 676.8000030517578
+    },
+    "topOverhead": 108.80000305175781,
+    "heatmap": {
+      "x": 228,
+      "y": 948.7999877929688,
+      "width": 384,
+      "height": 260.6000061035156,
+      "right": 612,
+      "bottom": 1209.3999938964844
+    },
+    "plot": {
+      "x": 240.8000030517578,
+      "y": 1005.6000366210938,
+      "width": 352,
+      "height": 187,
+      "right": 592.8000030517578,
+      "bottom": 1192.6000366210938
+    },
+    "grid": {
+      "x": 276.8000183105469,
+      "y": 1033.5999755859375,
+      "width": 316,
+      "height": 136,
+      "right": 592.8000183105469,
+      "bottom": 1169.5999755859375
+    },
+    "cell": {
+      "x": 276.8000183105469,
+      "y": 1033.5999755859375,
+      "width": 16,
+      "height": 16,
+      "right": 292.8000183105469,
+      "bottom": 1049.5999755859375
+    },
+    "legend": {
+      "x": 240.8000030517578,
+      "y": 1177.5999755859375,
+      "width": 352,
+      "height": 15,
+      "right": 592.8000030517578,
+      "bottom": 1192.5999755859375
+    },
+    "plotFraction": 0.9832402234636871,
+    "legendRightDelta": -1.52587890625E-05,
+    "months": [
+      {
+        "label": "6月",
+        "x": 276.8000183105469,
+        "y": 1005.6000366210938,
+        "width": 36,
+        "height": 24,
+        "right": 312.8000183105469,
+        "bottom": 1029.6000366210938,
+        "clipped": false
+      },
+      {
+        "label": "7月",
+        "x": 316.8000183105469,
+        "y": 1005.6000366210938,
+        "width": 76,
+        "height": 24,
+        "right": 392.8000183105469,
+        "bottom": 1029.6000366210938,
+        "clipped": false
+      },
+      {
+        "label": "8月",
+        "x": 396.8000183105469,
+        "y": 1005.6000366210938,
+        "width": 76,
+        "height": 24,
+        "right": 472.8000183105469,
+        "bottom": 1029.6000366210938,
+        "clipped": false
+      },
+      {
+        "label": "9月",
+        "x": 476.8000183105469,
+        "y": 1005.6000366210938,
+        "width": 96,
+        "height": 24,
+        "right": 572.8000183105469,
+        "bottom": 1029.6000366210938,
+        "clipped": false
+      }
+    ],
+    "controls": [
+      {
+        "label": "刷新",
+        "x": 964,
+        "y": 56,
+        "width": 40,
+        "height": 40,
+        "right": 1004,
+        "bottom": 96,
+        "disabled": false
+      },
+      {
+        "label": "全部平台",
+        "x": 228,
+        "y": 104,
+        "width": 73.5999984741211,
+        "height": 40,
+        "right": 301.5999984741211,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "Claude Code",
+        "x": 307.6000061035156,
+        "y": 104,
+        "width": 97.48750305175781,
+        "height": 40,
+        "right": 405.08750915527344,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "Codex CLI",
+        "x": 411.0874938964844,
+        "y": 104,
+        "width": 84.30000305175781,
+        "height": 40,
+        "right": 495.3874969482422,
+        "bottom": 144,
+        "disabled": false
+      },
+      {
+        "label": "droid",
+        "x": 501.38751220703125,
+        "y": 104,
+        "width": 56.60000228881836,
+        "height": 40,
+        "right": 557.9875144958496,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "opencode",
+        "x": 563.9874877929688,
+        "y": 104,
+        "width": 81.45000457763672,
+        "height": 40,
+        "right": 645.4374923706055,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "grok",
+        "x": 651.4375,
+        "y": 104,
+        "width": 51.73749923706055,
+        "height": 40,
+        "right": 703.1749992370605,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "antigravity",
+        "x": 709.1749877929688,
+        "y": 104,
+        "width": 87.6624984741211,
+        "height": 40,
+        "right": 796.8374862670898,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "kiro",
+        "x": 802.8375244140625,
+        "y": 104,
+        "width": 48.98749923706055,
+        "height": 40,
+        "right": 851.825023651123,
+        "bottom": 144,
+        "disabled": true
+      },
+      {
+        "label": "zed",
+        "x": 857.8250122070312,
+        "y": 104,
+        "width": 45.3125,
+        "height": 40,
+        "right": 903.1375122070312,
+        "bottom": 144,
+        "disabled": true
+      }
+    ],
+    "pageWidth": 1024,
+    "scrollWidth": 1024,
+    "regionWidth": 806,
+    "regionScrollWidth": 806,
+    "rankingViewport": {
+      "x": 228.8000030517578,
+      "y": 304.7875061035156,
+      "width": 764,
+      "height": 288.8125,
+      "right": 992.8000030517578,
+      "bottom": 593.6000061035156
+    },
+    "rankingClientWidth": 754,
+    "rankingScrollWidth": 754,
+    "cells": 112
+  },
+  {
+    "width": 900,
+    "height": 600,
+    "language": "zh",
+    "theme": "latte",
+    "scale": 1.125,
+    "header": {
+      "x": 208,
+      "y": 54,
+      "width": 692,
+      "height": 228.0500030517578,
+      "right": 900,
+      "bottom": 282.0500030517578
+    },
+    "title": {
+      "x": 266.5,
+      "y": 63,
+      "width": 94.4749984741211,
+      "height": 27,
+      "right": 360.9749984741211,
+      "bottom": 90
+    },
+    "ranking": {
+      "x": 230.5,
+      "y": 295.5500183105469,
+      "width": 636.6000366210938,
+      "height": 576,
+      "right": 867.1000366210938,
+      "bottom": 871.5500183105469
+    },
+    "topOverhead": 232.55001831054688,
+    "heatmap": {
+      "x": 230.5,
+      "y": 1169.175048828125,
+      "width": 432,
+      "height": 292.9750061035156,
+      "right": 662.5,
+      "bottom": 1462.1500549316406
+    },
+    "plot": {
+      "x": 244.8000030517578,
+      "y": 1232.9749755859375,
+      "width": 396,
+      "height": 210.375,
+      "right": 640.8000030517578,
+      "bottom": 1443.3499755859375
+    },
+    "grid": {
+      "x": 285.3000183105469,
+      "y": 1264.4749755859375,
+      "width": 355.5,
+      "height": 153,
+      "right": 640.8000183105469,
+      "bottom": 1417.4749755859375
+    },
+    "cell": {
+      "x": 285.3000183105469,
+      "y": 1264.4749755859375,
+      "width": 18,
+      "height": 18,
+      "right": 303.3000183105469,
+      "bottom": 1282.4749755859375
+    },
+    "legend": {
+      "x": 244.8000030517578,
+      "y": 1426.4749755859375,
+      "width": 396,
+      "height": 16.875,
+      "right": 640.8000030517578,
+      "bottom": 1443.3499755859375
+    },
+    "plotFraction": 0.9753694581280788,
+    "legendRightDelta": -1.52587890625E-05,
+    "months": [
+      {
+        "label": "6月",
+        "x": 285.3000183105469,
+        "y": 1232.9749755859375,
+        "width": 40.5,
+        "height": 27,
+        "right": 325.8000183105469,
+        "bottom": 1259.9749755859375,
+        "clipped": false
+      },
+      {
+        "label": "7月",
+        "x": 330.3000183105469,
+        "y": 1232.9749755859375,
+        "width": 85.5,
+        "height": 27,
+        "right": 415.8000183105469,
+        "bottom": 1259.9749755859375,
+        "clipped": false
+      },
+      {
+        "label": "8月",
+        "x": 420.3000183105469,
+        "y": 1232.9749755859375,
+        "width": 85.5,
+        "height": 27,
+        "right": 505.8000183105469,
+        "bottom": 1259.9749755859375,
+        "clipped": false
+      },
+      {
+        "label": "9月",
+        "x": 510.3000183105469,
+        "y": 1232.9749755859375,
+        "width": 108,
+        "height": 27,
+        "right": 618.3000183105469,
+        "bottom": 1259.9749755859375,
+        "clipped": false
+      }
+    ],
+    "controls": [
+      {
+        "label": "刷新",
+        "x": 832.5,
+        "y": 121.5,
+        "width": 45,
+        "height": 45,
+        "right": 877.5,
+        "bottom": 166.5,
+        "disabled": false
+      },
+      {
+        "label": "全部平台",
+        "x": 230.5,
+        "y": 175.5,
+        "width": 82.5875015258789,
+        "height": 45,
+        "right": 313.0875015258789,
+        "bottom": 220.5,
+        "disabled": false
+      },
+      {
+        "label": "Claude Code",
+        "x": 319.8374938964844,
+        "y": 175.5,
+        "width": 109.45000457763672,
+        "height": 45,
+        "right": 429.2874984741211,
+        "bottom": 220.5,
+        "disabled": false
+      },
+      {
+        "label": "Codex CLI",
+        "x": 436.0375061035156,
+        "y": 175.5,
+        "width": 94.61250305175781,
+        "height": 45,
+        "right": 530.6500091552734,
+        "bottom": 220.5,
+        "disabled": false
+      },
+      {
+        "label": "droid",
+        "x": 537.4000244140625,
+        "y": 175.5,
+        "width": 63.462501525878906,
+        "height": 45,
+        "right": 600.8625259399414,
+        "bottom": 220.5,
+        "disabled": true
+      },
+      {
+        "label": "opencode",
+        "x": 607.6124877929688,
+        "y": 175.5,
+        "width": 91.4124984741211,
+        "height": 45,
+        "right": 699.0249862670898,
+        "bottom": 220.5,
+        "disabled": true
+      },
+      {
+        "label": "grok",
+        "x": 705.7750244140625,
+        "y": 175.5,
+        "width": 58,
+        "height": 45,
+        "right": 763.7750244140625,
+        "bottom": 220.5,
+        "disabled": true
+      },
+      {
+        "label": "antigravity",
+        "x": 770.5250244140625,
+        "y": 175.5,
+        "width": 98.4000015258789,
+        "height": 45,
+        "right": 868.9250259399414,
+        "bottom": 220.5,
+        "disabled": true
+      },
+      {
+        "label": "kiro",
+        "x": 230.5,
+        "y": 227.25,
+        "width": 54.900001525878906,
+        "height": 45,
+        "right": 285.4000015258789,
+        "bottom": 272.25,
+        "disabled": true
+      },
+      {
+        "label": "zed",
+        "x": 292.1499938964844,
+        "y": 227.25,
+        "width": 50.76250076293945,
+        "height": 45,
+        "right": 342.9124946594238,
+        "bottom": 272.25,
+        "disabled": true
+      }
+    ],
+    "pageWidth": 900,
+    "scrollWidth": 900,
+    "regionWidth": 682,
+    "regionScrollWidth": 682,
+    "rankingViewport": {
+      "x": 231.3000030517578,
+      "y": 452.5500183105469,
+      "width": 635,
+      "height": 325.3000183105469,
+      "right": 866.3000030517578,
+      "bottom": 777.8500366210938
+    },
+    "rankingClientWidth": 625,
+    "rankingScrollWidth": 625,
+    "cells": 112
+  }
+]

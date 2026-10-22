@@ -1735,3 +1735,200 @@ SSH/WSL Platform leftover apply now validates paths, deletes unique POSIX paths 
 ### Next Steps
 
 - 按需开 PR 到 dev；连接测试 Ok 载荷脱敏与 AI 并发 flush 仍延期
+
+
+## Session 115: 小文件性能优化提交与归档
+
+**Date**: 2026-10-08
+**Task**: 小文件性能优化提交与归档
+**Branch**: `dev`
+
+### Summary
+
+按用户授权提交全部任务改动并归档。完整 just ci 通过；原 10% 性能目标未达到，未解耗时回退和未验证项保留。
+
+### Main Changes
+
+- 提交真实写入进度聚合、文件所有权移动、staging 父目录复用与哈希排序优化及规范。
+- 提交全部基准、首个失败和复测证据；138 个 research 文件的 Git blob 与原始字节一致。
+- 归档到 .trellis/tasks/archive/2026-10/10-08-skill-small-files-performance；任务关闭不改变 AC-I1/AC-I2 验收缺口。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `112120cb130c31e195f3fdf497f33fd13eb514e7` | (see git log) |
+| `48d983e0e30edfdf27c9fbc908c2e3b747be5fda` | (see git log) |
+
+### Testing
+
+- [OK] just ci：15/15 阶段通过、退出 0；Rust 1574 PASS/9 ignored，Vitest 2078 PASS/1 skipped，Python 50 PASS/4 skipped。
+- [OK] 21 个 Rust 源码哈希与正式 CI 记录一致；归档后 task validate 通过，implement/check 为 9/11 entries。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 性能后续工作需保留原 10% 预算，并处理删除 stage 和 L no-op 耗时变化、完整源码冻结清单及 native/真实 target/完整性能矩阵证据缺口。
+
+
+## Session 116: 提交 Rules 管理并归档已完成任务
+
+**Date**: 2026-10-08
+**Task**: 提交 Rules 管理并归档已完成任务
+**Branch**: `dev`
+
+### Summary
+
+按用户授权提交 Rules 管理与 pnpm 版本声明改动，并归档三个已完成任务。本次未重新运行 just ci。
+
+### Main Changes
+
+- 移除仓库内 pnpm 精确版本声明；doctor 只检查可用性，托管 CI 使用 latest。Node 26 与 Rust 1.98.0 仍固定。
+- 新增 Local Rules 管理，中央库为 ~/.skillport/rules，并通过文件 symlink 分发到 Claude Code 与 OMP。
+- 归档 10-08-rules-management、09-10-central-skill-project-destinations、10-08-central-skill-delete-blocked。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `a03951e1` | (see git log) |
+| `d7e57ac4` | (see git log) |
+
+### Testing
+
+- [OK] 本次会话未重新运行 just ci。Rules 任务已记录的 just ci 与 Windows x64 NSIS 构建此前通过。
+- [OK] 原生交互、安装流程、真实用户导入和 provider 行为仍未运行。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 改动尚未推送。需要时再开向 dev 的 PR。
+- Rules 的原生交互、安装流程、真实用户导入和 provider 行为仍待验证。
+
+
+## Session 117: 主侧栏 Global 与 Project Workspaces
+
+**Date**: 2026-10-12
+**Task**: 主侧栏 Global 与 Project Workspaces
+**Branch**: `feat/sidebar-global-project-workspaces`
+
+### Summary
+
+主侧栏只保留 Global Workspace 与 Project Workspaces，列出已登记项目并支持折叠和本地排序，去掉龙虾分组。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `69401b1ab1b3c0319e0884ba3f6b3d9e98336ce8` | (see git log) |
+
+### Status
+
+[OK] **Completed**
+
+
+## Session 118: 主题切换去掉误触发的颜色插值
+
+**Date**: 2026-10-12
+**Task**: 主题切换去掉误触发的颜色插值
+**Branch**: `dev`
+
+### Summary
+
+右上角主题切换改为提交时抑制颜色和阴影过渡，避免发灰中段与卡片阴影逐帧重算。规格写入 theme-switch.md。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `fd78ce5c` | (see git log) |
+| `6f2df388` | (see git log) |
+
+### Status
+
+[OK] **Completed**
+
+
+## Session 119: 侧栏排序与首页库存布局优化
+
+**Date**: 2026-10-12
+**Task**: 侧栏排序与首页库存布局优化
+**Branch**: `dev`
+
+### Summary
+
+完成轻量排序菜单与至少40px热区；统一首页库存卡片、语义字号和响应式平台分栏。Trellis独立复核及浏览器窗口/语言/主题/字号/压力矩阵通过；just ci在RUST_TEST_THREADS=4环境通过（前端2131项、Rust lib1579项）；默认高并发曾出现Central锁竞争超时。已归档两个子任务与父任务。原生WebView2、真实库存及安装器未验证，未推送远端。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `e2a83f44` | (see git log) |
+| `9205fd7b` | (see git log) |
+
+### Status
+
+[OK] **Completed**
+
+
+## Session 120: Skill Usage 界面与增量扫描优化收尾
+
+**Date**: 2026-10-13
+**Task**: Skill Usage 界面与增量扫描优化收尾
+**Branch**: `codex/skill-usage-optimization`
+
+### Summary
+
+完成紧凑概要、控件/热力图、Local delta、一致page与有界排行；用户人工验证并接受现状收尾。
+
+### Main Changes
+
+- 已归档一个父任务与两个子任务，证据与规范完整保留。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `98502384` | (see git log) |
+
+### Testing
+
+- [OK] just ci全门通过：frontend2190；Rust library1595及其他目标；Trellis Python54。
+- [OK] Windows x64 NSIS构建成功；18组浏览器矩阵、10k键盘/焦点与原生冷首屏/最大化通过。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- memory stress冷扫median回退19.2%及生产paint/source/unused完整计时缺口已按用户接受的限制记录，未来优化需新授权。
+
+
+## Session 121: GitHub 导入：缺失分支误报修复、失败审计与输入卡片优化
+
+**Date**: 2026-10-20
+**Task**: GitHub 导入：缺失分支误报修复、失败审计与输入卡片优化
+**Branch**: `fix/github-import-branch-default`
+
+### Summary
+
+定位 Preview 误报无法连接 GitHub 的根因：向导默认提交 main 覆盖仓库 default_branch（master），commits/main 返回 422 被包成 Http→transport_failed。新增 HttpStatus/BranchNotFound，422→branch_not_found、其它 4xx→request_rejected；新增 FailureOnly 生命周期，preview 失败按阶段写入 Operation Log（failureStage/httpStatus）；向导默认仓库默认分支，错误框给出改用默认分支/重试动作，输入步加宽至 60rem、控件等高对齐、徽章与步骤条样式修正。just ci 通过；原生 Tauri 截图、真实网络手动验收与 SSH/WSL 实测未执行。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `b5d53bc6` | (see git log) |
+| `09ec111b` | (see git log) |
+| `fe3f1160` | (see git log) |
+
+### Status
+
+[OK] **Completed**

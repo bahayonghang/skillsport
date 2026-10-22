@@ -1,0 +1,8 @@
+{"file": ".trellis/tasks/10-20-github-import-branch-missing-misclassified/research/root-cause.md", "reason": "根因链：默认 main 覆盖 default_branch → commits/main 422 → Http → transport_failed"}
+{"file": ".trellis/tasks/10-20-github-import-branch-missing-misclassified/research/ui-audit.md", "reason": "输入步 UI、徽章、报错与日志问题清单 U/B/E/L 及源码锚点"}
+{"file": ".trellis/spec/backend/github-import-preview-contract.md", "reason": "preview 错误矩阵、脱敏与 transport 分类约束，需同步更新"}
+{"file": ".trellis/spec/backend/domain-error-enums.md", "reason": "新增 GithubImportError 变体的 thiserror 约定"}
+{"file": ".trellis/spec/quality/observability-gates.md", "reason": "命令日志策略唯一性、Operation lifecycle 与隐私门禁"}
+{"file": ".trellis/spec/frontend/ipc-adapter.md", "reason": "新错误码在前端 IPC 错误映射中的登记方式"}
+{"file": ".trellis/spec/frontend/typography-tokens.md", "reason": "语义字号 token，徽章/步骤条/提示文字排版"}
+{"file": ".trellis/spec/quality/ci-quality-gate.md", "reason": "just ci 与 docs:gen:check 完成门禁"}

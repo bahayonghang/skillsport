@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 
 import { cn } from "@/lib/utils";
 import type { DayCount } from "@/types/usage";
+import { buildHeatmapScale, heatLevelFor } from "@/components/usage/usageHeatmapScale";
 
 interface ActivityHeatmapProps {
   days: DayCount[];
@@ -12,13 +13,20 @@ interface ActivityHeatmapProps {
 
 const LABELED_WEEKDAY_ROWS = new Set([0, 2, 4]);
 
+function localTodayKey() {
+  const now = new Date();
+  const month = `${now.getMonth() + 1}`.padStart(2, "0");
+  const day = `${now.getDate()}`.padStart(2, "0");
+  return `${now.getFullYear()}-${month}-${day}`;
+}
+
 /** 固定轨道：格子边长不随容器宽度变化，避免 maximize 时 aspect-ratio 回传高度。 */
 const CELL_TRACK_CLASS = {
-  default: "auto-cols-[0.75rem]",
+  default: "auto-cols-[1rem]",
   compact: "auto-cols-[0.625rem]",
 } as const;
 const CELL_SIZE_CLASS = {
-  default: "size-3",
+  default: "size-4",
   compact: "size-2.5",
 } as const;
 
@@ -30,8 +38,8 @@ export function ActivityHeatmap({
   const { t, i18n } = useTranslation();
   const [focusIndex, setFocusIndex] = useState(0);
   const cells = useRef<Array<HTMLButtonElement | null>>([]);
-  const nonZeroCounts = useMemo(
-    () => days.map((day) => day.count).filter((count) => count > 0),
+  const heatmapScale = useMemo(
+    () => buildHeatmapScale(days.map((day) => day.count)),
     [days],
   );
   const weekdayLabels = useMemo(() => {
@@ -50,6 +58,7 @@ export function ActivityHeatmap({
     () => buildMonthLabels(days, i18n.language),
     [days, i18n.language],
   );
+  const todayKey = localTodayKey();
   const trackSize = compact ? "compact" : "default";
   const cellTrackClass = CELL_TRACK_CLASS[trackSize];
   const cellSizeClass = CELL_SIZE_CLASS[trackSize];
@@ -76,20 +85,22 @@ export function ActivityHeatmap({
   return (
     <div
       data-testid="heatmap-shell"
-      className={cn("min-w-0", compact ? "py-1" : "py-3", className)}
+      className={cn("min-w-0", compact ? "py-1" : "px-3 py-3", className)}
     >
       <div className="overflow-x-auto pb-1">
-        <div className={cn("min-w-[22rem]", !compact && "px-1")}>
+        <div data-testid="heatmap-plot" className="w-max">
           <div
+            data-testid="heatmap-months"
             className={cn(
               "ml-9 grid grid-flow-col gap-1 text-ui-micro text-muted-foreground",
               cellTrackClass,
             )}
           >
-            {monthLabels.map((label, index) => (
+            {monthLabels.map(({ key, label, startWeek, weekSpan }) => (
               <span
-                key={`${label}-${index}`}
-                className="whitespace-nowrap overflow-visible"
+                key={key}
+                style={{ gridColumn: `${startWeek + 1} / span ${weekSpan}` }}
+                className="overflow-hidden whitespace-nowrap"
               >
                 {label}
               </span>
@@ -111,7 +122,8 @@ export function ActivityHeatmap({
               )}
             >
               {days.map((day, index) => {
-                const level = heatLevelFor(day.count, nonZeroCounts);
+                const level = heatLevelFor(day.count, heatmapScale);
+                const isToday = day.date === todayKey;
                 const label = t("skillUsage.heatmap.cellLabel", {
                   date: day.date,
                   count: day.count,
@@ -127,6 +139,7 @@ export function ActivityHeatmap({
                     tabIndex={index === focusIndex ? 0 : -1}
                     data-testid={`heatmap-cell-${day.date}`}
                     data-level={level}
+                    aria-current={isToday ? "date" : undefined}
                     title={label}
                     aria-label={label}
                     onFocus={() => setFocusIndex(index)}
@@ -147,87 +160,82 @@ export function ActivityHeatmap({
                       }
                     }}
                     className={cn(
-                      "block shrink-0 rounded-[3px] border border-transparent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+                      "block shrink-0 rounded-pill border border-transparent focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-ring",
                       cellSizeClass,
                       CELL_LEVEL_CLASS[level],
+                      // "Today" is marked by an ink outline + aria-current,
+                      // never by colour alone.
+                      isToday &&
+                        "outline-solid outline-1 outline-offset-1 outline-foreground",
                     )}
                   />
                 );
               })}
             </div>
           </div>
+          <div
+            data-testid="heatmap-legend"
+            className="mt-2 flex items-center justify-end gap-1.5 text-ui-micro text-muted-foreground"
+          >
+            <span>{t("skillUsage.heatmap.less")}</span>
+            {([0, 1, 2, 3, 4, 5] as const).map((level) => (
+              <span
+                key={level}
+                aria-hidden
+                className={cn(
+                  "size-2.5 rounded-pill border border-transparent",
+                  CELL_LEVEL_CLASS[level],
+                )}
+              />
+            ))}
+            <span>{t("skillUsage.heatmap.more")}</span>
+          </div>
         </div>
-      </div>
-      <div className="mt-2 flex items-center justify-end gap-1.5 text-ui-micro text-muted-foreground">
-        <span>{t("skillUsage.heatmap.less")}</span>
-        {([0, 1, 2, 3, 4, 5] as const).map((level) => (
-          <span
-            key={level}
-            aria-hidden
-            className={cn(
-              "size-2.5 rounded-[2px] border border-transparent",
-              CELL_LEVEL_CLASS[level],
-            )}
-          />
-        ))}
-        <span>{t("skillUsage.heatmap.more")}</span>
       </div>
     </div>
   );
 }
 
-function buildMonthLabels(days: DayCount[], locale: string): string[] {
+function buildMonthLabels(days: DayCount[], locale: string) {
   const formatter = new Intl.DateTimeFormat(locale || undefined, {
     month: "short",
   });
-  let previousMonth = "";
-  return Array.from({ length: 16 }, (_, week) => {
+  const months: Array<{
+    key: string;
+    label: string;
+    startWeek: number;
+    weekSpan: number;
+  }> = [];
+  for (let week = 0; week < Math.ceil(days.length / 7); week += 1) {
     const day = days[week * 7];
-    if (!day) return "";
+    if (!day) continue;
     const date = new Date(`${day.date}T12:00:00`);
     const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
-    if (monthKey === previousMonth) return "";
-    previousMonth = monthKey;
-    return formatter.format(date);
-  });
-}
-
-function heatLevelFor(
-  count: number,
-  nonZeroCounts: number[],
-): 0 | 1 | 2 | 3 | 4 | 5 {
-  if (count <= 0) return 0;
-  if (nonZeroCounts.length < 5) {
-    const max = Math.max(1, ...nonZeroCounts);
-    return Math.max(1, Math.min(5, Math.ceil((count / max) * 5))) as
-      | 1
-      | 2
-      | 3
-      | 4
-      | 5;
+    const previous = months[months.length - 1];
+    if (previous?.key === monthKey) {
+      previous.weekSpan += 1;
+    } else {
+      months.push({
+        key: monthKey,
+        label: formatter.format(date),
+        startWeek: week,
+        weekSpan: 1,
+      });
+    }
   }
-
-  const sorted = [...nonZeroCounts].sort((a, b) => a - b);
-  const quantile = (value: number) => {
-    const position = (sorted.length - 1) * value;
-    const lower = Math.floor(position);
-    const upper = Math.ceil(position);
-    const lowerValue = sorted[lower] ?? 0;
-    const upperValue = sorted[upper] ?? lowerValue;
-    return lowerValue + (upperValue - lowerValue) * (position - lower);
-  };
-  if (count <= quantile(0.25)) return 1;
-  if (count <= quantile(0.5)) return 2;
-  if (count <= quantile(0.75)) return 3;
-  if (count <= quantile(0.9)) return 4;
-  return 5;
+  // 单周残月无法容纳月份全文；仅略过标签，日期格子全部保留。
+  return months.filter((month) => month.weekSpan >= 2);
 }
 
+// Mint ramp (DESIGN.md chart-1 = primary / input series): five alpha steps
+// of the theme's mint, so light and dark each get their own ramp from the
+// token. Level 0 is the neutral surface-hover dot with a divider edge. The
+// count is always in the cell's accessible name; colour is never alone.
 const CELL_LEVEL_CLASS: Record<0 | 1 | 2 | 3 | 4 | 5, string> = {
-  0: "border-border/60 bg-muted/25",
-  1: "bg-chart-2/20",
-  2: "bg-chart-2/35",
-  3: "bg-chart-2/55",
-  4: "bg-chart-2/75",
-  5: "bg-chart-2",
+  0: "border-border bg-accent",
+  1: "bg-chart-1/20",
+  2: "bg-chart-1/35",
+  3: "bg-chart-1/55",
+  4: "bg-chart-1/75",
+  5: "bg-chart-1",
 };

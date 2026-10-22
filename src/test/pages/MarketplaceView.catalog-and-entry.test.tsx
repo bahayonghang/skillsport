@@ -74,7 +74,7 @@ describe("MarketplaceView catalog and entry flows", () => {
 
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
     expect(screen.getByLabelText(/GitHub repository URL|GitHub 仓库 URL/i)).toBeInTheDocument();
-    expect(screen.getByRole("radio", { name: "main" })).toHaveAttribute(
+    expect(screen.getByRole("radio", { name: "Repo default" })).toHaveAttribute(
       "aria-checked",
       "true",
     );

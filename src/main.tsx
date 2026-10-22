@@ -1,17 +1,18 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
-import { Toaster } from "sonner";
+import { Toaster } from "@/components/ui/toaster";
 import App from "./App";
 import { StartupGate } from "@/components/startup/StartupGate";
 import "./index.css";
 // Initialize i18n before rendering the app
 import "./i18n";
-// Initialize Catppuccin theme before rendering so there's no flash
+// Initialize the glass theme before rendering so there is no flash
 import {
   fontThemeModeForFlavor,
   useThemeStore,
 } from "./stores/themeStore";
+import { useWindowMaterialStore } from "./stores/windowMaterialStore";
 import {
   DEFAULT_THEMED_FONT_PREFERENCES,
   activateFontTheme,
@@ -29,6 +30,9 @@ if (!isTauriRuntime()) {
 
 // Apply theme synchronously before React renders to prevent flash of wrong theme
 useThemeStore.getState().init();
+// Window material starts opaque (data-window-material="none") and only turns
+// translucent once Rust reports Mica; it then follows every theme commit.
+void useWindowMaterialStore.getState().init();
 let activeFontMode = fontThemeModeForFlavor(useThemeStore.getState().flavor);
 // 字体偏好：先 apply 当前 mode 默认值避免 layout 跳动；IPC 完成后再覆盖
 applyThemedFontPreferences(DEFAULT_THEMED_FONT_PREFERENCES, activeFontMode);
@@ -50,7 +54,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
       <StartupGate>
         <App />
       </StartupGate>
-      <Toaster position="bottom-right" richColors />
+      <Toaster position="bottom-right" />
     </BrowserRouter>
   </React.StrictMode>,
 );

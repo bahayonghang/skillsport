@@ -6,7 +6,6 @@ import {
   useState,
   type RefObject,
 } from "react";
-import { Dialog as DialogPrimitive } from "@base-ui/react/dialog";
 import type { TFunction } from "i18next";
 import {
   AlertTriangle,
@@ -22,16 +21,10 @@ import { PlatformIcon } from "@/components/platform/PlatformIcon";
 import { showSkillsCliActionToast } from "@/components/skillsCli/skillsCliActionToast";
 import { formatRelativeTime } from "@/components/logs/logsUtils";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogClose,
-  DialogOverlay,
-  DialogPortal,
-} from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { Sheet, SheetClose, SheetContent } from "@/components/ui/sheet";
 import { Switch } from "@/components/ui/switch";
 import { formatBackendError } from "@/lib/backendError";
-import { statusChipClass } from "@/lib/statusTone";
-import { cn } from "@/lib/utils";
 import {
   buildSkillsCliDetailRows,
   folderHashPrefix,
@@ -318,7 +311,7 @@ export function SkillsCliDetailDrawer({
   }
 
   return (
-    <Dialog
+    <Sheet
       open={open}
       onOpenChange={(next) => {
         if (!next) {
@@ -326,373 +319,358 @@ export function SkillsCliDetailDrawer({
         }
       }}
     >
-      <DialogPortal keepMounted={false}>
-        <DialogOverlay
-          data-testid="skills-cli-detail-overlay"
-          className="bg-foreground/30"
-        />
-        <DialogPrimitive.Popup
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby={skill ? titleId : undefined}
-          aria-describedby={skill && canonicalPath ? pathId : undefined}
-          aria-busy={docBusy || aggregateBusy || isMutating}
-          data-testid="skills-cli-detail-drawer"
-          data-width-mode={width.mode}
-          initialFocus={titleRef}
-          finalFocus={returnFocusRef}
-          className={cn(
-            "fixed inset-y-0 right-0 z-50 flex h-full max-w-full flex-col bg-background shadow-2xl ring-1 ring-border outline-none",
-            "will-change-transform",
-            "data-[starting-style]:animate-in data-[starting-style]:slide-in-from-right",
-            "data-[ending-style]:animate-out data-[ending-style]:slide-out-to-right",
-            "animation-duration-150",
-          )}
-          style={{ width: width.cssWidth }}
-        >
-          <div className="flex h-10 shrink-0 items-center justify-between gap-2 border-b border-border px-3">
-            <h2
-              id={titleId}
-              ref={titleRef}
-              tabIndex={-1}
-              className="min-w-0 truncate text-sm font-semibold outline-none"
-            >
-              {skill?.name ?? t("skillsCli.title")}
-            </h2>
-            <DialogClose
-              render={
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={t("common.close")}
-                  data-testid="skills-cli-detail-close"
-                  className={ICON_HIT_AREA}
-                />
-              }
-            >
-              <XIcon />
-            </DialogClose>
-          </div>
+      <SheetContent
+        showCloseButton={false}
+        backdropProps={{ "data-testid": "skills-cli-detail-overlay" }}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={skill ? titleId : undefined}
+        aria-describedby={skill && canonicalPath ? pathId : undefined}
+        aria-busy={docBusy || aggregateBusy || isMutating}
+        data-testid="skills-cli-detail-drawer"
+        data-width-mode={width.mode}
+        initialFocus={titleRef}
+        finalFocus={returnFocusRef}
+        className="max-w-[calc(100vw-1rem)]"
+        style={{ width: `min(${width.cssWidth}, calc(100vw - 1rem))` }}
+      >
+        <div className="flex h-12 shrink-0 items-center justify-between gap-2 border-b border-border pr-3 pl-5">
+          <h2
+            id={titleId}
+            ref={titleRef}
+            tabIndex={-1}
+            className="min-w-0 truncate text-sm font-semibold outline-none"
+          >
+            {skill?.name ?? t("skillsCli.title")}
+          </h2>
+          <SheetClose
+            render={
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label={t("common.close")}
+                data-testid="skills-cli-detail-close"
+                className={ICON_HIT_AREA}
+              />
+            }
+          >
+            <XIcon />
+          </SheetClose>
+        </div>
 
-          {skill ? (
-            <div className="flex min-h-0 flex-1 flex-col">
-              <div className="min-h-0 flex-1 space-y-5 overflow-y-auto p-4">
-                <header className="space-y-2">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-base font-semibold tracking-[-0.01em]">
-                      {skill.name}
-                    </p>
-                    {updateAvailable ? (
-                      <span
-                        className={cn(
-                          "rounded-full border px-1.5 py-0.5 text-xs font-medium",
-                          statusChipClass.warning,
-                        )}
-                      >
-                        {t("skillsCli.detail.updateBadge")}
-                      </span>
-                    ) : null}
-                  </div>
-                  {canonicalPath ? (
-                    <p
-                      id={pathId}
-                      title={canonicalPath}
-                      className="truncate font-mono text-ui-meta text-muted-foreground"
-                    >
-                      <span className="sr-only">
-                        {t("skillsCli.detail.canonicalPath")}:{" "}
-                      </span>
-                      {canonicalPath}
-                    </p>
+        {skill ? (
+          <div className="flex min-h-0 flex-1 flex-col">
+            <div className="scrollbar-subtle min-h-0 flex-1 space-y-5 overflow-y-auto px-5 py-4">
+              <header className="space-y-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="text-base font-semibold tracking-tight">
+                    {skill.name}
+                  </p>
+                  {updateAvailable ? (
+                    <Badge tone="warning" size="sm">
+                      {t("skillsCli.detail.updateBadge")}
+                    </Badge>
                   ) : null}
-                  <div
-                    data-testid="skills-cli-detail-pills"
-                    className="flex flex-wrap gap-1.5"
+                </div>
+                {canonicalPath ? (
+                  <p
+                    id={pathId}
+                    title={canonicalPath}
+                    className="truncate font-mono text-ui-meta text-muted-foreground"
                   >
-                    {sourceValue ? (
-                      <span
-                        title={sourceValue}
-                        className="max-w-full truncate rounded-full border border-border px-2 py-0.5 text-xs"
-                      >
-                        {sourceValue}
-                      </span>
-                    ) : null}
-                    {hashValue ? (
-                      <span
-                        title={t("skillsCli.detail.hashTooltip")}
-                        className="rounded-full border border-border px-2 py-0.5 font-mono text-xs"
-                      >
-                        {hashValue}
-                      </span>
-                    ) : null}
-                    {relativeTime && timeValue ? (
-                      <span
-                        title={timeValue}
-                        className="rounded-full border border-border px-2 py-0.5 text-xs"
-                      >
-                        {relativeTime}
-                      </span>
-                    ) : null}
-                  </div>
-                </header>
-
-                <section
-                  data-testid="skills-cli-detail-links"
-                  className="space-y-3"
-                  aria-busy={aggregateBusy}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <h3
-                        ref={linksHeadingRef}
-                        className="text-xs font-medium text-foreground"
-                      >
-                        {t("skillsCli.detail.linksHeading")}
-                      </h3>
-                      <p className="mt-0.5 text-ui-meta text-muted-foreground">
-                        {t("skillsCli.detail.linksSummary", {
-                          associated: summary.associatedCount,
-                          total: summary.enabledCount,
-                        })}
-                      </p>
-                    </div>
-                    {summary.aggregate === "linkAll" ? (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        data-testid="skills-cli-detail-link-all"
-                        disabled={placementLocked}
-                        title={mutationLockReason}
-                        onClick={() => void runAggregate("linkAll")}
-                      >
-                        {t("skillsCli.detail.linkAll")}
-                      </Button>
-                    ) : (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        data-testid="skills-cli-detail-unlink-all"
-                        disabled={
-                          placementLocked || summary.aggregate === "disabled"
-                        }
-                        title={
-                          mutationLockReason ??
-                          (summary.aggregate === "disabled"
-                            ? t("skillsCli.detail.aggregateDisabled")
-                            : undefined)
-                        }
-                        onClick={() => void runAggregate("unlinkAll")}
-                      >
-                        {t("skillsCli.detail.unlinkAll")}
-                      </Button>
-                    )}
-                  </div>
-                  {mutationError ? (
-                    <p
-                      role="alert"
-                      data-testid="skills-cli-detail-mutation-error"
-                      className="rounded-md border border-destructive/30 bg-destructive/10 p-2 text-sm text-destructive-text"
-                    >
-                      {mutationError}
-                    </p>
-                  ) : null}
-                  <ul className="space-y-2">
-                    {rows.map((row) => {
-                      const reason = rowReason(row, t);
-                      const rowBusy = busy.has(row.agentId);
-                      const switchDisabled =
-                        row.switchDisabled || placementLocked || rowBusy;
-                      const switchLabel = switchDisabled
-                        ? t("skillsCli.detail.switchDisabled", {
-                            platform: row.displayName,
-                            reason: mutationLockReason ?? reason ?? row.displayName,
-                          })
-                        : t(
-                            row.action === "unlink"
-                              ? "skillsCli.detail.switchUnlink"
-                              : "skillsCli.detail.switchLink",
-                            { name: skill.name, platform: row.displayName },
-                          );
-                      return (
-                        <li
-                          key={row.agentId}
-                          data-testid={`skills-cli-placement-${row.agentId}`}
-                          data-state={row.state}
-                          aria-busy={rowBusy}
-                          className="flex items-start gap-3 rounded-lg border border-border bg-muted/20 p-3"
-                        >
-                          <PlatformIcon
-                            agentId={row.agentId}
-                            size={16}
-                            className="mt-0.5 shrink-0"
-                          />
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium">
-                              {row.displayName}
-                            </p>
-                            <p
-                              title={row.targetPath}
-                              className="truncate font-mono text-ui-meta text-muted-foreground"
-                            >
-                              {row.targetPath}
-                            </p>
-                            {reason ? (
-                              <p className="mt-1 flex items-start gap-1 text-xs text-muted-foreground">
-                                <ReasonIcon kind={row.reasonKind} />
-                                <span>{reason}</span>
-                              </p>
-                            ) : null}
-                          </div>
-                          <div className="flex shrink-0 items-center gap-2">
-                            {row.forceUnlinkable ? (
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                data-testid={`skills-cli-force-unlink-${row.agentId}`}
-                                disabled={placementLocked || rowBusy}
-                                title={mutationLockReason}
-                                onClick={() => void runForceUnlink(row.agentId)}
-                              >
-                                {t("skillsCli.detail.forceUnlink")}
-                              </Button>
-                            ) : null}
-                            <Switch
-                              checked={row.switchChecked}
-                              disabled={switchDisabled}
-                              aria-label={switchLabel}
-                              onCheckedChange={(checked) => {
-                                if (row.action == null) {
-                                  return;
-                                }
-                                void runToggle(row.agentId, checked);
-                              }}
-                            />
-                          </div>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </section>
-
-                <section data-testid="skills-cli-detail-doc" className="space-y-2">
-                  <div className="flex items-baseline justify-between gap-2">
-                    <h3 className="text-xs font-medium">
-                      {t("skillsCli.detail.docHeading")}
-                    </h3>
-                    {visibleDoc.status === "ready" || visibleDoc.status === "empty" ? (
-                      <span className="text-ui-meta text-muted-foreground">
-                        {t("skillsCli.detail.docBytes", {
-                          bytes: visibleDoc.byteSize,
-                        })}
-                      </span>
-                    ) : null}
-                  </div>
-                  {visibleDoc.status === "loading" ? (
-                    <div
-                      data-testid="skills-cli-detail-doc-skeleton"
-                      aria-busy="true"
-                      aria-label={t("skillsCli.detail.docLoading")}
-                      className="space-y-2"
-                    >
-                      <div className="h-3 animate-pulse rounded bg-muted/80" />
-                      <div className="h-3 w-5/6 animate-pulse rounded bg-muted/80" />
-                      <div className="h-3 w-2/3 animate-pulse rounded bg-muted/80" />
-                    </div>
-                  ) : null}
-                  {visibleDoc.status === "empty" ? (
-                    <p
-                      data-testid="skills-cli-detail-doc-empty"
-                      className="text-sm text-muted-foreground"
-                    >
-                      {t("skillsCli.detail.docEmpty")}
-                    </p>
-                  ) : null}
-                  {visibleDoc.status === "ready" ? (
-                    <pre
-                      data-testid="skills-cli-detail-doc-pre"
-                      className="max-h-[40vh] overflow-auto whitespace-pre-wrap break-words rounded-lg border border-border bg-muted/30 p-3 font-mono text-ui-meta leading-relaxed"
-                    >
-                      {visibleDoc.content}
-                    </pre>
-                  ) : null}
-                  {visibleDoc.status === "error" ? (
-                    <div
-                      role="alert"
-                      data-testid="skills-cli-detail-doc-error"
-                      className="space-y-2 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive-text"
-                    >
-                      <p>
-                        {t("skillsCli.detail.docError", {
-                          error: formatBackendError(
-                            `${visibleDoc.errorCode}:`,
-                            t,
-                          ),
-                        })}
-                      </p>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={onRetryDoc}
-                      >
-                        {t("common.retry")}
-                      </Button>
-                    </div>
-                  ) : null}
-                </section>
-              </div>
-
-              <div className="flex shrink-0 flex-wrap gap-2 border-t border-border p-3">
-                {showUpdateButton ? (
-                  <Button
-                    type="button"
-                    data-testid="skills-cli-detail-update"
-                    disabled={installUpdateLocked}
-                    title={mutationLockReason}
-                    onClick={onUpdate}
-                  >
-                    {t("skillsCli.detail.update")}
-                  </Button>
+                    <span className="sr-only">
+                      {t("skillsCli.detail.canonicalPath")}:{" "}
+                    </span>
+                    {canonicalPath}
+                  </p>
                 ) : null}
-                <Button
-                  type="button"
-                  variant="outline"
-                  data-testid="skills-cli-detail-reveal"
-                  disabled={isMutating || Boolean(revealLockReason)}
-                  title={revealLockReason}
-                  onClick={() => void runReveal()}
+                <div
+                  data-testid="skills-cli-detail-pills"
+                  className="flex flex-wrap gap-1.5"
                 >
-                  <FolderOpen className="size-4" />
-                  {t("skillsCli.detail.reveal")}
-                </Button>
-                <Button
-                  type="button"
-                  variant="destructive"
-                  data-testid="skills-cli-detail-uninstall"
-                  disabled={isMutating}
-                  onClick={onUninstall}
-                >
-                  <Trash2 className="size-4" />
-                  {t("skillsCli.detail.uninstall")}
-                </Button>
-              </div>
-              {revealError ? (
-                <p
-                  role="alert"
-                  data-testid="skills-cli-detail-reveal-error"
-                  className="border-t border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive-text"
-                >
-                  {revealError}
-                </p>
-              ) : null}
+                  {sourceValue ? (
+                    <span
+                      title={sourceValue}
+                      className="max-w-full truncate rounded-full bg-accent px-2 py-0.5 text-xs text-muted-foreground"
+                    >
+                      {sourceValue}
+                    </span>
+                  ) : null}
+                  {hashValue ? (
+                    <span
+                      title={t("skillsCli.detail.hashTooltip")}
+                      className="rounded-full bg-accent px-2 py-0.5 font-mono text-ui-meta text-muted-foreground"
+                    >
+                      {hashValue}
+                    </span>
+                  ) : null}
+                  {relativeTime && timeValue ? (
+                    <span
+                      title={timeValue}
+                      className="rounded-full bg-accent px-2 py-0.5 text-xs text-muted-foreground"
+                    >
+                      {relativeTime}
+                    </span>
+                  ) : null}
+                </div>
+              </header>
+
+              <section
+                data-testid="skills-cli-detail-links"
+                className="space-y-3"
+                aria-busy={aggregateBusy}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <h3
+                      ref={linksHeadingRef}
+                      className="text-xs font-medium text-foreground"
+                    >
+                      {t("skillsCli.detail.linksHeading")}
+                    </h3>
+                    <p className="mt-0.5 text-ui-meta text-muted-foreground">
+                      {t("skillsCli.detail.linksSummary", {
+                        associated: summary.associatedCount,
+                        total: summary.enabledCount,
+                      })}
+                    </p>
+                  </div>
+                  {summary.aggregate === "linkAll" ? (
+                    <Button
+                      type="button"
+                      variant="glass"
+                      size="sm"
+                      data-testid="skills-cli-detail-link-all"
+                      disabled={placementLocked}
+                      title={mutationLockReason}
+                      onClick={() => void runAggregate("linkAll")}
+                    >
+                      {t("skillsCli.detail.linkAll")}
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="glass"
+                      size="sm"
+                      data-testid="skills-cli-detail-unlink-all"
+                      disabled={
+                        placementLocked || summary.aggregate === "disabled"
+                      }
+                      title={
+                        mutationLockReason ??
+                        (summary.aggregate === "disabled"
+                          ? t("skillsCli.detail.aggregateDisabled")
+                          : undefined)
+                      }
+                      onClick={() => void runAggregate("unlinkAll")}
+                    >
+                      {t("skillsCli.detail.unlinkAll")}
+                    </Button>
+                  )}
+                </div>
+                {mutationError ? (
+                  <p
+                    role="alert"
+                    data-testid="skills-cli-detail-mutation-error"
+                    className="rounded-control bg-destructive-tint p-2 text-sm text-destructive-text"
+                  >
+                    {mutationError}
+                  </p>
+                ) : null}
+                <ul className="space-y-2">
+                  {rows.map((row) => {
+                    const reason = rowReason(row, t);
+                    const rowBusy = busy.has(row.agentId);
+                    const switchDisabled =
+                      row.switchDisabled || placementLocked || rowBusy;
+                    const switchLabel = switchDisabled
+                      ? t("skillsCli.detail.switchDisabled", {
+                          platform: row.displayName,
+                          reason: mutationLockReason ?? reason ?? row.displayName,
+                        })
+                      : t(
+                          row.action === "unlink"
+                            ? "skillsCli.detail.switchUnlink"
+                            : "skillsCli.detail.switchLink",
+                          { name: skill.name, platform: row.displayName },
+                        );
+                    return (
+                      <li
+                        key={row.agentId}
+                        data-testid={`skills-cli-placement-${row.agentId}`}
+                        data-state={row.state}
+                        aria-busy={rowBusy}
+                        className="flex items-start gap-3 rounded-inner bg-accent p-3"
+                      >
+                        <PlatformIcon
+                          agentId={row.agentId}
+                          size={16}
+                          className="mt-0.5 shrink-0"
+                        />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium">
+                            {row.displayName}
+                          </p>
+                          <p
+                            title={row.targetPath}
+                            className="truncate font-mono text-ui-meta text-muted-foreground"
+                          >
+                            {row.targetPath}
+                          </p>
+                          {reason ? (
+                            <p className="mt-1 flex items-start gap-1 text-xs text-muted-foreground">
+                              <ReasonIcon kind={row.reasonKind} />
+                              <span>{reason}</span>
+                            </p>
+                          ) : null}
+                        </div>
+                        <div className="flex shrink-0 items-center gap-2">
+                          {row.forceUnlinkable ? (
+                            <Button
+                              type="button"
+                              variant="glass"
+                              size="sm"
+                              data-testid={`skills-cli-force-unlink-${row.agentId}`}
+                              disabled={placementLocked || rowBusy}
+                              title={mutationLockReason}
+                              onClick={() => void runForceUnlink(row.agentId)}
+                            >
+                              {t("skillsCli.detail.forceUnlink")}
+                            </Button>
+                          ) : null}
+                          <Switch
+                            checked={row.switchChecked}
+                            disabled={switchDisabled}
+                            aria-label={switchLabel}
+                            onCheckedChange={(checked) => {
+                              if (row.action == null) {
+                                return;
+                              }
+                              void runToggle(row.agentId, checked);
+                            }}
+                          />
+                        </div>
+                      </li>
+                    );
+                  })}
+                </ul>
+              </section>
+
+              <section data-testid="skills-cli-detail-doc" className="space-y-2">
+                <div className="flex items-baseline justify-between gap-2">
+                  <h3 className="text-xs font-medium">
+                    {t("skillsCli.detail.docHeading")}
+                  </h3>
+                  {visibleDoc.status === "ready" || visibleDoc.status === "empty" ? (
+                    <span className="text-ui-meta text-muted-foreground">
+                      {t("skillsCli.detail.docBytes", {
+                        bytes: visibleDoc.byteSize,
+                      })}
+                    </span>
+                  ) : null}
+                </div>
+                {visibleDoc.status === "loading" ? (
+                  <div
+                    data-testid="skills-cli-detail-doc-skeleton"
+                    aria-busy="true"
+                    aria-label={t("skillsCli.detail.docLoading")}
+                    className="space-y-2"
+                  >
+                    <div className="h-3 animate-pulse rounded-full bg-accent" />
+                    <div className="h-3 w-5/6 animate-pulse rounded-full bg-accent" />
+                    <div className="h-3 w-2/3 animate-pulse rounded-full bg-accent" />
+                  </div>
+                ) : null}
+                {visibleDoc.status === "empty" ? (
+                  <p
+                    data-testid="skills-cli-detail-doc-empty"
+                    className="text-sm text-muted-foreground"
+                  >
+                    {t("skillsCli.detail.docEmpty")}
+                  </p>
+                ) : null}
+                {visibleDoc.status === "ready" ? (
+                  <pre
+                    data-testid="skills-cli-detail-doc-pre"
+                    className="max-h-[40vh] overflow-auto whitespace-pre-wrap break-words rounded-inner bg-input-surface p-3 font-mono text-ui-meta leading-relaxed"
+                  >
+                    {visibleDoc.content}
+                  </pre>
+                ) : null}
+                {visibleDoc.status === "error" ? (
+                  <div
+                    role="alert"
+                    data-testid="skills-cli-detail-doc-error"
+                    className="space-y-2 rounded-control bg-destructive-tint p-3 text-sm text-destructive-text"
+                  >
+                    <p>
+                      {t("skillsCli.detail.docError", {
+                        error: formatBackendError(
+                          `${visibleDoc.errorCode}:`,
+                          t,
+                        ),
+                      })}
+                    </p>
+                    <Button
+                      type="button"
+                      variant="glass"
+                      size="sm"
+                      onClick={onRetryDoc}
+                    >
+                      {t("common.retry")}
+                    </Button>
+                  </div>
+                ) : null}
+              </section>
             </div>
-          ) : null}
-        </DialogPrimitive.Popup>
-      </DialogPortal>
-    </Dialog>
+
+            <div className="flex shrink-0 flex-wrap gap-2 border-t border-border px-5 py-3">
+              {showUpdateButton ? (
+                <Button
+                  type="button"
+                  data-testid="skills-cli-detail-update"
+                  disabled={installUpdateLocked}
+                  title={mutationLockReason}
+                  onClick={onUpdate}
+                >
+                  {t("skillsCli.detail.update")}
+                </Button>
+              ) : null}
+              <Button
+                type="button"
+                variant="glass"
+                data-testid="skills-cli-detail-reveal"
+                disabled={isMutating || Boolean(revealLockReason)}
+                title={revealLockReason}
+                onClick={() => void runReveal()}
+              >
+                <FolderOpen className="size-4" />
+                {t("skillsCli.detail.reveal")}
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                data-testid="skills-cli-detail-uninstall"
+                disabled={isMutating}
+                onClick={onUninstall}
+              >
+                <Trash2 className="size-4" />
+                {t("skillsCli.detail.uninstall")}
+              </Button>
+            </div>
+            {revealError ? (
+              <p
+                role="alert"
+                data-testid="skills-cli-detail-reveal-error"
+                className="border-t border-border bg-destructive-tint px-5 py-2 text-sm text-destructive-text"
+              >
+                {revealError}
+              </p>
+            ) : null}
+          </div>
+        ) : null}
+      </SheetContent>
+    </Sheet>
   );
 }

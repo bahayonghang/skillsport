@@ -165,6 +165,7 @@ function wizardElement({
   preview = makePreview(),
   previewError = null,
   branch = "",
+  repoUrl = "https://github.com/mattpocock/skills",
   onBranchChange = vi.fn(),
   onPreview = vi.fn(),
   onImport = vi.fn(),
@@ -172,6 +173,7 @@ function wizardElement({
   preview?: GitHubRepoPreview | null;
   previewError?: string | null;
   branch?: string;
+  repoUrl?: string;
   onBranchChange?: (value: string) => void;
   onPreview?: (branch: string) =>
     | Promise<GitHubRepoPreview | null>
@@ -184,7 +186,7 @@ function wizardElement({
       <GitHubRepoImportWizard
         open
         onOpenChange={vi.fn()}
-        repoUrl="https://github.com/mattpocock/skills"
+        repoUrl={repoUrl}
         onRepoUrlChange={vi.fn()}
         branch={branch}
         onBranchChange={onBranchChange}
@@ -217,14 +219,28 @@ async function reviewImport() {
 }
 
 describe("GitHubRepoImportWizard", () => {
-  it("defaults to main and submits main, dev, or a custom branch", async () => {
+  it("defaults to the repository default branch and submits main, dev, or a custom branch", async () => {
     const onBranchChange = vi.fn();
     const onPreview = vi.fn().mockResolvedValue(null);
     renderWizard({ preview: null, onBranchChange, onPreview });
 
-    const mainOption = screen.getByRole("radio", { name: "main" });
-    expect(mainOption).toHaveAttribute("aria-checked", "true");
+    const defaultOption = screen.getByRole("radio", {
+      name: /仓库默认|Repo default/i,
+    });
+    expect(defaultOption).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("radio", { name: "main" })).toHaveAttribute(
+      "aria-checked",
+      "false",
+    );
 
+    fireEvent.click(
+      screen.getByRole("button", { name: /预览导入|Preview import/i }),
+    );
+    // An empty branch lets the backend resolve GitHub's default_branch.
+    await waitFor(() => expect(onPreview).toHaveBeenLastCalledWith(""));
+    expect(onBranchChange).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("radio", { name: "main" }));
     fireEvent.click(
       screen.getByRole("button", { name: /预览导入|Preview import/i }),
     );
@@ -257,6 +273,70 @@ describe("GitHubRepoImportWizard", () => {
       expect(onPreview).toHaveBeenLastCalledWith("feature/branch-picker"),
     );
     expect(onBranchChange).toHaveBeenCalledWith("feature/branch-picker");
+  });
+
+  it("offers the repository default branch when the selected branch is missing", async () => {
+    const onBranchChange = vi.fn();
+    const onPreview = vi.fn().mockResolvedValue(null);
+    renderWizard({
+      preview: null,
+      branch: "main",
+      repoUrl: "https://github.com/alchaincyf/huashu-design",
+      previewError:
+        "github_import.branch_not_found:The selected branch was not found in the GitHub repository.",
+      onBranchChange,
+      onPreview,
+    });
+
+    const alert = screen.getByTestId("github-import-preview-error");
+    expect(alert).toHaveAttribute("data-error-code", "github_import.branch_not_found");
+    expect(alert).toHaveTextContent(/找不到分支|Branch not found/);
+    expect(alert).toHaveTextContent("alchaincyf/huashu-design");
+    expect(alert).toHaveTextContent("main");
+    expect(alert).not.toHaveTextContent(/网络|network/i);
+
+    fireEvent.click(
+      screen.getByRole("button", { name: /改用仓库默认分支|Use repo default branch/i }),
+    );
+    await waitFor(() => expect(onPreview).toHaveBeenLastCalledWith(""));
+    expect(onBranchChange).toHaveBeenCalledWith("");
+    expect(
+      screen.getByRole("radio", { name: /仓库默认|Repo default/i }),
+    ).toHaveAttribute("aria-checked", "true");
+  });
+
+  it("titles transport and rejected-request failures differently", async () => {
+    const onPreview = vi.fn().mockResolvedValue(null);
+    const { rerender } = renderWizard({
+      preview: null,
+      previewError:
+        "github_import.transport_failed:Could not reach GitHub. Check the network and try again.",
+      onPreview,
+    });
+    let alert = screen.getByTestId("github-import-preview-error");
+    expect(alert).toHaveTextContent(/无法连接 GitHub|Cannot reach GitHub/);
+    fireEvent.click(screen.getByRole("button", { name: /^(重试|Retry)$/ }));
+    await waitFor(() => expect(onPreview).toHaveBeenLastCalledWith(""));
+
+    rerender(
+      wizardElement({
+        preview: null,
+        previewError:
+          "github_import.request_rejected:GitHub rejected the request. Check the repository URL and branch, then try again.",
+        onPreview,
+      }),
+    );
+    alert = screen.getByTestId("github-import-preview-error");
+    expect(alert).toHaveTextContent(/GitHub 拒绝了请求|GitHub rejected the request/);
+    expect(alert).not.toHaveTextContent(/无法连接|Cannot reach/);
+    expect(screen.queryByRole("button", { name: /^(重试|Retry)$/ })).toBeNull();
+  });
+
+  it("marks the current wizard step for assistive technology", () => {
+    renderWizard({ preview: null });
+    const stepper = screen.getByTestId("github-import-flat-stepper");
+    const current = stepper.querySelector('[aria-current="step"]');
+    expect(current).toHaveTextContent(/仓库地址|Repo URL/);
   });
 
   it("shows the resolved commit short sha and preview expiry without leaking the token", async () => {

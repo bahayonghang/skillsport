@@ -1,4 +1,92 @@
 {
+  "rules": {
+    "fixture": {
+      "description": "浏览器验收合成数据",
+      "reviewBody": "# 代码检查清单\n\n## 修改前\n\n- 阅读受影响的源文件。\n- 明确可检查的结果。\n\n## 交付前\n\n报告已执行的检查，并注明尚未验证的行为。\n",
+      "writingBody": "# 写作约定\n\n使用短句和准确名称。每段表达一层意思。\n",
+      "safetyBody": "# 文件安全\n\n保留外部修改。替换文件前检查原始版本。\n",
+      "contextBody": "# 项目上下文\n\n编辑前阅读项目规范。改动保持在请求范围内。\n"
+    },
+    "title": "规则管理",
+    "listTitle": "规则文件",
+    "selectRule": "选择 {{name}}",
+    "fileNamePlaceholder": "example.md",
+    "editorTitle": "规则编辑器",
+    "targetsTitle": "工具链接",
+    "importExisting": "导入现有规则",
+    "newRule": "新建规则",
+    "search": "搜索规则",
+    "unsaved": "未保存",
+    "saved": "已保存",
+    "saving": "保存中",
+    "applying": "处理中",
+    "enable": "启用",
+    "disable": "停用",
+    "takeOver": "接管为链接",
+    "reloadHint": "工具重新加载或开启新会话后读取已保存内容。",
+    "bodyLabel": "规则正文",
+    "sourceLabel": "完整源文件",
+    "viewMode": "编辑视图",
+    "diskChanged": "文件已在 SkillPort 外修改。草稿已保留；保存需匹配原始版本。",
+    "unsupportedHint": "条件规则或不支持的格式为只读。",
+    "localOnly": "仅支持本机规则",
+    "localOnlyDetail": "切换到 Local 目标后管理规则。返回时可继续编辑会话草稿。",
+    "fixtureNotice": "浏览器预览使用合成数据，不修改本机文件。",
+    "reloadRequired": "请刷新文件状态后继续。",
+    "recoveryNeeded": "需要恢复：{{name}}",
+    "reviewRecovery": "查看恢复",
+    "empty": "中央规则库为空。可导入现有规则或新建规则。",
+    "noResults": "没有匹配的规则文件。",
+    "retryHint": "请刷新后重新加载规则。",
+    "selectHint": "选择规则后编辑正文并管理工具链接。",
+    "backToList": "规则文件",
+    "newRuleHint": "新建平铺 .md 文件，共享元数据设置为始终应用。",
+    "fileName": "文件名",
+    "description": "描述",
+    "importHint": "导入会保存含 alwaysApply 元数据的共享文件，原文件保持原位。分别启用工具后，同文文件才会替换为链接；完整原文件按字节备份。",
+    "noImportSources": "未找到支持的源文件。",
+    "importing": "导入中",
+    "importSelected": "导入所选（{{count}}）",
+    "unsavedTitle": "正文尚未保存",
+    "unsavedHint": "可保存后切换、放弃草稿，或继续编辑。",
+    "discard": "放弃并切换",
+    "saveAndSwitch": "保存并切换",
+    "takeOverTitle": "将同文文件接管为链接",
+    "takeOverHint": "SkillPort 先备份完整原文件，再替换为指向已保存中央规则的文件软链接。异文文件和外部链接保持原样。",
+    "backupLocation": "原文件备份目录",
+    "deleteTitle": "删除规则",
+    "deleteHint": "删除中央规则 {{name}}，并解除两个工具中已验证的 SkillPort 链接。完整内容保存在恢复备份中。",
+    "recoveryTitle": "恢复中断操作",
+    "recoveryHint": "从已验证的备份恢复原文件，或撤销中断操作。外部修改与记录冲突时，恢复停止。",
+    "recover": "恢复",
+    "modes": {
+      "body": "正文",
+      "preview": "预览",
+      "source": "源文件"
+    },
+    "tools": {
+      "claude-code": "Claude Code",
+      "omp": "OMP"
+    },
+    "states": {
+      "linked": "已链接",
+      "absent": "未链接",
+      "native_equivalent": "同文文件",
+      "conflict": "冲突",
+      "broken": "断链",
+      "unreadable": "无法读取",
+      "unsupported": "不支持",
+      "recovery_required": "需要恢复"
+    },
+    "importStates": {
+      "new": "可导入",
+      "same": "已导入",
+      "conflict": "正文不同",
+      "unsupported": "格式不支持",
+      "failed": "无法导入",
+      "imported": "导入完成"
+    }
+  },
   "app": {
     "name": "SkillPort"
   },
@@ -64,7 +152,26 @@
     "enabled": "启用",
     "disabled": "禁用"
   },
+  "ui": {
+    "statAriaLabel": "{{label}}：{{value}}",
+    "statUnavailable": "暂不可用",
+    "notifications": "通知",
+    "closeNotification": "关闭通知"
+  },
   "backendErrors": {
+    "rules": {
+      "invalid_name": "请使用平铺 .md 文件名，不能含路径分隔符或保留名称。",
+      "revision_conflict": "规则已在 SkillPort 外修改，草稿已保留。",
+      "target_conflict": "工具文件存在异文或外部链接。解决冲突后才能启用。",
+      "permission_denied": "无法写入文件或创建文件软链接。请检查权限和 Windows 开发者模式。",
+      "lock_busy": "另一项本机文件操作正在执行，请完成后重试。",
+      "local_only": "规则管理需要 Local 目标。",
+      "unsupported": "规则格式或工具的自定义配置不受支持。",
+      "recovery_blocked": "外部修改阻止安全恢复，备份和操作记录已保留。",
+      "budget_exceeded": "规则文件或扫描数量超过支持的限额。",
+      "io": "文件操作未完成。请刷新状态并检查恢复记录。",
+      "not_found": "规则文件已不存在。"
+    },
     "wrong_link_target": "该链接指向其他目录。",
     "broken_link": "该链接已失效。",
     "not_a_directory": "该路径是文件，不是技能目录。",
@@ -144,6 +251,8 @@
       "branch_conflict": "仓库 URL 中的分支与分支输入框不一致，请调整一致后重新预览。",
       "archive_redirect_rejected": "GitHub 返回了不安全或异常的仓库压缩包跳转，已停止检查更新。请重试。",
       "transport_failed": "无法连接 GitHub。请检查网络后重试。",
+      "branch_not_found": "仓库中不存在该分支。请改用仓库默认分支，或检查分支名。",
+      "request_rejected": "GitHub 拒绝了本次请求。请检查仓库地址和分支后重试。",
       "rate_limited": "GitHub 限流了本次请求。请等待配额重置后重试。",
       "access_denied": "GitHub 拒绝匿名访问该仓库。如果仓库需要认证，请配置 GitHub 令牌。",
       "configured_token_failed": "GitHub 拒绝了已认证请求。请确认令牌所属账号可以读取该仓库，并且令牌具备所需权限。",
@@ -320,11 +429,10 @@
     "projectModeRemoteHint": "请输入远程项目的绝对路径。"
   },
   "topbar": {
-    "importSkill": "导入技能",
-    "themeToggleLight": "切换到浅色主题",
-    "themeToggleDark": "切换到深色主题"
+    "importSkill": "导入技能"
   },
   "sidebar": {
+    "rules": "规则管理",
     "byTool": "按工具",
     "dashboard": "Dashboard",
     "centralSkills": "中央技能库",
@@ -334,7 +442,12 @@
     "noPlatforms": "没有检测到平台",
     "newCollection": "+ 新建",
     "expandSidebar": "展开侧边栏",
-    "collapseSidebar": "折叠侧边栏",
+    "collapseSidebar": "收起侧边栏",
+    "collapse": "收起",
+    "darkMode": "深色模式",
+    "lightMode": "浅色模式",
+    "themeToggleDark": "切换到深色模式",
+    "themeToggleLight": "切换到浅色模式",
     "importCollection": "导入技能集",
     "newCollectionLabel": "新建技能集",
     "importCollectionInput": "导入技能集 JSON 文件",
@@ -344,6 +457,15 @@
     "rescan": "重新扫描...",
     "categoryLobster": "龙虾类",
     "categoryCoding": "编程类",
+    "globalWorkspace": "全局工作区",
+    "projectWorkspace": "项目工作区",
+    "collapseSection": "收起{{name}}",
+    "expandSection": "展开{{name}}",
+    "projectSortLabel": "项目排序",
+    "projectSortCurrent": "当前排序：{{sort}}",
+    "projectSortName": "名称",
+    "projectSortSkillCount": "技能数",
+    "projectSortRecent": "最近扫描",
     "resizeSidebar": "调整侧边栏宽度",
     "obsidian": "Obsidian 仓库",
     "skillUsage": "技能使用",
@@ -819,7 +941,8 @@
       "label": "就绪度",
       "ariaLabel": "技能库就绪度 {{score}} 分（满分 100）",
       "description": "分数由分类、描述、来源映射和安装健康度组成，优先暴露真正阻塞下一步的质量问题。",
-      "scoreUnit": "/100",
+      "scoreLabel": "就绪度评分",
+      "scoreHint": "满分 100",
       "status": {
         "ready": "已就绪",
         "review": "复核关口",
@@ -859,7 +982,9 @@
       "uncategorized": "未分类技能",
       "uncategorizedDesc": "在中央分类面板中分配标签。",
       "unassigned": "未知来源",
-      "unassignedDesc": "来源明确后关联到对应仓库。"
+      "unassignedDesc": "来源明确后关联到对应仓库。",
+      "centralTotal": "中央库技能",
+      "sources": "来源仓库"
     },
     "activeJobs": "运行中任务",
     "jobProgress": "已完成 {{completed}} / {{total}}",
@@ -1264,6 +1389,8 @@
     "viewDetailsLabel": "查看 {{name}} 的详情",
     "installLabel": "将 {{name}} 安装到平台",
     "installTo": "安装到...",
+    "linkedProjectLabel": "已安装到项目 {{name}}",
+    "linkedProjectFallback": "项目",
     "uninstallFromPlatforms": "从平台卸载",
     "uninstallFromPlatformsLabel": "从平台卸载 {{name}}",
     "deleteSkill": "从中央技能库删除",
@@ -2338,7 +2465,23 @@
       "title": "外观",
       "description": "调整主题、语言、字体 fallback 与字号缩放。",
       "themeGroup": "主题",
-      "themeGroupDesc": "选择界面风格与强调色。",
+      "themeGroupDesc": "选择浅色或深色玻璃主题，并决定是否透出窗口材质。",
+      "themeMode": "明暗模式",
+      "themeOption": {
+        "glass-light": "浅色玻璃",
+        "glass-dark": "深色玻璃"
+      },
+      "windowMaterial": "窗口材质",
+      "windowMaterialDesc": "让 Windows 11 的 Mica 材质透过玻璃背景显示。",
+      "windowMaterialToggle": "使用 Mica 窗口材质",
+      "windowMaterialOn": "Mica",
+      "windowMaterialOff": "关闭",
+      "windowMaterialUnavailable": {
+        "unsupportedOs": "Mica 需要 Windows 11，当前系统保持不透明背景。",
+        "unsupportedPlatform": "Mica 仅在 Windows 11 上可用，当前系统保持不透明背景。",
+        "applyFailed": "无法应用 Mica，当前使用不透明背景。"
+      },
+      "windowMaterialSaveFailed": "无法保存窗口材质设置。",
       "languageGroup": "语言",
       "languageGroupDesc": "设置界面显示语言。",
       "typographyGroup": "字体",
@@ -2349,8 +2492,8 @@
         "light": "亮色",
         "dark": "暗色"
       },
-      "densityGroup": "密度",
-      "densityGroupDesc": "调整全局基础字号。",
+      "densityGroup": "字号",
+      "densityGroupDesc": "调整全局基础字号，三档可选。",
       "displayFontOptionsLabel": "标题字体选项",
       "bodyFontOptionsLabel": "正文字体选项",
       "primaryFont": "主字体",
@@ -2388,6 +2531,10 @@
         "system": "系统 fallback",
         "sourceHanSerif": "Source Han Serif SC VF",
         "custom": "自定义"
+      },
+      "themeOptionDesc": {
+        "glass-light": "薄荷到薰衣草的明亮 canvas，半透明白色面板。",
+        "glass-dark": "深墨 canvas 与低亮度面板，夜间更柔和。"
       }
     },
     "toc": {
@@ -2540,30 +2687,6 @@
     "appVersion": "应用版本",
     "dbPath": "数据库路径",
     "repoUrl": "仓库地址",
-    "flavor": "主题风格",
-    "mocha": "Mocha",
-    "macchiato": "Macchiato",
-    "frappe": "Frappé",
-    "latte": "Latte",
-    "claude-light": "Claude 浅色",
-    "claude-dark": "Claude 深色",
-    "accentColor": "强调色",
-    "accent": {
-      "rosewater": "玫瑰水",
-      "flamingo": "火烈鸟",
-      "pink": "粉色",
-      "mauve": "紫色",
-      "red": "红色",
-      "maroon": "栗色",
-      "peach": "桃色",
-      "yellow": "黄色",
-      "green": "绿色",
-      "teal": "青色",
-      "sky": "天蓝",
-      "sapphire": "蓝宝石",
-      "blue": "蓝色",
-      "lavender": "薰衣草"
-    },
     "language": "语言",
     "chinese": "中文",
     "english": "English",
@@ -2576,7 +2699,7 @@
       "legacyFallback": "已从旧设置链接跳转到默认页面。",
       "appearance": {
         "title": "外观",
-        "description": "调整主题、语言、强调色、字体和显示密度。"
+        "description": "调整明暗主题、窗口材质、语言、字体与字号。"
       },
       "connections": {
         "title": "连接与同步",
@@ -2601,7 +2724,7 @@
     },
     "aboutCockpit": {
       "eyebrow": "Release Cockpit",
-      "heroDesc": "把版本、更新、诊断和帮助入口集中到一个深色版本控制台。",
+      "heroDesc": "版本、更新、诊断与帮助入口集中在一处。",
       "channel": "更新通道",
       "stable": "Stable",
       "platform": "平台",
@@ -2880,7 +3003,7 @@
     "githubImportCta": "导入 GitHub 仓库",
     "githubImportSecondaryCta": "从 GitHub 导入",
     "githubImportTitle": "GitHub 仓库导入",
-    "githubImportDesc": "从 {{launcher}} 启动共享的 GitHub 仓库导入向导。",
+    "githubImportDesc": "预览仓库中的技能；确认导入前不会写入任何内容。",
     "githubImportHeaderLauncher": "来自 {{launcher}}",
     "githubImportStep": {
       "input": "仓库地址",
@@ -2891,16 +3014,28 @@
     "githubRepoUrl": "GitHub 仓库 URL",
     "githubBranchLabel": "分支",
     "githubBranchOption": {
+      "default": "仓库默认",
       "main": "main",
       "dev": "dev",
       "custom": "自定义"
     },
     "githubCustomBranchLabel": "自定义分支",
     "githubCustomBranchPlaceholder": "feature/my-branch",
-    "githubBranchDefaultHint": "默认选择 main，也可以切换到 dev 或输入自定义分支。",
+    "githubBranchDefaultHint": "使用仓库在 GitHub 上设置的默认分支，例如 main 或 master。",
+    "githubBranchExplicitHint": "只预览这个分支；如果仓库中没有该分支，会明确提示。",
     "githubCustomBranchHint": "请输入要预览的完整分支名称。",
     "previewImport": "预览导入",
-    "githubImportNoWriteHint": "预览为只读操作，在你确认导入前不会执行任何写入。",
+    "githubPreviewError": {
+      "title": {
+        "branchNotFound": "找不到分支",
+        "requestRejected": "GitHub 拒绝了请求",
+        "transportFailed": "无法连接 GitHub",
+        "generic": "预览失败"
+      },
+      "branchNotFoundBody": "仓库 {{repo}} 中没有名为 {{branch}} 的分支。请改用仓库默认分支，或检查分支名。",
+      "useDefaultBranch": "改用仓库默认分支",
+      "retry": "重试"
+    },
     "githubImportDesktopOnlyHint": "当前版本仅桌面应用支持 GitHub 仓库预览与导入。",
     "githubImportDesktopOnlyState": "该共享向导在浏览器中会展示引导说明，但预览/导入操作只会在启用了 Tauri bridge 的桌面应用里执行。",
     "githubImportSshPasswordTitle": "保存当前 SSH 密码",
@@ -3021,7 +3156,17 @@
     "githubImportResultSkippedTitle": "已跳过项目",
     "githubImportResultSkippedNone": "没有跳过任何技能。",
     "githubPatSettingsHint": "请前往设置并保存 GitHub Personal Access Token，让该导入流程改用经过认证的直连 GitHub 请求。",
-    "githubPatConfiguredFailureHint": "当前请求已经使用已配置的 GitHub 令牌。请检查令牌所属账号是否能读取该仓库，以及令牌是否有足够的仓库访问权限。"
+    "githubPatConfiguredFailureHint": "当前请求已经使用已配置的 GitHub 令牌。请检查令牌所属账号是否能读取该仓库，以及令牌是否有足够的仓库访问权限。",
+    "backToPublishers": "返回发布者列表",
+    "officialEmpty": "没有匹配的推荐技能",
+    "publisherSearchPlaceholder": "搜索发布者...",
+    "publisherCount": "{{count}} 个官方发布者",
+    "repoSkillCount": "{{count}} 个 Skills",
+    "browseRepoSkills": "浏览 Skills",
+    "repoPreviewFetching": "正在获取...",
+    "repoPreviewRefresh": "刷新预览",
+    "repoPreviewFetchingFromGithub": "正在从 GitHub 获取 Skills...",
+    "repoPreviewEmpty": "未找到 Skills"
   },
   "obsidian": {
     "title": "Obsidian 仓库技能",

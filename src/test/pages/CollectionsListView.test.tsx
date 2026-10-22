@@ -344,8 +344,9 @@ describe("CollectionsListView", () => {
 
     expect(mockLoadCollectionDetail).toHaveBeenCalledWith("col-2");
     expect(mockLoadCollectionDetail).not.toHaveBeenCalledWith("col-1");
-    expect(screen.getByRole("button", { name: "Backend" })).toHaveClass(
-      "bg-primary/15",
+    expect(screen.getByRole("button", { name: "Backend" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
     );
   });
 
@@ -456,7 +457,7 @@ describe("CollectionsListView", () => {
       expect(screen.queryByTestId("skill-detail-drawer")).not.toBeInTheDocument();
     });
 
-    expect(screen.getByRole("button", { name: "Backend" })).toHaveClass("bg-primary/15");
+    expect(screen.getByRole("button", { name: "Backend" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByText("api-designer")).toBeInTheDocument();
     expect((scroller as HTMLDivElement).scrollTop).toBe(310);
     expect(trigger).toHaveFocus();

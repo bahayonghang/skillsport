@@ -254,7 +254,10 @@ fn read_entry_content(
         let entry = zip.by_index_raw(index).map_err(|e| {
             LocalArchiveImportError::ArchiveReadFailed(format!("entry {index}: {e}"))
         })?;
-        if entry.name() == entry_path && !entry.is_dir() {
+        let name = entry.name().map_err(|e| {
+            LocalArchiveImportError::ArchiveReadFailed(format!("entry {index} name: {e}"))
+        })?;
+        if name == entry_path && !entry.is_dir() {
             found_index = Some(index);
             break;
         }

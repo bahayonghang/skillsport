@@ -14,6 +14,9 @@ use super::policy::{
     CommandLogPolicy, CommandPolicyEntry, OperationDefinition, OperationLifecycle, OperationPhase,
 };
 
+mod reviewed;
+pub use reviewed::{ReviewedDiagnostic, ReviewedFailure};
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct OperationId(String);
 
@@ -324,54 +327,6 @@ impl SafeOperationResult {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct ReviewedDiagnostic {
-    code: &'static str,
-    category: &'static str,
-    phase: OperationPhase,
-    public_message: &'static str,
-    retryable: bool,
-}
-
-impl ReviewedDiagnostic {
-    pub const fn new(
-        code: &'static str,
-        category: &'static str,
-        phase: OperationPhase,
-        public_message: &'static str,
-        retryable: bool,
-    ) -> Self {
-        Self {
-            code,
-            category,
-            phase,
-            public_message,
-            retryable,
-        }
-    }
-
-    pub const fn unexpected(definition: OperationDefinition) -> Self {
-        Self::new(
-            "internal.unexpected",
-            definition.category().as_str(),
-            definition.default_phase(),
-            "The operation failed. See runtime logs for details.",
-            false,
-        )
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub struct ReviewedFailure {
-    diagnostic: ReviewedDiagnostic,
-}
-
-impl ReviewedFailure {
-    pub const fn new(diagnostic: ReviewedDiagnostic) -> Self {
-        Self { diagnostic }
-    }
-}
-
 /// Execute one registered auditable operation and preserve its business value.
 /// Failure construction accepts only reviewed static diagnostics, never a raw
 /// source error or `Display` string.
@@ -397,15 +352,18 @@ where
     let started_at = Instant::now();
     match operation().await {
         Ok(value) => {
-            let result = build_success(&value);
-            let entry = success_entry(
-                &operation_id,
-                definition,
-                &context,
-                result,
-                elapsed_ms(started_at),
-            );
-            record_final_best_effort(&state.db, &operation_id, definition.lifecycle(), entry).await;
+            if definition.lifecycle() != OperationLifecycle::FailureOnly {
+                let result = build_success(&value);
+                let entry = success_entry(
+                    &operation_id,
+                    definition,
+                    &context,
+                    result,
+                    elapsed_ms(started_at),
+                );
+                record_final_best_effort(&state.db, &operation_id, definition.lifecycle(), entry)
+                    .await;
+            }
             Ok(value)
         }
         Err(failure) => {
@@ -593,6 +551,12 @@ fn diagnostic_details(
         Value::String(diagnostic.phase.as_str().to_string()),
     );
     details.insert("retryable".to_string(), Value::Bool(diagnostic.retryable));
+    if let Some(stage) = diagnostic.failure_stage {
+        details.insert("failureStage".to_string(), Value::String(stage.to_string()));
+    }
+    if let Some(status) = diagnostic.http_status {
+        details.insert("httpStatus".to_string(), Value::from(status));
+    }
     crate::redaction::redact_operation_details(Value::Object(details)).to_string()
 }
 
@@ -750,7 +714,7 @@ async fn record_final_best_effort(
     entry: NewOperationLogEntry,
 ) {
     let result = match lifecycle {
-        OperationLifecycle::TerminalOnly => {
+        OperationLifecycle::TerminalOnly | OperationLifecycle::FailureOnly => {
             db::insert_operation_log_with_id(pool, operation_id.as_str(), entry)
                 .await
                 .map(Some)

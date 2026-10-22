@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import type { TFunction } from "i18next";
 
+import { Input } from "@/components/ui/input";
 import { FacetItem } from "@/components/central/FacetItem";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { FacetSection } from "@/components/central/FacetSection";
@@ -189,7 +190,7 @@ export function CentralSidebar({
       data-testid="central-sidebar-v2"
       data-pinned={isPinned}
       data-expanded={isExpanded}
-      className="relative hidden min-h-0 shrink-0 md:flex md:flex-col"
+      className="relative mb-4 ml-4 hidden min-h-0 shrink-0 sm:ml-6 md:flex md:flex-col"
       style={{ width: outerWidth }}
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
@@ -198,12 +199,12 @@ export function CentralSidebar({
         onFocus={handleFocus}
         onBlur={handleBlur}
         className={cn(
-          "flex h-full flex-col border-r border-border/60 bg-muted/15 transition-[width,box-shadow,background-color] duration-150",
+          "flex h-full flex-col overflow-hidden rounded-card transition-[width,box-shadow,background-color] duration-150",
           isPinned
-            ? "w-full"
+            ? "glass-panel w-full"
             : isExpanded
-              ? "absolute inset-y-0 left-0 z-30 w-[280px] bg-background shadow-[0_0_0_1px_color-mix(in_srgb,var(--foreground)_8%,transparent),0_24px_60px_-28px_color-mix(in_srgb,var(--background)_92%,transparent)]"
-              : "absolute inset-y-0 left-0 w-12",
+              ? "glass-overlay absolute inset-y-0 left-0 z-30 w-70"
+              : "glass-panel absolute inset-y-0 left-0 w-12",
         )}
       >
         {isExpanded ? (
@@ -259,7 +260,7 @@ export function CentralSidebar({
           tabIndex={0}
           onPointerDown={startResize}
           onKeyDown={handleResizeKeyDown}
-          className="absolute right-0 top-0 z-40 h-full w-1.5 translate-x-1/2 cursor-col-resize rounded-full bg-transparent transition-colors hover:bg-primary/30 focus:outline-none focus-visible:bg-primary/40"
+          className="focus-ring absolute -right-2.5 top-0 z-40 flex h-full w-2 cursor-col-resize justify-center rounded-full bg-transparent after:h-full after:w-0.5 after:rounded-full after:bg-transparent after:transition-colors hover:after:bg-primary focus-visible:after:bg-primary"
         />
       )}
     </aside>
@@ -357,10 +358,10 @@ function ExpandedSidebarContent({
               }
               onClick={onTogglePin}
               className={cn(
-                "focus-ring grid size-9 shrink-0 place-items-center rounded-xl border transition-[scale,background-color,border-color,color] active:scale-[0.96]",
+                "focus-ring grid size-9 shrink-0 place-items-center rounded-control border transition-[scale,background-color,border-color,color] active:scale-[0.96]",
                 isPinned
-                  ? "border-primary/30 bg-primary/10 text-primary"
-                  : "border-border/80 bg-background text-muted-foreground hover:border-primary/30 hover:text-primary",
+                  ? "border-primary-stroke bg-primary-tint text-primary-text"
+                  : "border-glass-stroke bg-popover text-muted-foreground ring-1 ring-glass-hairline hover:text-foreground",
               )}
             >
               {isPinned ? (
@@ -380,13 +381,13 @@ function ExpandedSidebarContent({
             }
             onClick={handleToggleAllGroups}
             className={cn(
-              "focus-ring group flex min-h-10 flex-1 items-center gap-2 rounded-xl border px-3 py-2 text-left text-xs font-semibold shadow-sm ring-1 transition-[scale,background-color,border-color,box-shadow,color] active:scale-[0.96]",
+              "focus-ring group flex min-h-10 flex-1 items-center gap-2 rounded-inner border px-2.5 py-1.5 text-left text-xs font-semibold transition-[scale,background-color,border-color,color] active:scale-[0.96]",
               bulkExpanded
-                ? "border-primary/25 bg-primary/10 text-primary ring-primary/10 hover:bg-primary/15"
-                : "border-border/90 bg-background text-foreground ring-border/40 hover:border-primary/30 hover:bg-muted/40",
+                ? "border-primary-stroke bg-primary-tint text-primary-text"
+                : "border-glass-stroke bg-popover text-foreground ring-1 ring-glass-hairline hover:bg-accent",
             )}
           >
-            <span className="grid size-7 shrink-0 place-items-center rounded-[10px] bg-background/85 text-primary ring-1 ring-primary/20 transition-[background-color] group-hover:bg-background">
+            <span className="grid size-7 shrink-0 place-items-center rounded-control bg-card text-primary-text">
               <BulkIcon className="size-3.5" />
             </span>
             <span className="min-w-0 flex-1">
@@ -458,7 +459,7 @@ function ExpandedSidebarContent({
               <div className="px-1 pb-1">
                 <div className="relative">
                   <Search className="pointer-events-none absolute left-2 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
-                  <input
+                  <Input
                     type="search"
                     data-testid="sidebar-repository-search"
                     value={repositorySearchQuery}
@@ -473,7 +474,7 @@ function ExpandedSidebarContent({
                     }}
                     aria-label={t("central.v2.repositorySearchLabel")}
                     placeholder={t("central.v2.repositorySearchPlaceholder")}
-                    className="h-8 w-full rounded-lg border border-border/70 bg-background py-1 pl-7 pr-8 text-xs text-foreground outline-none transition-[background-color,border-color,box-shadow] placeholder:text-muted-foreground hover:border-border focus:border-primary/50 focus:ring-2 focus:ring-primary/15"
+                    className="pl-7 pr-8 text-xs md:text-xs"
                   />
                   {isRepositorySearchActive && (
                     <button
@@ -481,7 +482,7 @@ function ExpandedSidebarContent({
                       data-testid="sidebar-repository-search-clear"
                       aria-label={t("central.v2.repositorySearchClear")}
                       onClick={() => onRepositorySearchQueryChange("")}
-                      className="focus-ring absolute right-0.5 top-1/2 grid size-7 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground transition-[scale,background-color,color] hover:bg-muted hover:text-foreground active:scale-[0.96]"
+                      className="focus-ring absolute right-0.5 top-1/2 grid size-7 -translate-y-1/2 place-items-center rounded-control text-muted-foreground transition-[scale,background-color,color] hover:bg-accent hover:text-foreground active:scale-[0.96]"
                     >
                       <X className="size-3.5" />
                     </button>
@@ -516,7 +517,7 @@ function ExpandedSidebarContent({
                   type="button"
                   data-testid="sidebar-sync-new-source"
                   onClick={onSyncNewSource}
-                  className="focus-ring mt-1 flex min-h-9 w-full items-center gap-2 rounded-lg border border-dashed border-border/70 px-2 py-1.5 text-left text-xs text-muted-foreground transition-[scale,background-color,border-color,color] hover:border-primary/40 hover:bg-background/60 hover:text-primary active:scale-[0.96]"
+                  className="focus-ring mt-1 flex min-h-9 w-full items-center gap-2 rounded-full border border-dashed border-input px-3 py-1.5 text-left text-xs text-muted-foreground transition-[scale,background-color,border-color,color] hover:border-primary-stroke hover:bg-primary-tint hover:text-primary-text active:scale-[0.96]"
                 >
                   <Plus className="size-3.5 shrink-0" />
                   <span className="min-w-0 flex-1 truncate font-medium">
@@ -533,11 +534,11 @@ function ExpandedSidebarContent({
 
         {/* Quick clear footer */}
         {hasAnySelection && (
-          <div className="sticky bottom-0 -mx-3 mt-4 border-t border-border/60 bg-background/90 px-4 py-2 backdrop-blur-md">
+          <div className="glass-sticky sticky bottom-0 -mx-3 mt-4 border-t border-border px-4 py-2">
             <button
               type="button"
               onClick={onClearAll}
-              className="focus-ring w-full rounded-lg border border-border/70 bg-background px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-[scale,background-color,border-color,color] hover:border-border hover:bg-muted/40 hover:text-foreground active:scale-[0.96]"
+              className="focus-ring w-full rounded-full border border-glass-stroke bg-popover px-2.5 py-1.5 text-xs font-medium text-foreground ring-1 ring-glass-hairline transition-[scale,background-color,color] hover:bg-accent active:scale-[0.96]"
             >
               {t("central.v2.selectionClear")}
             </button>
@@ -582,11 +583,11 @@ function CollapsedSidebarRail({
         aria-label={t("central.v2.sidebarPin")}
         title={t("central.v2.sidebarPin")}
         onClick={onTogglePin}
-        className="focus-ring grid size-9 place-items-center rounded-xl border border-border/70 bg-background text-muted-foreground transition-[scale,border-color,color] hover:border-primary/30 hover:text-primary active:scale-[0.96]"
+        className="focus-ring grid size-9 place-items-center rounded-control border border-glass-stroke bg-popover text-muted-foreground ring-1 ring-glass-hairline transition-[scale,color] hover:text-foreground active:scale-[0.96]"
       >
         <PanelLeftOpen className="size-4" />
       </button>
-      <div className="my-1 h-px w-6 bg-border/40" />
+      <div className="my-1 h-px w-6 bg-border" />
       <RailIndicator
         icon={<Sparkles className="size-4" />}
         active={smartViewActive}
@@ -621,8 +622,8 @@ function RailIndicator({
     <span
       title={title}
       className={cn(
-        "grid size-9 place-items-center rounded-xl text-muted-foreground transition-[background-color,color]",
-        active && "text-primary",
+        "grid size-9 place-items-center rounded-control text-muted-foreground transition-[background-color,color]",
+        active && "bg-primary-tint text-primary-text",
       )}
     >
       {icon}

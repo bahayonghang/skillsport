@@ -26,7 +26,7 @@ features:
   - title: Collections 与 Discover
     details: 把 skills 编入集合做批量安装；扫描本地项目导入项目级 skill 库。
   - title: 中英双语 + 主题
-    details: 中英界面、4 种 Catppuccin 风格、强调色可选，自带新手引导。无任何遥测。
+    details: 中英界面、浅色 / 深色玻璃两套主题、Windows 11 Mica 窗口材质，自带新手引导。无任何遥测。
   - title: 本地优先，隐私友好
     details: 元数据、设置和 AI 解释缓存全部在本地 SQLite 数据库；只有显式操作才会发起网络请求。
 ---

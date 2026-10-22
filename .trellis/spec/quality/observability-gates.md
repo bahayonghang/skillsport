@@ -11,15 +11,15 @@
 
 ## Evidence layers
 
-| Gate                | Required evidence                                                                                                |
-| ------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Registry            | Unique handler/name/policy parity; no unnamed fallible boundary                                                  |
-| Operation lifecycle | Success/failure plus applicable partial/cancel; started updates the same UUID; stale started becomes interrupted |
-| Runtime rejection   | Reviewed code/category/phase/retryable/duration/source/correlation; typed target kind when known                 |
-| Privacy             | Adversarial secret/host/path/URL/raw error/stack/args absent at persistence, read, export, DOM and clipboard     |
-| Cross-layer         | One valid UUID filters and navigates both Operation and backend/frontend Runtime evidence                        |
-| Compatibility       | Historical rows parse safely; invalid IDs match nothing and are not copied                                       |
-| UI                  | Centered dialog, one scroll owner, keyboard/focus behavior, narrow viewport and i18n parity                      |
+| Gate                | Required evidence                                                                                                                                                                                                |
+| ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Registry            | Unique handler/name/policy parity; no unnamed fallible boundary                                                                                                                                                  |
+| Operation lifecycle | Success/failure plus applicable partial/cancel; started updates the same UUID; stale started becomes interrupted; `FailureOnly` (read-only previews) proves zero rows on success and one terminal row on failure |
+| Runtime rejection   | Reviewed code/category/phase/retryable/duration/source/correlation; typed target kind when known                                                                                                                 |
+| Privacy             | Adversarial secret/host/path/URL/raw error/stack/args absent at persistence, read, export, DOM and clipboard                                                                                                     |
+| Cross-layer         | One valid UUID filters and navigates both Operation and backend/frontend Runtime evidence                                                                                                                        |
+| Compatibility       | Historical rows parse safely; invalid IDs match nothing and are not copied                                                                                                                                       |
+| UI                  | Centered dialog, one scroll owner, keyboard/focus behavior, narrow viewport and i18n parity                                                                                                                      |
 
 Native Windows Tauri/WebView2 layout, real log rotation/clear and abnormal-process recovery require native evidence. When
 they cannot be executed, report `UNVERIFIED`; frontend unit tests do not upgrade them to PASS.

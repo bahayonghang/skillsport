@@ -98,6 +98,9 @@ impl GrokProvider {
 
 #[async_trait]
 impl UsageProvider for GrokProvider {
+    fn supports_file_delta(&self) -> bool {
+        true
+    }
     fn id(&self) -> &'static str {
         "grok"
     }
@@ -194,8 +197,7 @@ fn scan_local(
                         } else {
                             parse_chat_calls(&content, &project, &session_dir_name, &builtins, re)
                         };
-                        cache.record(path_string, mtime_ms, size, parsed.clone());
-                        parsed
+                        cache.record_or_replay(path_string, mtime_ms, size, parsed)
                     }
                 };
                 merge_session_calls(raw, &mut seen, &mut calls);

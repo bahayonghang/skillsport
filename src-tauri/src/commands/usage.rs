@@ -190,28 +190,22 @@ pub struct UsageRefreshResult {
 
 async fn build_refresh_page(
     state: &State<'_, AppState>,
-    target_id: &str,
+    page_scope: (&str, Option<&str>),
     summary: RefreshSummary,
     scope: UsageScopeInfo,
     used_cached_data: bool,
     scanning: bool,
     refresh_error: Option<String>,
 ) -> Result<UsageRefreshResult, String> {
-    let overview = usage::build_overview(&state.db, target_id, None, 50)
+    let (target_id, source) = page_scope;
+    let page = usage::build_page(&state.db, target_id, source)
         .await
         .map_err(|e| e.to_string())?;
-    let recent = usage::list_recent_usage(&state.db, target_id, None, 20)
-        .await
-        .map_err(|e| e.to_string())?;
-    let providers = usage::list_provider_health(&state.db, target_id)
-        .await
-        .map_err(|e| e.to_string())?;
-
     Ok(UsageRefreshResult {
         summary,
-        overview,
-        recent,
-        providers,
+        overview: page.overview,
+        recent: page.recent,
+        providers: page.providers,
         scope,
         used_cached_data,
         scanning,
@@ -234,13 +228,23 @@ fn spawn_background_usage_scan(app: &tauri::AppHandle, pool: crate::db::DbPool, 
             return;
         }
     }
+    struct BackgroundGuard(String);
+    impl Drop for BackgroundGuard {
+        fn drop(&mut self) {
+            USAGE_SCAN_IN_FLIGHT
+                .lock()
+                .unwrap_or_else(|p| p.into_inner())
+                .remove(&self.0);
+        }
+    }
+    let guard = BackgroundGuard(target_id.clone());
     let app = app.clone();
     tauri::async_runtime::spawn(async move {
+        let _guard = guard;
         let result = usage::refresh(&pool, &Scope::Local, true).await;
         if result.is_err() {
             tracing::warn!("background usage rescan failed");
         }
-        USAGE_SCAN_IN_FLIGHT.lock().unwrap().remove(&target_id);
         use tauri::Emitter;
         let _ = app.emit("usage://scan-completed", &target_id);
     });
@@ -262,6 +266,7 @@ async fn usage_refresh_impl(
     app: &tauri::AppHandle,
     state: &State<'_, AppState>,
     force: bool,
+    source: Option<&str>,
     target: ActiveUsageTarget,
 ) -> Result<UsageRefreshResult, IpcError> {
     if target.is_remote && !force {
@@ -273,7 +278,7 @@ async fn usage_refresh_impl(
             if now_ms - last_scan_ms < usage::CACHE_TTL_MS {
                 return build_refresh_page(
                     state,
-                    &target.target_id,
+                    (&target.target_id, source),
                     RefreshSummary {
                         cached: true,
                         calls_written: 0,
@@ -310,7 +315,7 @@ async fn usage_refresh_impl(
                         );
                         return build_refresh_page(
                             state,
-                            &target.target_id,
+                            (&target.target_id, source),
                             RefreshSummary {
                                 cached: true,
                                 calls_written: 0,
@@ -332,7 +337,7 @@ async fn usage_refresh_impl(
                 .map_err(usage_error_to_ipc)?;
             build_refresh_page(
                 state,
-                &target.target_id,
+                (&target.target_id, source),
                 summary.clone(),
                 scope_info_for_target(&target, Some(false)),
                 summary.cached,
@@ -356,7 +361,7 @@ async fn usage_refresh_impl(
                         .map_err(usage_error_to_ipc)?;
                     build_refresh_page(
                         state,
-                        &target.target_id,
+                        (&target.target_id, source),
                         summary.clone(),
                         scope_info_for_target(&target, Some(true)),
                         summary.cached,
@@ -375,7 +380,7 @@ async fn usage_refresh_impl(
                         .map_err(|e| IpcError::from(e.to_string()))?;
                     build_refresh_page(
                         state,
-                        &target.target_id,
+                        (&target.target_id, source),
                         cached_fallback_summary(last_scan_ms),
                         scope_info_for_target(&target, Some(false)),
                         last_scan_ms.is_some(),
@@ -401,6 +406,7 @@ pub async fn usage_refresh(
     app: tauri::AppHandle,
     state: State<'_, AppState>,
     force: bool,
+    source: Option<String>,
 ) -> crate::ipc_error::IpcResult<UsageRefreshResult> {
     crate::ipc_boundary!(
         "usage_refresh",
@@ -414,12 +420,30 @@ pub async fn usage_refresh(
                 context,
                 move |result| usage_refresh_operation_result(result, force),
                 || async {
-                    usage_refresh_impl(&app, &state, force, target)
+                    usage_refresh_impl(&app, &state, force, source.as_deref(), target)
                         .await
                         .map_err(|error| usage_refresh_failure(definition, error))
                 },
             )
             .await
+        }
+        .await
+    )
+}
+
+#[tauri::command]
+#[cfg_attr(feature = "ipc-codegen", specta::specta)]
+pub async fn usage_get_page(
+    state: State<'_, AppState>,
+    source: Option<String>,
+) -> crate::ipc_error::IpcResult<usage::UsagePageSnapshot> {
+    crate::ipc_boundary!(
+        "usage_get_page",
+        async move {
+            let target = active_usage_target(&state).await?;
+            usage::build_page(&state.db, &target.target_id, source.as_deref())
+                .await
+                .map_err(|e| e.to_string())
         }
         .await
     )

@@ -113,7 +113,7 @@ export function CentralSearchBar({
           value={value}
           onChange={(event) => onChange(event.target.value)}
           placeholder={placeholder ?? t("central.v2.searchPlaceholder")}
-          className="h-9 rounded-xl border-border/70 bg-background/75 pl-10 pr-24 shadow-[0_0_0_1px_color-mix(in_srgb,var(--foreground)_3%,transparent)] transition-[background-color,border-color,box-shadow] focus-visible:ring-primary/20"
+          className="h-9 rounded-full pl-10 pr-24"
           data-testid="central-search-input-v2"
         />
         <div className="absolute right-2 flex items-center gap-1">
@@ -122,7 +122,7 @@ export function CentralSearchBar({
               type="button"
               onClick={onClear}
               aria-label={t("central.v2.selectionClear")}
-              className="focus-ring grid size-8 place-items-center rounded-lg text-muted-foreground transition-[scale,background-color,color] hover:bg-muted/60 hover:text-foreground active:scale-[0.96]"
+              className="focus-ring grid size-7 place-items-center rounded-full text-muted-foreground transition-[scale,background-color,color] hover:bg-accent hover:text-foreground active:scale-[0.96]"
             >
               <X className="size-4" />
             </button>
@@ -133,7 +133,7 @@ export function CentralSearchBar({
               data-testid="central-open-palette"
               onClick={onOpenPalette}
               aria-label={t("central.v2.commandPaletteOpen")}
-              className="focus-ring inline-flex h-7 items-center gap-1 rounded-lg border border-border/80 bg-background px-1.5 py-0.5 font-mono text-xs text-muted-foreground transition-[scale,background-color,border-color,color] hover:border-border hover:bg-muted/40 hover:text-foreground active:scale-[0.96]"
+              className="focus-ring inline-flex h-6 items-center gap-1 rounded-full border border-border bg-popover px-2 font-mono text-xs text-muted-foreground transition-[scale,background-color,color] hover:bg-accent hover:text-foreground active:scale-[0.96]"
             >
               <ShortcutHint shortcut="mod+k" />
             </button>
@@ -200,7 +200,7 @@ export function CentralSearchBar({
           {hasInvalid && (
             <span
               data-testid="central-search-invalid-hint"
-              className="rounded-lg border border-warning/40 bg-warning/10 px-2 py-1 text-warning-foreground"
+              className="rounded-full bg-warning-tint px-2.5 py-1 text-warning-foreground"
             >
               {t("central.v2.searchInvalidTokens", {
                 tokens: queryAst.invalid.join(", "),
@@ -284,10 +284,10 @@ function FilterChip({
     <span
       data-testid={`filter-chip-${filter.kind}`}
       className={cn(
-        "inline-flex min-h-6 items-center gap-1 rounded-lg border px-1.5 py-0.5 font-mono",
+        "inline-flex min-h-6 items-center gap-1 rounded-full border py-0.5 pr-0.5 pl-2 font-mono",
         filter.negated
-          ? "border-destructive/40 bg-destructive/10 text-destructive-text"
-          : "border-primary/30 bg-primary/10 text-primary",
+          ? "border-destructive-text/30 bg-destructive-tint text-destructive-text"
+          : "border-primary-stroke bg-primary-tint text-primary-text",
       )}
     >
       <span>{t(labelKey, { key: filter.kind, value })}</span>
@@ -295,7 +295,7 @@ function FilterChip({
         type="button"
         onClick={onRemove}
         aria-label={t("central.v2.filtersRemove", { key: filter.kind, value })}
-        className="focus-ring grid size-5 place-items-center rounded-md transition-[scale,background-color] hover:bg-foreground/10 active:scale-[0.96]"
+        className="focus-ring grid size-5 place-items-center rounded-full transition-[scale,background-color] hover:bg-accent active:scale-[0.96]"
       >
         <X className="size-2.5" />
       </button>
@@ -320,12 +320,11 @@ function SimpleChip({
     <span
       data-testid={testId}
       className={cn(
-        "inline-flex min-h-6 items-center gap-1 rounded-lg border px-1.5 py-0.5",
-        tone === "primary" && "border-primary/30 bg-primary/10 text-primary",
-        tone === "muted" &&
-          "border-border/70 bg-muted/40 text-muted-foreground",
+        "inline-flex min-h-6 items-center gap-1 rounded-full border py-0.5 pr-0.5 pl-2",
+        tone === "primary" && "border-primary-stroke bg-primary-tint text-primary-text",
+        tone === "muted" && "border-border bg-accent text-muted-foreground",
         tone === "accent" &&
-          "border-warning/40 bg-warning/10 text-warning-foreground",
+          "border-warning/30 bg-warning-tint text-warning-foreground",
       )}
     >
       <span>{label}</span>
@@ -334,7 +333,7 @@ function SimpleChip({
           type="button"
           onClick={onRemove}
           aria-label={ariaLabel}
-          className="focus-ring grid size-5 place-items-center rounded-md transition-[scale,background-color] hover:bg-foreground/10 active:scale-[0.96]"
+          className="focus-ring grid size-5 place-items-center rounded-full transition-[scale,background-color] hover:bg-accent active:scale-[0.96]"
         >
           <X className="size-2.5" />
         </button>

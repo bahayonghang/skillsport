@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- **Light Glass interface (1.1.0)**: a new visual system with translucent panels over a low-saturation mint-to-lavender canvas, pill buttons and tags, 18–20px radii, and two semantic accents (mint = complete / input / primary actions, lavender = output / secondary data). New `StatTile`, `Badge`, `PageHeader`, `Menu`, `Sheet`, and `Toaster` primitives; real backdrop blur is limited to sticky bars and overlays. See `DESIGN.md`.
+- **Glass Light / Glass Dark themes**, switched from the sidebar footer or **Settings → Appearance**; both are checked against WCAG 2.1 AA on composited translucent surfaces.
+- **Windows 11 Mica window material**, on by default and switchable in **Settings → Appearance**. The window starts opaque and only turns translucent after Mica applies; Windows 10 and unsupported systems keep an opaque gradient canvas. New Tauri command `set_window_material`.
 - **Update Center**: a unified dialog that aggregates updatable skills, remote additions, remote deletions, and platform duplicates into one screen with per-item decisions. Replaces the standalone *Check for updates*, *Remote missing*, and *Repository sync* dialogs. See `docs/guide/update-center.md`.
 - New Tauri commands `refresh_skill_update_inventory`, `apply_skill_update_decisions`, `clear_skill_update_inventory`, `get_skill_update_inventory`, `scan_platform_duplicate_skills`.
 - New DB table `skill_repository_pending_additions` and column `skill_repositories.last_synced_at` to persist refresh results across sessions.
@@ -23,6 +26,9 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 
+- **Breaking for appearance preferences (1.1.0)**: saved themes migrate once on first launch: Latte and Claude Light → Glass Light; Frappé, Macchiato, Mocha, and Claude Dark → Glass Dark. The saved accent is discarded and the `catppuccin-flavor` / `catppuccin-accent` keys are removed.
+- The default body font is now Geist (sans-serif); JetBrains Mono remains for code, paths, IDs, and key caps. On upgrade, a body font still at the old default (JetBrains Mono, no custom font) is switched to Geist once; custom body fonts are kept and can be changed back in **Settings → Appearance**.
+- Dashboard readiness and counts use stat tiles instead of the conic score ring; the light / dark switch moved from the top bar to the sidebar footer. Routes, data, and behavior are unchanged.
 - Consolidated desktop publishing on the tag-based `Release Desktop` workflow and documented the release checklist plus updater invariants.
 - Built-in app updates now fail closed on non-Windows desktop builds because the current updater metadata is Windows-only.
 - PlatformView's *Scan duplicates* button now opens the Update Center on the *Platform duplicates* tab instead of a standalone dialog.
@@ -30,6 +36,10 @@ All notable changes to this project will be documented in this file.
 - `DuplicatePlatformSkillsDialog`, `CentralUpdateConfirmDialog`, `RemoteMissingSkillsDialog`, `CentralRepositorySyncDialog` are marked `@deprecated` and will be removed after one minor release.
 - Central and Platform views now support configurable font fallbacks and type scale, compact typography, semantic status colors, keyboard-shortcut reference, and stronger keyboard focus/accessibility behavior.
 - Remote update and sync operations batch SSH/WSL work, isolate cancellation per job, report bounded progress, and supervise process trees.
+
+### Removed
+
+- **Catppuccin (Latte / Frappé / Macchiato / Mocha) and Claude Light / Dark themes, and the 14-color accent picker** (1.1.0). Existing preferences migrate to Glass Light / Glass Dark as described under *Changed*.
 
 ### Fixed
 

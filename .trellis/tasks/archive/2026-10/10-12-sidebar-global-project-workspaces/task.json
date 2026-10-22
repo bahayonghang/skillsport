@@ -1,0 +1,28 @@
+{
+  "id": "sidebar-global-project-workspaces",
+  "name": "sidebar-global-project-workspaces",
+  "title": "主侧栏 Global Workspace 与 Project Workspace",
+  "description": "",
+  "status": "completed",
+  "dev_type": null,
+  "scope": "sidebar",
+  "package": null,
+  "priority": "P2",
+  "creator": "lyh",
+  "assignee": "lyh",
+  "createdAt": "2026-10-12",
+  "completedAt": "2026-10-12",
+  "branch": "feat/sidebar-global-project-workspaces",
+  "base_branch": "dev",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "description": "把主侧栏 Coding 分组改为 Global Workspace，并在其下增加 Project Workspace，展示已登记的项目安装目标。"
+  }
+}

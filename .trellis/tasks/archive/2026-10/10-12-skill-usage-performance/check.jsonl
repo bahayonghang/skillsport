@@ -1,0 +1,14 @@
+{"file": ".trellis/spec/frontend/skill-usage-state.md", "reason": "target/source状态、全历史范围、固定热力图与交互"}
+{"file": ".trellis/spec/quality/index.md", "reason": "质量规则索引"}
+{"file": ".trellis/spec/backend/index.md", "reason": "后端规范索引"}
+{"file": ".trellis/spec/backend/skill-usage-analytics.md", "reason": "纯事实、provider与远程错误语义"}
+{"file": ".trellis/spec/backend/target-context.md", "reason": "请求冻结target"}
+{"file": ".trellis/spec/backend/spawn-blocking-io.md", "reason": "重IO使用既有blocking边界"}
+{"file": ".trellis/spec/backend/database-migrations.md", "reason": "append-only迁移与旧库回读"}
+{"file": ".trellis/spec/backend/transactional-mutations.md", "reason": "共同事务与失败原子性"}
+{"file": ".trellis/spec/backend/redaction-policy.md", "reason": "路径和敏感内容不进入日志"}
+{"file": ".trellis/spec/frontend/ipc-adapter.md", "reason": "typed IPC与离线fixture seam"}
+{"file": ".trellis/tasks/archive/2026-10/10-12-skill-usage-optimization/research/performance-analysis.md", "reason": "复杂度、增量前置、provider差异、基准方法"}
+{"file": ".trellis/spec/quality/test-suite-layout.md", "reason": "测试发现与验证层次"}
+{"file": ".trellis/spec/quality/ci-quality-gate.md", "reason": "just ci完成门与证据边界"}
+{"file": ".trellis/tasks/archive/2026-10/10-12-skill-usage-optimization/research/delta-implementation-design.md", "reason": "增量归属与失败恢复验收"}

@@ -5,6 +5,7 @@ import { ChevronRight } from "lucide-react";
 import {
   ChartStateRow,
   PanelHeader,
+  PanelNotice,
 } from "@/components/dashboard/DashboardPanels";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -76,7 +77,7 @@ export function ActivityPanel({
       : 0;
 
   return (
-    <Card className="surface-glass overflow-hidden rounded-2xl border-0 bg-transparent p-0 shadow-none">
+    <Card className="p-0">
       <PanelHeader
         title={t("dashboard.activity.title")}
         description={t("dashboard.activity.description")}
@@ -93,17 +94,15 @@ export function ActivityPanel({
         ) : error ? (
           <ChartStateRow kind="error" onRetry={onRetry} />
         ) : barCount === 0 ? (
-          <div className="rounded-md border border-border/80 bg-background px-3 py-4 text-sm text-muted-foreground">
-            {t("dashboard.activity.empty")}
-          </div>
+          <PanelNotice>{t("dashboard.activity.empty")}</PanelNotice>
         ) : (
           <>
             <div className="flex items-baseline justify-between gap-3">
               <div>
-                <span className="font-display text-3xl font-semibold tabular-nums">
+                <span className="text-display-stat font-semibold leading-tight tabular-nums">
                   {total}
                 </span>
-                <span className="ml-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <span className="ml-2 text-xs font-medium text-muted-foreground">
                   {t("dashboard.activity.ops")}
                 </span>
               </div>
@@ -118,7 +117,7 @@ export function ActivityPanel({
                 days: barCount,
                 total,
               })}
-              className="h-28 w-full text-primary-text"
+              className="h-28 w-full text-chart-1"
             >
               {dailyCounts.map((bucket, index) => {
                 const height =

@@ -254,7 +254,10 @@ async fn finish_repository_archive_response(
             if status.is_server_error() {
                 GithubImportError::ArchiveStatusExhausted
             } else {
-                GithubImportError::Http("Failed to download GitHub repository archive.".to_string())
+                GithubImportError::HttpStatus {
+                    message: "Failed to download GitHub repository archive.".to_string(),
+                    status: status.as_u16(),
+                }
             }
         }));
     }

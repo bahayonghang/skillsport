@@ -40,14 +40,14 @@ export function StartupRecoveryView({ status }: { status: FailedStartupStatus })
   const canRebuild = status.phase === "recovery_required" && status.canRebuild;
 
   return (
-    <main className="flex min-h-screen items-center bg-background px-6 py-10 text-foreground sm:px-10">
-      <section aria-labelledby="startup-error-title" className="mx-auto w-full max-w-2xl">
-        <div className="mb-6 flex size-11 items-center justify-center rounded-md border border-destructive/30 bg-destructive/10 text-destructive-text">
+    <main className="glass-canvas flex min-h-screen items-center px-6 py-10 text-foreground sm:px-10">
+      <section aria-labelledby="startup-error-title" className="glass-panel mx-auto w-full max-w-2xl rounded-shell p-6 sm:p-8">
+        <div className="mb-6 flex size-11 items-center justify-center rounded-inner bg-destructive-tint text-destructive-text">
           <AlertTriangle className="size-5" aria-hidden="true" />
         </div>
 
-        <p className="text-xs font-semibold uppercase text-muted-foreground">{t("app.name")}</p>
-        <h1 id="startup-error-title" className="mt-2 text-2xl font-semibold">
+        <p className="text-xs font-medium text-muted-foreground">{t("app.name")}</p>
+        <h1 id="startup-error-title" className="mt-2 font-display text-2xl font-semibold tracking-tight">
           {t(status.phase === "fatal" ? "startup.fatalTitle" : "startup.recoveryTitle")}
         </h1>
         <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">
@@ -55,20 +55,20 @@ export function StartupRecoveryView({ status }: { status: FailedStartupStatus })
         </p>
 
         {status.phase === "recovery_required" && (
-          <div className="mt-6 border-l-2 border-border pl-4 text-sm text-muted-foreground">
+          <div className="mt-6 rounded-inner bg-accent px-4 py-3 text-sm text-muted-foreground">
             {t(DIAGNOSTIC_KEYS[status.diagnostic])}
           </div>
         )}
 
         {status.phase === "recovery_required" && status.backupCreated && (
-          <p className="mt-5 flex items-start gap-2 text-sm text-primary">
-            <CheckCircle2 className="mt-0.5 size-4" aria-hidden="true" />
+          <p className="mt-5 flex items-start gap-2 rounded-control bg-primary-tint px-3 py-2 text-sm text-primary-text">
+            <CheckCircle2 className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
             <span>{t("startup.backupCreated")}</span>
           </p>
         )}
 
         {actionError !== null && (
-          <p role="alert" className="mt-5 text-sm text-destructive-text">
+          <p role="alert" className="mt-5 rounded-control bg-destructive-tint px-3 py-2 text-sm text-destructive-text">
             {t("startup.actionError")}
           </p>
         )}
@@ -94,7 +94,7 @@ export function StartupRecoveryView({ status }: { status: FailedStartupStatus })
             </Button>
           )}
 
-          <Button variant="outline" onClick={() => void exit()} disabled={isBusy}>
+          <Button variant="glass" onClick={() => void exit()} disabled={isBusy}>
             {activeAction === "exit" ? (
               <LoaderCircle className="size-4 animate-spin" aria-hidden="true" />
             ) : (

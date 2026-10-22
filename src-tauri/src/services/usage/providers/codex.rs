@@ -96,6 +96,9 @@ impl CodexProvider {
 
 #[async_trait]
 impl UsageProvider for CodexProvider {
+    fn supports_file_delta(&self) -> bool {
+        true
+    }
     fn id(&self) -> &'static str {
         "codex"
     }
@@ -158,8 +161,7 @@ fn scan_local(
         };
         let mut file_calls = Vec::new();
         parse_session_content(&content, &builtins, &mut file_calls);
-        cache.record(path_string, mtime_ms, size, file_calls.clone());
-        calls.extend(file_calls);
+        calls.extend(cache.record_or_replay(path_string, mtime_ms, size, file_calls));
     }
 
     (cache, calls)

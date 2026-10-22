@@ -1,0 +1,47 @@
+{
+  "id": "skill-usage-visual-polish",
+  "name": "skill-usage-visual-polish",
+  "title": "Skill Usage 布局、控件与热力图优化",
+  "description": "优化顶部概要空间、标签数字按钮和16周热力图，保留主题字体及固定格子性能契约。",
+  "status": "completed",
+  "dev_type": "frontend",
+  "scope": "usage",
+  "package": null,
+  "priority": "P1",
+  "creator": "lyh",
+  "assignee": "lyh",
+  "createdAt": "2026-10-12",
+  "completedAt": "2026-10-13",
+  "branch": "codex/skill-usage-optimization",
+  "base_branch": "dev",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "10-12-skill-usage-optimization",
+  "relatedFiles": [
+    "src/pages/SkillUsageView.tsx",
+    "src/components/usage/UsageMetricStrip.tsx",
+    "src/components/usage/PlatformFilterBar.tsx",
+    "src/components/usage/SkillUsageTable.tsx",
+    "src/components/usage/ActivityHeatmap.tsx",
+    "src/components/usage/RecentCallsFeed.tsx",
+    "src/components/usage/SkillUsageDetailPanel.tsx",
+    "src/components/usage/UnusedSkillsPanel.tsx",
+    "src/test/components/usage/SkillUsage.components.test.tsx"
+  ],
+  "notes": "2026-10-13 用户人工验证并要求按当前结果收尾；just ci 与 Windows x64 NSIS build 通过，接受并保留 memory 冷扫19.2%和生产分阶段计时缺口。",
+  "meta": {
+    "planning_only": false,
+    "planning_base_commit": "a77acc92",
+    "execution_order": [
+      "10-12-skill-usage-visual-polish",
+      "10-12-skill-usage-performance"
+    ],
+    "implementation_approved": true,
+    "human_validation_accepted": true,
+    "closure_kind": "accepted_with_known_limits",
+    "acceptance_record": "../10-12-skill-usage-optimization/research/integration-verification.md"
+  }
+}

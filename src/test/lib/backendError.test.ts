@@ -95,6 +95,8 @@ describe("backend error helpers", () => {
   it("localizes every GitHub network failure code in both languages", async () => {
     const codes = [
       "github_import.transport_failed",
+      "github_import.branch_not_found",
+      "github_import.request_rejected",
       "github_import.rate_limited",
       "github_import.access_denied",
       "github_import.configured_token_failed",

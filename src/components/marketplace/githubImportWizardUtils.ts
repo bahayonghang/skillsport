@@ -112,6 +112,77 @@ export function formatGitHubImportError(error: unknown, t: TFunction) {
   );
 }
 
+export type GitHubPreviewErrorAction = "use_default_branch" | "retry" | null;
+
+export interface GitHubPreviewErrorDescription {
+  code: string | null;
+  title: string;
+  body: string;
+  action: GitHubPreviewErrorAction;
+}
+
+/** `owner/repo` for display only; the backend never echoes repository data. */
+function repoLabelFromUrl(repoUrl: string): string | null {
+  const match = /github\.com\/([^/\s?#]+)\/([^/\s?#]+)/i.exec(repoUrl.trim());
+  if (!match) return null;
+  return `${match[1]}/${match[2].replace(/\.git$/i, "")}`;
+}
+
+/**
+ * Describe a failed preview for the input-step error panel: a short title, a
+ * localized body and the one next step that can resolve it. The branch name is
+ * interpolated from local UI state; backend codes stay free of user input.
+ */
+export function describeGitHubPreviewError(
+  error: unknown,
+  t: TFunction,
+  context: { branch: string; repoUrl: string },
+): GitHubPreviewErrorDescription {
+  const normalized = typeof error === "string" ? normalizeMessage(error) : error;
+  const code = parseBackendError(normalized).code ?? null;
+  const body = formatGitHubImportError(error, t);
+  const branch = context.branch.trim();
+
+  switch (code) {
+    case "github_import.branch_not_found": {
+      const repo = repoLabelFromUrl(context.repoUrl);
+      return {
+        code,
+        title: t("marketplace.githubPreviewError.title.branchNotFound"),
+        body:
+          branch && repo
+            ? t("marketplace.githubPreviewError.branchNotFoundBody", {
+                branch,
+                repo,
+              })
+            : body,
+        action: branch ? "use_default_branch" : null,
+      };
+    }
+    case "github_import.request_rejected":
+      return {
+        code,
+        title: t("marketplace.githubPreviewError.title.requestRejected"),
+        body,
+        action: null,
+      };
+    case "github_import.transport_failed":
+      return {
+        code,
+        title: t("marketplace.githubPreviewError.title.transportFailed"),
+        body,
+        action: "retry",
+      };
+    default:
+      return {
+        code,
+        title: t("marketplace.githubPreviewError.title.generic"),
+        body,
+        action: null,
+      };
+  }
+}
+
 /**
  * True when the failure means the confirmed preview snapshot is gone, expired,
  * mismatched, or tampered with, so the user must preview the repository again.

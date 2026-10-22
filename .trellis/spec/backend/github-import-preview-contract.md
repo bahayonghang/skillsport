@@ -1386,3 +1386,109 @@ await invoke("preview_github_repo_import", {
 
 Rust reconciles one structured hint with the URL and binds the resolved branch
 to the immutable preview snapshot.
+
+## Scenario: Preview Default Branch, HTTP Status Classification And Failure Audit
+
+### 1. Scope / Trigger
+
+Apply this contract when the wizard's initial branch state, GitHub HTTP status
+mapping in `services/github_import`, the preview command's log policy, or the
+input-step error panel changes. Origin: a repository whose default branch is
+`master` was previewed with an implicit `main`; GitHub answered `422`, the
+service wrapped it as `Http`, and the UI told the user to check the network.
+
+### 2. Signatures
+
+```rust
+// services/github_import/error.rs
+#[error("{message}")]
+HttpStatus { message: String, status: u16 },   // response received, no denial/404/retry rule claimed
+#[error("GitHub repository branch was not found.")]
+BranchNotFound,                                // commits/{ref} answered 422
+pub fn http_status(&self) -> Option<u16>;
+
+// services/github_import/preview.rs
+pub enum PreviewStage { RepoInspect, CommitResolve, SnapshotAcquire, CandidateBuild, SnapshotRegister }
+pub struct PreviewFailure { pub stage: PreviewStage, pub error: GithubImportError }
+preview_github_repo_import_staged(..) -> Result<GitHubRepoPreview, PreviewFailure>
+preview_github_repo_import_remote_staged(..) -> Result<GitHubRepoPreview, PreviewFailure>
+
+// observability
+OperationLifecycle::FailureOnly
+ReviewedDiagnostic::with_failure_stage(&'static str) / with_http_status(Option<u16>)
+
+// ipc_registry.rs
+preview_github_repo_import => operation(Import, Network, FailureOnly)
+```
+
+### 3. Contracts
+
+- The wizard's initial branch mode is "repository default" and submits an empty
+  branch (normalized to `null`). Explicit `main` / `dev` / custom remain
+  available. Re-preview reuses the submitted branch and never falls back to a
+  literal `"main"`.
+- `Http(String)` is only for failures without a usable response status (client
+  build, connect, timeout, body read, mirror summaries). Any site that holds a
+  response status and is not claimed by denial / 404 / mirror-retry rules emits
+  `HttpStatus` with the historical Display text preserved verbatim.
+- `resolve_commit_sha` maps `HttpStatus { status: 422 }` to `BranchNotFound`.
+  The branch name never enters the error value; the renderer interpolates it
+  from local state.
+- Preview success writes no Operation Log row. Failure writes exactly one
+  terminal row whose details carry `errorCode`, `errorCategory`
+  (`snapshot_diagnostic_category`), `phase`, `retryable`, `failureStage` and,
+  when a response was received, `httpStatus`. The IPC error carries that row id
+  as `correlationId`.
+- `fallback_reason_for` treats `HttpStatus` and `BranchNotFound` exactly like
+  the legacy `Http(_)` (`FallbackReason::Transport`).
+
+### 4. Validation & Error Matrix
+
+| Condition | Code | retryable | `errorCategory` | `httpStatus` |
+| --- | --- | --- | --- | --- |
+| `commits/{ref}` answers 422 | `github_import.branch_not_found` | false | `github_import.branch_not_found` | 422 |
+| Other unclaimed 4xx (400, 409, …) | `github_import.request_rejected` | false | `github_import.http_client_error` | status |
+| Unclaimed 5xx after mirror policy | `github_import.transport_failed` | true | `github_import.http_server_error` | status |
+| Connect / timeout / request / body without status | `github_import.transport_failed` | true | `github_import.transport_unknown` or archive subclass | absent |
+| 401/403/429 denial, 404 | unchanged (`access_denied`, `configured_token_failed`, `rate_limited`, `repo_not_found`) | unchanged | unchanged | — |
+
+### 5. Good / Base / Bad Cases
+
+- Good: default mode on a `master` repository previews `master`; explicit
+  `main` on the same repository yields `branch_not_found` and the error panel
+  offers "Use repo default branch".
+- Base: offline preview yields `transport_failed` with a Retry action and an
+  Operation Log row with `failureStage` but no `httpStatus`.
+- Bad: mapping a received 4xx to `transport_failed`, which tells the user to
+  check a network that works.
+
+### 6. Tests Required
+
+- `services/github_import/tests.rs`: 422 → `BranchNotFound` with verbatim
+  Display; 400/409 → `request_rejected`; 503 / `Http` → `transport_failed`;
+  tree fallback unchanged.
+- `observability/operation/tests.rs`: `FailureOnly` success writes zero rows;
+  failure writes one row with `failureStage` / `httpStatus`; optional keys are
+  omitted when absent.
+- `commands/github_import.rs`: preview failure rows carry stage/status and keep
+  URL, token, owner/repo and branch out of the row and the IPC error.
+- `GitHubRepoImportWizard.test.tsx`: initial submit is `""`; branch-not-found
+  panel action re-previews with `""`; transport vs rejected titles differ; the
+  current step has `aria-current="step"`.
+
+### 7. Wrong vs Correct
+
+#### Wrong
+
+```rust
+return Err(GithubImportError::Http(format!("{}: HTTP {}", failure_prefix, status)));
+```
+
+#### Correct
+
+```rust
+return Err(GithubImportError::HttpStatus {
+    message: format!("{}: HTTP {}", failure_prefix, status),
+    status: status.as_u16(),
+});
+```

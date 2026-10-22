@@ -155,8 +155,10 @@ describe("App", () => {
         </MemoryRouter>
       );
     });
-    // TopBar shows the app name
-    expect(screen.getByText("SkillPort")).toBeInTheDocument();
+    // The app name lives in the TopBar icon's accessible name; the sidebar
+    // has no header row since 1.1.0 (C5 D-S2).
+    expect(screen.getByRole("button", { name: "SkillPort" })).toBeInTheDocument();
+    expect(screen.getByRole("banner")).toBeInTheDocument();
   });
 
   it("renders sidebar with icon-only navigation", async () => {

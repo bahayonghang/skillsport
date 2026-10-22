@@ -1,0 +1,5 @@
+{"file": ".trellis/tasks/10-21-v1-1-glass-ui-redesign/prd.md", "reason": "父任务决策 D1–D4、源设计语言与跨子任务验收"}
+{"file": ".trellis/tasks/10-21-v1-1-glass-ui-redesign/design.md", "reason": "四层模型、token 草案、blur 白名单与对比度预算"}
+{"file": ".trellis/tasks/10-21-v1-1-glass-ui-redesign/research/current-state-analysis.md", "reason": "现状证据、截图解读与迁移陷阱"}
+{"file": ".trellis/spec/frontend/index.md", "reason": "前端规范入口"}
+{"file": "DESIGN.md", "reason": "C1 定稿后的唯一视觉依据"}

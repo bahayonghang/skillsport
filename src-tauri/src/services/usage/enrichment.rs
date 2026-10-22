@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use crate::db::{NewSkillUsageMetadata, Skill};
 use crate::services::resource_budget::ResourceBudget;
 
+#[cfg_attr(feature = "ipc-codegen", derive(specta::Type))]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum UsageSkillMatchStatus {
@@ -43,26 +44,26 @@ pub fn resolve_usage_skills(
     skill_names: &[String],
     candidates: &[Skill],
 ) -> Vec<ResolvedUsageSkill> {
+    let mut ids: HashMap<String, Vec<&Skill>> = HashMap::new();
+    let mut names: HashMap<String, Vec<&Skill>> = HashMap::new();
+    for candidate in candidates.iter().filter(|c| c.is_central) {
+        ids.entry(normalize_identity(&candidate.id))
+            .or_default()
+            .push(candidate);
+        names
+            .entry(normalize_identity(&candidate.name))
+            .or_default()
+            .push(candidate);
+    }
     skill_names
         .iter()
         .map(|skill| {
             let normalized = normalize_identity(skill);
-            let id_matches = candidates
-                .iter()
-                .filter(|candidate| {
-                    candidate.is_central && normalize_identity(&candidate.id) == normalized
-                })
-                .collect::<Vec<_>>();
-            let matches = if id_matches.is_empty() {
-                candidates
-                    .iter()
-                    .filter(|candidate| {
-                        candidate.is_central && normalize_identity(&candidate.name) == normalized
-                    })
-                    .collect::<Vec<_>>()
-            } else {
-                id_matches
-            };
+            let matches = ids
+                .get(&normalized)
+                .or_else(|| names.get(&normalized))
+                .map(Vec::as_slice)
+                .unwrap_or(&[]);
 
             if matches.len() == 1 {
                 let matched = matches[0];

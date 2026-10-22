@@ -157,7 +157,7 @@ function PlatformInstallStatusGroups({
 
     return (
       <div className="flex items-center gap-1">
-        <span className="w-12 shrink-0 text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+        <span className="w-12 shrink-0 text-xs font-medium text-muted-foreground">
           {categoryLabel}
         </span>
         <div className="flex flex-wrap items-center gap-0.5">
@@ -215,7 +215,7 @@ function SourceMetadataSection({
       <SectionLabel>{t("detail.metadata")}</SectionLabel>
       <div className="space-y-2.5">
         <div className="space-y-0.5">
-          <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+          <div className="text-xs font-medium text-muted-foreground">
             {t("common.platform")}
           </div>
           <div className="inline-flex items-center gap-1 break-all font-mono text-xs leading-relaxed text-foreground">
@@ -224,7 +224,7 @@ function SourceMetadataSection({
           </div>
         </div>
         <div className="space-y-0.5">
-          <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+          <div className="text-xs font-medium text-muted-foreground">
             {t("common.project")}
           </div>
           <div className="inline-flex items-center gap-1 break-all font-mono text-xs leading-relaxed text-foreground">
@@ -233,13 +233,13 @@ function SourceMetadataSection({
           </div>
         </div>
         <div className="space-y-0.5">
-          <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+          <div className="text-xs font-medium text-muted-foreground">
             {t("common.filePath")}
           </div>
           <button
             type="button"
             onClick={onOpenSourcePath}
-            className="cursor-pointer text-left font-mono text-xs leading-relaxed text-foreground break-all hover:text-primary hover:underline"
+            className="cursor-pointer text-left font-mono text-xs leading-relaxed text-foreground break-all hover:text-primary-text hover:underline"
           >
             {isRemoteTarget && <Copy className="mr-1 inline size-3 shrink-0" />}
             {sourceMetadata.filePath}
@@ -327,7 +327,7 @@ export function SkillDetailSidebar({
                   defaultValue: i18n.language.startsWith("zh") ? "来源状态" : "Source status",
                 })}
               </SectionLabel>
-              <div className="space-y-2 rounded-lg border border-border/70 bg-muted/30 p-3">
+              <div className="space-y-2 rounded-inner bg-accent p-3">
                 <div className="flex flex-wrap items-center gap-1.5">
                   {detail.source_kind && <SourceOriginBadge originKind={detail.source_kind} />}
                   {detail.is_read_only && <ReadOnlySourceBadge />}
@@ -533,7 +533,7 @@ export function SkillDetailSidebar({
                 data-testid="detail-technical-details"
                 className="group pt-3"
               >
-                <summary className="cursor-pointer rounded text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <summary className="cursor-pointer rounded-control text-xs font-medium text-muted-foreground transition-colors hover:text-foreground focus-ring">
                   {t("detail.technicalDetails")}
                 </summary>
                 <div className="mt-3 space-y-2.5">
@@ -571,7 +571,7 @@ export function SkillDetailSidebar({
                 {detail.tags.map((tag) => (
                   <span
                     key={tag.id}
-                    className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground ring-1 ring-border/70"
+                    className="inline-flex items-center gap-1 rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-muted-foreground"
                     title={tag.description ?? tag.name}
                   >
                     <Tag className="size-2.5" />
@@ -686,7 +686,7 @@ export function SkillDetailSidebar({
                           "shrink-0 rounded-full px-1.5 py-0.5 text-xs font-medium ring-1",
                           row.linkType === "symlink"
                             ? "bg-success/10 text-success-foreground ring-success/20"
-                            : "bg-warning/10 text-warning-foreground ring-warning/20"
+                            : "bg-warning-tint text-warning-foreground ring-warning/20"
                         )}
                       >
                         {row.linkType}
@@ -719,7 +719,7 @@ export function SkillDetailSidebar({
                     {skillCollections.map((collection) => (
                       <span
                         key={collection.id}
-                        className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary-text ring-1 ring-primary/20"
+                        className="inline-flex items-center gap-1 rounded-full bg-primary-tint px-2 py-0.5 text-xs font-medium text-primary-text ring-1 ring-primary/20"
                         title={collection.description ?? collection.name}
                       >
                         <Tag className="size-2.5" />

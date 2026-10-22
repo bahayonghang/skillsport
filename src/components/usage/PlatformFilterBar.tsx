@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 
 import type { ProviderHealth } from "@/types/usage";
+import { UsageFilterButton } from "@/components/usage/UsageFilterControls";
 import { cn } from "@/lib/utils";
 
 interface PlatformFilterBarProps {
@@ -72,23 +73,16 @@ function PlatformPill({
   onClick,
 }: PlatformPillProps) {
   return (
-    <button
-      type="button"
+    <UsageFilterButton
       data-testid={testId}
       data-active={active}
+      pressed={active}
       disabled={disabled}
       title={title}
       onClick={onClick}
-      className={cn(
-        "min-h-7 rounded-md border px-2.5 py-1 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        disabled && "cursor-not-allowed opacity-40",
-        !disabled && active && "border-primary bg-primary/10 text-primary",
-        !disabled &&
-          !active &&
-          "border-border text-muted-foreground hover:text-foreground",
-      )}
+      className={!active ? "border-border" : undefined}
     >
       {label}
-    </button>
+    </UsageFilterButton>
   );
 }
