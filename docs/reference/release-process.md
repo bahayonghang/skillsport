@@ -51,7 +51,7 @@ signing and `latest.json` stay in sync.
    - Windows MSI / ZIP assets
    - macOS and Linux install assets when those jobs pass
 12. Fetch
-    `https://github.com/bahayonghang/skills-manage-windows/releases/latest/download/latest.json`
+    `https://github.com/bahayonghang/skillsport/releases/latest/download/latest.json`
     and confirm it has the expected version, Windows URL, and signature.
 
 If upload or post-upload verification fails, the release remains a private

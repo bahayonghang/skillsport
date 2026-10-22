@@ -2,7 +2,7 @@
 
 This page mirrors `CHANGELOG.md` in the repository root. The Chinese translation lives at [/zh/release-notes/](../zh/release-notes/index.md) and mirrors `CHANGELOG.zh.md`.
 
-For per-release artifacts and assets, see the [GitHub Releases page](https://github.com/bahayonghang/skills-manage-windows/releases).
+For per-release artifacts and assets, see the [GitHub Releases page](https://github.com/bahayonghang/skillsport/releases).
 
 <!--@include: ../../CHANGELOG.md-->
 

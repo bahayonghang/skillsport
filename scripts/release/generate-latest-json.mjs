@@ -8,7 +8,7 @@ export function parseArgs(argv) {
     version: process.env.RELEASE_VERSION || "",
     tag: process.env.RELEASE_TAG || "",
     assetDir: "release-assets",
-    repo: process.env.GITHUB_REPOSITORY || "bahayonghang/skills-manage-windows",
+    repo: process.env.GITHUB_REPOSITORY || "bahayonghang/skillsport",
   };
 
   for (let index = 0; index < argv.length; index += 1) {

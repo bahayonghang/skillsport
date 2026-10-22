@@ -39,7 +39,7 @@
 ## 下一步
 
 - 安装应用：[安装](./installation)。
-- 在 [GitHub](https://github.com/bahayonghang/skills-manage-windows) 阅读项目 README。
+- 在 [GitHub](https://github.com/bahayonghang/skillsport) 阅读项目 README。
 
 ---
 

@@ -9,7 +9,7 @@
     <p>Manage, discover, and install AI agent skills across local platforms from a SkillPort desktop app.</p>
   </description>
   <launchable type="desktop-id">skillport.desktop</launchable>
-  <url type="homepage">https://github.com/bahayonghang/skills-manage-windows</url>
+  <url type="homepage">https://github.com/bahayonghang/skillsport</url>
   <developer id="com.bahayonghang">
     <name>bahayonghang</name>
   </developer>

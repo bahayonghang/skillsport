@@ -110,7 +110,7 @@ describe("documentation workflow contract", () => {
     expect(smoke.permissions).toEqual({});
     expect(smoke.env?.PAGES_URL).toBe("${{ needs.deploy.outputs.page_url }}");
     const run = findStep(smoke, (step) => step.name === "Verify deployed documentation")?.run ?? "";
-    expect(run).toContain("https://bahayonghang.github.io/skills-manage-windows/");
+    expect(run).toContain("https://bahayonghang.github.io/skillsport/");
     expect(run).toContain("200");
     expect(run).toContain("SkillPort");
     expect(run).toMatch(/for attempt in \{1\.\.[0-9]+\}/);

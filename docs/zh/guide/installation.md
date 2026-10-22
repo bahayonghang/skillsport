@@ -4,7 +4,7 @@
 
 ## 预构建下载
 
-- 最新发布：<https://github.com/bahayonghang/skills-manage-windows/releases/latest>
+- 最新发布：<https://github.com/bahayonghang/skillsport/releases/latest>
 - 当前桌面发布目标：Windows x64（`.exe`、`.msi`、`.zip`）、macOS Universal（`.dmg`、`.zip`、`.tar.gz`），以及 Linux x86_64 / arm64（`.deb`、`.rpm`、`.AppImage`）。
 - 当前桌面构建仍未签名；Linux arm64 产物是否可用取决于 GitHub Actions runner 矩阵。
 
