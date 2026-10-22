@@ -25,7 +25,8 @@
 - 支持扫描本地项目级 skill 库的 Discover 能力。
 - 支持 marketplace 浏览，以及带鉴权请求和重试回退的 GitHub 仓库导入。
 - 通过延迟查询、懒加载索引和虚拟列表提升大规模 skill 库搜索体验。
-- 提供中英文界面、Catppuccin 主题、强调色、首次引导和响应式导航。
+- 轻盈毛玻璃界面：薄荷到薰衣草的低饱和 canvas 上叠半透明面板，提供「浅色玻璃 / 深色玻璃」两套主题，正文默认无衬线字体 Geist，Windows 11 支持 Mica 窗口材质（Windows 10 使用不透明背景）。
+- 提供中英文界面、首次引导和响应式导航。
 - **中央技能库 V2（默认开启）**：支持结构化查询语法（`tag:`、`repo:`、`owner:`、`has:source` 等）、URL-as-state、保存视图、命令面板（`Ctrl+K`）、标签分组、列表分组视图（不分组 / 按仓库 / 按 owner / 按标签 / 按状态）。通过 Beta 徽章旁的"切回经典布局"链接，或在 DevTools localStorage 中设 `featureFlag.central.newLayout=off`，可退回 V1 布局。
 
 ## Rules 管理
@@ -59,9 +60,9 @@ SkillPort 可以通过 SSH 管理远程 Linux 或 macOS 用户目录里的全局
 
 ![平台技能视图](images/06.png)
 
-### 扫描本地项目技能库
+### 管理项目本地技能
 
-![项目技能库发现页](images/03.png)
+![项目技能视图](images/03.png)
 
 ### 浏览 marketplace 发布者与技能
 
@@ -185,7 +186,7 @@ xattr -dr com.apple.quarantine "/Applications/SkillPort.app"
 | 状态管理 | Zustand |
 | Markdown | react-markdown |
 | 国际化 | react-i18next、i18next-browser-languagedetector |
-| 主题 | Catppuccin 4 种风格 |
+| 主题 | 轻盈毛玻璃设计 token（浅色玻璃 / 深色玻璃） |
 | 后端 | Rust（serde、sqlx、chrono、uuid） |
 | 数据库 | SQLite via sqlx（WAL 模式） |
 | 路由 | react-router-dom v7 |

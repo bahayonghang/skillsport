@@ -14,10 +14,12 @@ function Checkbox({
     <CheckboxPrimitive.Root
       data-slot="checkbox"
       className={cn(
-        "group/checkbox flex size-4 shrink-0 items-center justify-center rounded border border-input bg-transparent transition-colors",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
-        "disabled:cursor-not-allowed disabled:opacity-50",
-        "data-[checked]:border-primary data-[checked]:bg-primary",
+        // Glyph-scale box: keeps the 4px `rounded` corner (a 12px control
+        // radius would read as a radio). Boundary = input-stroke (≥3:1).
+        "group/checkbox flex size-4 shrink-0 items-center justify-center rounded border border-input bg-input-surface transition-[background-color,border-color] duration-150",
+        "hover:border-muted-foreground focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+        "disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive-text",
+        "data-[checked]:border-primary data-[checked]:bg-primary data-[indeterminate]:border-primary data-[indeterminate]:bg-primary",
         className
       )}
       {...props}

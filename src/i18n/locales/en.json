@@ -152,6 +152,12 @@
     "enabled": "Enabled",
     "disabled": "Disabled"
   },
+  "ui": {
+    "statAriaLabel": "{{label}}: {{value}}",
+    "statUnavailable": "Unavailable",
+    "notifications": "Notifications",
+    "closeNotification": "Close notification"
+  },
   "backendErrors": {
     "rules": {
       "invalid_name": "Use a flat .md file name without path separators or reserved names.",
@@ -423,9 +429,7 @@
     "projectModeRemoteHint": "Enter an absolute remote project path."
   },
   "topbar": {
-    "importSkill": "Import skill",
-    "themeToggleLight": "Switch to light theme",
-    "themeToggleDark": "Switch to dark theme"
+    "importSkill": "Import skill"
   },
   "sidebar": {
     "rules": "Rules",
@@ -439,6 +443,11 @@
     "newCollection": "+ New",
     "expandSidebar": "Expand sidebar",
     "collapseSidebar": "Collapse sidebar",
+    "collapse": "Collapse",
+    "darkMode": "Dark mode",
+    "lightMode": "Light mode",
+    "themeToggleDark": "Switch to dark mode",
+    "themeToggleLight": "Switch to light mode",
     "importCollection": "Import Collection",
     "newCollectionLabel": "New Collection",
     "importCollectionInput": "Import collection JSON file",
@@ -932,7 +941,8 @@
       "label": "Readiness",
       "ariaLabel": "Library readiness score {{score}} of 100",
       "description": "Quality factors behind the score: taxonomy, descriptions, source mapping, and install health.",
-      "scoreUnit": "/100",
+      "scoreLabel": "Readiness score",
+      "scoreHint": "out of 100",
       "status": {
         "ready": "Ready",
         "review": "Review gate",
@@ -972,7 +982,9 @@
       "uncategorized": "Uncategorized skills",
       "uncategorizedDesc": "Assign tags from the Central categorize panel.",
       "unassigned": "Unknown source",
-      "unassignedDesc": "Attach skills to a repository source when known."
+      "unassignedDesc": "Attach skills to a repository source when known.",
+      "centralTotal": "Central skills",
+      "sources": "Sources"
     },
     "activeJobs": "Active job",
     "jobProgress": "{{completed}} / {{total}} complete",
@@ -2453,7 +2465,23 @@
       "title": "Appearance",
       "description": "Adjust theme, language, font fallbacks, and type scale.",
       "themeGroup": "Theme",
-      "themeGroupDesc": "Choose the interface flavor and accent.",
+      "themeGroupDesc": "Pick the light or dark glass theme and whether the window material shows through.",
+      "themeMode": "Appearance mode",
+      "themeOption": {
+        "glass-light": "Glass Light",
+        "glass-dark": "Glass Dark"
+      },
+      "windowMaterial": "Window material",
+      "windowMaterialDesc": "Let the Windows 11 Mica backdrop show through the glass canvas.",
+      "windowMaterialToggle": "Use the Mica window material",
+      "windowMaterialOn": "Mica",
+      "windowMaterialOff": "Off",
+      "windowMaterialUnavailable": {
+        "unsupportedOs": "Mica needs Windows 11. This system keeps the opaque canvas.",
+        "unsupportedPlatform": "Mica is only available on Windows 11. This system keeps the opaque canvas.",
+        "applyFailed": "Mica could not be applied, so the opaque canvas is in use."
+      },
+      "windowMaterialSaveFailed": "Could not save the window material setting.",
       "languageGroup": "Language",
       "languageGroupDesc": "Set the interface language.",
       "typographyGroup": "Typography",
@@ -2464,8 +2492,8 @@
         "light": "Light",
         "dark": "Dark"
       },
-      "densityGroup": "Density",
-      "densityGroupDesc": "Adjust the global base type size.",
+      "densityGroup": "Font size",
+      "densityGroupDesc": "Adjust the global base type size in three steps.",
       "displayFontOptionsLabel": "Display font options",
       "bodyFontOptionsLabel": "Body font options",
       "primaryFont": "Primary font",
@@ -2503,6 +2531,10 @@
         "system": "System fallback",
         "sourceHanSerif": "Source Han Serif SC VF",
         "custom": "Custom"
+      },
+      "themeOptionDesc": {
+        "glass-light": "Bright mint-to-lavender canvas with translucent white panels.",
+        "glass-dark": "Deep ink canvas with low-glare panels for night work."
       }
     },
     "toc": {
@@ -2655,30 +2687,6 @@
     "appVersion": "App Version",
     "dbPath": "Database Path",
     "repoUrl": "Repository URL",
-    "flavor": "Flavor",
-    "mocha": "Mocha",
-    "macchiato": "Macchiato",
-    "frappe": "Frappé",
-    "latte": "Latte",
-    "claude-light": "Claude Light",
-    "claude-dark": "Claude Dark",
-    "accentColor": "Accent Color",
-    "accent": {
-      "rosewater": "Rosewater",
-      "flamingo": "Flamingo",
-      "pink": "Pink",
-      "mauve": "Mauve",
-      "red": "Red",
-      "maroon": "Maroon",
-      "peach": "Peach",
-      "yellow": "Yellow",
-      "green": "Green",
-      "teal": "Teal",
-      "sky": "Sky",
-      "sapphire": "Sapphire",
-      "blue": "Blue",
-      "lavender": "Lavender"
-    },
     "language": "Language",
     "chinese": "中文",
     "english": "English",
@@ -2691,7 +2699,7 @@
       "legacyFallback": "This old settings link was redirected to the default page.",
       "appearance": {
         "title": "Appearance",
-        "description": "Adjust theme, language, accent color, fonts, and display density."
+        "description": "Adjust the light or dark theme, window material, language, fonts, and font size."
       },
       "connections": {
         "title": "Connections & Sync",
@@ -2716,7 +2724,7 @@
     },
     "aboutCockpit": {
       "eyebrow": "Release Cockpit",
-      "heroDesc": "Version, updates, diagnostics, and help links in one dark release console.",
+      "heroDesc": "Version, updates, diagnostics, and help links in one place.",
       "channel": "Update channel",
       "stable": "Stable",
       "platform": "Platform",
@@ -3148,7 +3156,17 @@
     "githubImportResultSkippedTitle": "Skipped items",
     "githubImportResultSkippedNone": "No skills were skipped.",
     "githubPatSettingsHint": "Open Settings and save a GitHub Personal Access Token to use authenticated direct GitHub requests for this import flow.",
-    "githubPatConfiguredFailureHint": "A configured GitHub token was already used. Check that the token owner can read this repo and that the token has sufficient repository access."
+    "githubPatConfiguredFailureHint": "A configured GitHub token was already used. Check that the token owner can read this repo and that the token has sufficient repository access.",
+    "backToPublishers": "Back to publishers",
+    "officialEmpty": "No matching recommended skills",
+    "publisherSearchPlaceholder": "Search publishers...",
+    "publisherCount": "{{count}} publishers",
+    "repoSkillCount": "{{count}} skills",
+    "browseRepoSkills": "Browse Skills",
+    "repoPreviewFetching": "Fetching...",
+    "repoPreviewRefresh": "Refresh preview",
+    "repoPreviewFetchingFromGithub": "Fetching skills from GitHub...",
+    "repoPreviewEmpty": "No skills found"
   },
   "obsidian": {
     "title": "Obsidian Vault Skills",

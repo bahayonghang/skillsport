@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { AlertTriangle } from "lucide-react";
 
 import { ActivityPanel } from "@/components/dashboard/sections/ActivityPanel";
 import { AgentsPanel } from "@/components/dashboard/sections/AgentsPanel";
@@ -27,12 +28,12 @@ export function DashboardShell({
   const { t } = useTranslation();
 
   return (
-    <div className="bg-orbit h-full min-h-0 overflow-hidden">
+    <div className="h-full min-h-0 overflow-hidden">
       <div
         data-testid="dashboard-scroll-region"
         className="scrollbar-subtle flex h-full min-h-0 min-w-0 max-w-full flex-col overflow-y-auto overflow-x-hidden overscroll-contain"
       >
-        <div className="min-h-0 min-w-0 flex-1 space-y-5 p-3 pb-6 sm:p-5 sm:pb-8">
+        <div className="min-h-0 min-w-0 flex-1 space-y-5 p-4 pb-6 lg:p-6 lg:pb-8">
           <StatusHeader
             onNavigate={onNavigate}
             scanState={viewModel.scanState}
@@ -48,9 +49,11 @@ export function DashboardShell({
 
           {viewModel.loadError && (
             <div
-              className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive-text"
+              role="status"
+              className="glass-panel tint-destructive flex items-center gap-2 rounded-card px-4 py-2.5 text-sm text-destructive-text"
               title={viewModel.loadError}
             >
+              <AlertTriangle className="size-4 shrink-0" aria-hidden="true" />
               {t("dashboard.loadWarning")}
             </div>
           )}
@@ -59,6 +62,8 @@ export function DashboardShell({
             onNavigate={onNavigate}
             queueItems={viewModel.queueItems}
             activeJob={viewModel.activeJob}
+            centralTotal={viewModel.centralTotal}
+            sourceRepositoryCount={viewModel.sourceRepositoryCount}
           />
 
           <div className={GRID_TWO_COL}>

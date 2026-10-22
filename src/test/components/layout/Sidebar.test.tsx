@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { useProjectsStore } from "@/stores/projectsStore";
+import { useThemeStore } from "@/stores/themeStore";
 import { SIDEBAR_WORKSPACE_SECTIONS_KEY } from "@/lib/sidebarWorkspacePrefs";
 import type { Project } from "@/types";
 
@@ -138,6 +139,73 @@ describe("Sidebar", () => {
     });
   });
 
+  it("has no header row: the first focusable entry is Dashboard", () => {
+    const { container } = renderSidebar();
+    const first = container.querySelector("nav button");
+    expect(first).toHaveAccessibleName("Dashboard");
+    expect(screen.queryByText("SkillPort")).not.toBeInTheDocument();
+  });
+
+  it("renders the footer as Settings, the light/dark toggle, then collapse", () => {
+    const { container } = renderSidebar();
+    const buttons = Array.from(container.querySelectorAll("nav button"));
+    const settings = screen.getByRole("button", { name: "设置" });
+    const theme = screen.getByRole("button", { name: /切换到(深色|浅色)模式/ });
+    const collapse = screen.getByRole("button", { name: "收起侧边栏" });
+    expect(buttons.slice(-3)).toEqual([settings, theme, collapse]);
+    expect(collapse).toHaveTextContent("收起");
+  });
+
+  it.each([
+    { flavor: "glass-light" as const, name: "切换到深色模式", text: "深色模式" },
+    { flavor: "glass-dark" as const, name: "切换到浅色模式", text: "浅色模式" },
+  ])("the footer toggle offers the other theme from $flavor and calls toggleFlavor", ({ flavor, name, text }) => {
+    const toggleFlavor = vi.fn();
+    const previous = useThemeStore.getState();
+    useThemeStore.setState({ flavor, toggleFlavor });
+    try {
+      renderSidebar();
+      const toggle = screen.getByRole("button", { name });
+      expect(toggle).toHaveTextContent(text);
+      expect(toggle).not.toHaveAttribute("aria-current");
+      fireEvent.click(toggle);
+      expect(toggleFlavor).toHaveBeenCalledTimes(1);
+    } finally {
+      useThemeStore.setState({
+        flavor: previous.flavor,
+        toggleFlavor: previous.toggleFlavor,
+      });
+    }
+  });
+
+  it("collapses from the footer entry and expands again with an accessible name", () => {
+    const { container } = renderSidebar();
+    const nav = container.querySelector("nav");
+    fireEvent.click(screen.getByRole("button", { name: "收起侧边栏" }));
+    expect(nav).toHaveStyle({ width: "56px" });
+    expect(screen.queryByRole("separator")).not.toBeInTheDocument();
+    const expand = screen.getByRole("button", { name: "展开侧边栏" });
+    expect(expand).toHaveAttribute("title", "展开侧边栏");
+    expect(
+      screen.getByRole("button", { name: /切换到(深色|浅色)模式/ }),
+    ).toBeInTheDocument();
+    fireEvent.click(expand);
+    expect(nav).toHaveStyle({ width: "208px" });
+  });
+
+  it("uses the glass active state without gradient, glow or edge bar", () => {
+    const { container } = renderSidebar("/central");
+    const central = screen.getByRole("button", { name: /中央技能库/ });
+    expect(central.className).toContain("border-primary-stroke");
+    expect(central.className).toContain("text-primary-text");
+    expect(central.className).toContain("focus-ring");
+    expect(central.className).not.toMatch(/linear-gradient|shadow-\[/);
+    expect(container.querySelector("nav [class*='w-[3px]']")).toBeNull();
+    expect(within(central).getByText("10").closest("[data-slot=badge]")).toHaveAttribute("data-tone", "primary");
+    const universal = screen.getByRole("button", { name: /Universal/ });
+    expect(within(universal).getByText("7").closest("[data-slot=badge]")).toHaveAttribute("data-tone", "neutral");
+  });
+
   it("renders expanded sidebar by default", () => {
     const { container } = renderSidebar();
     const nav = container.querySelector("nav");
@@ -152,7 +220,7 @@ describe("Sidebar", () => {
     expect(buttons.indexOf(rules)).toBe(buttons.indexOf(central) + 1);
     fireEvent.click(rules);
     expect(screen.getByTestId("location")).toHaveTextContent("/rules");
-    fireEvent.click(screen.getByRole("button", { name: "折叠侧边栏" }));
+    fireEvent.click(screen.getByRole("button", { name: "收起侧边栏" }));
     expect(screen.getByRole("button", { name: "规则管理" })).toBeInTheDocument();
   });
 
@@ -180,9 +248,19 @@ describe("Sidebar", () => {
     const { container } = renderSidebar();
     const nav = container.querySelector("nav");
 
-    fireEvent.keyDown(screen.getByRole("separator"), { key: "ArrowRight" });
+    const separator = screen.getByRole("separator", { name: "调整侧边栏宽度" });
+    fireEvent.keyDown(separator, { key: "ArrowRight" });
 
     expect(nav).toHaveStyle({ width: "224px" });
+    expect(separator).toHaveAttribute("aria-valuenow", "224");
+    for (let index = 0; index < 20; index += 1) {
+      fireEvent.keyDown(separator, { key: "ArrowRight" });
+    }
+    expect(nav).toHaveStyle({ width: "360px" });
+    for (let index = 0; index < 20; index += 1) {
+      fireEvent.keyDown(separator, { key: "ArrowLeft" });
+    }
+    expect(nav).toHaveStyle({ width: "168px" });
   });
 
   it("renders central, projects, collections, and platform entries", () => {
@@ -209,7 +287,7 @@ describe("Sidebar", () => {
   it("highlights Skill Usage when on /usage", () => {
     renderSidebar("/usage");
     const usageButton = screen.getByRole("button", { name: /技能使用/ });
-    expect(usageButton.className).toContain("bg-sidebar-primary");
+    expect(usageButton.className).toContain("tint-primary");
     expect(usageButton).toHaveAttribute("aria-current", "page");
   });
 
@@ -243,10 +321,10 @@ describe("Sidebar", () => {
     const settingsButton = screen.getByRole("button", { name: /设置/ });
     const centralButton = screen.getByRole("button", { name: /中央技能库/ });
 
-    expect(settingsButton.className).toContain("bg-sidebar-primary");
+    expect(settingsButton.className).toContain("tint-primary");
     expect(settingsButton.className).toContain("font-semibold");
     expect(settingsButton).toHaveAttribute("aria-current", "page");
-    expect(centralButton.className).not.toContain("bg-sidebar-primary");
+    expect(centralButton.className).not.toContain("tint-primary");
     expect(centralButton).not.toHaveAttribute("aria-current");
   });
 
@@ -273,14 +351,14 @@ describe("Sidebar", () => {
   it("highlights the active route", () => {
     renderSidebar("/platform/claude-code");
     const claudeButton = screen.getByRole("button", { name: /Claude Code/ });
-    expect(claudeButton.className).toContain("bg-sidebar-primary");
+    expect(claudeButton.className).toContain("tint-primary");
     expect(claudeButton).toHaveAttribute("aria-current", "page");
   });
 
   it("highlights Central Skills when on /central", () => {
     renderSidebar("/central");
     const centralButton = screen.getByRole("button", { name: /中央技能库/ });
-    expect(centralButton.className).toContain("bg-sidebar-primary");
+    expect(centralButton.className).toContain("tint-primary");
   });
 
   it("routes Universal to its platform page", () => {
@@ -294,8 +372,8 @@ describe("Sidebar", () => {
     const universalButton = screen.getByRole("button", { name: /Universal/ });
     const centralButton = screen.getByRole("button", { name: /中央技能库/ });
 
-    expect(universalButton.className).toContain("bg-sidebar-primary");
-    expect(centralButton.className).not.toContain("bg-sidebar-primary");
+    expect(universalButton.className).toContain("tint-primary");
+    expect(centralButton.className).not.toContain("tint-primary");
   });
 
   it("uses the Universal representative count instead of the Central count", () => {
@@ -389,13 +467,13 @@ describe("Sidebar", () => {
     const dashboardButton = screen.getByRole("button", { name: /Dashboard/ });
     const centralButton = screen.getByRole("button", { name: /中央技能库/ });
 
-    expect(dashboardButton.className).toContain("bg-sidebar-primary");
-    expect(centralButton.className).not.toContain("bg-sidebar-primary");
+    expect(dashboardButton.className).toContain("tint-primary");
+    expect(centralButton.className).not.toContain("tint-primary");
   });
 
   it("keeps Dashboard accessible when collapsed", () => {
     renderSidebar("/dashboard");
-    fireEvent.click(screen.getByRole("button", { name: /折叠侧边栏/ }));
+    fireEvent.click(screen.getByRole("button", { name: /收起侧边栏/ }));
 
     expect(screen.getByRole("button", { name: /Dashboard/ })).toBeInTheDocument();
   });
@@ -512,7 +590,7 @@ describe("Sidebar", () => {
     expect(screen.getByRole("button", { name: "Alpha" })).toBeInTheDocument();
   });
 
-  it.each(["收起项目工作区", "折叠侧边栏"])("removes an open sort menu when clicking %s", async (name) => {
+  it.each(["收起项目工作区", "收起侧边栏"])("removes an open sort menu when clicking %s", async (name) => {
     const user = userEvent.setup();
     useProjectsStore.setState({ projects: [sampleProject({ id: "alpha", name: "Alpha" })] });
     renderSidebar();
@@ -540,7 +618,7 @@ describe("Sidebar", () => {
     });
 
     renderSidebar();
-    fireEvent.click(screen.getByRole("button", { name: "折叠侧边栏" }));
+    fireEvent.click(screen.getByRole("button", { name: "收起侧边栏" }));
 
     expect(screen.getByRole("button", { name: "Alpha" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Claude Code/ })).toBeInTheDocument();

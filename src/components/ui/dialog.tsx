@@ -30,13 +30,12 @@ function DialogOverlay({
     <DialogPrimitive.Backdrop
       data-slot="dialog-overlay"
       className={cn(
-        // Base UI exposes transient animation hooks via data-starting-style /
-        // data-ending-style. Using persistent data-open / data-closed here causes
-        // the blur layer to snap to opacity: 0 before the exit animation starts,
-        // which is visible in WebKit/Tauri as a close-time flash: blur disappears,
-        // reappears for one frame, then fades out. Keep the backdrop visually
-        // stable and animate only on the transient transition attributes.
-        "fixed inset-0 isolate z-50 bg-foreground/10 supports-backdrop-filter:backdrop-blur-xs supports-backdrop-filter:[-webkit-backdrop-filter:blur(4px)] will-change-[opacity,backdrop-filter] data-[starting-style]:animate-in data-[starting-style]:fade-in-0 data-[ending-style]:animate-out data-[ending-style]:fade-out-0 animation-duration-150",
+        // Scrim = canvas colour at 30%, no blur (DESIGN.md dialog). Base UI
+        // exposes transient animation hooks via data-starting-style /
+        // data-ending-style; animating persistent data-open / data-closed
+        // makes the layer snap to opacity 0 before the exit animation, which
+        // WebView2 shows as a close-time flash. Animate transient attrs only.
+        "fixed inset-0 isolate z-50 bg-overlay will-change-[opacity] data-[starting-style]:animate-in data-[starting-style]:fade-in-0 data-[ending-style]:animate-out data-[ending-style]:fade-out-0 animation-duration-150",
         className,
       )}
       {...props}
@@ -48,18 +47,25 @@ function DialogContent({
   className,
   children,
   showCloseButton = true,
+  overlayProps,
   ...props
 }: DialogPrimitive.Popup.Props & {
   showCloseButton?: boolean;
+  /** Extra props for the scrim (e.g. a `data-testid`); mirrors Sheet's `backdropProps`. */
+  overlayProps?: Omit<DialogPrimitive.Backdrop.Props, "className"> &
+    Partial<Record<`data-${string}`, string>>;
 }) {
   const { t } = useTranslation();
   return (
     <DialogPortal>
-      <DialogOverlay />
+      <DialogOverlay {...overlayProps} />
       <DialogPrimitive.Popup
         data-slot="dialog-content"
         className={cn(
-          "fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] sm:max-w-sm -translate-x-1/2 -translate-y-1/2 gap-4 rounded-xl bg-popover p-4 text-sm text-popover-foreground ring-1 ring-foreground/10 outline-none will-change-transform data-[starting-style]:animate-in data-[starting-style]:fade-in-0 data-[starting-style]:zoom-in-95 data-[ending-style]:animate-out data-[ending-style]:fade-out-0 data-[ending-style]:zoom-out-95 animation-duration-100",
+          // L3 overlay: .glass-overlay + 24px dialog blur, rounded-shell,
+          // {spacing.2xl} padding; 150ms fade + 2% scale (reduced motion:
+          // the global fallback collapses it to an instant cut).
+          "glass-overlay glass-overlay-dialog fixed top-1/2 left-1/2 z-50 grid w-full max-w-[calc(100%-2rem)] sm:max-w-sm -translate-x-1/2 -translate-y-1/2 gap-4 rounded-shell p-6 text-sm text-popover-foreground outline-none will-change-transform data-[starting-style]:animate-in data-[starting-style]:fade-in-0 data-[starting-style]:zoom-in-98 data-[ending-style]:animate-out data-[ending-style]:fade-out-0 data-[ending-style]:zoom-out-98 animation-duration-150",
           className,
         )}
         {...props}
@@ -71,7 +77,7 @@ function DialogContent({
             render={
               <Button
                 variant="ghost"
-                className="absolute top-2 right-2"
+                className="absolute top-3 right-3"
                 size="icon-sm"
               />
             }
@@ -108,14 +114,14 @@ function DialogFooter({
     <div
       data-slot="dialog-footer"
       className={cn(
-        "-mx-4 -mb-4 flex flex-col-reverse gap-2 rounded-b-xl border-t bg-muted/50 p-4 sm:flex-row sm:justify-end",
+        "-mx-6 -mb-6 flex flex-col-reverse gap-2 border-t border-border px-6 py-4 sm:flex-row sm:justify-end",
         className,
       )}
       {...props}
     >
       {children}
       {showCloseButton && (
-        <DialogPrimitive.Close render={<Button variant="outline" />}>
+        <DialogPrimitive.Close render={<Button variant="glass" />}>
           {t("common.close")}
         </DialogPrimitive.Close>
       )}
@@ -128,7 +134,7 @@ function DialogTitle({ className, ...props }: DialogPrimitive.Title.Props) {
     <DialogPrimitive.Title
       data-slot="dialog-title"
       className={cn(
-        "font-heading text-base leading-none font-medium",
+        "font-heading text-base leading-snug font-semibold",
         className,
       )}
       {...props}

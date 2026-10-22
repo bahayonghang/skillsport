@@ -278,8 +278,11 @@ describe("DashboardView", () => {
   it("renders status header, work queue and panels from the summary", () => {
     renderDashboard();
 
-    // Hero 营销块已删除：不再有 h1。
-    expect(screen.queryByRole("heading", { level: 1 })).not.toBeInTheDocument();
+    // Hero 营销块已删除；1.1.0 起页面标题区 = PageHeader，唯一 h1 是页面名。
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Dashboard" }),
+    ).toBeInTheDocument();
 
     // 状态头：扫描状态 + 上次扫描 + 汇总句。
     expect(screen.getByText(/Idle|空闲/)).toBeInTheDocument();

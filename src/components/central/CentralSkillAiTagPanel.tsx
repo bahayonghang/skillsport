@@ -55,7 +55,7 @@ export function CentralSkillAiTagPanel({
     <div className="space-y-3">
       <AiTagRateCard profile={aiTagRateProfile} t={t} />
       {!aiTaggingAvailable && (
-        <div className="rounded-xl bg-muted/20 p-3 text-xs text-foreground ring-1 ring-border/90">
+        <div className="rounded-inner bg-accent p-3 text-xs text-foreground">
           {t("central.aiTaggingNeedsConfig")}
         </div>
       )}
@@ -97,7 +97,7 @@ function IdleAiTagPanel({
   return (
     <>
       <DashboardCard
-        icon={<Bot className="size-3.5 text-primary" />}
+        icon={<Bot className="size-3.5 text-primary-text" />}
         title={t("central.aiScopeTitle")}
       >
         <p className="leading-relaxed text-foreground">
@@ -149,7 +149,7 @@ function RunningAiTagPanel({
   return (
     <DashboardCard
       icon={
-        <Loader2 className="size-3.5 animate-spin text-primary motion-reduce:animate-none" />
+        <Loader2 className="size-3.5 animate-spin text-primary-text motion-reduce:animate-none" />
       }
       title={t("central.aiTagCockpitRunningTitle")}
       testId="ai-tag-running-cockpit"
@@ -238,10 +238,10 @@ function SettledAiTagPanel({
         {message && (
           <p
             className={cn(
-              "rounded-lg border p-2.5 text-xs leading-relaxed",
+              "rounded-inner border p-2.5 text-xs leading-relaxed",
               job.status === "failed"
-                ? "border-destructive/30 bg-destructive/10 text-destructive-text"
-                : "border-warning/30 bg-warning/10 text-warning-foreground",
+                ? "border-destructive/30 bg-destructive-tint text-destructive-text"
+                : "border-warning/30 bg-warning-tint text-warning-foreground",
             )}
           >
             {message}
@@ -292,7 +292,7 @@ function AiTagRateCard({
 
   return (
     <DashboardCard
-      icon={<ShieldCheck className="size-3.5 text-primary" />}
+      icon={<ShieldCheck className="size-3.5 text-primary-text" />}
       title={t("central.aiTagRateProfileTitle")}
     >
       <div className="grid grid-cols-3 gap-2 text-center text-ui-meta">
@@ -311,7 +311,7 @@ function AiTagRateCard({
       </div>
       {!profile.isSafeProfile && (
         <div
-          className="mt-3 rounded-lg border border-warning/30 bg-warning/10 p-2.5 text-xs leading-relaxed text-warning-foreground"
+          className="mt-3 rounded-inner border border-warning/30 bg-warning-tint p-2.5 text-xs leading-relaxed text-warning-foreground"
           data-testid="ai-tag-rate-risk"
         >
           <div className="mb-1 flex items-center gap-1.5 font-semibold">
@@ -363,7 +363,7 @@ function ItemCluster({
 }) {
   return (
     <div className="space-y-1.5">
-      <div className="text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <div className="text-xs font-semibold text-muted-foreground">
         {title}
       </div>
       <div className="space-y-1.5">
@@ -371,10 +371,10 @@ function ItemCluster({
           <div
             key={`${item.skillId}:${item.status}`}
             className={cn(
-              "flex min-w-0 items-center justify-between gap-2 rounded-lg border px-2.5 py-2 text-xs",
+              "flex min-w-0 items-center justify-between gap-2 rounded-inner border px-2.5 py-2 text-xs",
               emphasized
-                ? "border-primary/25 bg-primary/10 text-primary"
-                : "border-border/80 bg-muted/10 text-foreground",
+                ? "border-primary/25 bg-primary-tint text-primary-text"
+                : "border-border bg-accent text-foreground",
             )}
           >
             <span className="min-w-0 truncate font-medium">
@@ -393,14 +393,14 @@ function StatusPill({ status, t }: { status: AiTagItemStatus; t: TFunction }) {
     <span
       className={cn(
         "inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ring-1",
-        status === "running" && "bg-primary/10 text-primary ring-primary/20",
-        status === "queued" && "bg-muted text-muted-foreground ring-border",
+        status === "running" && "bg-primary-tint text-primary-text ring-primary/20",
+        status === "queued" && "bg-accent text-muted-foreground ring-border",
         status === "succeeded" &&
           "bg-success/10 text-success-foreground ring-success/20",
         status === "failed" &&
-          "bg-destructive/10 text-destructive-text ring-destructive/20",
+          "bg-destructive-tint text-destructive-text ring-destructive/20",
         status === "cancelled" &&
-          "bg-warning/10 text-warning-foreground ring-warning/20",
+          "bg-warning-tint text-warning-foreground ring-warning/20",
       )}
     >
       {status === "running" ? (
@@ -425,7 +425,7 @@ function ProgressBar({ percent, label }: { percent: number; label: string }) {
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={percent}
-      className="h-2 overflow-hidden rounded-full bg-muted shadow-inner"
+      className="h-2 overflow-hidden rounded-full bg-accent shadow-inner"
     >
       <div
         className="h-full rounded-full bg-primary shadow-[0_0_18px_rgba(139,92,246,0.35)] transition-[width] duration-300 motion-reduce:transition-none"
@@ -448,7 +448,7 @@ function DashboardCard({
 }) {
   return (
     <section
-      className="rounded-xl bg-background p-3 text-xs shadow-sm ring-1 ring-border/90"
+      className="rounded-inner bg-popover p-3 text-xs"
       data-testid={testId}
     >
       <div className="mb-2 flex items-center gap-1.5 font-medium text-foreground">
@@ -468,7 +468,7 @@ function RateMetric({
   value: number | string;
 }) {
   return (
-    <div className="rounded-lg border border-border/70 bg-muted/10 px-2 py-1.5">
+    <div className="rounded-inner bg-accent px-2 py-1.5">
       <div className="font-semibold tabular-nums text-foreground">{value}</div>
       <div className="mt-0.5 text-muted-foreground">{label}</div>
     </div>

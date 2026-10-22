@@ -14,11 +14,13 @@ function Switch({ className, onCheckedChange, ...props }: SwitchProps) {
     <SwitchPrimitive.Root
       data-slot="switch"
       className={cn(
-        "group/switch relative inline-flex h-6 w-10 shrink-0 cursor-pointer rounded-full border-2 border-transparent md:h-5 md:w-9",
-        "transition-colors duration-200",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+        // DESIGN.md: pill track; off = input well + input-stroke edge (≥3:1),
+        // on = mint fill. 1px border + 2px padding seat the thumb.
+        "group/switch relative inline-flex h-6 w-10 shrink-0 cursor-pointer items-center rounded-full border border-input bg-input-surface p-0.5 md:h-5 md:w-9",
+        "transition-[background-color,border-color] duration-200",
+        "hover:border-muted-foreground focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        "bg-input data-[checked]:bg-primary",
+        "data-[checked]:border-primary data-[checked]:bg-primary",
         className
       )}
       onCheckedChange={
@@ -31,9 +33,9 @@ function Switch({ className, onCheckedChange, ...props }: SwitchProps) {
       <SwitchPrimitive.Thumb
         data-slot="switch-thumb"
         className={cn(
-          "pointer-events-none block size-5 rounded-full bg-background shadow-lg ring-0 md:size-4",
-          "transition-transform duration-200",
-          "translate-x-0 group-data-[checked]/switch:translate-x-4"
+          "pointer-events-none block size-4.5 rounded-full bg-muted-foreground md:size-3.5",
+          "transition-[translate,background-color] duration-200",
+          "translate-x-0 group-data-[checked]/switch:translate-x-4 group-data-[checked]/switch:bg-primary-foreground"
         )}
       />
     </SwitchPrimitive.Root>

@@ -1,9 +1,8 @@
 import { useTranslation } from "react-i18next";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Blocks, Keyboard, Moon, Plus, Search, Sun } from "lucide-react";
+import { Blocks, Keyboard, Plus, Search } from "lucide-react";
 
 import { usePlatformStore } from "@/stores/platformStore";
-import { useThemeStore, type ThemeFlavor } from "@/stores/themeStore";
 import { TargetQuickSwitcher } from "@/components/layout/TargetQuickSwitcher";
 import { Button } from "@/components/ui/button";
 import { ShortcutHint } from "@/components/ui/shortcut-hint";
@@ -20,22 +19,10 @@ interface TopBarProps {
   onShortcutsClick: () => void;
 }
 
-const LIGHT_FLAVORS: ThemeFlavor[] = ["latte", "claude-light"];
-const FLAVOR_TOGGLE_MAP: Record<ThemeFlavor, ThemeFlavor> = {
-  mocha: "latte",
-  macchiato: "latte",
-  frappe: "latte",
-  "claude-dark": "claude-light",
-  latte: "mocha",
-  "claude-light": "claude-dark",
-};
-
 export function TopBar({ onSearchClick, onShortcutsClick }: TopBarProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const flavor = useThemeStore((s) => s.flavor);
-  const setFlavor = useThemeStore((s) => s.setFlavor);
 
   const agents = usePlatformStore((s) => s.agents);
   const skillsByAgent = usePlatformStore((s) => s.skillsByAgent);
@@ -43,8 +30,6 @@ export function TopBar({ onSearchClick, onShortcutsClick }: TopBarProps) {
     usePlatformStore((s) => s.categoryVisibility) ??
     DEFAULT_PLATFORM_CATEGORY_VISIBILITY;
   const platformTargets = getPlatformTargetGroups(agents, categoryVisibility);
-
-  const isLightFlavor = LIGHT_FLAVORS.includes(flavor);
 
   // Determine current view label and count
   const viewInfo = (() => {
@@ -86,20 +71,29 @@ export function TopBar({ onSearchClick, onShortcutsClick }: TopBarProps) {
     return { label: "", count: undefined };
   })();
 
-  function handleToggleTheme() {
-    setFlavor(FLAVOR_TOGGLE_MAP[flavor] ?? "latte");
-  }
+  // C5 D-S1 / D-S3: a transparent toolbar sitting straight on the canvas (no
+  // fill, no bottom border). The search trigger is a glass capsule; small
+  // icon buttons are 32px with a 40px hit area (icon-control-hit-area.md) and
+  // the shared outline focus ring. The light/dark toggle lives only in the
+  // sidebar footer.
+  const searchTriggerClass = cn(
+    "glass-panel glass-panel-hover focus-ring flex items-center gap-2 h-8 rounded-full px-3.5 text-sm text-muted-foreground cursor-pointer",
+    "transition-[box-shadow,color] hover:text-foreground",
+  );
+  const iconButtonClass =
+    "focus-ring relative inline-flex size-8 shrink-0 items-center justify-center rounded-control text-muted-foreground transition-colors duration-150 cursor-pointer hover:bg-accent hover:text-foreground after:absolute after:left-1/2 after:top-1/2 after:size-10 after:min-h-[40px] after:min-w-[40px] after:-translate-x-1/2 after:-translate-y-1/2 after:content-['']";
 
   return (
-    <header className="relative flex items-center h-12 px-4 border-b border-border bg-sidebar text-sidebar-foreground shrink-0">
+    <header className="relative flex h-12 shrink-0 items-center gap-2 px-3 text-foreground">
       {/* App icon */}
       <button
+        type="button"
         onClick={() => navigate("/dashboard")}
-        className="z-10 p-1.5 rounded-md transition-colors cursor-pointer text-sidebar-primary hover:bg-muted/60 shrink-0"
+        className={cn(iconButtonClass, "z-10 text-primary-text hover:text-primary-text")}
         aria-label={t("app.name")}
         title={t("app.name")}
       >
-        <Blocks className="size-4" />
+        <Blocks className="size-5" aria-hidden="true" />
       </button>
 
       <div className="hidden flex-1 lg:block" />
@@ -107,35 +101,29 @@ export function TopBar({ onSearchClick, onShortcutsClick }: TopBarProps) {
       <div className="pointer-events-none absolute inset-0 hidden items-center justify-center px-16 lg:flex">
         <div className="pointer-events-auto flex items-center gap-3 max-w-[min(56rem,calc(100vw-14rem))]">
           <button
+            type="button"
             onClick={onSearchClick}
-            className={cn(
-              "flex items-center gap-2 h-8 w-[min(26rem,40vw)] min-w-[14rem] px-3 rounded-md text-sm",
-              "bg-muted/40 text-muted-foreground border border-border/50",
-              "hover:bg-muted/60 hover:border-border transition-colors cursor-pointer",
-            )}
+            className={cn(searchTriggerClass, "w-[min(26rem,40vw)] min-w-[14rem]")}
           >
-            <Search className="size-3.5 shrink-0" />
+            <Search className="size-4 shrink-0" aria-hidden="true" />
             <span className="truncate flex-1 text-left">
               {t("globalSearch.trigger")}
             </span>
             <ShortcutHint
               shortcut="mod+k"
-              className="hidden rounded border border-border/50 px-1 py-0.5 text-ui-meta text-muted-foreground sm:inline-flex"
+              className="hidden rounded-full border border-border px-1.5 py-0.5 text-ui-meta text-muted-foreground sm:inline-flex"
             />
           </button>
         </div>
       </div>
 
-      <div className="ml-3 flex min-w-0 flex-1 items-center gap-2 lg:hidden">
+      <div className="ml-1 flex min-w-0 flex-1 items-center gap-2 lg:hidden">
         <button
+          type="button"
           onClick={onSearchClick}
-          className={cn(
-            "flex min-w-0 flex-1 items-center gap-2 h-8 px-3 rounded-md text-sm",
-            "bg-muted/40 text-muted-foreground border border-border/50",
-            "hover:bg-muted/60 hover:border-border transition-colors cursor-pointer",
-          )}
+          className={cn(searchTriggerClass, "min-w-0 flex-1")}
         >
-          <Search className="size-3.5 shrink-0" />
+          <Search className="size-4 shrink-0" aria-hidden="true" />
           <span className="truncate flex-1 text-left">
             {t("globalSearch.trigger")}
           </span>
@@ -149,7 +137,7 @@ export function TopBar({ onSearchClick, onShortcutsClick }: TopBarProps) {
 
       <Button
         size="sm"
-        className="ml-2 hidden lg:inline-flex"
+        className="z-10 hidden lg:inline-flex"
         onClick={() => navigate("/marketplace")}
         title={t("topbar.importSkill")}
       >
@@ -160,39 +148,13 @@ export function TopBar({ onSearchClick, onShortcutsClick }: TopBarProps) {
       <TargetQuickSwitcher />
 
       <button
+        type="button"
         onClick={onShortcutsClick}
-        className={cn(
-          "z-10 p-1.5 rounded-md transition-colors cursor-pointer shrink-0 focus-ring",
-          "text-muted-foreground hover:text-foreground hover:bg-muted/60",
-        )}
+        className={cn(iconButtonClass, "z-10")}
         aria-label={t("shortcuts.openButton")}
         title={t("shortcuts.openButton")}
       >
-        <Keyboard className="size-4" />
-      </button>
-
-      <button
-        onClick={handleToggleTheme}
-        className={cn(
-          "z-10 p-1.5 rounded-md transition-colors cursor-pointer shrink-0",
-          "text-muted-foreground hover:text-foreground hover:bg-muted/60",
-        )}
-        aria-label={
-          isLightFlavor
-            ? t("topbar.themeToggleDark")
-            : t("topbar.themeToggleLight")
-        }
-        title={
-          isLightFlavor
-            ? t("topbar.themeToggleDark")
-            : t("topbar.themeToggleLight")
-        }
-      >
-        {isLightFlavor ? (
-          <Moon className="size-4" />
-        ) : (
-          <Sun className="size-4" />
-        )}
+        <Keyboard className="size-4" aria-hidden="true" />
       </button>
     </header>
   );

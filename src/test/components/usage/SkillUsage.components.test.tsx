@@ -154,7 +154,11 @@ describe("UsageFilterButton", () => {
     render(<UsageFilterButton pressed>All</UsageFilterButton>);
     const button = screen.getByRole("button", { name: "All" });
     expect(button).toHaveAttribute("aria-pressed", "true");
-    expect(button).toHaveClass("hover:bg-primary", "dark:hover:bg-primary");
+    expect(button).toHaveClass(
+      "bg-primary-tint",
+      "hover:bg-primary-tint",
+      "dark:hover:bg-primary-tint",
+    );
     expect(button).not.toHaveClass("dark:hover:bg-muted/50");
   });
 });

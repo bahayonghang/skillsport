@@ -1,4 +1,4 @@
-import { ACCENT_NAMES, type CatppuccinAccent, type ThemeFlavor } from "@/stores/themeStore";
+import type { ThemeFlavor } from "@/stores/themeStore";
 import { AddDirectoryDialog } from "@/components/settings/AddDirectoryDialog";
 import { AboutSettingsSection } from "@/components/settings/AboutSettingsSection";
 import { AiSettingsSection } from "@/components/settings/AiSettingsSection";
@@ -40,10 +40,8 @@ import type {
 import type { UpdateCheckMode } from "@/lib/updateCheckMode";
 
 type Message = { type: "success" | "error"; text: string; detail?: string | null };
-type CatppuccinVarMap = Record<CatppuccinAccent, string>;
 
 export interface SettingsPageSectionsProps {
-  accent: CatppuccinAccent;
   activeTarget: TargetSummary;
   aiApiKeyState: AiApiKeyState;
   aiSaveError: string | null;
@@ -52,15 +50,12 @@ export interface SettingsPageSectionsProps {
   aiTestResult: AiConnectionTestResult | null;
   aiTesting: boolean;
   appVersion: string;
-  ctpVarMap: CatppuccinVarMap;
   customAgents: AgentWithStatus[];
   dbPathDisplay: string;
   deletingTargetId: string | null;
   editingPlatform: AgentWithStatus | null;
   editingTargetId: string | null;
   flavor: ThemeFlavor;
-  flavorColors: Record<ThemeFlavor, string>;
-  flavorOrder: ThemeFlavor[];
   githubPatInput: string;
   githubPatMessage: Message | null;
   githubPatState: GitHubPatState;
@@ -144,7 +139,6 @@ export interface SettingsPageSectionsProps {
   onRemoveDirectory: (path: string) => void;
   onRemovePlatform: (agentId: string) => void;
   onSaveGitHubPat: () => void;
-  onSetAccent: (accent: CatppuccinAccent) => void;
   onSetFlavor: (flavor: ThemeFlavor) => void;
   onSetPlatformVisibilityQuery: (value: string) => void;
   onSetShowAiTestDetails: (value: boolean | ((current: boolean) => boolean)) => void;
@@ -225,13 +219,7 @@ function SettingsAppearancePage(props: SettingsPageSectionsProps) {
   return (
     <section id="appearance-section" className="scroll-mt-24">
       <AppearanceSettingsSection
-        accent={props.accent}
-        accentNames={ACCENT_NAMES}
-        ctpVarMap={props.ctpVarMap}
         flavor={props.flavor}
-        flavorColors={props.flavorColors}
-        flavorOrder={props.flavorOrder}
-        onSetAccent={props.onSetAccent}
         onSetFlavor={props.onSetFlavor}
       />
     </section>

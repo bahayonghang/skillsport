@@ -34,7 +34,7 @@ export function CustomPlatformsSettingsSection({
       icon={<Cpu className="size-5 shrink-0 text-muted-foreground" />}
       action={
         <Button
-          variant="outline"
+          variant="glass"
           size="sm"
           onClick={onAddPlatform}
           aria-label={t("settings.addPlatformAriaLabel")}
@@ -55,7 +55,7 @@ export function CustomPlatformsSettingsSection({
             {t("settings.noPlatforms")}
           </p>
         ) : (
-          <div className="rounded-lg border border-border overflow-hidden">
+          <div className="overflow-hidden rounded-inner bg-accent">
             {customAgents.map((agent) => (
               <CustomPlatformRow
                 key={agent.id}
@@ -87,17 +87,17 @@ function CustomPlatformRow({
   const { t } = useTranslation();
 
   return (
-    <div className="flex items-center gap-3 py-2.5 px-4 border-b border-border/50 last:border-0">
+    <div className="flex items-center gap-3 py-2.5 px-4 border-b border-border last:border-0">
       <Cpu className="size-4 text-muted-foreground shrink-0" />
       <div className="flex-1 min-w-0">
         <div className="text-sm font-medium truncate">{agent.display_name}</div>
-        <div className="text-xs text-muted-foreground truncate mt-0.5">
+        <div className="mt-0.5 truncate font-mono text-ui-meta text-muted-foreground">
           {formatPathForDisplay(agent.global_skills_dir)}
         </div>
       </div>
       <div className="flex items-center gap-2 shrink-0">
         <Button
-          variant="outline"
+          variant="glass"
           size="sm"
           onClick={onEdit}
           aria-label={t("settings.editPlatformLabel", { name: agent.display_name })}

@@ -134,7 +134,7 @@ export function LocalArchiveImportWizard({
         {step === "choose" && (
           <div className="flex flex-col items-center gap-4 py-8">
             {previewErrorMessage && (
-              <div className="flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive-text">
+              <div className="flex items-start gap-2 rounded-inner bg-destructive-tint p-3 text-sm text-destructive-text">
                 <AlertCircle className="size-4 shrink-0" />
                 <span>{previewErrorMessage}</span>
               </div>
@@ -161,12 +161,12 @@ export function LocalArchiveImportWizard({
         {step === "preview" && skill && preview && (
           <div className="flex flex-col gap-4">
             {importErrorMessage && (
-              <div className="flex items-start gap-2 rounded-lg bg-destructive/10 p-3 text-sm text-destructive-text">
+              <div className="flex items-start gap-2 rounded-inner bg-destructive-tint p-3 text-sm text-destructive-text">
                 <AlertCircle className="size-4 shrink-0" />
                 <span>{importErrorMessage}</span>
               </div>
             )}
-            <div className="rounded-lg border border-border/60 p-3">
+            <div className="rounded-inner p-3">
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{skill.skillName}</p>
@@ -195,7 +195,7 @@ export function LocalArchiveImportWizard({
             </div>
 
             {skill.conflict && (
-              <div className="rounded-lg border border-warning/40 bg-warning/5 p-3">
+              <div className="rounded-inner border border-warning/40 bg-warning-tint p-3">
                 <p className="text-sm font-medium text-warning-foreground">
                   {t("central.localArchiveWizard.conflictDetected")}
                 </p>
@@ -207,7 +207,7 @@ export function LocalArchiveImportWizard({
               </div>
             )}
 
-            <div className="h-56 min-h-0 overflow-hidden rounded-lg border border-border/60 p-3">
+            <div className="h-56 min-h-0 overflow-hidden rounded-inner p-3">
               <GitHubImportFileTree
                 files={skill.files}
                 rootName={skill.rootDirectory || skill.skillId}
@@ -254,7 +254,7 @@ export function LocalArchiveImportWizard({
 
         {step === "importing" && (
           <div className="flex flex-col items-center gap-4 py-8">
-            <Loader2 className="size-6 animate-spin text-primary" />
+            <Loader2 className="size-6 animate-spin text-primary-text" />
             <p className="text-sm text-muted-foreground">
               {t("central.localArchiveWizard.importing")}
             </p>

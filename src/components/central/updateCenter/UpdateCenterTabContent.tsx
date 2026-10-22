@@ -240,7 +240,7 @@ function FailedRepositoriesPanel({
         return (
           <div
             key={`${item.repositoryId}:${item.errorCode ?? item.error}`}
-            className="rounded-lg border border-destructive/30 bg-destructive/5 p-3"
+            className="rounded-inner border border-destructive/30 bg-destructive-tint p-3"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">

@@ -149,7 +149,7 @@ export function ProjectInstallDialog({
           </DialogDescription>
 
           <div className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            <p className="text-xs font-medium text-muted-foreground">
               {t("projectInstall.pickSkill")}
             </p>
             <div className="relative">
@@ -158,20 +158,20 @@ export function ProjectInstallDialog({
                 placeholder={t("projectInstall.searchSkills")}
                 value={skillSearch}
                 onChange={(e) => setSkillSearch(e.target.value)}
-                className="pl-7 pr-7 h-8 text-sm"
+                className="h-8 rounded-full pr-7 pl-7 text-sm"
               />
               {skillSearch && (
                 <button
                   type="button"
                   onClick={() => setSkillSearch("")}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 rounded text-muted-foreground hover:text-foreground hover:bg-muted"
+                  className="focus-ring absolute right-1 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
                   aria-label={t("projects.clearSearch")}
                 >
                   <X className="size-3" />
                 </button>
               )}
             </div>
-            <div className="max-h-48 overflow-y-auto rounded-md border border-border">
+            <div className="scrollbar-subtle max-h-48 overflow-y-auto rounded-inner bg-accent p-1">
               {filteredSkills.length === 0 ? (
                 <p className="text-xs text-muted-foreground px-3 py-4 text-center">
                   {t("projectInstall.noSkills")}
@@ -185,10 +185,10 @@ export function ProjectInstallDialog({
                       type="button"
                       onClick={() => setSelectedSkillId(skill.id)}
                       className={cn(
-                        "w-full text-left px-3 py-2 text-sm border-b border-border last:border-0 cursor-pointer transition-colors",
+                        "focus-ring w-full cursor-pointer rounded-control px-3 py-2 text-left text-sm transition-colors",
                         isSelected
-                          ? "bg-primary/10 text-foreground"
-                          : "hover:bg-muted/40",
+                          ? "bg-primary-tint text-primary-text"
+                          : "hover:bg-popover",
                       )}
                     >
                       <div className="font-medium truncate">{skill.name}</div>
@@ -205,7 +205,7 @@ export function ProjectInstallDialog({
           </div>
 
           <div className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            <p className="text-xs font-medium text-muted-foreground">
               {t("projectInstall.pickAgents")}
             </p>
             <PlatformMultiSelectGrid
@@ -236,7 +236,7 @@ export function ProjectInstallDialog({
           </div>
 
           <div className="space-y-2">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+            <p className="text-xs font-medium text-muted-foreground">
               {t("installDialog.installMethod")}
             </p>
             <RadioGroup

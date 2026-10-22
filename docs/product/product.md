@@ -1,5 +1,7 @@
 # Product
 
+> Archived product summary. The current product brief is the repository-root `PRODUCT.md`; the 1.1.0 visual source is `DESIGN.md`.
+
 ## Register
 
 product
@@ -32,4 +34,4 @@ Do not look like a generic SaaS dashboard, a marketplace landing page, or a deco
 
 ## Accessibility & Inclusion
 
-Aim for WCAG AA. Preserve keyboard access for dialogs, lists, search, destructive actions, and settings. Support dark and light Catppuccin themes without relying on color alone for status. Respect reduced-motion expectations and keep touch targets usable on narrow windows.
+Aim for WCAG AA. Preserve keyboard access for dialogs, lists, search, destructive actions, and settings. Support the Glass Light and Glass Dark themes without relying on color alone for status. Respect reduced-motion expectations and keep touch targets usable on narrow windows.

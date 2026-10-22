@@ -247,7 +247,7 @@ export function SkillsCliUninstallDialog({
             {remainingNames.map((name) => (
               <li
                 key={name}
-                className="rounded-full border border-border px-2 py-0.5 text-xs"
+                className="rounded-full bg-accent px-2 py-0.5 text-xs text-muted-foreground"
               >
                 {name}
               </li>
@@ -284,7 +284,7 @@ export function SkillsCliUninstallDialog({
                 <div
                   role="alert"
                   data-testid="skills-cli-uninstall-conflicts"
-                  className="rounded-md border border-destructive/30 bg-destructive/10 p-2 text-destructive-text"
+                  className="rounded-control bg-destructive-tint p-2 text-destructive-text"
                 >
                   <p>{t("skillsCli.uninstallImpact.conflicts")}</p>
                   <ul className="mt-1 space-y-0.5">
@@ -303,7 +303,7 @@ export function SkillsCliUninstallDialog({
               {hasConflicts ? (
                 <label
                   data-testid="skills-cli-uninstall-force-ack"
-                  className="flex items-start gap-2 rounded-md border border-border p-2 text-sm"
+                  className="flex items-start gap-2 rounded-control bg-accent p-2 text-sm"
                 >
                   <Checkbox
                     checked={forceAcknowledged}
@@ -350,7 +350,7 @@ export function SkillsCliUninstallDialog({
         <DialogFooter>
           <Button
             type="button"
-            variant="outline"
+            variant="glass"
             disabled={isMutating}
             onClick={() => onOpenChange(false)}
           >

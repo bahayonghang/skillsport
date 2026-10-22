@@ -27,9 +27,9 @@ export function InstalledPlatformList({
   return (
     <div
       data-testid="detail-installed-platforms"
-      className="mt-2 space-y-1.5 rounded-lg border border-border/60 bg-background/70 p-2"
+      className="mt-2 space-y-1.5 rounded-inner bg-popover p-2"
     >
-      <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="text-xs font-medium text-muted-foreground">
         {t("detail.installedPlatforms")}
       </div>
       <ul className="space-y-1">
@@ -42,7 +42,7 @@ export function InstalledPlatformList({
             <li
               key={row.agentId}
               data-testid={`detail-installed-platform-${row.agentId}`}
-              className="group flex min-h-8 items-center gap-2 rounded-md border border-border/50 bg-muted/20 px-2 py-1"
+              className="group flex min-h-8 items-center gap-2 rounded-control bg-accent px-2 py-1"
               title={`${row.displayName} - ${formatPathForDisplay(row.installedPath)}`}
             >
               <PlatformIcon

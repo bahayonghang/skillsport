@@ -1,14 +1,4 @@
-import type { ComponentType } from "react";
-import {
-  AlertCircle,
-  AlertTriangle,
-  Ban,
-  CheckCircle2,
-  Clock3,
-  Copy,
-  PauseCircle,
-  Terminal,
-} from "lucide-react";
+import { Copy, Terminal } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
@@ -17,7 +7,9 @@ import {
   safeCorrelationId,
   type OperationDiagnosticModel,
 } from "@/components/logs/logDiagnostics";
+import { logStatusBadge } from "@/components/logs/logStatusBadge";
 import { formatLogAbsoluteTime } from "@/components/logs/logsUtils";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -34,40 +26,6 @@ interface OperationLogDetailDialogProps {
   entry: OperationLogEntry | null;
   onOpenChange: (open: boolean) => void;
   onInspectRuntime?: (operationId: string) => void;
-}
-
-interface StatusVisual {
-  icon: ComponentType<{ className?: string }>;
-  className: string;
-}
-
-function statusVisual(status: string): StatusVisual {
-  switch (status) {
-    case "succeeded":
-      return {
-        icon: CheckCircle2,
-        className: "bg-success/10 text-success-foreground",
-      };
-    case "failed":
-      return {
-        icon: AlertCircle,
-        className: "bg-destructive/10 text-destructive-text",
-      };
-    case "partial":
-      return {
-        icon: AlertTriangle,
-        className: "bg-warning/10 text-warning-foreground",
-      };
-    case "cancelled":
-      return { icon: Ban, className: "bg-muted text-muted-foreground" };
-    case "interrupted":
-      return {
-        icon: PauseCircle,
-        className: "bg-warning/10 text-warning-foreground",
-      };
-    default:
-      return { icon: Clock3, className: "bg-info/10 text-info-foreground" };
-  }
 }
 
 function DetailField({
@@ -147,8 +105,7 @@ export function OperationLogDetailDialog({
 }: OperationLogDetailDialogProps) {
   const { t } = useTranslation();
   const diagnostic = entry ? buildOperationDiagnostic(entry) : null;
-  const visual = statusVisual(entry?.status ?? "started");
-  const StatusIcon = visual.icon;
+  const visual = logStatusBadge(entry?.status ?? "started");
   const fallbackFailureMessage = t("backendErrors.central_updates.item_failed");
   const reviewedReason = diagnostic?.errorCode
     ? formatBackendError(
@@ -175,9 +132,9 @@ export function OperationLogDetailDialog({
       <DialogContent
         data-testid="operation-log-detail-dialog"
         showCloseButton
-        className="grid max-h-[calc(100dvh-2rem)] w-full grid-rows-[auto_minmax(0,1fr)] gap-0 overflow-hidden bg-background p-0 sm:max-w-[35rem]"
+        className="grid max-h-[calc(100dvh-2rem)] w-full grid-rows-[auto_minmax(0,1fr)] gap-0 overflow-hidden p-0 sm:max-w-[35rem]"
       >
-        <header className="min-w-0 border-b border-border px-4 py-3 pr-12">
+        <header className="min-w-0 border-b border-border px-5 py-4 pr-12">
           <DialogTitle>{t("logs.detailTitle")}</DialogTitle>
           {entry ? (
             <div className="mt-1 flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
@@ -204,20 +161,14 @@ export function OperationLogDetailDialog({
           ) : null}
         </header>
 
-        <DialogBody className="max-h-none min-h-0 overflow-y-auto px-4 py-4">
+        <DialogBody className="max-h-none min-h-0 overflow-y-auto px-5 py-4">
           {entry && diagnostic ? (
             <div className="space-y-4">
-              <section className="rounded-lg border border-border bg-muted/20 p-3">
+              <section className="rounded-inner bg-accent p-3">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span
-                    className={cn(
-                      "inline-flex h-6 items-center gap-1 rounded-full px-2 text-xs font-medium",
-                      visual.className,
-                    )}
-                  >
-                    <StatusIcon className="size-3.5" />
+                  <Badge tone={visual.tone} icon={visual.icon}>
                     {t(statusLabelKey(entry.status))}
-                  </span>
+                  </Badge>
                   <span className="min-w-0 break-all font-mono text-xs text-muted-foreground">
                     {entry.action}
                   </span>
@@ -230,7 +181,7 @@ export function OperationLogDetailDialog({
               </section>
 
               <section className="grid gap-3 sm:grid-cols-2">
-                <div className="rounded-lg border border-border p-3">
+                <div className="rounded-inner bg-accent p-3">
                   <h3 className="text-xs font-medium text-muted-foreground">
                     {t("logs.diagnostics.reason")}
                   </h3>
@@ -239,7 +190,7 @@ export function OperationLogDetailDialog({
                       t(`logs.diagnostics.reasons.${reasonKey(entry.status)}`)}
                   </p>
                 </div>
-                <div className="rounded-lg border border-border p-3">
+                <div className="rounded-inner bg-accent p-3">
                   <h3 className="text-xs font-medium text-muted-foreground">
                     {t("logs.diagnostics.nextAction")}
                   </h3>
@@ -254,7 +205,7 @@ export function OperationLogDetailDialog({
               {diagnostic.correlationId && onInspectRuntime ? (
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="glass"
                   size="sm"
                   className="w-full justify-center"
                   onClick={() => onInspectRuntime(diagnostic.correlationId!)}
@@ -269,7 +220,7 @@ export function OperationLogDetailDialog({
                 <h3 className="mb-2 text-xs font-semibold text-muted-foreground">
                   {t("logs.diagnostics.title")}
                 </h3>
-                <dl className="grid gap-3 rounded-lg border border-border p-3 sm:grid-cols-2">
+                <dl className="grid gap-3 rounded-inner bg-accent p-3 sm:grid-cols-2">
                   <DetailField
                     label={t("logs.fields.operationId")}
                     value={
@@ -311,7 +262,7 @@ export function OperationLogDetailDialog({
                 <h3 className="mb-2 text-xs font-semibold text-muted-foreground">
                   {t("logs.diagnostics.metadata")}
                 </h3>
-                <dl className="grid gap-3 rounded-lg border border-border p-3 sm:grid-cols-2">
+                <dl className="grid gap-3 rounded-inner bg-accent p-3 sm:grid-cols-2">
                   <DetailField
                     label={t("logs.fields.createdAt")}
                     value={formatLogAbsoluteTime(entry.createdAt, {
@@ -350,7 +301,7 @@ export function OperationLogDetailDialog({
                     {diagnostic.failureRows.map((item, index) => (
                       <li
                         key={`${item.errorCode}-${index}`}
-                        className="rounded-lg border border-border bg-muted/20 p-3 text-sm"
+                        className="rounded-inner bg-destructive-tint p-3 text-sm text-destructive-text"
                       >
                         <div>
                           {formatBackendError(
@@ -375,8 +326,8 @@ export function OperationLogDetailDialog({
                 </section>
               ) : null}
 
-              <details className="rounded-lg border border-border">
-                <summary className="cursor-pointer px-3 py-2 text-sm font-medium text-foreground">
+              <details className="rounded-inner bg-accent">
+                <summary className="focus-ring cursor-pointer rounded-inner px-3 py-2 text-sm font-medium text-foreground">
                   {t("logs.diagnostics.structuredDetails")}
                 </summary>
                 <div className="border-t border-border p-3">
@@ -397,7 +348,7 @@ export function OperationLogDetailDialog({
                           {t("logs.copy.json")}
                         </Button>
                       </div>
-                      <pre className="rounded-lg bg-muted/30 p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap break-all">
+                      <pre className="rounded-control bg-input-surface p-3 font-mono text-xs leading-relaxed whitespace-pre-wrap break-all">
                         {diagnostic.formattedDetails}
                       </pre>
                     </>

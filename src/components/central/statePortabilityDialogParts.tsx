@@ -12,7 +12,7 @@ export function TargetBoundaryBadge({
 }) {
   return (
     <div
-      className="mt-2 inline-flex max-w-full items-center gap-2 rounded-md border border-border bg-muted/30 px-2.5 py-1.5 text-xs"
+      className="mt-2 inline-flex max-w-full items-center gap-2 rounded-control border border-border bg-accent px-2.5 py-1.5 text-xs"
       data-testid="central-portability-active-target"
     >
       <Server className="size-3.5 shrink-0 text-muted-foreground" />
@@ -38,13 +38,13 @@ export function JsonViewToggle({
   prettyLabel: string;
 }) {
   return (
-    <div className="inline-flex rounded-md border border-border bg-muted/40 p-1">
+    <div className="inline-flex rounded-control border border-border bg-accent p-1">
       <button
         type="button"
         data-testid="central-portability-raw-json"
         className={cn(
-          "rounded-sm px-3 py-1.5 text-xs",
-          value === "raw" ? "bg-background shadow-sm" : "text-muted-foreground",
+          "rounded-control px-3 py-1.5 text-xs",
+          value === "raw" ? "bg-popover" : "text-muted-foreground",
         )}
         onClick={() => onChange("raw")}
       >
@@ -54,9 +54,9 @@ export function JsonViewToggle({
         type="button"
         data-testid="central-portability-pretty-json"
         className={cn(
-          "rounded-sm px-3 py-1.5 text-xs",
+          "rounded-control px-3 py-1.5 text-xs",
           value === "pretty"
-            ? "bg-background shadow-sm"
+            ? "bg-popover"
             : "text-muted-foreground",
         )}
         onClick={() => onChange("pretty")}
@@ -70,7 +70,7 @@ export function JsonViewToggle({
 
 export function SummaryTile({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-md border border-border bg-muted/30 p-3">
+    <div className="rounded-control border border-border bg-accent p-3">
       <div className="text-xs text-muted-foreground">{label}</div>
       <div className="mt-1 text-2xl font-semibold">{value}</div>
     </div>

@@ -26,7 +26,8 @@
 - Discover scan for project-level skill libraries on local disks.
 - Marketplace browsing and GitHub repository import with authenticated requests and retry fallback.
 - Fast search for large skill libraries with deferred queries, lazy indexing, and virtualization.
-- Bilingual UI, Catppuccin themes, accent colors, onboarding, and responsive navigation.
+- Light Glass interface: translucent panels on a mint-to-lavender canvas, with Glass Light and Glass Dark themes, a sans-serif (Geist) body font, and the Windows 11 Mica window material (opaque fallback on Windows 10).
+- Bilingual UI, onboarding, and responsive navigation.
 - **Central Library V2 (default)**: structured query syntax (`tag:`, `repo:`, `owner:`, `has:source`, etc.), URL-as-state, saved views, command palette (`Ctrl+K`), tag groups, group-by views (none / repository / owner / tag / status). Use the "Switch to classic layout" link in the Beta badge area, or set `featureFlag.central.newLayout=off` in DevTools localStorage, to fall back to the V1 layout.
 
 ## Rules
@@ -60,9 +61,9 @@ Remote mode manages the selected remote user's directories only. It does not mod
 
 ![Platform skill view](images/06.png)
 
-### Discover local project skill libraries
+### Manage project-local skills
 
-![Discover project skill libraries](images/03.png)
+![Project skills view](images/03.png)
 
 ### Browse marketplace publishers and skills
 
@@ -186,7 +187,7 @@ Custom platforms can be added through Settings.
 | State management | Zustand |
 | Markdown | react-markdown |
 | i18n | react-i18next, i18next-browser-languagedetector |
-| Theming | Catppuccin 4-flavor palette |
+| Theming | Light Glass design tokens (Glass Light / Glass Dark) |
 | Backend | Rust (serde, sqlx, chrono, uuid) |
 | Database | SQLite via sqlx (WAL mode) |
 | Routing | react-router-dom v7 |

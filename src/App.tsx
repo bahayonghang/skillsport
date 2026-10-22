@@ -68,16 +68,30 @@ const SkillUsageView = lazy(() =>
   }))
 );
 
+// DEV-only primitives gallery (C4 visual verification). The `import.meta.env.DEV`
+// guard is statically false in production builds, so the route and its chunk
+// are dropped from the bundle.
+const PrimitivesGallery = import.meta.env.DEV
+  ? lazy(() =>
+      import("@/dev/PrimitivesGallery").then(({ PrimitivesGallery }) => ({
+        default: PrimitivesGallery,
+      }))
+    )
+  : null;
+
 function RouteLoadingFallback() {
   const { t } = useTranslation();
 
+  // C5 D-S8: no page fill, so the AppShell canvas shows through; the status
+  // is a glass capsule (overlay-strength fill so it reads on the bare canvas)
+  // with a mint dot plus text — never colour alone.
   return (
     <div
       role="status"
       aria-live="polite"
-      className="flex h-full items-center justify-center bg-background text-sm text-muted-foreground"
+      className="flex h-full items-center justify-center text-sm text-muted-foreground"
     >
-      <div className="flex items-center gap-2 rounded-full border border-border bg-card/80 px-3 py-1.5 shadow-sm">
+      <div className="flex items-center gap-2 rounded-full border border-glass-stroke bg-popover px-3.5 py-1.5 shadow-glass ring-1 ring-glass-hairline">
         <span className="size-2 animate-pulse rounded-full bg-primary" aria-hidden />
         <span>{t("common.loading")}</span>
       </div>
@@ -171,6 +185,12 @@ function App() {
           path="settings/*"
           element={lazyPage(<SettingsView />)}
         />
+        {PrimitivesGallery ? (
+          <Route
+            path="__primitives"
+            element={lazyPage(<PrimitivesGallery />)}
+          />
+        ) : null}
       </Route>
     </Routes>
   );

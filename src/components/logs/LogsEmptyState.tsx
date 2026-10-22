@@ -22,7 +22,7 @@ export function LogsEmptyState({
       <Inbox className="size-10 text-muted-foreground" />
       <p className="text-sm text-muted-foreground">{t("logs.empty")}</p>
       {hasFilters && (
-        <Button variant="outline" size="sm" onClick={onResetFilters}>
+        <Button variant="glass" size="sm" onClick={onResetFilters}>
           {t("logs.emptyCta")}
         </Button>
       )}

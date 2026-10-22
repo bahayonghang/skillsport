@@ -10,6 +10,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { SkillDetailModalShell } from "@/components/skill/SkillDetailModalShell";
 import { SkillDetailFileTree } from "@/components/skill/SkillDetailFileTree";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { isTauriRuntime } from "@/lib/ipc";
 import { MarketplaceSkillDetailContent } from "./MarketplaceSkillDetailContent";
@@ -104,10 +105,9 @@ export function MarketplaceSkillDetailDrawer({
                   {skill.name}
                 </h1>
                 {skill.installed ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                    <CheckCircle2 className="size-3.5" />
+                  <Badge tone="success" icon={<CheckCircle2 />}>
                     {t("marketplace.installed")}
-                  </span>
+                  </Badge>
                 ) : null}
               </div>
               {skill.description ? (
@@ -116,10 +116,7 @@ export function MarketplaceSkillDetailDrawer({
                 </p>
               ) : null}
             </div>
-            <span className="inline-flex items-center gap-1 rounded-full bg-muted/60 px-2 py-1 text-xs text-muted-foreground">
-              <FileText className="size-3.5" />
-              {t("detail.preview")}
-            </span>
+            <Badge icon={<FileText />}>{t("detail.preview")}</Badge>
           </div>
 
           <div className="flex-1 min-h-0 overflow-hidden">
@@ -151,46 +148,46 @@ export function MarketplaceSkillDetailDrawer({
                 className="w-full shrink-0 border-t border-border overflow-y-auto p-4 space-y-5 md:w-64 md:border-t-0 md:border-l"
               >
                 <section>
-                  <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
+                  <div className="mb-2 text-xs font-medium text-muted-foreground">
                     {t("detail.metadata")}
                   </div>
                   <div className="space-y-2.5">
                     {skill.remoteKind === "skills_sh" ? (
                       <div className="space-y-0.5">
-                        <div className="text-xs text-muted-foreground uppercase tracking-wider">
+                        <div className="text-xs text-muted-foreground">
                           {t("marketplace.skillsShInstallSource")}
                         </div>
-                        <div className="font-mono text-xs text-foreground break-all leading-relaxed">
+                        <div className="break-all font-mono text-ui-meta leading-relaxed text-foreground">
                           {skill.source}/{skill.skillId}
                         </div>
                       </div>
                     ) : null}
                     <div className="space-y-0.5">
-                      <div className="text-xs text-muted-foreground uppercase tracking-wider">
+                      <div className="text-xs text-muted-foreground">
                         {t("marketplace.previewSourceLabel")}
                       </div>
-                      <div className="font-mono text-xs text-foreground break-all leading-relaxed inline-flex items-center gap-1">
-                        <Store className="size-3.5" />
+                      <div className="inline-flex items-center gap-1 break-all text-sm leading-relaxed text-foreground">
+                        <Store className="size-3.5 shrink-0" aria-hidden="true" />
                         <span>{skill.sourceLabel ?? skill.publisher ?? t("marketplace.previewUnknownSource")}</span>
                       </div>
                     </div>
                     {skill.publisher ? (
                       <div className="space-y-0.5">
-                        <div className="text-xs text-muted-foreground uppercase tracking-wider">
+                        <div className="text-xs text-muted-foreground">
                           {t("marketplace.previewPublisher")}
                         </div>
-                        <div className="font-mono text-xs text-foreground break-all leading-relaxed inline-flex items-center gap-1">
-                          <Sparkles className="size-3.5" />
+                        <div className="inline-flex items-center gap-1 break-all font-mono text-ui-meta leading-relaxed text-foreground">
+                          <Sparkles className="size-3.5 shrink-0" aria-hidden="true" />
                           <span>{skill.publisher}</span>
                         </div>
                       </div>
                     ) : null}
                     <div className="space-y-0.5">
-                      <div className="text-xs text-muted-foreground uppercase tracking-wider">
+                      <div className="text-xs text-muted-foreground">
                         {t("marketplace.previewRuntime")}
                       </div>
-                      <div className="font-mono text-xs text-foreground break-all leading-relaxed inline-flex items-center gap-1">
-                        <ShieldCheck className="size-3.5" />
+                      <div className="inline-flex items-center gap-1 break-all text-sm leading-relaxed text-foreground">
+                        <ShieldCheck className="size-3.5 shrink-0" aria-hidden="true" />
                         <span>{browserMode ? t("marketplace.previewModeBrowser") : t("marketplace.previewModeDesktop")}</span>
                       </div>
                     </div>
@@ -213,7 +210,7 @@ export function MarketplaceSkillDetailDrawer({
                 ) : null}
 
                 <section>
-                  <div className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
+                  <div className="mb-2 text-xs font-medium text-muted-foreground">
                     {t("detail.installStatus")}
                   </div>
                   <Button onClick={onInstall} disabled={isInstalling || skill.installed} className="w-full">

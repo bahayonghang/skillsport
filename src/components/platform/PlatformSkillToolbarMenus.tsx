@@ -1,14 +1,24 @@
-import { Menu as MenuPrimitive } from "@base-ui/react/menu";
 import { ArrowUpDown, Check, SlidersHorizontal } from "lucide-react";
 import type { TFunction } from "i18next";
 
 import { Button } from "@/components/ui/button";
+import {
+  Menu,
+  MenuContent,
+  MenuGroup,
+  MenuGroupLabel,
+  MenuItem,
+  MenuTrigger,
+} from "@/components/ui/menu";
 import { cn } from "@/lib/utils";
 import type {
   PlatformGroupBy,
   PlatformSortDirection,
   PlatformSortField,
 } from "@/lib/platformSkillViewModel";
+
+/** 当前选中项：浅底 + 尾部对勾（对勾承担“已选”语义，不只靠颜色）。 */
+const ACTIVE_ITEM_CLASS = "bg-accent text-foreground";
 
 export function PlatformSkillSortMenu({
   t,
@@ -35,13 +45,13 @@ export function PlatformSkillSortMenu({
     sortDirection;
 
   return (
-    <MenuPrimitive.Root>
-      <MenuPrimitive.Trigger
+    <Menu>
+      <MenuTrigger
         render={
           <Button
-            variant="outline"
+            variant="glass"
             size="sm"
-            className="h-9 shrink-0"
+            className="h-8 shrink-0 md:h-8"
             data-testid="platform-toolbar-sort"
             aria-label={t("platform.toolbarSortAriaLabel")}
             title={t("platform.toolbarSortCurrent", {
@@ -57,37 +67,31 @@ export function PlatformSkillSortMenu({
           </Button>
         }
       />
-      <MenuPrimitive.Portal>
-        <MenuPrimitive.Positioner align="end" sideOffset={6} className="z-50 outline-none">
-          <MenuPrimitive.Popup className={menuPopupClassName("min-w-[210px]")}>
-            {sortFieldOptions.flatMap((field) =>
-              sortDirectionOptions.map((direction) => {
-                const active =
-                  field.value === sortField && direction.value === sortDirection;
-                return (
-                  <MenuPrimitive.Item
-                    key={`${field.value}-${direction.value}`}
-                    data-testid={`platform-toolbar-sort-${field.value}-${direction.value}`}
-                    onClick={() =>
-                      onChange({ field: field.value, direction: direction.value })
-                    }
-                    className={menuItemClassName(
-                      active && "bg-accent/60 text-accent-foreground"
-                    )}
-                  >
-                    <span>{field.label}</span>
-                    <span className="ml-auto text-ui-meta text-muted-foreground">
-                      {direction.label}
-                    </span>
-                    {active && <Check className="size-3" aria-hidden />}
-                  </MenuPrimitive.Item>
-                );
-              })
-            )}
-          </MenuPrimitive.Popup>
-        </MenuPrimitive.Positioner>
-      </MenuPrimitive.Portal>
-    </MenuPrimitive.Root>
+      <MenuContent align="end" className="min-w-52">
+        {sortFieldOptions.flatMap((field) =>
+          sortDirectionOptions.map((direction) => {
+            const active =
+              field.value === sortField && direction.value === sortDirection;
+            return (
+              <MenuItem
+                key={`${field.value}-${direction.value}`}
+                data-testid={`platform-toolbar-sort-${field.value}-${direction.value}`}
+                onClick={() =>
+                  onChange({ field: field.value, direction: direction.value })
+                }
+                className={cn(active && ACTIVE_ITEM_CLASS)}
+              >
+                <span>{field.label}</span>
+                <span className="ml-auto text-ui-meta text-muted-foreground">
+                  {direction.label}
+                </span>
+                {active && <Check className="size-3.5 text-primary-text" aria-hidden />}
+              </MenuItem>
+            );
+          }),
+        )}
+      </MenuContent>
+    </Menu>
   );
 }
 
@@ -105,13 +109,13 @@ export function PlatformSkillViewMenu({
   const hasActiveGroup = groupBy !== "none";
 
   return (
-    <MenuPrimitive.Root>
-      <MenuPrimitive.Trigger
+    <Menu>
+      <MenuTrigger
         render={
           <Button
-            variant="outline"
+            variant="glass"
             size="sm"
-            className="h-9 shrink-0"
+            className="h-8 shrink-0 md:h-8"
             data-testid="platform-toolbar-view"
             aria-label={t("platform.toolbarViewAriaLabel")}
           >
@@ -127,54 +131,27 @@ export function PlatformSkillViewMenu({
           </Button>
         }
       />
-      <MenuPrimitive.Portal>
-        <MenuPrimitive.Positioner align="end" sideOffset={6} className="z-50 outline-none">
-          <MenuPrimitive.Popup className={menuPopupClassName("min-w-[210px]")}>
-            <MenuPrimitive.Group>
-              <MenuPrimitive.GroupLabel className={menuLabelClassName()}>
-                {t("platform.toolbarViewSectionGroup")}
-              </MenuPrimitive.GroupLabel>
-              {groupByOptions.map((option) => {
-                const active = option.value === groupBy;
-                return (
-                  <MenuPrimitive.Item
-                    key={option.value}
-                    data-testid={`platform-toolbar-view-group-${option.value}`}
-                    onClick={() => onChangeGroupBy(option.value)}
-                    className={menuItemClassName(
-                      active && "bg-accent/60 text-accent-foreground"
-                    )}
-                  >
-                    <span>{option.label}</span>
-                    {active && <Check className="ml-auto size-3" aria-hidden />}
-                  </MenuPrimitive.Item>
-                );
-              })}
-            </MenuPrimitive.Group>
-          </MenuPrimitive.Popup>
-        </MenuPrimitive.Positioner>
-      </MenuPrimitive.Portal>
-    </MenuPrimitive.Root>
+      <MenuContent align="end" className="min-w-52">
+        <MenuGroup>
+          <MenuGroupLabel>{t("platform.toolbarViewSectionGroup")}</MenuGroupLabel>
+          {groupByOptions.map((option) => {
+            const active = option.value === groupBy;
+            return (
+              <MenuItem
+                key={option.value}
+                data-testid={`platform-toolbar-view-group-${option.value}`}
+                onClick={() => onChangeGroupBy(option.value)}
+                className={cn(active && ACTIVE_ITEM_CLASS)}
+              >
+                <span>{option.label}</span>
+                {active && (
+                  <Check className="ml-auto size-3.5 text-primary-text" aria-hidden />
+                )}
+              </MenuItem>
+            );
+          })}
+        </MenuGroup>
+      </MenuContent>
+    </Menu>
   );
-}
-
-function menuPopupClassName(extra?: string): string {
-  return cn(
-    "rounded-lg bg-popover p-1 text-sm text-popover-foreground shadow-md ring-1 ring-foreground/10 outline-none",
-    "data-[starting-style]:animate-in data-[starting-style]:fade-in-0 data-[starting-style]:zoom-in-95",
-    "data-[ending-style]:animate-out data-[ending-style]:fade-out-0 data-[ending-style]:zoom-out-95",
-    "animation-duration-100",
-    extra
-  );
-}
-
-function menuItemClassName(extra?: string | false): string {
-  return cn(
-    "flex cursor-pointer items-center gap-2 rounded-md px-2.5 py-1.5 outline-none data-[highlighted]:bg-accent data-[highlighted]:text-accent-foreground",
-    extra
-  );
-}
-
-function menuLabelClassName(): string {
-  return "px-2 pt-1 pb-0.5 text-xs uppercase tracking-wide text-muted-foreground";
 }

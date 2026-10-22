@@ -50,7 +50,7 @@ export function SkillsCliInstallStepper({
                 aria-hidden
                 className={cn(
                   "h-px w-4 shrink-0 sm:w-6",
-                  status === "pending" ? "bg-border" : "bg-primary/40",
+                  status === "pending" ? "bg-border" : "bg-primary-stroke",
                 )}
               />
             ) : null}
@@ -58,11 +58,11 @@ export function SkillsCliInstallStepper({
               className={cn(
                 "flex min-w-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs",
                 status === "current" &&
-                  "border-primary/40 bg-primary/10 text-primary",
+                  "border-primary-stroke bg-primary-tint text-primary-text",
                 status === "completed" &&
-                  "border-primary/20 bg-primary/5 text-foreground",
+                  "border-transparent bg-primary-tint text-foreground",
                 status === "pending" &&
-                  "border-border bg-muted/20 text-muted-foreground",
+                  "border-transparent bg-accent text-muted-foreground",
               )}
             >
               <span
@@ -70,7 +70,7 @@ export function SkillsCliInstallStepper({
                 className={cn(
                   "flex size-4 shrink-0 items-center justify-center rounded-full text-ui-micro font-semibold",
                   status === "pending"
-                    ? "bg-background text-muted-foreground"
+                    ? "bg-popover text-muted-foreground"
                     : "bg-primary text-primary-foreground",
                 )}
               >
@@ -168,7 +168,7 @@ export function SkillsCliInstallSourceStep({
               <Button
                 key={source}
                 type="button"
-                variant="outline"
+                variant="glass"
                 size="sm"
                 disabled={previewBusy}
                 aria-label={t("skillsCli.install.recentSourceAria", { source })}
@@ -212,7 +212,7 @@ export function SkillsCliInstallSkillsStep({
           <h3
             ref={headingRef}
             tabIndex={-1}
-            className="text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+            className="text-sm font-medium focus-ring rounded-control"
           >
             {t("skillsCli.skillsHeading")}
           </h3>
@@ -227,10 +227,10 @@ export function SkillsCliInstallSkillsStep({
           </p>
         </div>
         <div className="flex gap-2">
-          <Button type="button" variant="outline" size="sm" onClick={onSelectAll}>
+          <Button type="button" variant="glass" size="sm" onClick={onSelectAll}>
             {t("skillsCli.install.selectAll")}
           </Button>
-          <Button type="button" variant="outline" size="sm" onClick={onClear}>
+          <Button type="button" variant="glass" size="sm" onClick={onClear}>
             {t("skillsCli.install.clearAll")}
           </Button>
         </div>
@@ -281,7 +281,7 @@ export function SkillsCliInstallPlatformsStep({
       <h3
         ref={headingRef}
         tabIndex={-1}
-        className="text-sm font-medium outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+        className="text-sm font-medium focus-ring rounded-control"
       >
         {t("skillsCli.platformsHeading")}
       </h3>
@@ -306,7 +306,7 @@ export function SkillsCliInstallPlatformsStep({
           <p className="text-xs font-medium">
             {t("skillsCli.install.commandPreview")}
           </p>
-          <pre className="max-w-full overflow-x-auto whitespace-pre-wrap break-all rounded-md border border-border bg-muted/30 p-2 text-ui-meta">
+          <pre className="max-w-full overflow-x-auto whitespace-pre-wrap break-all rounded-control bg-input-surface p-2 font-mono text-ui-meta">
             {commandPreview}
           </pre>
         </div>
@@ -338,7 +338,7 @@ export function SkillsCliInstallFooter({
       {step !== "source" ? (
         <Button
           type="button"
-          variant="outline"
+          variant="glass"
           disabled={installLocked}
           onClick={onBack}
         >

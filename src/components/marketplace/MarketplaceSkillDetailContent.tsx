@@ -51,37 +51,41 @@ export function MarketplaceSkillDetailContent({
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={() => onViewModeChange("markdown")}
-          className={cn(
-            "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs transition-colors cursor-pointer",
-            viewMode === "markdown"
-              ? "bg-primary/15 text-foreground font-medium"
-              : "text-muted-foreground hover:bg-muted/40"
-          )}
-        >
-          <FileText className="size-3" />
-          {t("detail.markdown")}
-        </button>
-        <button
-          type="button"
-          onClick={() => onViewModeChange("raw")}
-          className={cn(
-            "inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs transition-colors cursor-pointer",
-            viewMode === "raw"
-              ? "bg-primary/15 text-foreground font-medium"
-              : "text-muted-foreground hover:bg-muted/40"
-          )}
-        >
-          <Code className="size-3" />
-          {t("detail.rawSource")}
-        </button>
+        <div className="inline-flex gap-0.5 rounded-pill bg-accent p-0.5">
+          <button
+            type="button"
+            aria-pressed={viewMode === "markdown"}
+            onClick={() => onViewModeChange("markdown")}
+            className={cn(
+              "focus-ring inline-flex cursor-pointer items-center gap-1.5 rounded-pill border px-3 py-1.5 text-xs transition-colors",
+              viewMode === "markdown"
+                ? "border-primary-stroke bg-primary-tint text-primary-text font-medium"
+                : "border-transparent text-muted-foreground hover:bg-accent hover:text-foreground"
+            )}
+          >
+            <FileText className="size-3" />
+            {t("detail.markdown")}
+          </button>
+          <button
+            type="button"
+            aria-pressed={viewMode === "raw"}
+            onClick={() => onViewModeChange("raw")}
+            className={cn(
+              "focus-ring inline-flex cursor-pointer items-center gap-1.5 rounded-pill border px-3 py-1.5 text-xs transition-colors",
+              viewMode === "raw"
+                ? "border-primary-stroke bg-primary-tint text-primary-text font-medium"
+                : "border-transparent text-muted-foreground hover:bg-accent hover:text-foreground"
+            )}
+          >
+            <Code className="size-3" />
+            {t("detail.rawSource")}
+          </button>
+        </div>
 
         <div className="flex-1" />
 
         <Button
-          variant="outline"
+          variant="glass"
           size="sm"
           onClick={onExplain}
           disabled={isExplaining || !content || isLoadingContent || !!contentError || browserMode}
@@ -101,7 +105,7 @@ export function MarketplaceSkillDetailContent({
       </div>
 
       {browserMode && (
-        <div className="rounded-md border border-border bg-muted/20 p-3 text-sm text-muted-foreground">
+        <div className="rounded-control bg-accent p-3 text-sm text-muted-foreground">
           {t("marketplace.previewBrowserFallback")}
         </div>
       )}
@@ -112,10 +116,10 @@ export function MarketplaceSkillDetailContent({
           {t("common.loading")}
         </div>
       ) : contentError ? (
-        <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4">
+        <div role="alert" className="rounded-inner bg-destructive-tint p-4">
           <div className="space-y-3">
             <p className="text-sm text-destructive-text">{contentError}</p>
-            <Button variant="outline" size="sm" onClick={onRetryContent}>
+            <Button variant="glass" size="sm" onClick={onRetryContent}>
               {t("common.retry")}
             </Button>
           </div>
@@ -138,14 +142,14 @@ export function MarketplaceSkillDetailContent({
           )}
         </div>
       ) : (
-        <pre className="overflow-auto whitespace-pre-wrap rounded-xl border border-border/70 bg-muted/30 p-4 text-xs">
+        <pre className="overflow-auto whitespace-pre-wrap rounded-inner bg-input-surface p-4 font-mono text-ui-meta">
           {content || t("detail.noContent")}
         </pre>
       )}
 
       {(explanation || isExplaining || explanationError) && (
-        <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
-          <div className="mb-2 flex items-center gap-1.5 text-xs font-medium text-primary">
+        <div className="rounded-inner bg-secondary-accent-tint p-4">
+          <div className="mb-2 flex items-center gap-1.5 text-xs font-medium text-secondary-accent-text">
             <Bot className="size-3.5" />
             {t("detail.aiExplanation")}
           </div>

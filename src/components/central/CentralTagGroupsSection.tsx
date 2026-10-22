@@ -51,7 +51,7 @@ export function CentralTagGroupsSection({
               active={false}
               icon={
                 <span
-                  className="size-2.5 rounded-sm border border-border/60"
+                  className="size-2.5 rounded-full ring-1 ring-glass-hairline"
                   style={group.color ? { backgroundColor: group.color } : undefined}
                 />
               }

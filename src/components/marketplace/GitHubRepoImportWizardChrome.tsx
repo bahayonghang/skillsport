@@ -15,6 +15,7 @@ import type {
   TargetSummary,
 } from "@/types";
 import { Button } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button-variants";
 import { Input } from "@/components/ui/input";
 import {
   DialogDescription,
@@ -78,7 +79,7 @@ export function GitHubRepoImportWizardHeader({
 
   return (
     <div
-      className="shrink-0 border-b border-border/70 px-6 pb-3 pt-4"
+      className="shrink-0 border-b border-border px-6 pb-3 pt-4"
       data-testid="github-import-compact-header"
     >
       <DialogHeader className="gap-1">
@@ -88,7 +89,7 @@ export function GitHubRepoImportWizardHeader({
             <span className="truncate">{t("marketplace.githubImportTitle")}</span>
           </DialogTitle>
           <span
-            className="inline-flex h-6 shrink-0 items-center rounded-full border border-border/70 bg-muted/30 px-2.5 text-xs text-muted-foreground"
+            className="inline-flex h-6 shrink-0 items-center rounded-full bg-accent px-2.5 text-xs text-muted-foreground"
             data-testid="github-import-launcher-badge"
           >
             {t("marketplace.githubImportHeaderLauncher", {
@@ -117,10 +118,10 @@ export function GitHubRepoImportWizardHeader({
                 className={cn(
                   "flex shrink-0 items-center gap-1.5 rounded-full border px-2.5 py-0.5",
                   isActive
-                    ? "border-primary/40 bg-primary/10 text-primary-text"
+                    ? "border-primary-stroke bg-primary-tint text-primary-text"
                     : isComplete
-                      ? "border-primary/20 bg-primary/5 text-primary-text"
-                      : "border-border/70 text-muted-foreground",
+                      ? "border-transparent bg-primary-tint text-primary-text"
+                      : "border-transparent bg-accent text-muted-foreground",
                 )}
               >
                 <span
@@ -129,7 +130,7 @@ export function GitHubRepoImportWizardHeader({
                     "flex size-4 shrink-0 items-center justify-center rounded-full text-ui-micro font-semibold",
                     isActive || isComplete
                       ? "bg-primary text-primary-foreground"
-                      : "bg-muted text-foreground/70 ring-1 ring-border",
+                      : "bg-popover text-muted-foreground",
                   )}
                 >
                   {index + 1}
@@ -143,7 +144,7 @@ export function GitHubRepoImportWizardHeader({
                   aria-hidden="true"
                   className={cn(
                     "h-px min-w-4 max-w-20 flex-1",
-                    isComplete ? "bg-primary/40" : "bg-border/80",
+                    isComplete ? "bg-primary-stroke" : "bg-border",
                   )}
                 />
               ) : null}
@@ -190,20 +191,20 @@ function GitHubRepoImportPreviewToolbar({
 
   return (
     <div
-      className="mt-2 rounded-xl border border-border/60 bg-muted/10 px-4 py-2.5"
+      className="mt-2 rounded-inner bg-accent px-4 py-2.5"
       data-testid="github-import-repo-toolbar"
     >
       <div className="grid gap-2 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
         <div className="min-w-0 space-y-1.5">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+            <span className="rounded-full bg-primary-tint px-2 py-0.5 text-xs font-medium text-primary-text">
               {t("marketplace.githubImportToolbarLabel")}
             </span>
             <span className="truncate text-sm font-semibold">
               {preview.repo.owner}/{preview.repo.repo}
             </span>
             {preview.repo.branch ? (
-              <span className="rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+              <span className="rounded-full bg-popover px-2 py-0.5 font-mono text-ui-meta text-muted-foreground">
                 {preview.repo.branch}
               </span>
             ) : null}
@@ -219,7 +220,7 @@ function GitHubRepoImportPreviewToolbar({
                 count: selectedSkillsCount,
               })}
             </span>
-            <span className="truncate text-muted-foreground">
+            <span className="truncate font-mono text-muted-foreground">
               {preview.repo.normalizedUrl}
             </span>
           </div>
@@ -240,7 +241,7 @@ function GitHubRepoImportPreviewToolbar({
           </div>
           {isRemoteLikeTarget(activeTarget) ? (
             <div
-              className="text-xs text-primary"
+              className="text-xs text-primary-text"
               data-testid="github-import-remote-workspace-hint"
             >
               {t("marketplace.githubImportRemoteWorkspaceHint")}
@@ -253,13 +254,13 @@ function GitHubRepoImportPreviewToolbar({
             href={previewToolbarRepoHref ?? "#"}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex h-7 items-center gap-1 rounded-md border border-border bg-background px-3 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className={buttonVariants({ variant: "glass", size: "sm" })}
           >
             <ExternalLink className="size-3.5" />
             <span>{t("marketplace.previewOpenSource")}</span>
           </a>
           <Button
-            variant="outline"
+            variant="glass"
             className="h-7"
             onClick={onPreviewSubmit}
             disabled={isPreviewLoading || !repoUrl.trim()}
@@ -337,7 +338,7 @@ export function GitHubRepoImportWizardFooter({
 
   return (
     <div
-      className="shrink-0 border-t border-border/70 px-6 py-4"
+      className="shrink-0 border-t border-border px-6 py-4"
       data-testid="github-import-shell-footer"
       data-footer-mode={footerMode}
     >
@@ -362,7 +363,7 @@ export function GitHubRepoImportWizardFooter({
       ) : null}
       {step === "result" ? (
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={onStartAnotherImport}>
+          <Button variant="glass" onClick={onStartAnotherImport}>
             <RefreshCw className="size-4" />
             <span>{t("marketplace.githubImportResultActionRestart")}</span>
           </Button>
@@ -372,7 +373,7 @@ export function GitHubRepoImportWizardFooter({
         </div>
       ) : step !== "confirm" ? (
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={onRetryToInput}>
+          <Button variant="glass" onClick={onRetryToInput}>
             <RefreshCw className="size-4" />
             <span>{t("common.retry")}</span>
           </Button>
@@ -382,7 +383,7 @@ export function GitHubRepoImportWizardFooter({
         </div>
       ) : (
         <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={onBackToPreview}>
+          <Button variant="glass" onClick={onBackToPreview}>
             <span>{t("marketplace.githubImportBackToPreview")}</span>
           </Button>
           <Button
@@ -425,7 +426,7 @@ function GitHubRepoImportProgressPanel({
 
   return (
     <div
-      className="mb-3 rounded-xl border border-primary/20 bg-primary/5 px-4 py-3"
+      className="mb-3 rounded-inner bg-primary-tint px-4 py-3"
       data-testid="github-import-progress-panel"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -435,14 +436,14 @@ function GitHubRepoImportProgressPanel({
         <div className="text-xs text-muted-foreground">{progressLabel}</div>
       </div>
 
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-primary/10">
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-accent">
         {importProgressPercent > 0 ? (
           <div
             className="h-full w-full origin-left rounded-full bg-primary transition-transform duration-300 ease-out"
             style={{ transform: `scaleX(${importProgressPercent / 100})` }}
           />
         ) : (
-          <div className="h-full w-1/3 rounded-full bg-primary/70 animate-pulse" />
+          <div className="h-full w-1/3 rounded-full bg-primary animate-pulse motion-reduce:animate-none" />
         )}
       </div>
 
@@ -520,7 +521,7 @@ function GitHubRepoImportSshPasswordRepairPanel({
 
   return (
     <div
-      className="mb-3 rounded-xl border border-warning/40 bg-warning/10 px-4 py-3"
+      className="mb-3 rounded-inner bg-warning-tint px-4 py-3"
       data-testid="github-import-ssh-password-repair"
     >
       <div className="flex flex-wrap items-start gap-3">
@@ -554,7 +555,7 @@ function GitHubRepoImportSshPasswordRepairPanel({
             />
             <Button
               type="button"
-              variant="outline"
+              variant="glass"
               size="sm"
               disabled={isSavingSshPassword || !sshPasswordRepairValue.trim()}
               onClick={onSaveSshPasswordForImport}
@@ -570,7 +571,7 @@ function GitHubRepoImportSshPasswordRepairPanel({
               className={cn(
                 "text-xs",
                 sshPasswordRepairMessage.type === "success"
-                  ? "text-primary"
+                  ? "text-primary-text"
                   : "text-destructive-text",
               )}
               role="status"

@@ -78,7 +78,7 @@ function PlatformGroupList({
       {groups.map((group) => (
         <div
           key={group.id}
-          className="rounded-xl border border-border bg-muted/30 p-3"
+          className="rounded-inner bg-accent p-3"
         >
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -91,7 +91,7 @@ function PlatformGroupList({
                 </div>
               )}
             </div>
-            <span className="shrink-0 rounded-full bg-background px-2 py-0.5 text-xs text-muted-foreground ring-1 ring-border">
+            <span className="shrink-0 rounded-full bg-popover px-2 py-0.5 text-xs text-muted-foreground">
               {t("central.batchUninstallPlatformCount", {
                 count: getCount(group),
               })}
@@ -180,7 +180,7 @@ export function BatchUninstallCentralSkillsDialog({
             })}
           </DialogDescription>
 
-          <div className="rounded-xl border border-warning/30 bg-warning/10 p-3 text-sm">
+          <div className="rounded-inner bg-warning-tint p-3 text-sm">
             <div className="flex items-start gap-2">
               <AlertTriangle className="mt-0.5 size-4 shrink-0 text-warning-foreground" />
               <div className="space-y-1">
@@ -196,7 +196,7 @@ export function BatchUninstallCentralSkillsDialog({
 
           {removableGroups.length > 0 ? (
             <div className="space-y-2">
-              <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <div className="text-xs font-medium text-muted-foreground">
                 {t("central.batchUninstallPlatforms")}
               </div>
               <PlatformGroupList
@@ -206,7 +206,7 @@ export function BatchUninstallCentralSkillsDialog({
             </div>
           ) : (
             <div
-              className="rounded-xl border border-border p-3 text-sm text-muted-foreground"
+              className="bg-accent rounded-inner p-3 text-sm text-muted-foreground"
               data-testid="central-batch-uninstall-noop"
             >
               {t("central.batchUninstallNoRemovableInstalls")}
@@ -215,7 +215,7 @@ export function BatchUninstallCentralSkillsDialog({
 
           {preview.skippedSkills.length > 0 && (
             <div
-              className="rounded-xl border border-border bg-muted/20 p-3 text-xs text-muted-foreground"
+              className="rounded-inner bg-accent p-3 text-xs text-muted-foreground"
               data-testid="central-batch-uninstall-skipped-summary"
             >
               <div className="font-medium text-foreground">
@@ -235,7 +235,7 @@ export function BatchUninstallCentralSkillsDialog({
 
           {sharedRootGroups.length > 0 && (
             <div className="space-y-2">
-              <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <div className="text-xs font-medium text-muted-foreground">
                 {t("central.batchUninstallSharedRoots")}
               </div>
               <PlatformGroupList
@@ -249,7 +249,7 @@ export function BatchUninstallCentralSkillsDialog({
 
           {result && result.failed.length > 0 && (
             <div
-              className="rounded-xl border border-warning/30 bg-warning/10 p-3 text-xs text-warning-foreground"
+              className="rounded-inner bg-warning-tint p-3 text-xs text-warning-foreground"
               role="alert"
             >
               <div className="font-medium">

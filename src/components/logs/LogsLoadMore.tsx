@@ -41,14 +41,14 @@ export function LogsLoadMore({
 
   if (!hasMore) {
     return (
-      <div className="border-t border-border bg-muted/20 px-3 py-3 text-center text-xs text-muted-foreground">
+      <div className="border-t border-border px-3 py-3 text-center text-xs text-muted-foreground">
         {t("logs.allLoaded", { total })}
       </div>
     );
   }
 
   return (
-    <div ref={triggerRef} className="border-t border-border bg-muted/10">
+    <div ref={triggerRef} className="border-t border-border p-1">
       <Button
         type="button"
         variant="ghost"

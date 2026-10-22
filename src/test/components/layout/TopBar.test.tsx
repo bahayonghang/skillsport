@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import type { ButtonHTMLAttributes, ReactNode } from "react";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -40,6 +40,16 @@ const mockUseThemeStore = vi.mocked(useThemeStore);
 
 let restorePlatform: (() => void) | undefined;
 
+function mockTheme(flavor: "glass-light" | "glass-dark") {
+  const toggleFlavor = vi.fn();
+  mockUseThemeStore.mockImplementation((selector?: unknown) => {
+    const state = { flavor, setFlavor: vi.fn(), toggleFlavor };
+    if (typeof selector === "function") return selector(state);
+    return state;
+  });
+  return toggleFlavor;
+}
+
 function setPlatform(platform: string) {
   restorePlatform?.();
   restorePlatform = setNavigatorPlatform(platform);
@@ -65,14 +75,7 @@ describe("TopBar shortcut hint", () => {
       if (typeof selector === "function") return selector(state);
       return state;
     });
-    mockUseThemeStore.mockImplementation((selector?: unknown) => {
-      const state = {
-        flavor: "mocha",
-        setFlavor: vi.fn(),
-      };
-      if (typeof selector === "function") return selector(state);
-      return state;
-    });
+    mockTheme("glass-dark");
   });
 
   afterEach(() => {
@@ -95,5 +98,37 @@ describe("TopBar shortcut hint", () => {
     renderTopBar();
 
     expect(screen.getByLabelText("Command+K")).toHaveTextContent("⌘K");
+  });
+
+  it.each(["glass-light", "glass-dark"] as const)(
+    "has no theme toggle in %s (the sidebar footer is the only entry)",
+    (flavor) => {
+      mockTheme(flavor);
+      renderTopBar();
+
+      expect(
+        screen.queryByRole("button", { name: /主题|模式|theme|mode/i }),
+      ).not.toBeInTheDocument();
+    },
+  );
+
+  it("keeps search, import, target switcher and shortcuts on a transparent bar", () => {
+    const onSearchClick = vi.fn();
+    const onShortcutsClick = vi.fn();
+    const { container } = render(
+      <MemoryRouter initialEntries={["/central"]}>
+        <TopBar onSearchClick={onSearchClick} onShortcutsClick={onShortcutsClick} />
+      </MemoryRouter>,
+    );
+
+    const header = container.querySelector("header")!;
+    expect(header.className).not.toContain("border-b");
+    expect(header.className.split(/\s+/).some((token) => token.startsWith("bg-"))).toBe(false);
+    fireEvent.click(screen.getAllByRole("button", { name: /搜索/ })[0]!);
+    expect(onSearchClick).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole("button", { name: "查看键盘快捷键" }));
+    expect(onShortcutsClick).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("button", { name: "查看键盘快捷键" }).className).toContain("focus-ring");
+    expect(screen.getByTestId("target-switcher")).toBeInTheDocument();
   });
 });

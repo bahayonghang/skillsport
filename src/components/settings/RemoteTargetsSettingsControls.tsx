@@ -1,6 +1,7 @@
 import { Loader2, Pencil, Plus, Server, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { InlineConfirmAction } from "@/components/ui/inline-confirm-action";
 import { Input } from "@/components/ui/input";
@@ -27,7 +28,7 @@ import {
   TARGET_ROW_ACTION_CLASS,
   WSL_FORM_GRID_CLASS,
   sshCredentialStatus,
-  sshCredentialStatusClass,
+  sshCredentialStatusTone,
   targetDescription,
   targetKindLabel,
   targetTitle,
@@ -101,7 +102,7 @@ export function RemoteTargetRow({
   const isEditing = editingTargetId === target.id;
 
   return (
-    <div className="border-b border-border/50 last:border-0">
+    <div className="border-b border-border last:border-0">
       <div className="grid gap-3 px-4 py-3 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-start">
         <div className="flex min-w-0 gap-3">
           <Server className="mt-1 size-4 shrink-0 text-muted-foreground" />
@@ -110,13 +111,11 @@ export function RemoteTargetRow({
               <span className="min-w-0 max-w-full truncate text-sm font-medium">
                 {targetTitle(target, t)}
               </span>
-              <span className="rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground">
-                {targetKindLabel(target, t)}
-              </span>
+              <Badge size="sm">{targetKindLabel(target, t)}</Badge>
               {isActive && (
-                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
+                <Badge size="sm" tone="success">
                   {t("targets.active")}
-                </span>
+                </Badge>
               )}
             </div>
             <div
@@ -180,7 +179,7 @@ export function RemoteTargetRow({
           {!isLocal && (
             <Button
               type="button"
-              variant="outline"
+              variant="glass"
               size="sm"
               disabled={testingTargetId === target.id}
               onClick={() => onTestExistingTarget(target)}
@@ -276,12 +275,12 @@ function PasswordRepairRow({
   return (
     <div className="mt-2 max-w-2xl space-y-2">
       <div className="flex flex-wrap items-center gap-2">
-        <span
+        <Badge
           title={credentialStatusLabel}
-          className={`rounded-full border px-2 py-0.5 text-xs ${sshCredentialStatusClass(credentialStatus)}`}
+          tone={sshCredentialStatusTone(credentialStatus)}
         >
           {credentialStatusLabel}
-        </span>
+        </Badge>
         {credentialError ? (
           <span
             className="break-all text-ui-meta text-muted-foreground"
@@ -302,7 +301,7 @@ function PasswordRepairRow({
         />
         <Button
           type="button"
-          variant="outline"
+          variant="glass"
           size="sm"
           disabled={disabled}
           onClick={onUpdate}
@@ -426,7 +425,7 @@ function WslTargetEditForm({
   const { t } = useTranslation();
 
   return (
-    <div className="grid gap-3 rounded-lg border border-border/70 bg-muted/20 p-3 md:grid-cols-2 xl:grid-cols-4">
+    <div className="grid gap-3 rounded-inner bg-accent p-3 md:grid-cols-2 xl:grid-cols-4">
       <TargetTextField
         id={`edit-wsl-label-${target.id}`}
         label={t("targets.labelPlaceholder")}
@@ -533,7 +532,7 @@ export function SshTargetForm({
       <div className="flex flex-col gap-2 sm:flex-row md:col-span-2 md:items-end">
         <Button
           type="button"
-          variant="outline"
+          variant="glass"
           className="flex-1"
           disabled={isTesting || isCreatingTarget}
           onClick={onTest}
@@ -614,7 +613,7 @@ export function WslTargetForm({
         </label>
         <select
           id="new-wsl-distribution"
-          className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+          className="focus-ring h-10 w-full rounded-control border border-input bg-input-surface px-3 py-2 text-sm text-foreground transition-colors hover:border-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
           value={form.distribution}
           disabled={isLoadingDistributions || distributions.length === 0}
           onChange={(event) => onUpdate("distribution", event.target.value)}
@@ -648,7 +647,7 @@ export function WslTargetForm({
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           <Button
             type="button"
-            variant="outline"
+            variant="glass"
             size="sm"
             disabled={isLoadingDistributions}
             onClick={onRefreshDistributions}
@@ -674,7 +673,7 @@ export function WslTargetForm({
                 <span>{t("targets.wslDefaultDistribution")}</span>
               ) : null}
               {isAlreadyAdded ? (
-                <span className="text-primary">
+                <span className="text-primary-text">
                   {t("targets.wslAlreadyAdded")}
                 </span>
               ) : null}
@@ -692,7 +691,7 @@ export function WslTargetForm({
       <div className="flex flex-col gap-2 sm:flex-row md:col-span-2 md:items-end">
         <Button
           type="button"
-          variant="outline"
+          variant="glass"
           className="flex-1"
           disabled={
             isTesting ||

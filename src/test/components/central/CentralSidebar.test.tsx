@@ -198,7 +198,7 @@ describe("CentralSidebar", () => {
 
     expect(toggle).toHaveTextContent("收起全部分组");
     expect(toggle).toHaveAccessibleName("收起中央技能库侧栏全部分组");
-    expect(toggle).toHaveClass("rounded-xl");
+    expect(toggle).toHaveClass("rounded-inner");
   });
 
   it("collapses and expands all top-level groups", () => {

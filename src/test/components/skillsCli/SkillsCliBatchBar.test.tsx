@@ -150,7 +150,7 @@ describe("SkillsCliBatchBar", () => {
     expect(ICON_HIT).toContain("after:size-10");
     const clear = screen.getByRole("button", { name: "清除选择" });
     expect(clear.className).toContain("after:size-10");
-    expect(clear.className).toContain("focus-visible:ring-2");
+    expect(clear.className).toContain("focus-ring");
     expect(clear).not.toHaveAttribute("tabIndex", "-1");
   });
 });

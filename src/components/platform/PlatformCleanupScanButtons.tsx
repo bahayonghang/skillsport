@@ -94,7 +94,9 @@ export function PlatformCleanupScanButtons({
     <>
       <Button
         type="button"
-        variant="outline"
+        variant="glass"
+        size="sm"
+        className="h-8 md:h-8"
         disabled={!agentId || isBusy}
         onClick={() => void handleScanDuplicates()}
         aria-label={t("platform.scanDuplicatesLabel", {
@@ -107,7 +109,9 @@ export function PlatformCleanupScanButtons({
       </Button>
       <Button
         type="button"
-        variant="outline"
+        variant="glass"
+        size="sm"
+        className="h-8 md:h-8"
         disabled={!agentId || isBusy}
         onClick={() => void handleScanDeletedPlatformCopies()}
         aria-label={t("platform.scanDeletedLabel", { platform: platformName })}

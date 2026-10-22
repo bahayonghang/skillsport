@@ -217,10 +217,8 @@ function setupMocks({
   loadCentralSkills = vi.fn(),
   loadMarketplaceRegistries = vi.fn(),
   loadMarketplaceSkills = vi.fn(),
-  flavor = "mocha" as ThemeFlavor,
+  flavor = "glass-dark" as ThemeFlavor,
   setFlavor = vi.fn(),
-  accent = "lavender" as const,
-  setAccent = vi.fn(),
   appUpdateState = {} as Partial<ReturnType<typeof useAppUpdateStore.getState>>,
 } = {}) {
   const githubPatState =
@@ -365,8 +363,7 @@ function setupMocks({
     selector({
       flavor,
       setFlavor,
-      accent,
-      setAccent,
+      toggleFlavor: vi.fn(),
       init: vi.fn(),
     })
   );
@@ -419,7 +416,8 @@ describe("SettingsView", () => {
     setupMocks();
     renderSettingsView();
     const heading = screen.getByRole("heading", { name: "外观", level: 1 });
-    expect(heading).toHaveClass("font-heading");
+    // PageHeader h1 uses the display face (font-heading aliases it).
+    expect(heading).toHaveClass("font-display");
     expect(screen.queryByRole("heading", { name: "设置" })).toBeNull();
   });
 
@@ -730,7 +728,7 @@ describe("SettingsView", () => {
     renderSettingsView("/settings");
 
     expect(screen.getAllByText("外观").length).toBeGreaterThan(0);
-    expect(screen.getAllByText("主题风格").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("明暗模式").length).toBeGreaterThan(0);
     expect(screen.queryByText("新增 SSH 目标")).toBeNull();
     expect(screen.queryByText("GitHub 导入访问令牌")).toBeNull();
     expect(screen.queryByText("扫描目录")).toBeNull();
@@ -810,7 +808,7 @@ describe("SettingsView", () => {
     const { container } = renderSettingsView("/settings/connections");
 
     expect(screen.getByRole("heading", { name: "连接与同步" })).toHaveClass(
-      "font-heading"
+      "font-display"
     );
     expect(
       container.querySelector('[data-settings-section] h3')
@@ -1672,50 +1670,48 @@ describe("SettingsView", () => {
     expect(screen.getByText("50 B / 100 B · 50%")).toBeTruthy();
   });
 
-  // ── Flavor Switcher ──────────────────────────────────────────────────────
+  // ── Theme (glass light / dark) ───────────────────────────────────────────
 
-  it("shows flavor label in about section", () => {
+  it("shows the light/dark mode control in the appearance section", () => {
     setupMocks();
     renderSettingsView("/settings");
-    expect(screen.getAllByText("主题风格").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("明暗模式").length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: "浅色玻璃" })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "深色玻璃" })).toBeTruthy();
   });
 
-  it("renders all flavor buttons", () => {
-    setupMocks();
+  it("marks the active glass theme with aria-pressed", () => {
+    setupMocks({ flavor: "glass-dark" });
     renderSettingsView("/settings");
-    expect(screen.getByRole("button", { name: /Mocha/ })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Macchiato/ })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Frappé/ })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Latte/ })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Claude 浅色/ })).toBeTruthy();
-    expect(screen.getByRole("button", { name: /Claude 深色/ })).toBeTruthy();
+    expect(screen.getByRole("button", { name: "深色玻璃" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: "浅色玻璃" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
   });
 
-  it("active flavor button has aria-pressed=true", () => {
-    setupMocks({ flavor: "mocha" });
-    renderSettingsView("/settings");
-    const mochaBtn = screen.getByRole("button", { name: /Mocha/ });
-    expect(mochaBtn).toHaveAttribute("aria-pressed", "true");
-  });
-
-  it("inactive flavor button has aria-pressed=false", () => {
-    setupMocks({ flavor: "mocha" });
-    renderSettingsView("/settings");
-    const latteBtn = screen.getByRole("button", { name: /Latte/ });
-    expect(latteBtn).toHaveAttribute("aria-pressed", "false");
-  });
-
-  it("clicking a flavor button calls setFlavor", () => {
+  it("selecting a glass theme calls setFlavor", () => {
     const setFlavor = vi.fn();
-    setupMocks({ flavor: "mocha", setFlavor });
+    setupMocks({ flavor: "glass-dark", setFlavor });
     renderSettingsView("/settings");
-    fireEvent.click(screen.getByRole("button", { name: /Latte/ }));
-    expect(setFlavor).toHaveBeenCalledWith("latte");
+    fireEvent.click(screen.getByRole("button", { name: "浅色玻璃" }));
+    expect(setFlavor).toHaveBeenCalledWith("glass-light");
+  });
+
+  it("no longer renders the Catppuccin flavor grid or accent picker", () => {
+    setupMocks();
+    renderSettingsView("/settings");
+    expect(screen.queryByRole("button", { name: /Mocha|Latte|Claude/ })).toBeNull();
+    expect(screen.queryAllByRole("radio")).toHaveLength(0);
+    expect(screen.queryByText("强调色")).toBeNull();
   });
 
   it("edits light and dark font modes without switching the app theme", async () => {
     const setFlavor = vi.fn();
-    setupMocks({ flavor: "mocha", setFlavor });
+    setupMocks({ flavor: "glass-dark", setFlavor });
     renderSettingsView("/settings");
 
     const darkMode = screen.getByRole("button", { name: /暗色.*当前/ });
@@ -1742,7 +1738,7 @@ describe("SettingsView", () => {
   });
 
   it("updates the current marker without changing the selected font editor", () => {
-    setupMocks({ flavor: "mocha" });
+    setupMocks({ flavor: "glass-dark" });
     const view = renderSettingsView("/settings");
 
     fireEvent.click(screen.getByRole("button", { name: /^亮色$/ }));
@@ -1751,13 +1747,13 @@ describe("SettingsView", () => {
       "true",
     );
 
-    setupMocks({ flavor: "latte" });
+    setupMocks({ flavor: "glass-light" });
     view.rerender(settingsViewElement("/settings"));
     expect(
       screen.getByRole("button", { name: /亮色.*当前/ }),
     ).toHaveAttribute("aria-pressed", "true");
 
-    setupMocks({ flavor: "claude-dark" });
+    setupMocks({ flavor: "glass-dark" });
     view.rerender(settingsViewElement("/settings"));
     expect(screen.getByRole("button", { name: /^亮色$/ })).toHaveAttribute(
       "aria-pressed",
@@ -1766,70 +1762,6 @@ describe("SettingsView", () => {
     expect(
       screen.getByRole("button", { name: /暗色.*当前/ }),
     ).toHaveAttribute("aria-pressed", "false");
-  });
-
-  it("each flavor button shows a color dot", () => {
-    setupMocks();
-    renderSettingsView("/settings");
-    // Each flavor button should have a colored dot (inline span with rounded-full)
-    const buttons = [
-      screen.getByRole("button", { name: /Mocha/ }),
-      screen.getByRole("button", { name: /Macchiato/ }),
-      screen.getByRole("button", { name: /Frappé/ }),
-      screen.getByRole("button", { name: /Latte/ }),
-      screen.getByRole("button", { name: /Claude 浅色/ }),
-      screen.getByRole("button", { name: /Claude 深色/ }),
-    ];
-    for (const btn of buttons) {
-      const dot = btn.querySelector(".rounded-full");
-      expect(dot).toBeTruthy();
-    }
-  });
-
-  // ── Accent Color Picker ──────────────────────────────────────────────────
-
-  it("shows accent color label in about section", () => {
-    setupMocks();
-    renderSettingsView("/settings");
-    expect(screen.getAllByText("强调色").length).toBeGreaterThan(0);
-  });
-
-  it("renders 14 accent color swatches", () => {
-    setupMocks();
-    renderSettingsView("/settings");
-    const swatches = screen.getAllByRole("radio");
-    expect(swatches).toHaveLength(14);
-  });
-
-  it("active accent swatch has aria-checked=true", () => {
-    setupMocks({ accent: "lavender" });
-    renderSettingsView("/settings");
-    const lavenderSwatch = screen.getByRole("radio", { name: "薰衣草" });
-    expect(lavenderSwatch).toHaveAttribute("aria-checked", "true");
-  });
-
-  it("inactive accent swatch has aria-checked=false", () => {
-    setupMocks({ accent: "lavender" });
-    renderSettingsView("/settings");
-    const greenSwatch = screen.getByRole("radio", { name: "绿色" });
-    expect(greenSwatch).toHaveAttribute("aria-checked", "false");
-  });
-
-  it("clicking an accent swatch calls setAccent", () => {
-    const setAccent = vi.fn();
-    setupMocks({ accent: "lavender", setAccent });
-    renderSettingsView("/settings");
-    fireEvent.click(screen.getByRole("radio", { name: "绿色" }));
-    expect(setAccent).toHaveBeenCalledWith("green");
-  });
-
-  it("accent swatches use CSS custom properties for background color", () => {
-    setupMocks();
-    renderSettingsView("/settings");
-    const rosewaterSwatch = screen.getByRole("radio", { name: "玫瑰水" });
-    expect(
-      (rosewaterSwatch.firstElementChild as HTMLElement).style.backgroundColor
-    ).toBe("var(--ctp-rosewater)");
   });
 
   it("keeps language and font scale controls operable with aria-pressed", () => {
@@ -1938,7 +1870,7 @@ describe("SettingsView", () => {
       }
       return undefined;
     });
-    setupMocks({ flavor: "mocha" });
+    setupMocks({ flavor: "glass-dark" });
     renderSettingsView("/settings");
 
     const displayGroup = screen.getByRole("group", { name: "标题字体选项" });

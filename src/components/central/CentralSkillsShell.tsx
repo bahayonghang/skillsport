@@ -8,7 +8,9 @@ import {
 } from "lucide-react";
 import type { TFunction } from "i18next";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/ui/page-header";
 import type { CentralInstalledSkillsQuickFilterProps } from "@/components/central/CentralInstalledSkillsQuickFilter";
 import {
   ToolbarSortMenu,
@@ -321,137 +323,136 @@ export function CentralSkillsShell(props: CentralSkillsShellProps) {
         updateJob={taskCenter.updateJob}
         portabilityJob={taskCenter.portabilityJob}
       />
-      {/* Header ─────────────────────────────────────────────────────── */}
-      <div className="flex flex-col items-start gap-3 border-b border-border/65 bg-background/95 px-4 py-3 shadow-[0_1px_0_color-mix(in_srgb,var(--foreground)_4%,transparent)] sm:px-6 xl:flex-row xl:items-center xl:justify-between">
-        <div className="w-full min-w-0 xl:w-auto">
-          <div className="flex items-center gap-2">
-            <h1 className="text-balance text-xl font-semibold leading-tight">
-              {t("central.title")}
-            </h1>
-            <span
-              data-testid="central-result-count"
-              className="shrink-0 rounded-full bg-muted/70 px-2 py-0.5 text-xs font-medium tabular-nums text-muted-foreground ring-1 ring-border/60"
-            >
-              {listContent.sortedSkills.length}
-            </span>
-          </div>
-          <div className="mt-0.5 flex min-w-0 items-center gap-2">
-            <p
-              className="truncate text-ui-meta text-muted-foreground"
-              title={centralSkillsDir}
-            >
-              {centralSkillsDir}
-            </p>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-7 shrink-0 gap-1 rounded-lg px-2 text-ui-meta transition-[scale,background-color,color] active:scale-[0.96]"
-              disabled={centralStoreLocation.disabled}
-              onClick={centralStoreLocation.onOpen}
-              title={centralStoreLocation.disabledReason}
-              data-testid="central-store-location-open"
-            >
-              <MapPin className="size-3" aria-hidden="true" />
-              {t("central.storeLocation.changeButton")}
-            </Button>
-          </div>
-        </div>
-        <div className="flex w-full min-w-0 flex-col items-stretch gap-2 min-[521px]:flex-row min-[521px]:flex-wrap min-[521px]:items-center xl:w-auto xl:justify-end">
-          {/* 统一入口：添加技能（GitHub / 本地 ZIP）───────────── */}
-          <SkillImportLauncher
-            t={t}
-            isRemoteTarget={dialogs.activeTarget.kind !== "local"}
-            onOpenIntent={(intent) => {
-              if (intent === "github") {
-                setIsGitHubImportOpen(true);
-              } else if (intent === "local_zip") {
-                openLocalArchiveImport();
-              }
-            }}
-          />
-
-          {/* 入口：更新中心（聚合可更新 / 新增 / 已删除 / 平台冗余）─── */}
-          <Button
-            variant="outline"
-            className="h-9 rounded-xl pl-3 pr-3.5 transition-[scale,background-color,border-color,box-shadow,color] active:scale-[0.96]"
-            onClick={() =>
-              openUpdateCenter(undefined, updateCenterRefreshContext)
-            }
-            data-testid="central-open-update-center"
-          >
-            <ListChecks className="size-3.5" />
-            {t("central.updateCenter.openButton")}
-          </Button>
-
-          {/* 手动刷新列表（与计数刷新并行，刷新中保留列表内容）─── */}
-          <Button
-            type="button"
-            variant="outline"
-            className="h-9 w-9 rounded-xl transition-[scale,background-color,border-color,box-shadow,color] active:scale-[0.96]"
-            onClick={refreshButton.onClick}
-            disabled={refreshButton.disabled}
-            title={t("central.refresh")}
-            aria-label={t("central.refresh")}
-            data-testid="central-refresh-skills"
-          >
-            <RefreshCw
-              className={cn("size-3.5", refreshButton.refreshing && "animate-spin")}
-            />
-          </Button>
-
-          {checkModeControl}
-
-          {/* 主 CTA：检查更新 ────────────────────────────────────── */}
-          <Button
-            variant="default"
-            className="h-9 rounded-xl pl-3 pr-3.5 shadow-[0_0_0_1px_color-mix(in_srgb,var(--primary)_22%,transparent),0_8px_18px_-14px_color-mix(in_srgb,var(--primary)_70%,transparent)] transition-[scale,background-color,border-color,box-shadow,color] active:scale-[0.96]"
-            onClick={checkButton.onClick}
-            disabled={checkButton.disabled}
-            data-testid="central-check-updates"
-          >
-            <RefreshCw
-              className={cn("size-3.5", isCheckingUpdates && "animate-spin")}
-            />
-            {checkButton.label}
-            {updateAvailableSkillCount > 0 && (
-              <span
-                data-testid="central-update-count-chip"
-                className="ml-1.5 inline-flex items-center rounded-full bg-warning/15 px-1.5 py-0.5 text-ui-micro font-semibold text-warning-foreground ring-1 ring-warning/30"
+      {/* PageHeader + search toolbar（直接坐在 canvas 上，无底色 / 底边框）── */}
+      <div className="shrink-0 space-y-3 px-4 pt-4 pb-2 sm:px-6 sm:pt-5">
+        <PageHeader
+          title={t("central.title")}
+          meta={
+            <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+              <Badge
+                size="sm"
+                data-testid="central-result-count"
+                className="tabular-nums"
               >
-                +{updateAvailableSkillCount}
+                {listContent.sortedSkills.length}
+              </Badge>
+              <span
+                className="min-w-0 max-w-48 truncate font-mono text-ui-meta"
+                title={centralSkillsDir}
+              >
+                {centralSkillsDir}
               </span>
-            )}
-          </Button>
+              <Button
+                type="button"
+                variant="link"
+                size="xs"
+                className="h-6 shrink-0 gap-1 px-1 text-xs"
+                disabled={centralStoreLocation.disabled}
+                onClick={centralStoreLocation.onOpen}
+                title={centralStoreLocation.disabledReason}
+                data-testid="central-store-location-open"
+              >
+                <MapPin className="size-3" aria-hidden="true" />
+                {t("central.storeLocation.changeButton")}
+              </Button>
+            </span>
+          }
+          actions={
+            // PageHeader 的 actions 槽自带 max-w-full + flex-wrap，窄窗口自动换行。
+            <>
+              {/* 统一入口：添加技能（GitHub / 本地 ZIP）───────────── */}
+              <SkillImportLauncher
+                t={t}
+                isRemoteTarget={dialogs.activeTarget.kind !== "local"}
+                onOpenIntent={(intent) => {
+                  if (intent === "github") {
+                    setIsGitHubImportOpen(true);
+                  } else if (intent === "local_zip") {
+                    openLocalArchiveImport();
+                  }
+                }}
+              />
 
-          {/* 可更新数 > 0 时露出独立的批量更新按钮 ────────────── */}
-          {updateAvailableSkillCount > 0 && (
-            <Button
-              variant="outline"
-              className="h-9 rounded-xl pl-3 pr-3.5 transition-[scale,background-color,border-color,box-shadow,color] active:scale-[0.96]"
-              onClick={() => onUpdateSkills(updateButton.targetSkillIds)}
-              disabled={updateButton.disabled}
-            >
-              <Download className="size-3.5" />
-              {updateButton.label}
-            </Button>
-          )}
+              {/* 入口：更新中心（聚合可更新 / 新增 / 已删除 / 平台冗余）─── */}
+              <Button
+                variant="glass"
+                onClick={() =>
+                  openUpdateCenter(undefined, updateCenterRefreshContext)
+                }
+                data-testid="central-open-update-center"
+              >
+                <ListChecks className="size-3.5" />
+                {t("central.updateCenter.openButton")}
+              </Button>
 
-          {/* 更多 dropdown：任务中心 / 平台管理 / 状态导入导出 ─────── */}
-          <ToolbarMoreMenu
-            t={t}
-            activeTaskCount={activeTaskCount}
-            onOpenTaskCenter={() => taskCenter.onOpenChange(true)}
-            onOpenPlatformManage={() => setIsPlatformManageOpen(true)}
-            onOpenPortability={() => setIsPortabilityOpen(true)}
-          />
-        </div>
-      </div>
+              {/* 手动刷新列表（与计数刷新并行，刷新中保留列表内容）─── */}
+              <Button
+                type="button"
+                variant="glass"
+                size="icon"
+                onClick={refreshButton.onClick}
+                disabled={refreshButton.disabled}
+                title={t("central.refresh")}
+                aria-label={t("central.refresh")}
+                data-testid="central-refresh-skills"
+              >
+                <RefreshCw
+                  className={cn(
+                    "size-3.5",
+                    refreshButton.refreshing && "animate-spin",
+                  )}
+                />
+              </Button>
 
-      {/* Search + toolbar ──────────────────────────────────────────── */}
-      <div className="border-b border-border/60 bg-background/80 px-4 py-3 shadow-[0_1px_0_color-mix(in_srgb,var(--foreground)_3%,transparent)] sm:px-6">
+
+              {/* 主 CTA：检查更新 ────────────────────────────────────── */}
+              <Button
+                variant="default"
+                onClick={checkButton.onClick}
+                disabled={checkButton.disabled}
+                data-testid="central-check-updates"
+              >
+                <RefreshCw
+                  className={cn("size-3.5", isCheckingUpdates && "animate-spin")}
+                />
+                {checkButton.label}
+                {updateAvailableSkillCount > 0 && (
+                  <span
+                    data-testid="central-update-count-chip"
+                    className="ml-1 inline-flex h-4.5 items-center rounded-full bg-primary-foreground/20 px-1.5 text-ui-micro font-semibold tabular-nums"
+                  >
+                    +{updateAvailableSkillCount}
+                  </span>
+                )}
+              </Button>
+
+              {/* 可更新数 > 0 时露出独立的批量更新按钮 ────────────── */}
+              {updateAvailableSkillCount > 0 && (
+                <Button
+                  variant="glass"
+                  onClick={() => onUpdateSkills(updateButton.targetSkillIds)}
+                  disabled={updateButton.disabled}
+                >
+                  <Download className="size-3.5" />
+                  {updateButton.label}
+                </Button>
+              )}
+
+              {/* 更多 dropdown：任务中心 / 平台管理 / 状态导入导出 ─────── */}
+              <ToolbarMoreMenu
+                t={t}
+                activeTaskCount={activeTaskCount}
+                onOpenTaskCenter={() => taskCenter.onOpenChange(true)}
+                onOpenPlatformManage={() => setIsPlatformManageOpen(true)}
+                onOpenPortability={() => setIsPortabilityOpen(true)}
+              />
+            </>
+          }
+        />
+
+        {/* Search + toolbar ──────────────────────────────────────────── */}
         <div className="flex flex-wrap items-center gap-2">
-          <div className="min-w-[240px] flex-1">
+          <div className="min-w-72 flex-1">
             <CentralSearchBar
               t={t}
               value={viewState.q}
@@ -474,6 +475,7 @@ export function CentralSkillsShell(props: CentralSkillsShellProps) {
               onClearInstalledFilter={installedSkillsFilter.onClear}
             />
           </div>
+          {checkModeControl}
           <ToolbarSortMenu
             t={t}
             sortField={viewState.sortField}
@@ -498,14 +500,14 @@ export function CentralSkillsShell(props: CentralSkillsShellProps) {
           {activeTaskCount > 0 && (
             <Button
               type="button"
-              variant="outline"
+              variant="glass"
               size="sm"
-              className="h-9 shrink-0 gap-1.5 rounded-xl transition-[scale,background-color,border-color,box-shadow,color] active:scale-[0.96]"
+              className="shrink-0 gap-1.5"
               onClick={() => taskCenter.onOpenChange(true)}
               aria-label={t("central.taskCenterOpenLabel")}
               data-testid="central-toolbar-task-center-chip"
             >
-              <ActivityIcon className="size-3.5 animate-pulse text-primary" />
+              <ActivityIcon className="size-3.5 animate-pulse text-primary-text motion-reduce:animate-none" />
               <span className="text-xs">
                 {t("central.taskCenterRunningChip", { count: activeTaskCount })}
               </span>
@@ -525,7 +527,7 @@ export function CentralSkillsShell(props: CentralSkillsShellProps) {
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-7 px-2 text-xs"
+                className="px-2 text-xs"
                 disabled={selectionControls.currentResultCount === 0}
                 onClick={selectionControls.onSelectCurrentResults}
                 data-testid="central-select-current-results"
@@ -536,7 +538,7 @@ export function CentralSkillsShell(props: CentralSkillsShellProps) {
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-7 px-2 text-xs"
+                className="px-2 text-xs"
                 onClick={selectionControls.onClearSelection}
                 data-testid="central-clear-selection"
               >

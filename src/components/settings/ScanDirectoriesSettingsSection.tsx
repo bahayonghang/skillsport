@@ -43,7 +43,7 @@ export function ScanDirectoriesSettingsSection({
       icon={<FolderOpen className="size-5 shrink-0 text-muted-foreground" />}
       action={
         <Button
-          variant="outline"
+          variant="glass"
           size="sm"
           onClick={onAddDirectory}
           aria-label={t("settings.addDirAriaLabel")}
@@ -66,7 +66,7 @@ export function ScanDirectoriesSettingsSection({
         ) : (
           <div className="space-y-3">
             {customDirs.length > 0 && (
-              <div className="rounded-lg border border-border overflow-hidden">
+              <div className="overflow-hidden rounded-inner bg-accent">
                 {customDirs.map((dir) => (
                   <ScanDirectoryRow
                     key={dir.id}
@@ -97,10 +97,10 @@ export function ScanDirectoriesSettingsSection({
                     {builtinDirs.map((dir) => (
                       <div
                         key={dir.id}
-                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-muted/30 text-xs text-muted-foreground truncate"
+                        className="flex items-center gap-2 px-2.5 py-1.5 rounded-control bg-input-surface text-xs text-muted-foreground truncate"
                       >
                         <FolderOpen className="size-3 shrink-0" />
-                        <span className="truncate">{formatPathForDisplay(dir.path)}</span>
+                        <span className="truncate font-mono text-ui-meta">{formatPathForDisplay(dir.path)}</span>
                         {dir.label && <span className="shrink-0 opacity-60">· {dir.label}</span>}
                       </div>
                     ))}
@@ -131,10 +131,10 @@ function ScanDirectoryRow({
   const action = dir.is_active ? t("settings.enabled") : t("settings.disabled");
 
   return (
-    <div className="flex items-center gap-3 py-2.5 px-4 border-b border-border/50 last:border-0">
+    <div className="flex items-center gap-3 py-2.5 px-4 border-b border-border last:border-0">
       <FolderOpen className="size-4 text-muted-foreground shrink-0" />
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium truncate">{formatPathForDisplay(dir.path)}</div>
+        <div className="truncate font-mono text-sm font-medium">{formatPathForDisplay(dir.path)}</div>
         {dir.label && (
           <div className="text-xs text-muted-foreground mt-0.5">{dir.label}</div>
         )}

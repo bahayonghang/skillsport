@@ -35,11 +35,11 @@ export function SkillsCliGroupHeader({
     <div
       id={headerId}
       data-testid={`skills-cli-group-header-${bucket.id}`}
-      className="sticky top-0 z-10 flex flex-wrap items-center gap-2 border-b border-border bg-background py-2"
+      className="glass-sticky sticky top-0 z-10 mb-2 flex flex-wrap items-center gap-2 rounded-control px-3 py-1.5"
     >
       <button
         type="button"
-        className="flex min-w-0 flex-1 items-center gap-2 rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="focus-ring flex min-w-0 flex-1 items-center gap-2 rounded-control text-left"
         aria-expanded={expanded}
         aria-controls={panelId}
         onClick={onToggle}
@@ -76,7 +76,7 @@ export function SkillsCliGroupHeader({
           className={cn(
             "min-w-6 rounded-full px-1.5 py-0.5 text-center text-ui-micro tabular-nums",
             updateCount > 0
-              ? "bg-warning/10 text-warning-foreground"
+              ? "bg-warning-tint text-warning-foreground"
               : "text-muted-foreground",
           )}
           aria-label={t("skillsCli.updateBadge", { count: updateCount })}

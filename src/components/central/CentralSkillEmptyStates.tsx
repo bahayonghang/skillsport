@@ -8,8 +8,8 @@ import { BROWSER_PLATFORM_PATHS, getPlatformSkillFilePath } from "@/lib/platform
 export function CentralSkillEmptyState({ message }: { message: string }) {
   return (
     <div className="flex flex-col items-center justify-center h-full gap-4 py-20">
-      <div className="p-4 rounded-full bg-muted/60">
-        <Blocks className="size-12 text-muted-foreground opacity-60" />
+      <div className="rounded-full bg-accent p-4">
+        <Blocks className="size-12 text-muted-foreground" />
       </div>
       <p className="text-sm text-muted-foreground font-medium">{message}</p>
     </div>
@@ -27,8 +27,8 @@ export function CentralSkillFirstVisitEmptyState() {
 
   return (
     <div className="flex flex-col items-center justify-center h-full gap-6 py-16 text-center px-8">
-      <div className="p-5 rounded-full bg-primary/10 ring-1 ring-primary/20">
-        <Blocks className="size-14 text-primary opacity-70" />
+      <div className="rounded-full bg-primary-tint p-5">
+        <Blocks className="size-14 text-primary-text" />
       </div>
       <div className="space-y-2">
         <h2 className="text-xl font-semibold text-foreground">{t("empty.welcomeTitle")}</h2>
@@ -37,7 +37,7 @@ export function CentralSkillFirstVisitEmptyState() {
         </p>
       </div>
       <div className="flex flex-col gap-3 items-center">
-        <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-xl px-4 py-3 max-w-xs text-left border border-border">
+        <div className="glass-panel flex max-w-xs items-center gap-2 rounded-inner px-4 py-3 text-left text-xs text-muted-foreground">
           <FolderOpen className="size-4 shrink-0 text-primary-text" />
           <span>
             {t("empty.createHint")}{" "}

@@ -81,8 +81,10 @@ describe("SkillDetailModalShell", () => {
   it("overlay click triggers onOpenChange(false)", async () => {
     render(<TestHarness titleId="test-title" />);
 
+    // The shell renders the shared ui Dialog scrim and keeps its historic
+    // test anchor through `overlayProps`.
     const overlay = await screen.findByTestId("skill-detail-modal-overlay");
-    expect(overlay).toBeInTheDocument();
+    expect(overlay).toHaveAttribute("data-slot", "dialog-overlay");
 
     fireEvent.click(overlay);
 

@@ -7,6 +7,7 @@ import { SkillMarkdownRenderer } from "@/components/skill/SkillMarkdownRenderer"
 import { RuleTargets } from "./RuleTargets";
 import type { RuleDetail, RuleDraft, RuleTargetStatus, RuleTool } from "@/types/rules";
 import { isRuleDraftDirty } from "@/stores/rulesStore";
+import { cn } from "@/lib/utils";
 
 export function RuleEditor({ detail, draft, saving, disabled, pendingTools, onEdit, onSave, onDelete, onToggle }: {
   detail: RuleDetail;
@@ -43,17 +44,19 @@ export function RuleEditor({ detail, draft, saving, disabled, pendingTools, onEd
           </Button>
         </div>
       </div>
-      <div className="flex shrink-0 flex-wrap gap-2 border-b border-border px-4 py-2" aria-label={t("rules.viewMode")}>
-        {(["body", "preview", "source"] as const).map((value) => (
-          <Button key={value} variant={mode === value ? "secondary" : "ghost"} aria-pressed={mode === value} onClick={() => setMode(value)}>
-            {t(`rules.modes.${value}`)}
-          </Button>
-        ))}
+      <div className="shrink-0 border-b border-border px-4 py-2">
+        <div role="group" className="inline-flex flex-wrap gap-0.5 rounded-pill bg-accent p-0.5" aria-label={t("rules.viewMode")}>
+          {(["body", "preview", "source"] as const).map((value) => (
+            <button key={value} type="button" aria-pressed={mode === value} onClick={() => setMode(value)} className={cn("focus-ring h-8 rounded-pill border px-3.5 text-sm transition-colors", mode === value ? "border-primary-stroke bg-primary-tint font-medium text-primary-text" : "border-transparent text-muted-foreground hover:bg-accent hover:text-foreground")}>
+              {t(`rules.modes.${value}`)}
+            </button>
+          ))}
+        </div>
       </div>
-      {draft && draft.revision !== detail.revision && <p className="shrink-0 border-b border-border px-4 py-2 text-xs text-warning">
+      {draft && draft.revision !== detail.revision && <p className="shrink-0 border-b border-border bg-warning-tint px-4 py-2 text-xs text-warning-foreground">
         {t("rules.diskChanged")}
       </p>}
-      {detail.compatibility !== "supported" && <p className="shrink-0 px-4 pt-3 text-xs text-warning">
+      {detail.compatibility !== "supported" && <p className="shrink-0 px-4 pt-3 text-xs text-warning-foreground">
         {t("rules.unsupportedHint")}
       </p>}
       <div className="min-h-56 flex-1 shrink-0 overflow-y-auto p-4">
@@ -63,7 +66,7 @@ export function RuleEditor({ detail, draft, saving, disabled, pendingTools, onEd
             className="h-full min-h-40 resize-none field-sizing-fixed font-mono text-sm leading-relaxed" />
         ) : mode === "preview" ? (
           <SkillMarkdownRenderer content={body} variant="compact" />
-        ) : <pre aria-label={t("rules.sourceLabel")} className="whitespace-pre-wrap break-all font-mono text-sm leading-relaxed">{detail.source}
+        ) : <pre aria-label={t("rules.sourceLabel")} className="whitespace-pre-wrap break-all rounded-inner bg-input-surface p-4 font-mono text-sm leading-relaxed">{detail.source}
         </pre>}
       </div>
       <RuleTargets targets={detail.targets} pending={pendingTools} disabled={disabled || saving || detail.compatibility !== "supported"} onToggle={onToggle} />

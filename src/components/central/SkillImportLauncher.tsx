@@ -1,13 +1,15 @@
 import { useCallback } from "react";
 import { GitBranch, PackagePlus, FolderArchive } from "lucide-react";
-import { Menu as MenuPrimitive } from "@base-ui/react/menu";
 import type { TFunction } from "i18next";
 
 import { Button } from "@/components/ui/button";
 import {
-  menuPopupClassName,
-  menuItemClassName,
-} from "@/components/central/centralMenuClassNames";
+  Menu,
+  MenuContent,
+  MenuItem,
+  MenuSeparator,
+  MenuTrigger,
+} from "@/components/ui/menu";
 
 export type SkillImportIntent = "github" | "local_zip";
 
@@ -44,66 +46,55 @@ export function SkillImportLauncher({
   );
 
   return (
-    <MenuPrimitive.Root>
-      <MenuPrimitive.Trigger
+    <Menu>
+      <MenuTrigger
         render={
-          <Button
-            variant="outline"
-            className="h-9 rounded-xl pl-3 pr-3.5 transition-[scale,background-color,border-color,box-shadow,color] active:scale-[0.96]"
-            data-testid="central-add-skill-launcher"
-          >
+          <Button variant="glass" data-testid="central-add-skill-launcher">
             <PackagePlus className="size-3.5" />
             {t("central.addSkillLauncher.label")}
           </Button>
         }
       />
-      <MenuPrimitive.Portal>
-        <MenuPrimitive.Positioner
-          align="end"
-          sideOffset={6}
-          className="z-50 outline-none"
+      <MenuContent
+        align="end"
+        data-testid="central-add-skill-launcher-menu"
+        className="min-w-60"
+      >
+        <MenuItem
+          data-testid="central-add-skill-github"
+          onClick={() => handleSelect("github")}
+          className="items-start"
         >
-          <MenuPrimitive.Popup
-            data-testid="central-add-skill-launcher-menu"
-            className={menuPopupClassName()}
-          >
-            <MenuPrimitive.Item
-              data-testid="central-add-skill-github"
-              onClick={() => handleSelect("github")}
-              className={menuItemClassName()}
-            >
-              <GitBranch className="size-3.5 shrink-0" />
-              <div className="flex flex-col">
-                <span className="text-sm font-medium">
-                  {t("central.addSkillLauncher.github")}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {t("central.addSkillLauncher.githubDesc")}
-                </span>
-              </div>
-            </MenuPrimitive.Item>
-            <div role="separator" className="my-1 h-px bg-border/60" />
-            <MenuPrimitive.Item
-              data-testid="central-add-skill-local-zip"
-              onClick={() => handleSelect("local_zip")}
-              disabled={isRemoteTarget}
-              className={menuItemClassName()}
-            >
-              <FolderArchive className="size-3.5 shrink-0" />
-              <div className="flex flex-col">
-                <span className="text-sm font-medium">
-                  {t("central.addSkillLauncher.localZip")}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {isRemoteTarget
-                    ? t("central.addSkillLauncher.localZipRemoteDisabled")
-                    : t("central.addSkillLauncher.localZipDesc")}
-                </span>
-              </div>
-            </MenuPrimitive.Item>
-          </MenuPrimitive.Popup>
-        </MenuPrimitive.Positioner>
-      </MenuPrimitive.Portal>
-    </MenuPrimitive.Root>
+          <GitBranch className="mt-0.5 size-3.5 shrink-0" />
+          <div className="flex flex-col">
+            <span className="text-sm font-medium">
+              {t("central.addSkillLauncher.github")}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {t("central.addSkillLauncher.githubDesc")}
+            </span>
+          </div>
+        </MenuItem>
+        <MenuSeparator />
+        <MenuItem
+          data-testid="central-add-skill-local-zip"
+          onClick={() => handleSelect("local_zip")}
+          disabled={isRemoteTarget}
+          className="items-start"
+        >
+          <FolderArchive className="mt-0.5 size-3.5 shrink-0" />
+          <div className="flex flex-col">
+            <span className="text-sm font-medium">
+              {t("central.addSkillLauncher.localZip")}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              {isRemoteTarget
+                ? t("central.addSkillLauncher.localZipRemoteDisabled")
+                : t("central.addSkillLauncher.localZipDesc")}
+            </span>
+          </div>
+        </MenuItem>
+      </MenuContent>
+    </Menu>
   );
 }

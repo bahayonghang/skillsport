@@ -53,7 +53,7 @@ export function ImportIntentController() {
     <aside
       role="status"
       aria-live="polite"
-      className="fixed bottom-4 right-4 z-[70] w-[min(24rem,calc(100vw-2rem))] rounded-lg border border-border bg-popover p-3 text-popover-foreground shadow-lg"
+      className="glass-overlay fixed right-4 bottom-4 z-[70] w-[min(24rem,calc(100vw-2rem))] rounded-card p-3 text-popover-foreground"
     >
       <p className="text-sm font-medium">
         {t("importIntent.pendingTitle", { count: pendingCount })}

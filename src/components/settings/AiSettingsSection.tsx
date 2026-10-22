@@ -11,6 +11,7 @@ import {
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 
+import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SecretValueInput } from "@/components/settings/SecretValueInput";
 import { SettingsSection } from "@/components/settings/SettingsSection";
@@ -92,7 +93,7 @@ export function AiSettingsSection({
       icon={<Bot className="size-5 shrink-0 text-muted-foreground" />}
     >
       <div className="space-y-4">
-        <div className="rounded-xl border border-border/70 bg-background/70 p-3 shadow-sm">
+        <div className="rounded-inner bg-accent p-3">
           <div className="mb-3 flex flex-wrap items-start justify-between gap-3">
             <div>
               <div
@@ -105,16 +106,14 @@ export function AiSettingsSection({
                 {t("settings.aiProviderConsoleHint")}
               </p>
             </div>
-            <span
-              className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs ${secretStorageTone(aiApiKeyState.storageState)}`}
-            >
+            <Badge tone={secretStorageTone(aiApiKeyState.storageState)}>
               {aiApiKeyState.configured ||
               aiApiKeyState.storageState === "unreadable"
                 ? t(
                     `settings.aiApiKeyStorageState.${aiApiKeyState.storageState}`,
                   )
                 : t("settings.aiApiKeyNotConfigured")}
-            </span>
+            </Badge>
           </div>
           <div
             className="flex flex-wrap gap-1.5"
@@ -128,7 +127,7 @@ export function AiSettingsSection({
                 onClick={() => onProviderChange(provider.id)}
                 disabled={aiControlsDisabled}
                 aria-pressed={aiSettings.provider === provider.id}
-                className={`min-h-8 px-3 py-1.5 rounded-md text-xs transition-colors cursor-pointer border md:min-h-7 ${aiSettings.provider === provider.id ? "bg-primary/15 border-primary text-foreground font-medium" : "border-border bg-background text-muted-foreground hover:border-primary/40 hover:bg-hover-bg/10"}`}
+                className={`focus-ring min-h-8 px-3 py-1.5 rounded-full text-xs transition-colors cursor-pointer border md:min-h-7 ${aiSettings.provider === provider.id ? "border-primary-stroke bg-primary-tint text-primary-text font-medium" : "border-glass-stroke bg-popover text-muted-foreground hover:bg-accent hover:text-foreground"}`}
               >
                 {t(provider.labelKey)}
               </button>
@@ -137,8 +136,8 @@ export function AiSettingsSection({
         </div>
 
         <div className="space-y-3">
-          <div className="rounded-xl border border-border/70 bg-muted/10 p-3">
-            <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <div className="rounded-inner bg-accent p-3">
+            <div className="mb-3 flex items-center gap-2 text-xs font-medium text-muted-foreground">
               <KeyRound className="size-3.5" />
               {t("settings.aiSecretConsoleTitle")}
             </div>
@@ -151,7 +150,7 @@ export function AiSettingsSection({
                     href={providerApiKeyUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary-text"
+                    className="focus-ring inline-flex items-center gap-1 rounded-control text-xs font-medium text-primary-text hover:underline"
                     aria-label={t("settings.aiApiKeyGetLinkAria", {
                       provider: currentProviderLabel,
                     })}
@@ -196,7 +195,7 @@ export function AiSettingsSection({
               ) : null}
             </div>
             <Button
-              variant="outline"
+              variant="glass"
               size="sm"
               className="mt-3"
               disabled={aiControlsDisabled || !aiApiKeyState.configured}
@@ -206,8 +205,8 @@ export function AiSettingsSection({
             </Button>
           </div>
 
-          <div className="rounded-xl border border-border/70 bg-muted/10 p-3">
-            <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+          <div className="rounded-inner bg-accent p-3">
+            <div className="mb-3 flex items-center gap-2 text-xs font-medium text-muted-foreground">
               <ServerCog className="size-3.5" />
               {t("settings.aiRuntimeConsoleTitle")}
             </div>
@@ -273,8 +272,8 @@ export function AiSettingsSection({
           />
         </div>
 
-        <div className="rounded-xl border border-border/70 bg-muted/10 p-3">
-          <div className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <div className="rounded-inner bg-accent p-3">
+          <div className="mb-3 flex items-center gap-2 text-xs font-medium text-muted-foreground">
             <SlidersHorizontal className="size-3.5" />
             {t("settings.aiControlsConsoleTitle")}
           </div>
@@ -285,12 +284,12 @@ export function AiSettingsSection({
         </div>
         <div className="flex items-center gap-3">
           {resolvedUrl && (
-            <div className="text-xs text-muted-foreground bg-muted/30 rounded-md px-3 py-2 font-mono truncate flex-1 min-w-0">
+            <div className="text-ui-meta text-muted-foreground bg-input-surface rounded-control px-3 py-2 font-mono truncate flex-1 min-w-0">
               {resolvedUrl}
             </div>
           )}
           <Button
-            variant="outline"
+            variant="glass"
             size="sm"
             disabled={
               aiControlsDisabled ||
@@ -325,17 +324,17 @@ export function AiSettingsSection({
   );
 }
 
-function secretStorageTone(state: SecretStorageState) {
+function secretStorageTone(state: SecretStorageState): BadgeTone {
   switch (state) {
     case "stored":
-      return "bg-success/10 text-success-foreground";
+      return "success";
     case "session":
-      return "bg-warning/10 text-warning-foreground";
+      return "warning";
     case "unreadable":
-      return "bg-destructive/10 text-destructive-text";
+      return "destructive";
     case "missing":
     default:
-      return "bg-muted text-muted-foreground";
+      return "neutral";
   }
 }
 
@@ -388,7 +387,7 @@ function AiRegionPicker({
             onClick={() => onChange(item)}
             disabled={disabled}
             aria-pressed={region === item}
-            className={`min-h-8 px-3 py-1.5 rounded-md text-xs transition-colors cursor-pointer border md:min-h-7 ${region === item ? "bg-primary/15 border-primary text-foreground font-medium" : "border-border bg-background text-muted-foreground hover:border-primary/40"}`}
+            className={`focus-ring min-h-8 px-3 py-1.5 rounded-full text-xs transition-colors cursor-pointer border md:min-h-7 ${region === item ? "border-primary-stroke bg-primary-tint text-primary-text font-medium" : "border-glass-stroke bg-popover text-muted-foreground hover:bg-accent hover:text-foreground"}`}
           >
             {t(REGION_LABEL_KEYS[item])}
           </button>
@@ -432,7 +431,7 @@ function AiProtocolPicker({
             disabled={disabled}
             aria-checked={protocol === item.id}
             onClick={() => onChange(item.id)}
-            className={`rounded-md border px-3 py-2 text-left text-xs transition-colors ${protocol === item.id ? "bg-primary/15 border-primary text-foreground" : "border-border bg-background text-muted-foreground hover:border-primary/40"}`}
+            className={`focus-ring rounded-control border px-3 py-2 text-left text-xs transition-colors ${protocol === item.id ? "border-primary-stroke bg-primary-tint text-primary-text" : "border-glass-stroke bg-popover text-muted-foreground hover:bg-accent hover:text-foreground"}`}
           >
             <span className="block font-medium">{t(item.labelKey)}</span>
             <span className="mt-1 block text-ui-meta text-muted-foreground">
@@ -492,7 +491,7 @@ function AiTagRateSettings({
   const { t } = useTranslation();
 
   return (
-    <div className="rounded-lg border border-border/70 bg-muted/20 p-3">
+    <div className="rounded-inner bg-accent p-3">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
           <div id="settings-ai-tag-rate-title" className="text-sm font-medium">
@@ -604,7 +603,7 @@ function AiTestResultPanel({
 
   return (
     <div
-      className={`text-xs rounded-md px-3 py-2 space-y-1.5 ${aiTestResult.ok ? "bg-success/10 text-success-foreground" : "bg-destructive/10 text-destructive-text"}`}
+      className={`text-xs rounded-control px-3 py-2 space-y-1.5 ${aiTestResult.ok ? "bg-primary-tint text-success-foreground" : "bg-destructive-tint text-destructive-text"}`}
     >
       <p>
         {aiTestResult.ok ? "✓ " : "✕ "}
@@ -626,7 +625,7 @@ function AiTestResultPanel({
             {t("settings.aiTestDetails")}
           </button>
           {showAiTestDetails && (
-            <pre className="mt-1 text-ui-meta leading-4 font-mono text-muted-foreground whitespace-pre-wrap break-all bg-muted/30 rounded-md p-2 max-h-32 overflow-auto">
+            <pre className="mt-1 text-ui-meta leading-4 font-mono text-muted-foreground whitespace-pre-wrap break-all bg-input-surface rounded-control p-2 max-h-32 overflow-auto">
               {aiTestResult.details}
             </pre>
           )}

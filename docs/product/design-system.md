@@ -102,6 +102,8 @@ components:
 
 # Design System: SkillPort
 
+> **Superseded (1.1.0).** This is the archived 1.0.x Catppuccin "Local Operations Console" system. SkillPort 1.1.0 replaced it with the Light Glass design language (Glass Light / Glass Dark, mint and lavender semantic accents, Geist body font). The authoritative visual source is the repository-root `DESIGN.md`; product positioning lives in `PRODUCT.md`. Do not implement new UI from this page.
+
 ## 1. Overview
 
 **Creative North Star: "The Local Operations Console"**

@@ -25,7 +25,7 @@ export function LogsActivityCard({
   const activity = useMemo(() => buildActivitySummary(entries), [entries]);
 
   return (
-    <Card className="overflow-hidden border-border/90 bg-card/95 gap-0 py-0">
+    <Card className="gap-0 py-0">
       <PanelHeader
         title={t("logs.activity.title")}
         description={t("logs.activity.description", {
@@ -58,17 +58,17 @@ export function LogsActivityCard({
                   onSelectDay(isActive ? null : bucket.key, bucket.date)
                 }
                 className={cn(
-                  "aspect-square rounded-sm border transition-colors",
+                  "focus-ring aspect-square rounded-control border transition-colors duration-150",
                   heatCellClass(bucket.count, activity.max),
                   isActive
-                    ? "border-primary ring-2 ring-primary/40"
-                    : "border-border/40 hover:border-primary/60",
+                    ? "border-primary-text"
+                    : "border-transparent hover:border-primary-stroke",
                 )}
               />
             );
           })}
         </div>
-        <div className="flex items-center justify-between text-ui-meta text-muted-foreground">
+        <div className="flex items-center justify-between text-xs text-muted-foreground">
           <span>{t("logs.activity.less")}</span>
           <span>{t("logs.activity.more")}</span>
         </div>

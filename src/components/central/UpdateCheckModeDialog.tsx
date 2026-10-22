@@ -107,7 +107,7 @@ export function UpdateCheckModeDialog({
                 testId="update-check-mode-sync"
                 onSelect={() => setMode("sync")}
               />
-              <div className="flex items-start gap-2 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-xs text-warning-foreground">
+              <div className="flex items-start gap-2 rounded-inner border border-warning/30 bg-warning-tint px-3 py-2 text-xs text-warning-foreground">
                 <AlertTriangle
                   className="mt-0.5 size-3.5 shrink-0"
                   aria-hidden="true"
@@ -116,7 +116,7 @@ export function UpdateCheckModeDialog({
               </div>
               {error ? (
                 <div
-                  className="flex items-start gap-2 rounded-lg border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive-text"
+                  className="flex items-start gap-2 rounded-inner border border-destructive/30 bg-destructive-tint px-3 py-2 text-xs text-destructive-text"
                   data-testid="update-check-mode-error"
                   role="alert"
                 >
@@ -196,7 +196,7 @@ function UpdateCheckProgressView({
           ) : null}
         </div>
         <div
-          className="h-2 overflow-hidden rounded-full bg-muted"
+          className="h-2 overflow-hidden rounded-full bg-accent"
           role="progressbar"
           aria-label={ariaLabel}
           aria-valuemin={0}
@@ -227,11 +227,11 @@ function UpdateCheckProgressView({
             {progress.activeRepositories.map((repository) => (
               <li
                 key={repository.key}
-                className="flex min-w-0 items-center gap-2 rounded-md bg-muted/60 px-2.5 py-2 text-xs"
+                className="flex min-w-0 items-center gap-2 rounded-control bg-accent px-2.5 py-2 text-xs"
                 title={repository.name}
               >
                 <LoaderCircle
-                  className="size-3.5 shrink-0 animate-spin text-primary"
+                  className="size-3.5 shrink-0 animate-spin text-primary-text"
                   aria-hidden="true"
                 />
                 <span className="min-w-0 truncate">{repository.name}</span>
@@ -271,10 +271,10 @@ function ModeCard({
     <button
       type="button"
       className={cn(
-        "w-full rounded-xl border p-4 text-left transition-colors",
+        "w-full rounded-inner border p-4 text-left transition-colors",
         checked
-          ? "border-primary bg-primary/10 text-foreground"
-          : "border-border bg-card hover:bg-muted/60",
+          ? "border-primary bg-primary-tint text-foreground"
+          : "border-border bg-card hover:bg-accent",
         disabled && "cursor-not-allowed opacity-60 hover:bg-card",
       )}
       disabled={disabled}
@@ -288,7 +288,7 @@ function ModeCard({
             "mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full border",
             checked
               ? "border-primary bg-primary text-primary-foreground"
-              : "border-border bg-muted",
+              : "border-border bg-accent",
           )}
         >
           {icon}

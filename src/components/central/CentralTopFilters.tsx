@@ -62,7 +62,7 @@ export function CentralTopFilters({
   );
 
   return (
-    <div className="flex flex-wrap items-center gap-2 border-b border-border/60 bg-background/70 px-4 py-2 sm:px-6">
+    <div className="flex shrink-0 flex-wrap items-center gap-2 px-4 pb-3 sm:px-6">
       {/* 来源段 ─────────────────────────────────────────────── */}
       <span className="shrink-0 text-xs font-medium text-muted-foreground">
         {t("central.topFilterSourceLabel")}
@@ -79,12 +79,13 @@ export function CentralTopFilters({
               type="button"
               data-testid={`top-filter-source-${pill.testId}`}
               data-active={active}
+              aria-pressed={active}
               onClick={() => onToggleSource(pill.value)}
               className={cn(
-                "focus-ring h-7 rounded-full border px-2.5 text-xs font-medium transition-[scale,background-color,border-color,box-shadow,color] active:scale-[0.96]",
+                "focus-ring h-7 rounded-full border px-2.5 text-xs font-medium transition-[scale,background-color,border-color,color] active:scale-[0.96]",
                 active
-                  ? "border-primary/40 bg-primary/10 text-primary"
-                  : "border-border/70 text-muted-foreground hover:border-primary/30 hover:text-foreground",
+                  ? "border-primary-stroke bg-primary-tint text-primary-text"
+                  : "border-glass-stroke bg-popover text-muted-foreground ring-1 ring-glass-hairline hover:text-foreground",
               )}
             >
               {t(pill.labelKey)}
@@ -94,7 +95,7 @@ export function CentralTopFilters({
       </div>
 
       {sortedTags.length > 0 && (
-        <span aria-hidden className="h-4 w-px shrink-0 bg-border/70" />
+        <span aria-hidden className="h-4 w-px shrink-0 bg-border" />
       )}
 
       {/* 标签段 ─────────────────────────────────────────────── */}
@@ -103,7 +104,7 @@ export function CentralTopFilters({
           <span className="shrink-0 text-xs font-medium text-muted-foreground">
             {t("central.topFilterTagsLabel")}
           </span>
-          <div className="scrollbar-subtle flex min-w-[140px] flex-1 flex-nowrap items-center gap-1 overflow-x-auto py-0.5">
+          <div className="scrollbar-subtle flex min-w-36 flex-1 flex-nowrap items-center gap-1 overflow-x-auto py-0.5">
             {sortedTags.map((tag) => {
               const color = getTagColor(tag);
               const active = selected.has(tag.id);
@@ -114,17 +115,18 @@ export function CentralTopFilters({
                   type="button"
                   data-testid={`top-filter-tag-${tag.id}`}
                   data-active={active}
+                  aria-pressed={active}
                   onClick={() => onToggleTag(tag.id)}
                   style={color.style}
                   className={cn(
-                    "focus-ring inline-flex h-7 shrink-0 items-center gap-1 rounded-full border px-2 text-xs font-medium transition-[scale,background-color,border-color,box-shadow,color] active:scale-[0.96]",
+                    "focus-ring inline-flex h-7 shrink-0 items-center gap-1 rounded-full border px-2.5 text-xs font-medium transition-[scale,background-color,border-color,box-shadow,color] active:scale-[0.96]",
                     color.className,
-                    active && "ring-2 ring-primary/40",
+                    active && "ring-2 ring-ring",
                   )}
                 >
                   <span className="truncate">{tag.name}</span>
                   {count > 0 && (
-                    <span className="tabular-nums opacity-70">{count}</span>
+                    <span className="tabular-nums">{count}</span>
                   )}
                 </button>
               );
@@ -140,7 +142,8 @@ export function CentralTopFilters({
             type="button"
             data-testid="top-filter-more"
             onClick={() => setMoreOpen((v) => !v)}
-            className="focus-ring flex h-7 items-center gap-1 rounded-full border border-border/70 px-2.5 text-xs font-medium text-muted-foreground transition-[scale,border-color,background-color,color] hover:border-primary/30 hover:text-foreground active:scale-[0.96]"
+            aria-expanded={moreOpen}
+            className="focus-ring flex h-7 items-center gap-1 rounded-full border border-glass-stroke bg-popover px-2.5 text-xs font-medium text-muted-foreground ring-1 ring-glass-hairline transition-[scale,background-color,color] hover:text-foreground active:scale-[0.96]"
           >
             {t("central.topFilterMore")}
             <ChevronDown className="size-3" />
@@ -152,7 +155,7 @@ export function CentralTopFilters({
                 aria-hidden
                 onClick={() => setMoreOpen(false)}
               />
-              <div className="absolute right-0 z-40 mt-1 w-72 rounded-xl bg-popover p-2 shadow-[0_0_0_1px_color-mix(in_srgb,var(--foreground)_10%,transparent),0_16px_40px_-18px_color-mix(in_srgb,var(--background)_85%,transparent)]">
+              <div className="glass-overlay absolute right-0 z-40 mt-1 w-72 overflow-hidden rounded-card px-3 pb-2">
                 {tagGroupsSlot}
               </div>
             </>

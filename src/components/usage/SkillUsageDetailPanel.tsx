@@ -49,12 +49,12 @@ export function SkillUsageDetailPanel({
           <p role="alert" className="break-words text-sm text-destructive-text">{error}</p>
         ) : (
           <div className="animate-pulse motion-reduce:animate-none">
-            <div className="h-5 w-2/5 rounded bg-muted" />
+            <div className="h-5 w-2/5 rounded-pill bg-accent" />
             <div className="mt-5 grid grid-cols-2 gap-3">
-              <div className="h-14 rounded bg-muted/70" />
-              <div className="h-14 rounded bg-muted/70" />
+              <div className="h-14 rounded-inner bg-accent" />
+              <div className="h-14 rounded-inner bg-accent" />
             </div>
-            <div className="mt-5 h-32 rounded bg-muted/50" />
+            <div className="mt-5 h-32 rounded-inner bg-accent" />
           </div>
         )}
       </div>
@@ -75,7 +75,7 @@ export function SkillUsageDetailPanel({
             <Button
               type="button"
               size="sm"
-              variant="outline"
+              variant="glass"
               className="h-10 min-h-[40px] md:h-10"
               onClick={() =>
                 navigate(`/skill/${encodeURIComponent(detail.resolvedSkillId!)}`)
@@ -130,7 +130,7 @@ export function SkillUsageDetailPanel({
                 : `~${detail.staticTokenEstimate.toLocaleString()}`}
             </span>
           </div>
-          <ul className="divide-y divide-border/60 border-y border-border/70">
+          <ul className="divide-y divide-border border-y border-border">
             {detail.byProject.map((project) => (
               <li
                 key={project.project}

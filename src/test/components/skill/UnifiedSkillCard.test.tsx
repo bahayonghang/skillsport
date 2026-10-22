@@ -368,7 +368,7 @@ describe("UnifiedSkillCard", () => {
       />,
     );
     const rank = screen.getByTestId("usage-rank");
-    expect(rank).toHaveClass("absolute", "bottom-3.5", "right-3.5");
+    expect(rank).toHaveClass("absolute", "bottom-4", "right-4");
     expect(rank).toHaveTextContent("无记录");
     expect(rank).toHaveAttribute("aria-label", "全部已记录历史中无调用记录");
 
@@ -390,7 +390,7 @@ describe("UnifiedSkillCard", () => {
       />,
     );
     const rank = screen.getByTestId("usage-rank");
-    expect(rank).toHaveClass("absolute", "bottom-3.5", "right-3.5");
+    expect(rank).toHaveClass("absolute", "bottom-4", "right-4");
     expect(rank).toHaveTextContent("#2");
     expect(rank).toHaveTextContent("14");
     expect(rank).toHaveAttribute(
@@ -421,11 +421,12 @@ describe("UnifiedSkillCard", () => {
     const { container } = render(<UnifiedSkillCard {...platformBaseProps} />);
     expect(screen.getByText("中央技能库")).toBeInTheDocument();
     expect(screen.queryByText("符号链接")).not.toBeInTheDocument();
-    expect(container.querySelector(".bg-info")).not.toBeNull();
-    expect(container.querySelector(".bg-warning")).toBeNull();
+    expect(
+      container.querySelector('[data-slot="skill-card"][data-origin="central"]'),
+    ).not.toBeNull();
   });
 
-  it("paints a warning origin bar for plugin rows", () => {
+  it("marks plugin rows with the plugin origin and no colored side stripe", () => {
     const { container } = render(
       <UnifiedSkillCard
         {...platformBaseProps}
@@ -434,7 +435,11 @@ describe("UnifiedSkillCard", () => {
         isReadOnly
       />,
     );
-    expect(container.querySelector(".bg-warning")).not.toBeNull();
+    expect(
+      container.querySelector('[data-slot="skill-card"][data-origin="plugin"]'),
+    ).not.toBeNull();
+    // DESIGN.md: no colored side stripes; origin is the icon + text capsule.
+    expect(container.querySelector(".bg-warning")).toBeNull();
     expect(container.querySelector(".bg-info")).toBeNull();
   });
 });

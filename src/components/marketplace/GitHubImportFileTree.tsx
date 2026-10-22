@@ -91,7 +91,7 @@ export function GitHubImportFileTree({
       className="flex h-full min-h-0 flex-col"
       data-testid="github-import-file-tree"
     >
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 pb-3 text-ui-meta text-muted-foreground">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3 text-ui-meta text-muted-foreground">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 tabular-nums">
           <span>
             {model.fileCount === 1
@@ -114,8 +114,8 @@ export function GitHubImportFileTree({
         <span>{t("marketplace.githubImportFileSnapshotHint")}</span>
       </div>
 
-      <div className="flex h-9 shrink-0 items-center gap-2 border-b border-border/60 px-2 text-xs font-semibold">
-        <FolderTree className="size-4 shrink-0 text-primary" />
+      <div className="flex h-9 shrink-0 items-center gap-2 border-b border-border px-2 text-xs font-semibold">
+        <FolderTree className="size-4 shrink-0 text-primary-text" />
         <span className="min-w-0 truncate" title={rootName}>
           {rootName}
         </span>
@@ -173,7 +173,7 @@ export function GitHubImportFileTree({
             return isDirectory ? (
               <button
                 type="button"
-                className="flex h-8 w-full items-center gap-1.5 rounded-md pr-2 text-left text-xs text-foreground outline-none hover:bg-muted/40 focus-visible:ring-2 focus-visible:ring-ring"
+                className="focus-ring flex h-8 w-full items-center gap-1.5 rounded-control pr-2 text-left text-xs text-foreground hover:bg-accent"
                 style={{ paddingLeft: `${depth * 16 + 8}px` }}
                 aria-expanded={expanded}
                 aria-label={

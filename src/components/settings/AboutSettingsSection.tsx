@@ -21,7 +21,10 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
+import { Badge, type BadgeTone } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { StatTile } from "@/components/ui/stat-tile";
 import {
   formatAppUpdateBytes,
   getAppUpdateProgressPercent,
@@ -29,7 +32,7 @@ import {
   type AppUpdateStatus,
 } from "@/stores/appUpdateStore";
 import { cn } from "@/lib/utils";
-import { statusChipClass } from "@/lib/statusTone";
+import { statusSoftClass } from "@/lib/statusTone";
 
 interface AboutSettingsSectionProps {
   appVersion: string;
@@ -90,117 +93,114 @@ export function AboutSettingsSection({
   const hasUpdate = Boolean(latestVersion);
 
   return (
-    <div className="relative overflow-hidden rounded-2xl bg-card p-4 text-foreground shadow-sm ring-1 ring-border sm:p-6">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-0 opacity-50 [background-image:linear-gradient(color-mix(in_srgb,var(--foreground)_6%,transparent)_1px,transparent_1px),linear-gradient(90deg,color-mix(in_srgb,var(--foreground)_6%,transparent)_1px,transparent_1px)] [background-size:24px_24px]"
-      />
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -right-24 -top-24 size-64 rounded-full bg-primary/15 blur-3xl"
-      />
-      <div className="relative space-y-5">
-        <section className="rounded-xl bg-muted/40 p-5 ring-1 ring-border">
-          <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-            <div className="max-w-3xl space-y-4">
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/15 px-3 py-1 text-xs font-medium uppercase tracking-[0.18em] text-primary">
-                  <CircleDot className="size-3" aria-hidden="true" />
-                  {t("settings.aboutCockpit.eyebrow")}
-                </span>
-                <StatusChip status={status} label={statusLabel} />
-              </div>
-              <div>
-                <h3 className="font-heading text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-                  SkillPort
-                </h3>
-                <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  {t("settings.aboutCockpit.heroDesc")}
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2 text-xs">
-                <MetaPill
-                  icon={<PackageCheck />}
-                  label={t("settings.appVersion")}
-                  value={`v${appVersion}`}
-                />
-                <MetaPill
-                  icon={<ShieldCheck />}
-                  label={t("settings.aboutCockpit.channel")}
-                  value={t("settings.aboutCockpit.stable")}
-                />
-                <MetaPill
-                  icon={<Server />}
-                  label={t("settings.aboutCockpit.platform")}
-                  value={t("settings.aboutCockpit.windowsX64")}
-                />
-              </div>
-            </div>
-
-            <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:w-[28rem]">
-              <HeroMetric
-                label={t("settings.aboutCockpit.currentVersion")}
-                value={`v${currentVersion || appVersion}`}
-              />
-              <HeroMetric
-                label={t("settings.aboutCockpit.latestVersion")}
-                value={
-                  latestVersion
-                    ? `v${latestVersion}`
-                    : t("settings.aboutCockpit.pendingCheck")
-                }
-              />
-              <a
-                href={repoUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="group col-span-full flex min-w-0 items-center justify-between gap-3 rounded-lg bg-background px-4 py-3 text-sm text-muted-foreground ring-1 ring-border transition hover:bg-primary/10 hover:text-foreground hover:ring-primary/50"
-              >
-                <span className="flex min-w-0 items-center gap-2">
-                  <Globe
-                    className="size-4 shrink-0 text-primary"
-                    aria-hidden="true"
-                  />
-                  <span className="truncate">{repoUrl}</span>
-                </span>
-                <ExternalLink className="size-4 shrink-0 opacity-70 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-              </a>
-            </div>
+    <Card
+      variant="glass"
+      className="gap-5 rounded-shell p-5 text-foreground sm:p-6"
+      data-testid="about-cockpit"
+    >
+      <section className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+        <div className="max-w-3xl space-y-4">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge tone="primary" icon={<CircleDot />}>
+              {t("settings.aboutCockpit.eyebrow")}
+            </Badge>
+            <StatusChip status={status} label={statusLabel} />
           </div>
-        </section>
+          <div>
+            <h3 className="font-display text-2xl font-semibold tracking-tight text-foreground">
+              SkillPort
+            </h3>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              {t("settings.aboutCockpit.heroDesc")}
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2 text-xs">
+            <MetaPill
+              icon={<PackageCheck />}
+              label={t("settings.appVersion")}
+              value={`v${appVersion}`}
+            />
+            <MetaPill
+              icon={<ShieldCheck />}
+              label={t("settings.aboutCockpit.channel")}
+              value={t("settings.aboutCockpit.stable")}
+            />
+            <MetaPill
+              icon={<Server />}
+              label={t("settings.aboutCockpit.platform")}
+              value={t("settings.aboutCockpit.windowsX64")}
+            />
+          </div>
+        </div>
 
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
-          <ReleaseUpdateCard
-            canInstall={canInstall}
-            error={error}
-            hasUpdate={hasUpdate}
-            isChecking={isChecking}
-            isDownloading={isDownloading}
-            isInstalling={isInstalling}
-            progressPercent={progressPercent}
-            releaseNotes={releaseNotes}
-            status={status}
-            statusLabel={statusLabel}
-            downloadedLabel={formatAppUpdateBytes(progress.downloaded)}
-            totalLabel={formatAppUpdateBytes(progress.total)}
-            latestVersion={latestVersion}
-            onCheck={() => {
-              void checkForUpdate();
-            }}
-            onInstall={() => {
-              void installUpdate();
-            }}
+        <div className="grid min-w-0 gap-3 sm:grid-cols-2 xl:w-md">
+          <StatTile
+            size="compact"
+            tone="neutral"
+            icon={<PackageCheck />}
+            label={t("settings.aboutCockpit.currentVersion")}
+            value={`v${currentVersion || appVersion}`}
           />
-
-          <DiagnosticCard dbPathDisplay={dbPathDisplay} repoUrl={repoUrl} />
+          <StatTile
+            size="compact"
+            tone={latestVersion ? "primary" : "neutral"}
+            icon={<Download />}
+            label={t("settings.aboutCockpit.latestVersion")}
+            value={
+              latestVersion
+                ? `v${latestVersion}`
+                : t("settings.aboutCockpit.pendingCheck")
+            }
+          />
+          <a
+            href={repoUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="group focus-ring col-span-full flex min-w-0 items-center justify-between gap-3 rounded-inner bg-accent px-4 py-3 text-sm text-muted-foreground transition-colors hover:bg-primary-tint hover:text-primary-text"
+          >
+            <span className="flex min-w-0 items-center gap-2">
+              <Globe
+                className="size-4 shrink-0 text-primary-text"
+                aria-hidden="true"
+              />
+              <span className="truncate font-mono text-ui-meta">{repoUrl}</span>
+            </span>
+            <ExternalLink className="size-4 shrink-0" aria-hidden="true" />
+          </a>
         </div>
+      </section>
 
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
-          <TechStackCard />
-          <HelpResourcesCard />
-        </div>
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(320px,0.9fr)]">
+        <ReleaseUpdateCard
+          canInstall={canInstall}
+          error={error}
+          hasUpdate={hasUpdate}
+          isChecking={isChecking}
+          isDownloading={isDownloading}
+          isInstalling={isInstalling}
+          progressPercent={progressPercent}
+          releaseNotes={releaseNotes}
+          status={status}
+          statusLabel={statusLabel}
+          downloadedLabel={formatAppUpdateBytes(progress.downloaded)}
+          totalLabel={formatAppUpdateBytes(progress.total)}
+          latestVersion={latestVersion}
+          onCheck={() => {
+            void checkForUpdate();
+          }}
+          onInstall={() => {
+            void installUpdate();
+          }}
+        />
+
+        <DiagnosticCard dbPathDisplay={dbPathDisplay} repoUrl={repoUrl} />
       </div>
-    </div>
+
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+        <TechStackCard />
+        <HelpResourcesCard />
+      </div>
+    </Card>
   );
 }
 
@@ -252,31 +252,28 @@ function ReleaseUpdateCard({
       data-testid="about-update-card"
     >
       <div className="space-y-4">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        {/* Wrap by available width, not the viewport: the card is narrow in
+            the two-column cockpit, so the actions drop below the state. */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
+            <div className="text-xs font-medium text-muted-foreground">
               {t("settings.aboutCockpit.updateState")}
             </div>
             <div className="mt-1 flex flex-wrap items-center gap-2">
               <StatusChip status={status} label={statusLabel} />
               {latestVersion ? (
-                <span
-                  className={cn(
-                    "rounded-full px-2.5 py-1 text-xs",
-                    statusChipClass.success,
-                  )}
-                >
+                <Badge tone="success" icon={<CheckCircle2 />}>
                   {t("settings.aboutCockpit.newVersion", {
                     version: latestVersion,
                   })}
-                </span>
+                </Badge>
               ) : null}
             </div>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button
               type="button"
-              variant="outline"
+              variant="glass"
               disabled={isChecking || isDownloading || isInstalling}
               onClick={onCheck}
             >
@@ -306,13 +303,13 @@ function ReleaseUpdateCard({
           </div>
         </div>
 
-        <div className="rounded-lg bg-background p-4 ring-1 ring-border">
+        <div className="rounded-control bg-input-surface p-4">
           <div className="mb-2 flex items-center justify-between gap-3 text-xs text-muted-foreground">
             <span>{t("settings.aboutCockpit.artifact")}</span>
             <span>{progressLabel}</span>
           </div>
           <div
-            className="h-2 overflow-hidden rounded-full bg-muted"
+            className="h-2 overflow-hidden rounded-full bg-accent"
             role="progressbar"
             aria-valuemin={0}
             aria-valuemax={100}
@@ -342,8 +339,8 @@ function ReleaseUpdateCard({
           </InlineState>
         ) : null}
         {hasUpdate && releaseNotes ? (
-          <div className="rounded-lg bg-muted/30 p-4 ring-1 ring-border">
-            <div className="mb-2 text-xs font-medium uppercase tracking-[0.16em] text-muted-foreground">
+          <div className="rounded-control bg-input-surface p-4">
+            <div className="mb-2 text-xs font-medium text-muted-foreground">
               {t("settings.aboutCockpit.releaseNotes")}
             </div>
             <p className="max-h-28 overflow-auto whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
@@ -375,12 +372,14 @@ function DiagnosticCard({
           icon={<Database />}
           label={t("settings.dbPath")}
           value={dbPathDisplay}
+          mono
         />
         <DiagnosticRow
           icon={<Globe />}
           label={t("settings.repoUrl")}
           value={repoUrl}
           href={repoUrl}
+          mono
         />
         <DiagnosticRow
           icon={<Cpu />}
@@ -409,9 +408,9 @@ function TechStackCard() {
         {STACK_ITEMS.map((item) => (
           <span
             key={item}
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-1.5 text-xs font-medium text-foreground"
+            className="inline-flex items-center gap-2 rounded-full bg-input-surface px-3 py-1.5 text-xs font-medium text-foreground"
           >
-            <Sparkles className="size-3 text-primary" aria-hidden="true" />
+            <Sparkles className="size-3 text-primary-text" aria-hidden="true" />
             {item}
           </span>
         ))}
@@ -439,14 +438,20 @@ function HelpResourcesCard() {
               href={resource.href}
               target="_blank"
               rel="noreferrer"
-              className="group rounded-lg bg-background p-4 text-sm ring-1 ring-border transition hover:bg-primary/10 hover:ring-primary/50"
+              className="group focus-ring rounded-control bg-input-surface p-4 text-sm transition-colors hover:bg-primary-tint"
             >
               <div className="flex items-center justify-between gap-3">
                 <span className="flex items-center gap-2 font-medium text-foreground">
-                  <Icon className="size-4 text-primary" aria-hidden="true" />
+                  <Icon
+                    className="size-4 text-primary-text"
+                    aria-hidden="true"
+                  />
                   {t(`settings.aboutCockpit.resources.${resource.key}.title`)}
                 </span>
-                <ExternalLink className="size-4 text-muted-foreground transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                <ExternalLink
+                  className="size-4 text-muted-foreground"
+                  aria-hidden="true"
+                />
               </div>
               <p className="mt-2 text-xs leading-5 text-muted-foreground">
                 {t(`settings.aboutCockpit.resources.${resource.key}.desc`)}
@@ -473,12 +478,12 @@ function CockpitCard({
   "data-testid"?: string;
 }) {
   return (
-    <section
-      className="rounded-xl bg-muted/40 p-5 ring-1 ring-border"
-      data-testid={testId}
-    >
+    <section className="rounded-inner bg-accent p-5" data-testid={testId}>
       <div className="mb-4 flex items-start gap-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-primary/30 bg-primary/15 text-primary">
+        <span
+          className="grid size-10 shrink-0 place-items-center rounded-control bg-primary-tint text-primary-text [&_svg]:size-5"
+          aria-hidden="true"
+        >
           {icon}
         </span>
         <div>
@@ -495,19 +500,6 @@ function CockpitCard({
   );
 }
 
-function HeroMetric({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg bg-background px-4 py-3 ring-1 ring-border">
-      <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-        {label}
-      </div>
-      <div className="mt-1 truncate text-sm font-semibold text-foreground">
-        {value}
-      </div>
-    </div>
-  );
-}
-
 function MetaPill({
   icon,
   label,
@@ -518,9 +510,9 @@ function MetaPill({
   value: string;
 }) {
   return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-border bg-muted/40 px-3 py-1.5 text-foreground">
+    <span className="inline-flex items-center gap-2 rounded-full bg-accent px-3 py-1.5 text-foreground">
       <span
-        className="[&_svg]:size-3.5 [&_svg]:text-primary"
+        className="[&_svg]:size-3.5 [&_svg]:text-primary-text"
         aria-hidden="true"
       >
         {icon}
@@ -536,18 +528,21 @@ function DiagnosticRow({
   label,
   value,
   href,
+  mono = false,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
   href?: string;
+  /** Machine-readable values (paths, URLs) render monospace; prose does not. */
+  mono?: boolean;
 }) {
   const content = href ? (
     <a
       href={href}
       target="_blank"
       rel="noreferrer"
-      className="break-all text-primary hover:underline"
+      className="focus-ring break-all rounded-control text-primary-text hover:underline"
     >
       {value}
     </a>
@@ -556,15 +551,23 @@ function DiagnosticRow({
   );
 
   return (
-    <div className="flex items-start gap-3 rounded-lg bg-background p-3 ring-1 ring-border">
-      <span className="mt-0.5 text-primary [&_svg]:size-4" aria-hidden="true">
+    <div className="flex items-start gap-3 rounded-control bg-input-surface p-3">
+      <span
+        className="mt-0.5 text-primary-text [&_svg]:size-4"
+        aria-hidden="true"
+      >
         {icon}
       </span>
       <div className="min-w-0">
-        <div className="text-xs uppercase tracking-[0.16em] text-muted-foreground">
-          {label}
+        <div className="text-xs font-medium text-muted-foreground">{label}</div>
+        <div
+          className={cn(
+            "mt-1 text-foreground",
+            mono ? "font-mono text-ui-meta" : "text-sm",
+          )}
+        >
+          {content}
         </div>
-        <div className="mt-1 font-mono text-sm text-foreground">{content}</div>
       </div>
     </div>
   );
@@ -582,8 +585,8 @@ function InlineState({
   return (
     <div
       className={cn(
-        "flex items-start gap-2 rounded-lg border px-3 py-2 text-sm",
-        statusChipClass[tone],
+        "flex items-start gap-2 rounded-control px-3 py-2 text-sm",
+        statusSoftClass[tone],
       )}
     >
       <span className="mt-0.5 [&_svg]:size-4" aria-hidden="true">
@@ -593,6 +596,13 @@ function InlineState({
     </div>
   );
 }
+
+const UPDATE_STATUS_TONE: Partial<Record<AppUpdateStatus, BadgeTone>> = {
+  available: "success",
+  upToDate: "info",
+  unsupported: "warning",
+  error: "destructive",
+};
 
 function StatusChip({
   status,
@@ -606,23 +616,17 @@ function StatusChip({
     status === "downloading" ||
     status === "installing";
   return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-medium",
-        status === "available" && statusChipClass.success,
-        status === "upToDate" && statusChipClass.info,
-        status === "unsupported" && statusChipClass.warning,
-        status === "error" && statusChipClass.error,
-        (status === "idle" || busy) &&
-          "border-border bg-muted text-muted-foreground",
-      )}
+    <Badge
+      tone={UPDATE_STATUS_TONE[status] ?? "neutral"}
+      icon={
+        busy ? (
+          <Loader2 className="animate-spin motion-reduce:animate-none" />
+        ) : (
+          <Activity />
+        )
+      }
     >
-      {busy ? (
-        <Loader2 className="size-3 animate-spin" aria-hidden="true" />
-      ) : (
-        <Activity className="size-3" aria-hidden="true" />
-      )}
       {label}
-    </span>
+    </Badge>
   );
 }

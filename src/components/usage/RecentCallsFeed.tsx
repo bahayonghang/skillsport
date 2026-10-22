@@ -44,7 +44,7 @@ export function RecentCallsFeed({
         <li
           key={`${factKey}-${occurrence}`}
           data-testid={`recent-row-${call.skill}-${call.timestampMs}`}
-          className="grid grid-cols-[3.5rem_minmax(0,1fr)_minmax(3rem,0.65fr)_minmax(40px,2.5rem)] items-center gap-2 px-3 py-1 hover:bg-muted/20"
+          className="grid grid-cols-[3.5rem_minmax(0,1fr)_minmax(3rem,0.65fr)_minmax(40px,2.5rem)] items-center gap-2 px-3 py-1 hover:bg-accent"
         >
           <span
             className="text-xs tabular-nums text-muted-foreground"
