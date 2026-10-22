@@ -39,7 +39,7 @@ The app combines four roles in a single window:
 ## Where to go next
 
 - Set the app up: [Installation](./installation).
-- Read the project README on [GitHub](https://github.com/bahayonghang/skills-manage-windows).
+- Read the project README on [GitHub](https://github.com/bahayonghang/skillsport).
 
 ---
 

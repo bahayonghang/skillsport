@@ -4,7 +4,7 @@ There are two paths: install a prebuilt release, or build from source.
 
 ## Prebuilt downloads
 
-- Latest release: <https://github.com/bahayonghang/skills-manage-windows/releases/latest>
+- Latest release: <https://github.com/bahayonghang/skillsport/releases/latest>
 - Targets: Windows x64 (`.exe`, `.msi`, `.zip`), macOS Universal (`.dmg`, `.zip`, `.tar.gz`), Linux x86_64 / arm64 (`.deb`, `.rpm`, `.AppImage`).
 - Builds are unsigned. Linux arm64 availability depends on the GitHub Actions runner matrix.
 

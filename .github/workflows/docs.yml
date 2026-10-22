@@ -58,7 +58,7 @@ jobs:
 
   deploy:
     needs: build
-    if: github.repository == 'bahayonghang/skills-manage-windows'
+    if: github.repository == 'bahayonghang/skillsport'
     runs-on: ubuntu-22.04
     timeout-minutes: 10
     permissions:
@@ -85,7 +85,7 @@ jobs:
       - name: Verify deployed documentation
         shell: bash
         run: |
-          expected_url="https://bahayonghang.github.io/skills-manage-windows/"
+          expected_url="https://bahayonghang.github.io/skillsport/"
           normalized_url="${PAGES_URL%/}/"
           if [[ "$normalized_url" != "$expected_url" ]]; then
             echo "::error::Unexpected Pages URL: $PAGES_URL"

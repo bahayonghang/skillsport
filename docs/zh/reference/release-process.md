@@ -51,7 +51,7 @@ SkillPort 桌面发布由 `.github/workflows/release-desktop.yml` 中的
    - Windows MSI / ZIP 产物
    - macOS 与 Linux 安装产物（对应 job 成功时）
 12. 请求
-   `https://github.com/bahayonghang/skills-manage-windows/releases/latest/download/latest.json`，
+   `https://github.com/bahayonghang/skillsport/releases/latest/download/latest.json`，
    确认 version、Windows URL 和 signature 符合预期。
 
 若上传或上传后回验失败，Release 必须保持 private draft。修复原因后用同一

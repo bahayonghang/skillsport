@@ -661,9 +661,9 @@ jobs:
           mkdir fresh-release
           gh release download "$RELEASE_TAG" --dir fresh-release
           node scripts/release/release-artifacts.mjs --version "$RELEASE_VERSION" --asset-dir fresh-release --verify
-          gh attestation verify "fresh-release/skillport_${RELEASE_VERSION}_windows_x64_nsis.exe" -R bahayonghang/skills-manage-windows
-          gh attestation verify "fresh-release/skillport_${RELEASE_VERSION}_windows_x64.msi" -R bahayonghang/skills-manage-windows
-          gh attestation verify "fresh-release/skillport_${RELEASE_VERSION}_windows_x64.zip" -R bahayonghang/skills-manage-windows
+          gh attestation verify "fresh-release/skillport_${RELEASE_VERSION}_windows_x64_nsis.exe" -R bahayonghang/skillsport
+          gh attestation verify "fresh-release/skillport_${RELEASE_VERSION}_windows_x64.msi" -R bahayonghang/skillsport
+          gh attestation verify "fresh-release/skillport_${RELEASE_VERSION}_windows_x64.zip" -R bahayonghang/skillsport
       - name: Publish verified draft
         shell: bash
         run: |

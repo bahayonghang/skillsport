@@ -43,19 +43,19 @@ interface AboutSettingsSectionProps {
 const HELP_RESOURCES = [
   {
     key: "readme",
-    href: "https://github.com/bahayonghang/skills-manage-windows#readme",
+    href: "https://github.com/bahayonghang/skillsport#readme",
   },
   {
     key: "readmeZh",
-    href: "https://github.com/bahayonghang/skills-manage-windows/blob/main/README_CN.md",
+    href: "https://github.com/bahayonghang/skillsport/blob/main/README_CN.md",
   },
   {
     key: "releases",
-    href: "https://github.com/bahayonghang/skills-manage-windows/releases",
+    href: "https://github.com/bahayonghang/skillsport/releases",
   },
   {
     key: "issues",
-    href: "https://github.com/bahayonghang/skills-manage-windows/issues",
+    href: "https://github.com/bahayonghang/skillsport/issues",
   },
 ] as const;
 

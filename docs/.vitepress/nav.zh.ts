@@ -28,6 +28,6 @@ export const navZh: DefaultTheme.NavItem[] = [
   },
   {
     text: 'GitHub',
-    link: 'https://github.com/bahayonghang/skills-manage-windows',
+    link: 'https://github.com/bahayonghang/skillsport',
   },
 ]
