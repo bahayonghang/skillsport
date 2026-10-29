@@ -52,3 +52,21 @@ interface PortabilitySlice {
 reviewed codes 中的 `portable_state.*`（确认没有其他引用）。
 前端：`src/types/portableState.ts`、`commandMap.ts` 中的条目、`updateSlice.ts` 中的 portability 动作、
 `centralSkillsStore.shared.ts` 中的 `mergePortabilityProgress` / `createIdlePortabilityJob`、相关测试与测试支持文件。
+
+## 实现与设计的偏差（2026-10-29）
+
+- 纯函数放在 `src/lib/portabilityViewModel.ts`（而不是组件目录）：store 与组件共用，store 不从组件目录导入。
+- Store 没有嵌套 `portability.job`：作业保留在顶层 `portabilityJob`（任务中心、进度条直接复用），
+  其余数据放在 `portability`。动作名带 `Portable` / `Portability` 前缀，避免与中央库 store 里的其他动作混淆。
+- 决策列表的默认筛选是"冲突"（状态为 changed / exists_unmanaged），而不是"待决定"：后者会在用户刚做出选择时
+  把该行移出列表，重命名输入框随之消失。
+- `retryableSkillIds` 把失败项与因取消而跳过的项一起重试；问题条目携带的是最终 id，所以重命名项要映射回源 id。
+- `AppState.portable_state_jobs` 改名为 `portable_bundle_jobs`；可观测性域 `PortableState` 保持不变（已写入的 Operation Log 依赖它）。
+- 删除 v1 后，`github_import::inspect_github_repo_skills_with_auth` 与 `inspect_repo_skill_candidates_from_source`
+  只剩 v1 调用方，一并删除。
+- 新增浏览器演示 fixture（`src/fixtures/portableBundle.ts`）。浏览器中没有文件对话框与拖放，预览需通过 store 动作触发。
+
+## 未覆盖
+
+- 真实 Tauri 窗口中的文件对话框与拖放（浏览器预览无法验证），以及 Windows 安装包中的完整往返。
+- 父任务遗留：SSH/WSL 目标的导入、批次之间取消、200 个 skill（约 50 MB）的耗时。

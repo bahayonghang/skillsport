@@ -14,10 +14,14 @@ import {
   DeleteCentralSkillPreview,
   DeleteSkillRepositoryPreview,
   DeleteSkillRepositoryResult,
-  SkillportStateImportPreview,
-  SkillportStateImportResolution,
-  SkillportStateImportResult,
-  SkillportStatePortabilityJob,
+  PortableBundleDecision,
+  PortableBundleDecisionAction,
+  PortableBundleExportResult,
+  PortableBundleExportSummary,
+  PortableBundleImportPreview,
+  PortableBundleImportResult,
+  PortableBundleJob,
+  PortableBundleSkillStatus,
   SkillAiTagReview,
   SkillRepository,
   SkillRepositoryWithStats,
@@ -32,6 +36,17 @@ import type {
   CentralRepositorySyncPreview,
 } from "@/types/centralRepositorySync";
 
+/** Portable-bundle dialog data; the job itself lives in `portabilityJob`. */
+export interface PortabilityState {
+  exportSummary: PortableBundleExportSummary | null;
+  lastExport: PortableBundleExportResult | null;
+  preview: PortableBundleImportPreview | null;
+  previewPath: string | null;
+  /** Explicit per-skill decisions keyed by bundle skill id. */
+  decisions: Record<string, PortableBundleDecision>;
+  lastResult: PortableBundleImportResult | null;
+}
+
 export interface CentralSkillsState {
   skills: SkillWithLinks[];
   agents: AgentWithStatus[];
@@ -41,7 +56,8 @@ export interface CentralSkillsState {
   aiTagJob: AiTagJob;
   updateStatuses: Record<string, CentralSkillUpdateState>;
   updateJob: CentralSkillUpdateJob;
-  portabilityJob: SkillportStatePortabilityJob;
+  portabilityJob: PortableBundleJob;
+  portability: PortabilityState;
   aiTaggingAvailable: boolean;
   isLoading: boolean;
   /**
@@ -144,19 +160,21 @@ export interface CentralSkillsState {
   subscribeAiTagProgress: () => Promise<() => void>;
   subscribeUpdateProgress: () => Promise<() => void>;
   subscribePortabilityProgress: () => Promise<() => void>;
-  cancelSkillportStatePortability: () => Promise<void>;
-  exportSkillportState: () => Promise<string>;
-  saveSkillportStateExport: (path: string, json: string) => Promise<void>;
-  previewSkillportStateImport: (
-    json: string,
-  ) => Promise<SkillportStateImportPreview>;
-  previewSkillportStateImportFile: (
-    path: string,
-  ) => Promise<{ json: string; preview: SkillportStateImportPreview }>;
-  importSkillportState: (
-    json: string,
-    resolutions: SkillportStateImportResolution[],
-  ) => Promise<SkillportStateImportResult>;
+  cancelPortabilityJob: () => Promise<void>;
+  loadPortabilityExportSummary: () => Promise<PortableBundleExportSummary | null>;
+  exportPortableBundle: (path: string) => Promise<PortableBundleExportResult>;
+  previewPortableBundle: (path: string) => Promise<PortableBundleImportPreview>;
+  setPortabilityDecision: (decision: PortableBundleDecision) => void;
+  /** Apply one action to every previewed skill whose status is in `statuses`. */
+  setPortabilityDecisionsBulk: (
+    statuses: PortableBundleSkillStatus[],
+    action: Exclude<PortableBundleDecisionAction, "rename">,
+  ) => void;
+  /** With `onlyIds`, every other skill is sent as `skip` (retry failed only). */
+  applyPortableBundleImport: (onlyIds?: string[]) => Promise<PortableBundleImportResult>;
+  discardPortableBundlePreview: () => Promise<void>;
+  /** Forget export/import results when the dialog closes; keeps a running job. */
+  resetPortabilityDialog: () => void;
   resetForTargetChange: () => void;
 }
 

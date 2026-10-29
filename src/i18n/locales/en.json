@@ -178,7 +178,7 @@
     "unreadable_entry": "This path could not be read.",
     "job": {
       "central_update_busy": "A Central update is already running. Wait for it to finish or cancel it first.",
-      "portability_busy": "A SkillPort state import or export is already running.",
+      "portability_busy": "A portable bundle import or export is already running.",
       "id_mismatch": "This cancellation request belongs to an older job and was ignored.",
       "invalid_id": "The job identifier is invalid. Retry the operation.",
       "registry_unavailable": "Job coordination is temporarily unavailable. Restart SkillPort and try again."
@@ -339,6 +339,26 @@
       "remote_failed": "This Central skill could not be deleted.",
       "budget_exceeded": "This Central skill could not be deleted.",
       "force_delete_blocked": "Force delete is not available for this Central skill."
+    },
+    "portable_bundle": {
+      "budget_exceeded": "The bundle exceeds the portable bundle size limits.",
+      "decision_required": "Choose overwrite, skip, or rename for every conflicting skill.",
+      "integrity_mismatch": "The bundle is damaged: file contents do not match its manifest.",
+      "internal": "The portable bundle operation failed.",
+      "invalid_path": "Choose a file with the .skillport or .zip extension.",
+      "io": "The bundle file could not be read or written.",
+      "legacy_v1": "This is a legacy SkillPort state export (JSON).",
+      "manifest_encoding": "The bundle manifest is not UTF-8 encoded.",
+      "manifest_invalid": "The bundle manifest is malformed.",
+      "manifest_missing": "The bundle has no manifest.",
+      "not_a_bundle": "The selected file is not a SkillPort bundle.",
+      "preview_expired": "The import preview expired.",
+      "preview_stale": "The bundle file changed after it was previewed.",
+      "rename_invalid": "The new skill id is invalid or already in use.",
+      "target_changed": "The active target changed after the preview.",
+      "target_io": "Skill files on the active target could not be read or written.",
+      "unsafe_entry": "The bundle contains an unsafe or unsupported entry.",
+      "unsupported_version": "The bundle was created by a newer SkillPort version."
     }
   },
   "targets": {
@@ -1880,60 +1900,12 @@
       "cancelled": "Cancelled"
     },
     "portabilityOpen": "Import / Export",
-    "portabilityTitle": "Import / export Central state",
-    "portabilityDesc": "Move GitHub sources and the Central Skills manifest between SkillPort installations.",
+    "portabilityTitle": "Import / export Central",
     "portabilityTargetBadge": "{{kind}} · {{label}}",
     "portabilityExportTarget": "Exporting from",
     "portabilityImportTarget": "Importing into",
-    "portabilityOriginTargetWarning": "This JSON was exported from {{origin}}. It will be imported into the current target, {{active}}.",
     "portabilityExportTab": "Export",
     "portabilityImportTab": "Import",
-    "portabilityGithubSources": "GitHub sources",
-    "portabilityCentralSkills": "Restorable skills",
-    "portabilityUnrestorable": "Unrestorable",
-    "portabilityExportBoundary": "This is a manifest restore. Skill files are not embedded, so import needs GitHub access. Local or unknown-source skills are listed but not restored.",
-    "portabilitySaveExport": "Save JSON",
-    "portabilityChooseFile": "Choose JSON",
-    "portabilityPreview": "Preview import",
-    "portabilityPastePlaceholder": "Paste SkillPort state JSON...",
-    "portabilityReady": "Ready",
-    "portabilityConflicts": "Conflicts",
-    "portabilityMissing": "Missing",
-    "portabilityConflictAction": "Conflict action",
-    "portabilitySkip": "Skip",
-    "portabilityOverwrite": "Overwrite",
-    "portabilityRename": "Rename",
-    "portabilityRenamePlaceholder": "New skill id",
-    "portabilityRenameRequired": "Enter a new skill id for renamed conflicts.",
-    "portabilityRunImport": "Import {{count}} skills",
-    "portabilityExportSuccess": "State export saved",
-    "portabilityExportError": "Export failed: {{error}}",
-    "portabilityPreviewError": "Preview failed: {{error}}",
-    "portabilityPreviewWarningsTitle": "{{count}} preview warning(s)",
-    "portabilityRepoWarningHint": "The source repository could not be inspected yet. Import will still try it and report per-skill failures.",
-    "portabilityImportSuccess": "Imported {{imported}}, skipped {{skipped}}, failed {{failed}}",
-    "portabilityImportFailuresTitle": "{{count}} skill(s) failed to import",
-    "portabilityImportError": "Import failed: {{error}}",
-    "portabilityReason": {
-      "central_skill_exists": "A Central skill with the same ID already exists",
-      "invalid_frontmatter": "The exported skill metadata is invalid",
-      "invalid_skill_id": "The exported skill ID is invalid",
-      "invalid_utf8": "The exported skill file is not valid UTF-8",
-      "non_central_conflict": "A non-Central skill with the same ID already exists",
-      "repo_unavailable": "The source repository could not be inspected",
-      "source_missing": "The exported source path no longer exists",
-      "source_unknown": "This skill has no restorable GitHub source",
-      "unknown": "Unavailable",
-      "duplicate_in_json": "Duplicate entry in the JSON was skipped",
-      "duplicate_skill_id_different_source": "The JSON repeats this skill ID with a different source path"
-    },
-    "portabilityStatus": {
-      "ready": "Ready",
-      "conflict": "Conflict",
-      "missing": "Missing",
-      "unrestorable": "Unrestorable",
-      "duplicate_skipped": "Duplicate skipped"
-    },
     "platformTargetsLabel": "Targets",
     "platformManageButton": "Manage platforms",
     "toolbarMore": "More",
@@ -1975,22 +1947,17 @@
     "toolbarChipInstalledPlatform": "Installed on: {{platform}}",
     "platformManageTitle": "Manage install targets",
     "platformManageDesc": "Adjust platform visibility and custom install targets without leaving Central Skills.",
-    "portabilityRawJson": "Raw JSON",
-    "portabilityPrettyJson": "Pretty JSON",
-    "portabilityPrettyError": "JSON could not be formatted: {{error}}",
-    "portabilityFormatJson": "Format JSON",
-    "portabilityDuplicateSkipped": "JSON duplicates",
-    "portabilitySourceDuplicates": "Source duplicates",
     "portabilityProgressTitle": "Import / export progress",
     "portabilityCancel": "Cancel job",
     "portabilityCancelling": "Cancelling…",
     "portabilityProgressCompleted": "{{completed}} / {{total}} completed",
-    "portabilityImportCancelled": "Import cancelled: imported {{imported}}, skipped {{skipped}}, failed {{failed}}",
     "portabilityPhase": {
-      "exporting": "Exporting",
-      "previewing": "Previewing",
-      "importing": "Importing",
-      "finalizing": "Finalizing"
+      "export": "Writing bundle",
+      "read": "Reading bundle",
+      "inspect": "Checking bundle",
+      "classify": "Comparing with Central",
+      "apply": "Importing skills",
+      "metadata": "Restoring tags and views"
     },
     "updateCenter": {
       "title": "Update Center",
@@ -2230,6 +2197,128 @@
       "importing": "Importing...",
       "import": "Import to Central",
       "importSuccess": "Skill imported successfully."
+    },
+    "bundle": {
+      "desc": "Move skills, tags, tag groups, saved views and source registries between SkillPort installations as one .skillport file.",
+      "targetKind": {
+        "local": "Local",
+        "ssh": "SSH",
+        "wsl": "WSL"
+      },
+      "export": {
+        "skills": "Skills",
+        "githubHint": "{{count}} with a GitHub source",
+        "organization": "Tags, groups and views",
+        "organizationHint": "{{tags}} tags · {{groups}} groups · {{views}} views",
+        "registries": "Source registries",
+        "desc": "The bundle contains the files of every skill, so it can be imported offline. Credentials are never included.",
+        "cancelled": "Export cancelled. No file was written.",
+        "done": "Saved {{count}} skills ({{size}})",
+        "skipped": "{{count}} skills could not be exported",
+        "action": "Export bundle…",
+        "empty": "Central has no skills to export yet."
+      },
+      "skipReason": {
+        "invalid_id": "unsupported skill id",
+        "manifest_missing": "SKILL.md missing",
+        "read_failed": "files could not be read",
+        "budget_exceeded": "too large for a bundle"
+      },
+      "import": {
+        "dropTitle": "Drop a .skillport file here",
+        "dropHint": "Or choose one. Nothing changes until you confirm the import.",
+        "browse": "Choose file…",
+        "reading": "Reading bundle…",
+        "origin": "Exported from {{kind}} on {{date}} · SkillPort {{version}}",
+        "crossTarget": "This bundle comes from a different kind of target. Skills are imported into the active target shown above.",
+        "bundleSkipped": "{{count}} skills were left out when this bundle was exported",
+        "search": "Filter by name or id",
+        "overwriteAll": "Overwrite all conflicts ({{count}})",
+        "skipAll": "Skip all conflicts ({{count}})",
+        "noMatch": "No skills match this filter.",
+        "renameTo": "New id for {{name}}",
+        "renamePlaceholder": "new-skill-id",
+        "decisionFor": "Action for {{name}}",
+        "autoSkip": "Skipped automatically",
+        "backupNote": "Overwritten skills are backed up first and restored if a write fails.",
+        "pending": "{{count}} conflicts still need a decision",
+        "fixRenames": "Fix the highlighted new ids first",
+        "willWrite": "{{count}} skills will be written",
+        "chooseAnother": "Choose another file",
+        "apply": "Import {{count}} skills"
+      },
+      "status": {
+        "new": "New",
+        "identical": "Same content",
+        "changed": "Changed",
+        "exists_unmanaged": "Folder exists",
+        "invalid": "Invalid"
+      },
+      "metadata": {
+        "registries": "Source registries",
+        "tagGroups": "Tag groups",
+        "tags": "Tags",
+        "savedViews": "Saved views",
+        "counts": "+{{add}} new · {{update}} updated · {{exists}} kept"
+      },
+      "filter": {
+        "all": "All",
+        "conflicts": "Conflicts",
+        "new": "New",
+        "changed": "Changed",
+        "exists_unmanaged": "Folder exists",
+        "identical": "Same content",
+        "invalid": "Invalid"
+      },
+      "action": {
+        "import": "Import",
+        "overwrite": "Overwrite",
+        "skip": "Skip",
+        "rename": "Rename"
+      },
+      "rename": {
+        "empty": "Enter a new id.",
+        "invalid": "The id contains characters that are not allowed.",
+        "same": "Choose an id different from the original.",
+        "taken": "A skill with this id already exists.",
+        "duplicate": "Another skill in this import uses the same new id."
+      },
+      "invalidReason": {
+        "integrity_mismatch": "Files do not match the bundle manifest",
+        "invalid_id": "Unsupported skill id",
+        "manifest_missing": "SKILL.md is missing",
+        "payload_mismatch": "Files do not match the declared content",
+        "unknown_tag": "References a tag the bundle does not define",
+        "unknown": "This entry cannot be imported"
+      },
+      "result": {
+        "done": "Import finished: {{count}} skills written",
+        "cancelled": "Import cancelled after {{count}} skills were written",
+        "imported": "Imported",
+        "overwritten": "Overwritten",
+        "renamed": "Renamed",
+        "identical": "Same content",
+        "skipped": "Skipped",
+        "failed": "Failed",
+        "metadata": "Tags, groups, views and registries: {{added}} added, {{updated}} updated, {{unchanged}} unchanged.",
+        "importAnother": "Import another file",
+        "retryFailed": "Retry {{count}} unfinished"
+      },
+      "issue": {
+        "write_failed": "could not be written",
+        "target_exists": "a folder with this id appeared on the target",
+        "cancelled": "not written because the import was cancelled"
+      },
+      "errorHint": {
+        "portable_bundle": {
+          "legacy_v1": "Old JSON exports are no longer supported. Update SkillPort where the export was made, then use Export bundle there.",
+          "invalid_path": "Bundles end in .skillport. A .zip renamed from a .skillport file also works.",
+          "preview_expired": "Choose the file again to refresh the preview.",
+          "preview_stale": "Choose the file again to refresh the preview.",
+          "target_changed": "Choose the file again to preview it against the current target.",
+          "unsupported_version": "Update SkillPort on this machine, then try again."
+        }
+      }
     }
   },
   "installDialog": {

@@ -13,14 +13,15 @@ interface CentralSkillUpdateJob {
   status: CentralSkillUpdateJobStatus;
 }
 
-interface SkillportStatePortabilityJob {
+interface PortableBundleJob {
   jobId: string | null;
-  phase: SkillportStatePortabilityPhase;
-  status: SkillportStatePortabilityJobStatus;
+  kind: "export" | "preview" | "apply" | null;
+  phase: PortableBundlePhase | null;
+  status: "idle" | "running" | "cancelling" | "completed" | "failed" | "cancelled";
 }
 
 interface CentralSkillUpdateProgressPayload { jobId: string; /* ... */ }
-interface SkillportStatePortabilityProgressPayload { jobId: string; /* ... */ }
+interface PortableBundleProgressPayload { jobId: string; /* ... */ }
 ```
 
 All affected entries in `src/lib/ipc/commandMap.ts` type `jobId: string` for their start and cancel arguments.
@@ -30,6 +31,7 @@ All affected entries in `src/lib/ipc/commandMap.ts` type `jobId: string` for the
 - Generate one job ID immediately before start with `crypto.randomUUID()` and a non-empty local fallback; write it into running state before `invoke`.
 - Pass that captured ID to the start command. Cancellation reads the current store ID and sends exactly `{ jobId }`; a null ID is a no-op.
 - `mergeUpdateProgress` and `mergePortabilityProgress` return the current object unchanged when `payload.jobId !== current.jobId`.
+  `mergePortabilityProgress` also ignores a `running` payload once the job is terminal, so a late throttled event cannot revive it.
 - Every post-`await` success, failure, or terminal state write is conditional on the captured ID still matching current state.
 - A same-store start while its family is running/cancelling rejects with the stable busy envelope instead of replacing active state. The backend registry remains authoritative across stores and UI entry points.
 - Update Center apply generates and passes a Central update job ID even though that view does not expose cancel.

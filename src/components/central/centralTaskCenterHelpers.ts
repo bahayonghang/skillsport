@@ -1,14 +1,14 @@
 import type {
   AiTagJob,
   CentralSkillUpdateJob,
-  SkillportStatePortabilityJob,
+  PortableBundleJob,
 } from "@/types";
 
 /** 统计活跃任务数（running / cancelling）。 */
 export function countActiveCentralTasks(
   aiTagJob: AiTagJob,
   updateJob: CentralSkillUpdateJob,
-  portabilityJob: SkillportStatePortabilityJob
+  portabilityJob: PortableBundleJob
 ): number {
   let count = 0;
   if (isJobActive(aiTagJob.status)) count++;

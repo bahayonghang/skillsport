@@ -4,16 +4,16 @@
 
 ## 步骤
 
-1. [ ] 阅读 jsonl 中的前端规范；确认虚拟列表方案与 Tauri 拖放事件的用法。
-2. [ ] `src/types/portableBundle.ts` + `commandMap.ts` 条目（core/import 已加的保持一致）。
-3. [ ] `centralSkillsStore.portabilitySlice.ts` + store 测试（含终态保护）。
-4. [ ] `portabilityViewModel.ts` 纯函数 + 单元测试。
-5. [ ] 组件：ExportPanel → ImportFilePicker → ImportPreviewSummary → ImportDecisionList → ImportResultView → PortabilityDialog。
-6. [ ] 切换调用点，删除旧对话框与旧 store 动作。
-7. [ ] i18n en/zh（新错误码、步骤、按钮、空状态、`legacy_v1` 说明）；README / README_CN。
-8. [ ] 删除后端 v1（命令、服务、注册、AppState 字段、reviewed codes），`cargo test` 与 `cargo clippy`。
-9. [ ] `pnpm docs:gen`；全仓搜索 v1 标识符确认无残留。
-10. [ ] 在 dev 预览中走完整流程并截图；`just ci`。
+1. [x] 阅读 jsonl 中的前端规范；确认虚拟列表方案与 Tauri 拖放事件的用法。
+2. [x] `src/types/portableBundle.ts` + `commandMap.ts` 条目（core/import 已加的保持一致）。
+3. [x] `centralSkillsStore.portabilitySlice.ts` + store 测试（含终态保护）。
+4. [x] `portabilityViewModel.ts` 纯函数 + 单元测试。
+5. [x] 组件：ExportPanel → ImportFilePicker → ImportPreviewSummary → ImportDecisionList → ImportResultView → PortabilityDialog。
+6. [x] 切换调用点，删除旧对话框与旧 store 动作。
+7. [x] i18n en/zh（新错误码、步骤、按钮、空状态、`legacy_v1` 说明）；README / README_CN。
+8. [x] 删除后端 v1（命令、服务、注册、AppState 字段、reviewed codes），`cargo test` 与 `cargo clippy`。
+9. [x] `pnpm docs:gen`；全仓搜索 v1 标识符确认无残留。
+10. [x] 在 dev 预览中走完整流程并截图；`just ci`。
 
 ## 验证命令
 

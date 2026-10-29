@@ -670,6 +670,8 @@ export type {
   PortableBundleExportSummary,
   PortableBundleImportPreview,
   PortableBundleImportResult,
+  PortableBundleJob,
+  PortableBundleJobKind,
   PortableBundleJobStatus,
   PortableBundleMetadataCounts,
   PortableBundleMetadataPreview,

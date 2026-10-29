@@ -178,7 +178,7 @@
     "unreadable_entry": "无法读取该路径。",
     "job": {
       "central_update_busy": "已有 Central 更新任务正在运行，请等待完成或先取消当前任务。",
-      "portability_busy": "已有 SkillPort 状态导入或导出任务正在运行。",
+      "portability_busy": "已有便携包导入或导出任务在运行。",
       "id_mismatch": "该取消请求属于较早的任务，已忽略。",
       "invalid_id": "任务标识无效，请重试此操作。",
       "registry_unavailable": "任务协调暂时不可用，请重启 SkillPort 后重试。"
@@ -339,6 +339,26 @@
       "remote_failed": "无法删除该中央技能。",
       "budget_exceeded": "无法删除该中央技能。",
       "force_delete_blocked": "当前无法强制删除该中央技能。"
+    },
+    "portable_bundle": {
+      "budget_exceeded": "便携包超出大小限制。",
+      "decision_required": "请为每个冲突技能选择覆盖、跳过或重命名。",
+      "integrity_mismatch": "便携包已损坏：文件内容与清单不一致。",
+      "internal": "便携包操作失败。",
+      "invalid_path": "请选择扩展名为 .skillport 或 .zip 的文件。",
+      "io": "无法读取或写入便携包文件。",
+      "legacy_v1": "这是旧版 SkillPort 状态导出文件（JSON）。",
+      "manifest_encoding": "便携包清单不是 UTF-8 编码。",
+      "manifest_invalid": "便携包清单格式错误。",
+      "manifest_missing": "便携包缺少清单。",
+      "not_a_bundle": "所选文件不是 SkillPort 便携包。",
+      "preview_expired": "导入预览已过期。",
+      "preview_stale": "便携包文件在预览后被修改。",
+      "rename_invalid": "新技能 ID 无效或已被占用。",
+      "target_changed": "预览后当前目标已切换。",
+      "target_io": "无法读写当前目标上的技能文件。",
+      "unsafe_entry": "便携包包含不安全或不受支持的条目。",
+      "unsupported_version": "该便携包由更新版本的 SkillPort 创建。"
     }
   },
   "targets": {
@@ -1880,60 +1900,12 @@
       "cancelled": "已取消"
     },
     "portabilityOpen": "导入 / 导出",
-    "portabilityTitle": "导入导出中央库状态",
-    "portabilityDesc": "在 SkillPort 安装之间迁移 GitHub 源和中央库清单。",
+    "portabilityTitle": "导入 / 导出中央库",
     "portabilityTargetBadge": "{{kind}} · {{label}}",
     "portabilityExportTarget": "导出来源",
     "portabilityImportTarget": "导入目标",
-    "portabilityOriginTargetWarning": "此 JSON 导出自 {{origin}}，将导入当前目标 {{active}}。",
     "portabilityExportTab": "导出",
     "portabilityImportTab": "导入",
-    "portabilityGithubSources": "GitHub 源",
-    "portabilityCentralSkills": "可恢复技能",
-    "portabilityUnrestorable": "不可恢复",
-    "portabilityExportBoundary": "这是清单恢复。JSON 不内嵌技能文件，导入需要访问 GitHub。本地或未知来源技能只列出，不自动恢复。",
-    "portabilitySaveExport": "保存 JSON",
-    "portabilityChooseFile": "选择 JSON",
-    "portabilityPreview": "预览导入",
-    "portabilityPastePlaceholder": "粘贴 SkillPort 状态 JSON...",
-    "portabilityReady": "可导入",
-    "portabilityConflicts": "冲突",
-    "portabilityMissing": "缺失",
-    "portabilityConflictAction": "冲突处理",
-    "portabilitySkip": "跳过",
-    "portabilityOverwrite": "覆盖",
-    "portabilityRename": "重命名",
-    "portabilityRenamePlaceholder": "新技能 ID",
-    "portabilityRenameRequired": "请为重命名冲突输入新技能 ID。",
-    "portabilityRunImport": "导入 {{count}} 个技能",
-    "portabilityExportSuccess": "状态导出已保存",
-    "portabilityExportError": "导出失败: {{error}}",
-    "portabilityPreviewError": "预览失败: {{error}}",
-    "portabilityPreviewWarningsTitle": "{{count}} 条预览警告",
-    "portabilityRepoWarningHint": "源仓库暂时无法检查，导入时仍会继续尝试并逐项报告失败。",
-    "portabilityImportSuccess": "已导入 {{imported}} 个，跳过 {{skipped}} 个，失败 {{failed}} 个",
-    "portabilityImportFailuresTitle": "{{count}} 个技能导入失败",
-    "portabilityImportError": "导入失败: {{error}}",
-    "portabilityReason": {
-      "central_skill_exists": "已存在同 ID 的中央技能",
-      "invalid_frontmatter": "导出的技能元数据无效",
-      "invalid_skill_id": "导出的技能 ID 无效",
-      "invalid_utf8": "导出的技能文件不是有效的 UTF-8",
-      "non_central_conflict": "已存在同 ID 的非中央技能",
-      "repo_unavailable": "无法检查源仓库",
-      "source_missing": "导出的 sourcePath 已不存在",
-      "source_unknown": "该技能没有可恢复的 GitHub 来源",
-      "unknown": "不可用",
-      "duplicate_in_json": "JSON 中的重复条目已跳过",
-      "duplicate_skill_id_different_source": "JSON 中同一技能 ID 对应了不同 sourcePath"
-    },
-    "portabilityStatus": {
-      "ready": "可导入",
-      "conflict": "冲突",
-      "missing": "缺失",
-      "unrestorable": "不可恢复",
-      "duplicate_skipped": "重复已跳过"
-    },
     "platformTargetsLabel": "安装目标",
     "platformManageButton": "管理平台",
     "toolbarMore": "更多",
@@ -1975,22 +1947,17 @@
     "toolbarChipInstalledPlatform": "已安装于：{{platform}}",
     "platformManageTitle": "管理安装目标",
     "platformManageDesc": "无需离开中央技能库即可调整平台可见性和自定义安装目标。",
-    "portabilityRawJson": "原始 JSON",
-    "portabilityPrettyJson": "美化 JSON",
-    "portabilityPrettyError": "无法格式化 JSON：{{error}}",
-    "portabilityFormatJson": "格式化 JSON",
-    "portabilityDuplicateSkipped": "JSON 内重复",
-    "portabilitySourceDuplicates": "源重复",
     "portabilityProgressTitle": "导入 / 导出进度",
     "portabilityCancel": "中断任务",
     "portabilityCancelling": "中断中…",
     "portabilityProgressCompleted": "已完成 {{completed}} / {{total}}",
-    "portabilityImportCancelled": "导入已中断：已导入 {{imported}} 个，跳过 {{skipped}} 个，失败 {{failed}} 个",
     "portabilityPhase": {
-      "exporting": "正在导出",
-      "previewing": "正在预览",
-      "importing": "正在导入",
-      "finalizing": "正在收尾"
+      "export": "正在写入便携包",
+      "read": "正在读取便携包",
+      "inspect": "正在校验便携包",
+      "classify": "正在与中央库比对",
+      "apply": "正在导入技能",
+      "metadata": "正在恢复标签与视图"
     },
     "updateCenter": {
       "title": "更新中心",
@@ -2230,6 +2197,128 @@
       "importing": "导入中...",
       "import": "导入到中央技能库",
       "importSuccess": "技能导入成功。"
+    },
+    "bundle": {
+      "desc": "把技能、标签、标签分组、保存的视图和来源注册表打包成一个 .skillport 文件，在不同的 SkillPort 之间迁移。",
+      "targetKind": {
+        "local": "本机",
+        "ssh": "SSH",
+        "wsl": "WSL"
+      },
+      "export": {
+        "skills": "技能",
+        "githubHint": "其中 {{count}} 个有 GitHub 来源",
+        "organization": "标签、分组与视图",
+        "organizationHint": "{{tags}} 个标签 · {{groups}} 个分组 · {{views}} 个视图",
+        "registries": "来源注册表",
+        "desc": "便携包包含每个技能的完整文件，导入时无需联网。凭据永远不会写入。",
+        "cancelled": "已取消导出，未写入文件。",
+        "done": "已保存 {{count}} 个技能（{{size}}）",
+        "skipped": "{{count}} 个技能未能导出",
+        "action": "导出便携包…",
+        "empty": "中央库里还没有可导出的技能。"
+      },
+      "skipReason": {
+        "invalid_id": "技能 ID 不受支持",
+        "manifest_missing": "缺少 SKILL.md",
+        "read_failed": "文件无法读取",
+        "budget_exceeded": "超出便携包大小限制"
+      },
+      "import": {
+        "dropTitle": "把 .skillport 文件拖到这里",
+        "dropHint": "也可以手动选择。确认导入前不会做任何修改。",
+        "browse": "选择文件…",
+        "reading": "正在读取便携包…",
+        "origin": "导出自{{kind}}，{{date}} · SkillPort {{version}}",
+        "crossTarget": "该便携包来自另一种类型的目标，技能会导入到上方显示的当前目标。",
+        "bundleSkipped": "导出时有 {{count}} 个技能未能放入此便携包",
+        "search": "按名称或 ID 筛选",
+        "overwriteAll": "全部覆盖冲突项（{{count}}）",
+        "skipAll": "全部跳过冲突项（{{count}}）",
+        "noMatch": "没有符合筛选条件的技能。",
+        "renameTo": "{{name}} 的新 ID",
+        "renamePlaceholder": "new-skill-id",
+        "decisionFor": "{{name}} 的处理方式",
+        "autoSkip": "已自动跳过",
+        "backupNote": "覆盖前会先备份原技能，写入失败时自动还原。",
+        "pending": "还有 {{count}} 个冲突需要选择处理方式",
+        "fixRenames": "请先修正标红的新 ID",
+        "willWrite": "将写入 {{count}} 个技能",
+        "chooseAnother": "换一个文件",
+        "apply": "导入 {{count}} 个技能"
+      },
+      "status": {
+        "new": "新增",
+        "identical": "内容相同",
+        "changed": "内容不同",
+        "exists_unmanaged": "目录已存在",
+        "invalid": "无效"
+      },
+      "metadata": {
+        "registries": "来源注册表",
+        "tagGroups": "标签分组",
+        "tags": "标签",
+        "savedViews": "保存的视图",
+        "counts": "新增 {{add}} · 更新 {{update}} · 保留 {{exists}}"
+      },
+      "filter": {
+        "all": "全部",
+        "conflicts": "冲突",
+        "new": "新增",
+        "changed": "内容不同",
+        "exists_unmanaged": "目录已存在",
+        "identical": "内容相同",
+        "invalid": "无效"
+      },
+      "action": {
+        "import": "导入",
+        "overwrite": "覆盖",
+        "skip": "跳过",
+        "rename": "重命名"
+      },
+      "rename": {
+        "empty": "请输入新 ID。",
+        "invalid": "ID 含有不允许的字符。",
+        "same": "新 ID 不能与原 ID 相同。",
+        "taken": "已存在同名技能。",
+        "duplicate": "本次导入中另一个技能使用了相同的新 ID。"
+      },
+      "invalidReason": {
+        "integrity_mismatch": "文件与便携包清单不一致",
+        "invalid_id": "技能 ID 不受支持",
+        "manifest_missing": "缺少 SKILL.md",
+        "payload_mismatch": "文件与声明的内容不一致",
+        "unknown_tag": "引用了便携包中不存在的标签",
+        "unknown": "该条目无法导入"
+      },
+      "result": {
+        "done": "导入完成：写入 {{count}} 个技能",
+        "cancelled": "导入已取消，此前已写入 {{count}} 个技能",
+        "imported": "新增",
+        "overwritten": "已覆盖",
+        "renamed": "已重命名",
+        "identical": "内容相同",
+        "skipped": "已跳过",
+        "failed": "失败",
+        "metadata": "标签、分组、视图与注册表：新增 {{added}}，更新 {{updated}}，未变 {{unchanged}}。",
+        "importAnother": "导入其他文件",
+        "retryFailed": "重试 {{count}} 个未完成项"
+      },
+      "issue": {
+        "write_failed": "写入失败",
+        "target_exists": "目标上已出现同名目录",
+        "cancelled": "因导入取消而未写入"
+      },
+      "errorHint": {
+        "portable_bundle": {
+          "legacy_v1": "旧版 JSON 导出已不再支持。请在导出端把 SkillPort 升级到最新版，再用“导出便携包”重新导出。",
+          "invalid_path": "便携包的扩展名是 .skillport；由 .skillport 改名而来的 .zip 也可以。",
+          "preview_expired": "请重新选择文件以刷新预览。",
+          "preview_stale": "请重新选择文件以刷新预览。",
+          "target_changed": "请重新选择文件，按当前目标重新预览。",
+          "unsupported_version": "请先升级本机的 SkillPort 再重试。"
+        }
+      }
     }
   },
   "installDialog": {

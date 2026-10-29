@@ -134,3 +134,18 @@ export interface PortableBundleImportResult {
   metadata: PortableBundleMetadataResult;
   cancelled: boolean;
 }
+
+/** Frontend view of the single portable-bundle job slot. */
+export type PortableBundleJobKind = "export" | "preview" | "apply";
+
+export interface PortableBundleJob {
+  jobId: string | null;
+  kind: PortableBundleJobKind | null;
+  phase: PortableBundlePhase | null;
+  status: "idle" | "running" | "cancelling" | PortableBundleJobStatus;
+  total: number;
+  completed: number;
+  currentItem?: string | null;
+  /** Coded error string (`code:message`), formatted by the UI. */
+  error?: string;
+}
