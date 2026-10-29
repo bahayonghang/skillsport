@@ -21,10 +21,11 @@ import {
 } from "./lib/displayFont";
 import { installRuntimeLogger } from "./lib/runtimeLogger";
 import { isTauriRuntime } from "@/lib/ipc";
-import { installBrowserIpcFixtures } from "./fixtures";
 
-// 浏览器演示态：先按命令名注册 IPC fixtures，再做任何会触发 invoke 的初始化
+// 浏览器演示态：先按命令名注册 IPC fixtures，再做任何会触发 invoke 的初始化。
+// 动态 import 让 Tauri 生产入口不包含 fixtures；注册仍早于下面的 store init。
 if (!isTauriRuntime()) {
+  const { installBrowserIpcFixtures } = await import("./fixtures");
   installBrowserIpcFixtures();
 }
 
