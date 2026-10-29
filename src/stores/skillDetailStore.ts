@@ -17,6 +17,8 @@ interface SkillDetailState {
   installingAgentId: string | null;
   error: string | null;
   explanation: string | null;
+  /** `skill_explanations.model` for the cached explanation, including null. */
+  explanationModel: string | null;
   isExplanationLoading: boolean;
   isExplanationStreaming: boolean;
   explanationError: string | null;
@@ -128,6 +130,7 @@ function startExplanationRequest(set: (fn: Partial<SkillDetailState>) => void) {
   cleanupExplanationListeners();
   set({
     explanation: null,
+    explanationModel: null,
     isExplanationLoading: true,
     isExplanationStreaming: false,
     explanationError: null,
@@ -148,6 +151,7 @@ function failExplanationRequest(
   const parsed = parseBackendError(error);
   set({
     explanation: null,
+    explanationModel: null,
     explanationError: parsed.message,
     explanationErrorInfo: parsed.code
       ? {
@@ -221,6 +225,7 @@ export const useSkillDetailStore = create<SkillDetailState>((set, get) => ({
   installingAgentId: null,
   error: null,
   explanation: null,
+  explanationModel: null,
   isExplanationLoading: false,
   isExplanationStreaming: false,
   explanationError: null,
@@ -267,6 +272,7 @@ export const useSkillDetailStore = create<SkillDetailState>((set, get) => ({
     if (!isTauriRuntime()) {
       set({
         explanation: null,
+        explanationModel: null,
         isExplanationLoading: false,
         isExplanationStreaming: false,
         explanationError: null,
@@ -275,10 +281,11 @@ export const useSkillDetailStore = create<SkillDetailState>((set, get) => ({
       return;
     }
     try {
-      const explanation = await invoke("get_skill_explanation", { skillId, lang });
+      const cached = await invoke("get_skill_explanation", { skillId, lang });
       if (requestId !== activeExplanationRequestId) return;
       set({
-        explanation,
+        explanation: cached?.explanation ?? null,
+        explanationModel: cached?.model ?? null,
         isExplanationLoading: false,
         isExplanationStreaming: false,
         explanationError: null,
@@ -294,6 +301,7 @@ export const useSkillDetailStore = create<SkillDetailState>((set, get) => ({
     if (!isTauriRuntime()) {
       set({
         explanation: null,
+        explanationModel: null,
         isExplanationLoading: false,
         isExplanationStreaming: false,
         explanationError: "AI explanation requires the Tauri desktop runtime.",
@@ -314,6 +322,7 @@ export const useSkillDetailStore = create<SkillDetailState>((set, get) => ({
     if (!isTauriRuntime()) {
       set({
         explanation: null,
+        explanationModel: null,
         isExplanationLoading: false,
         isExplanationStreaming: false,
         explanationError: "AI explanation requires the Tauri desktop runtime.",
@@ -540,6 +549,7 @@ export const useSkillDetailStore = create<SkillDetailState>((set, get) => ({
       installingAgentId: null,
       error: null,
       explanation: null,
+      explanationModel: null,
       isExplanationLoading: false,
       isExplanationStreaming: false,
       explanationError: null,

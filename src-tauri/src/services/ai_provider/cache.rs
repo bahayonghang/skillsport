@@ -7,7 +7,18 @@
 
 use std::collections::{HashMap, HashSet};
 
+use serde::{Deserialize, Serialize};
+
 use super::error::AiProviderError;
+
+/// One present `skill_explanations` row. `model` is null when the column is null.
+#[cfg_attr(feature = "ipc-codegen", derive(specta::Type))]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SkillExplanation {
+    pub explanation: String,
+    pub model: Option<String>,
+}
 
 pub(crate) fn explanation_has_content(explanation: &str) -> bool {
     !explanation.trim().is_empty()
@@ -30,21 +41,25 @@ pub(crate) async fn load_cached_skill_explanation(
     pool: &crate::db::DbPool,
     skill_id: &str,
     lang: &str,
-) -> Result<Option<String>, AiProviderError> {
+) -> Result<Option<SkillExplanation>, AiProviderError> {
     use sqlx::Row;
 
-    let row =
-        sqlx::query("SELECT explanation FROM skill_explanations WHERE skill_id = ? AND lang = ?")
-            .bind(skill_id)
-            .bind(lang)
-            .fetch_optional(pool)
-            .await?;
+    let row = sqlx::query(
+        "SELECT explanation, model FROM skill_explanations WHERE skill_id = ? AND lang = ?",
+    )
+    .bind(skill_id)
+    .bind(lang)
+    .fetch_optional(pool)
+    .await?;
 
     match row {
         Some(row) => {
             let explanation: String = row.get("explanation");
             if explanation_has_content(&explanation) {
-                Ok(Some(explanation))
+                Ok(Some(SkillExplanation {
+                    explanation,
+                    model: row.get("model"),
+                }))
             } else {
                 // Older builds could persist empty strings. Treat them as cache
                 // corruption so the next request re-generates a fresh explanation.

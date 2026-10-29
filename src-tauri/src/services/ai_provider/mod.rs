@@ -70,6 +70,7 @@ pub(crate) async fn read_ai_response_body_with_timeout(
     })
 }
 
+pub use cache::SkillExplanation;
 pub use claude::AiConnectionTestResult;
 pub(crate) use config::resolve_ai_provider_config;
 #[cfg(test)]
@@ -130,7 +131,7 @@ pub async fn get_skill_explanation_impl(
     pool: &crate::db::DbPool,
     skill_id: String,
     lang: String,
-) -> Result<Option<String>, AiProviderError> {
+) -> Result<Option<SkillExplanation>, AiProviderError> {
     cache::load_cached_skill_explanation(pool, &skill_id, &lang).await
 }
 
@@ -173,7 +174,8 @@ pub async fn explain_skill_stream_impl(
     content: String,
     lang: String,
 ) -> Result<(), AiProviderError> {
-    if let Some(explanation) = cache::load_cached_skill_explanation(pool, &skill_id, &lang).await? {
+    if let Some(cached) = cache::load_cached_skill_explanation(pool, &skill_id, &lang).await? {
+        let explanation = cached.explanation;
         let _ = app.emit(
             "skill:explanation:chunk",
             ExplanationChunkPayload {
