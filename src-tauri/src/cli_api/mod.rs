@@ -15,14 +15,22 @@ pub enum InstallSource {
     GitHubUrl(String),
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CliEntity {
+    Skill,
+    Agent,
+    Project,
+    Tag,
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum CliApiError {
     #[error("{0}")]
     InvalidInput(String),
-    #[error("{0}")]
-    NotFound(String),
-    #[error("{0}")]
-    Ambiguous(String),
+    #[error("{message}")]
+    NotFound { entity: CliEntity, message: String },
+    #[error("{message}")]
+    Ambiguous { entity: CliEntity, message: String },
     #[error("{0}")]
     Duplicate(String),
     #[error("{0}")]
@@ -32,11 +40,37 @@ pub enum CliApiError {
 }
 
 impl CliApiError {
+    pub fn not_found(entity: CliEntity, message: impl Into<String>) -> Self {
+        Self::NotFound {
+            entity,
+            message: message.into(),
+        }
+    }
+
+    pub fn ambiguous(entity: CliEntity, message: impl Into<String>) -> Self {
+        Self::Ambiguous {
+            entity,
+            message: message.into(),
+        }
+    }
+
     pub fn code(&self) -> &'static str {
         match self {
             Self::InvalidInput(_) => "input.invalid",
-            Self::NotFound(_) => "skill.not_found",
-            Self::Ambiguous(_) => "skill.ambiguous",
+            Self::NotFound { entity, .. } => match entity {
+                CliEntity::Skill => "skill.not_found",
+                CliEntity::Agent => "agent.not_found",
+                CliEntity::Project => "project.not_found",
+                CliEntity::Tag => "tag.not_found",
+            },
+            Self::Ambiguous { entity, .. } => match entity {
+                CliEntity::Skill => "skill.ambiguous",
+                CliEntity::Project => "project.ambiguous",
+                // No production call site uses these yet. The arms exist so the
+                // match stays exhaustive and the codes stay intentional.
+                CliEntity::Agent => "agent.ambiguous",
+                CliEntity::Tag => "tag.ambiguous",
+            },
             Self::Duplicate(_) => "skill.duplicate",
             Self::Busy(_) => "mutation.busy",
             Self::Internal(_) => "internal.error",
@@ -46,7 +80,7 @@ impl CliApiError {
     pub fn exit_code(&self) -> u8 {
         match self {
             Self::InvalidInput(_) => 2,
-            Self::NotFound(_) | Self::Ambiguous(_) | Self::Duplicate(_) => 3,
+            Self::NotFound { .. } | Self::Ambiguous { .. } | Self::Duplicate(_) => 3,
             Self::Busy(_) => 4,
             Self::Internal(_) => 1,
         }
@@ -63,12 +97,13 @@ impl From<central_skills::CentralSkillsError> for CliApiError {
     fn from(error: central_skills::CentralSkillsError) -> Self {
         match error {
             central_skills::CentralSkillsError::SkillNotFound(reference) => {
-                Self::NotFound(format!("Skill '{reference}' not found"))
+                Self::not_found(CliEntity::Skill, format!("Skill '{reference}' not found"))
             }
             central_skills::CentralSkillsError::AmbiguousSkillReference(reference) => {
-                Self::Ambiguous(format!(
-                    "Multiple skills are named '{reference}'; use uid or slug"
-                ))
+                Self::ambiguous(
+                    CliEntity::Skill,
+                    format!("Multiple skills are named '{reference}'; use uid or slug"),
+                )
             }
             central_skills::CentralSkillsError::CentralMutation(error) => mutation_error(error),
             other => Self::Internal(other.to_string()),
@@ -311,8 +346,114 @@ mod tests {
     #[test]
     fn exit_codes_are_stable() {
         assert_eq!(CliApiError::InvalidInput("x".into()).exit_code(), 2);
-        assert_eq!(CliApiError::NotFound("x".into()).exit_code(), 3);
+        assert_eq!(CliApiError::Duplicate("x".into()).exit_code(), 3);
+        assert_eq!(CliApiError::Duplicate("x".into()).code(), "skill.duplicate");
         assert_eq!(CliApiError::Busy("x".into()).exit_code(), 4);
+        assert_eq!(CliApiError::Busy("x".into()).code(), "mutation.busy");
         assert_eq!(CliApiError::Internal("x".into()).exit_code(), 1);
+        assert_eq!(CliApiError::Internal("x".into()).code(), "internal.error");
+        assert_eq!(
+            CliApiError::InvalidInput("x".into()).code(),
+            "input.invalid"
+        );
+
+        for entity in [
+            CliEntity::Skill,
+            CliEntity::Agent,
+            CliEntity::Project,
+            CliEntity::Tag,
+        ] {
+            assert_eq!(CliApiError::not_found(entity, "x").exit_code(), 3);
+            assert_eq!(CliApiError::ambiguous(entity, "x").exit_code(), 3);
+            assert_eq!(CliApiError::not_found(entity, "x").to_string(), "x");
+            assert_eq!(CliApiError::ambiguous(entity, "x").to_string(), "x");
+        }
+    }
+
+    #[test]
+    fn entity_error_codes_keep_skill_codes_and_name_read_entities() {
+        let cases = [
+            (
+                CliApiError::not_found(CliEntity::Skill, "Skill 'ref' not found"),
+                "skill.not_found",
+                "Skill 'ref' not found",
+            ),
+            (
+                CliApiError::ambiguous(
+                    CliEntity::Skill,
+                    "Multiple skills are named 'ref'; use uid or slug",
+                ),
+                "skill.ambiguous",
+                "Multiple skills are named 'ref'; use uid or slug",
+            ),
+            (
+                CliApiError::not_found(CliEntity::Agent, "missing"),
+                "agent.not_found",
+                "missing",
+            ),
+            (
+                CliApiError::not_found(CliEntity::Project, "missing"),
+                "project.not_found",
+                "missing",
+            ),
+            (
+                CliApiError::ambiguous(CliEntity::Project, "duplicate"),
+                "project.ambiguous",
+                "duplicate",
+            ),
+            (
+                CliApiError::not_found(CliEntity::Tag, "missing"),
+                "tag.not_found",
+                "missing",
+            ),
+            (
+                CliApiError::ambiguous(CliEntity::Agent, "duplicate"),
+                "agent.ambiguous",
+                "duplicate",
+            ),
+            (
+                CliApiError::ambiguous(CliEntity::Tag, "duplicate"),
+                "tag.ambiguous",
+                "duplicate",
+            ),
+        ];
+
+        for (error, code, message) in cases {
+            assert_eq!(error.code(), code);
+            assert_eq!(error.to_string(), message);
+            assert_eq!(error.exit_code(), 3);
+        }
+    }
+
+    #[test]
+    fn central_skill_reference_errors_keep_skill_messages() {
+        let missing: CliApiError =
+            central_skills::CentralSkillsError::SkillNotFound("ref".into()).into();
+        assert!(matches!(
+            missing,
+            CliApiError::NotFound {
+                entity: CliEntity::Skill,
+                ..
+            }
+        ));
+        assert_eq!(missing.to_string(), "Skill 'ref' not found");
+        assert_eq!(missing.code(), "skill.not_found");
+        assert_eq!(missing.exit_code(), 3);
+
+        let ambiguous: CliApiError =
+            central_skills::CentralSkillsError::AmbiguousSkillReference("ref".into()).into();
+        assert!(matches!(
+            ambiguous,
+            CliApiError::Ambiguous {
+                entity: CliEntity::Skill,
+                ..
+            }
+        ));
+        assert_eq!(
+            ambiguous.to_string(),
+            "Multiple skills are named 'ref'; use uid or slug"
+        );
+        assert_eq!(ambiguous.code(), "skill.ambiguous");
+        assert_eq!(ambiguous.exit_code(), 3);
     }
 }

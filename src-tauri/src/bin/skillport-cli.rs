@@ -249,6 +249,7 @@ fn render_error(cli: &Cli, error: &CliApiError) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use skillport_lib::cli_api::CliEntity;
 
     #[test]
     fn success_envelope_schema_is_versioned() {
@@ -266,7 +267,7 @@ mod tests {
 
     #[test]
     fn error_envelope_uses_locale_neutral_code() {
-        let error = CliApiError::Ambiguous("ambiguous".to_string());
+        let error = CliApiError::ambiguous(CliEntity::Skill, "ambiguous");
         let encoded = serde_json::to_value(ErrorEnvelope {
             schema_version: 1,
             ok: false,
@@ -277,7 +278,10 @@ mod tests {
             },
         })
         .unwrap();
+        assert_eq!(encoded["schemaVersion"], 1);
+        assert_eq!(encoded["ok"], false);
         assert_eq!(encoded["error"]["code"], "skill.ambiguous");
+        assert_eq!(encoded["error"]["message"], "ambiguous");
     }
 
     #[test]

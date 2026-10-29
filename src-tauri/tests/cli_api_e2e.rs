@@ -5,7 +5,7 @@ mod common;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
-use skillport_lib::cli_api::{CliApiError, CliContext};
+use skillport_lib::cli_api::{CliApiError, CliContext, CliEntity};
 use skillport_lib::db::DbPool;
 use skillport_lib::secrets::{SecretError, SecretStorageState, SecretStore};
 
@@ -137,7 +137,13 @@ async fn ambiguous_name_preserves_the_public_error_contract() {
     let context = cli_context(pool);
 
     let error = context.show_skill("Shared Name").await.unwrap_err();
-    assert!(matches!(error, CliApiError::Ambiguous(_)));
+    assert!(matches!(
+        error,
+        CliApiError::Ambiguous {
+            entity: CliEntity::Skill,
+            ..
+        }
+    ));
     assert_eq!(error.code(), "skill.ambiguous");
     assert_eq!(error.exit_code(), 3);
 }

@@ -9,8 +9,8 @@ use crate::services::{central_skills, github_import, installation, marketplace};
 use crate::targets::ActiveTarget;
 
 use super::{
-    mutation_error, parse_install_source, CliApiError, CliContext, CliSkill, InstallFailure,
-    InstallOutput, InstallSource, SyncOutput, SyncPlanItem,
+    mutation_error, parse_install_source, CliApiError, CliContext, CliEntity, CliSkill,
+    InstallFailure, InstallOutput, InstallSource, SyncOutput, SyncPlanItem,
 };
 
 fn github_error(error: github_import::GithubImportError) -> CliApiError {
@@ -31,7 +31,7 @@ fn github_error(error: github_import::GithubImportError) -> CliApiError {
         }
         github_import::GithubImportError::RepoNotFound
         | github_import::GithubImportError::NoImportableSkills => {
-            CliApiError::NotFound(error.to_string())
+            CliApiError::not_found(CliEntity::Skill, error.to_string())
         }
         github_import::GithubImportError::TargetDirExists(_) => {
             CliApiError::Duplicate(error.to_string())
@@ -52,7 +52,7 @@ fn marketplace_error(error: marketplace::MarketplaceError) -> CliApiError {
         }
         marketplace::MarketplaceError::SkillsShCandidateNotFound { .. }
         | marketplace::MarketplaceError::SkillNotImported(_) => {
-            CliApiError::NotFound(error.to_string())
+            CliApiError::not_found(CliEntity::Skill, error.to_string())
         }
         other => CliApiError::Internal(other.to_string()),
     }
@@ -367,4 +367,83 @@ async fn selected_agents(
         ));
     }
     Ok(selected)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{github_error, marketplace_error, CliApiError, CliEntity};
+    use crate::services::{github_import, marketplace};
+
+    #[test]
+    fn imported_not_found_errors_stay_skill_codes() {
+        let repo_missing = github_import::GithubImportError::RepoNotFound;
+        let mapped = github_error(github_import::GithubImportError::RepoNotFound);
+        assert!(matches!(
+            mapped,
+            CliApiError::NotFound {
+                entity: CliEntity::Skill,
+                ..
+            }
+        ));
+        assert_eq!(mapped.code(), "skill.not_found");
+        assert_eq!(mapped.exit_code(), 3);
+        assert_eq!(mapped.to_string(), repo_missing.to_string());
+
+        let none = github_import::GithubImportError::NoImportableSkills;
+        let mapped = github_error(github_import::GithubImportError::NoImportableSkills);
+        assert!(matches!(
+            mapped,
+            CliApiError::NotFound {
+                entity: CliEntity::Skill,
+                ..
+            }
+        ));
+        assert_eq!(mapped.code(), "skill.not_found");
+        assert_eq!(mapped.to_string(), none.to_string());
+
+        let not_imported = marketplace::MarketplaceError::SkillNotImported("demo".into());
+        let mapped = marketplace_error(marketplace::MarketplaceError::SkillNotImported(
+            "demo".into(),
+        ));
+        assert!(matches!(
+            mapped,
+            CliApiError::NotFound {
+                entity: CliEntity::Skill,
+                ..
+            }
+        ));
+        assert_eq!(mapped.code(), "skill.not_found");
+        assert_eq!(mapped.to_string(), not_imported.to_string());
+
+        let candidate = marketplace::MarketplaceError::SkillsShCandidateNotFound {
+            skill_id: "skill".into(),
+            owner: "owner".into(),
+            repo: "repo".into(),
+        };
+        let mapped = marketplace_error(marketplace::MarketplaceError::SkillsShCandidateNotFound {
+            skill_id: "skill".into(),
+            owner: "owner".into(),
+            repo: "repo".into(),
+        });
+        assert!(matches!(
+            mapped,
+            CliApiError::NotFound {
+                entity: CliEntity::Skill,
+                ..
+            }
+        ));
+        assert_eq!(mapped.code(), "skill.not_found");
+        assert_eq!(mapped.to_string(), candidate.to_string());
+    }
+
+    #[test]
+    fn duplicate_helper_text_is_unchanged() {
+        let error = CliApiError::duplicate("demo".into());
+        assert_eq!(
+            error.to_string(),
+            "Skill 'demo' already exists; pass --replace to overwrite it"
+        );
+        assert_eq!(error.code(), "skill.duplicate");
+        assert_eq!(error.exit_code(), 3);
+    }
 }
