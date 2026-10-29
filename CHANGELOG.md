@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## 1.1.1 - 2026-10-29
+
+Central libraries can move between installations without GitHub.
+
+### Added
+
+- **Portable `.skillport` bundles**: export the active target's Central library — skill files, including skills with no GitHub source, plus tags, tag groups, saved views, and source registries — to one file. Import works offline on Local, SSH, and WSL targets. The dialog previews each skill, skips identical content, and asks before overwriting a changed skill (a backup is taken first). Conflicts can be skipped, overwritten, or renamed, including in bulk, and failed items can be retried. Credentials, absolute home paths, host names, and SSH connection details are never included. Settings, usage stats, operation logs, platform install links, projects, and collections stay on the machine.
+
+### Removed
+
+- Legacy `skillport/state-export` v1 JSON import and export. Opening a v1 file asks you to upgrade the source and export again.
+
 ## [Unreleased]
 
 ### Added
@@ -15,7 +27,6 @@ All notable changes to this project will be documented in this file.
 - Backend `SkillUpdateStatus` enum replaces the previous string constants.
 - **Central Library** now offers repository/source navigation, top filters, adaptive card grids, layout and density controls, inline tag editing, and per-skill or bulk platform uninstall.
 - Update checks can be scoped to the current platform or selected repositories, with explicit refresh modes, repository progress, retry feedback, and one-click cleanup for stale platform copies.
-- Add target-aware Central state export/import for local, SSH, and WSL targets, including origin metadata, v1 JSON compatibility, and cross-target warnings.
 - Add Reasonix and Grok built-in platform targets, plus an installation-origin navigator that separates SkillPort-managed, repository-linked, and independently installed skills, and usage-count sorting.
 - Add a status and work-queue dashboard with activity and top-tag summaries; expand Usage with platform filters, rankings, heatmaps, provider health, recent calls, and skill details.
 - Add an expanded built-in tag taxonomy, protected custom tags, AI tag proposals requiring review before creation, and an AI task control panel for progress, cancellation, and rate-limit visibility.
