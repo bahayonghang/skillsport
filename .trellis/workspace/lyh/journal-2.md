@@ -1932,3 +1932,40 @@ SSH/WSL Platform leftover apply now validates paths, deletes unique POSIX paths 
 ### Status
 
 [OK] **Completed**
+
+
+## Session 122: 拆分启动 JS 并将版本升到 1.1.1
+
+**Date**: 2026-10-29
+**Task**: 拆分启动 JS 并将版本升到 1.1.1
+**Branch**: `dev`
+
+### Summary
+
+版本升到 1.1.1 并记录便携包；启动 JS 拆分后生产构建不再有超过 500 kB 的 chunk。浏览器演示态尚未验证。just ci 未跑。
+
+### Main Changes
+
+- 版本号同步到 1.1.1，更新日志写入 .skillport 便携包，并移除与 v2 矛盾的 v1 JSON 兼容说明。
+- 启动只加载当前语言，markdown 不再进入 shell-vendor，浏览器 fixtures 改为动态导入。
+- 纳入 Agent CLI 规划任务文档。这些任务仍是 planning，没有归档。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `5980bc53` | (see git log) |
+| `8ceb8101` | (see git log) |
+| `12c9cffa` | (see git log) |
+
+### Testing
+
+- [OK] tsc --noEmit、五个相关 vitest 文件、内存中的 vite build 已通过。未跑 just ci，未在浏览器验证 fixture 注册顺序。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 在浏览器演示态确认 fixtures 先于 store init 注册后，再勾掉该项验收。

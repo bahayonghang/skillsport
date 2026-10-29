@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-2.md`
-- **Total Sessions**: 121
-- **Last Active**: 2026-10-20
+- **Total Sessions**: 122
+- **Last Active**: 2026-10-29
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-2.md` | ~1934 | Active |
+| `journal-2.md` | ~1971 | Active |
 | `journal-1.md` | ~1994 | Archived |
 <!-- @@@/auto:active-documents -->
 
@@ -30,6 +30,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 122 | 2026-10-29 | 拆分启动 JS 并将版本升到 1.1.1 | `5980bc53`, `8ceb8101`, `12c9cffa` | `dev` |
 | 121 | 2026-10-20 | GitHub 导入：缺失分支误报修复、失败审计与输入卡片优化 | `b5d53bc6`, `09ec111b`, `fe3f1160` | `fix/github-import-branch-default` |
 | 120 | 2026-10-13 | Skill Usage 界面与增量扫描优化收尾 | `98502384` | `codex/skill-usage-optimization` |
 | 119 | 2026-10-12 | 侧栏排序与首页库存布局优化 | `e2a83f44`, `9205fd7b` | `dev` |
