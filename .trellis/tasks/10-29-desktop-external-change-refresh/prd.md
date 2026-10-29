@@ -25,8 +25,8 @@ CLI（或其他进程）修改 Local 数据后，打开中的桌面窗口在重�
 
 ## Acceptance Criteria
 
-- [ ] Vitest 覆盖三种情况：标记未变化时不刷新；标记变化时只刷新指定的 store；连续多次 focus 只触发一次刷新。
-- [ ] Vitest 覆盖 Agent 说明的覆盖确认：确认后执行刷新，取消后不执行。
-- [ ] Rust 测试证明：用另一个数据库连接写入后，标记会变化。
+- [x] Vitest 覆盖三种情况：标记未变化时不刷新；标记变化时只刷新指定的 store；连续多次 focus 只触发一次刷新。
+- [x] Vitest 覆盖 Agent 说明的覆盖确认：确认后执行刷新，取消后不执行。
+- [x] Rust 测试证明：用另一个数据库连接写入后，标记会变化。
 - [ ] 手工验证：桌面应用打开时，用 `skillport-cli` 修改数据（C2 合并前可以用 `skills sync`），切回窗口后能看到变化。
-- [ ] `pnpm docs:gen:check` 通过，生成的文件已提交；`just ci` 通过。
+- [x] `pnpm docs:gen:check` 通过，生成的文件已提交；`just ci` 通过。
