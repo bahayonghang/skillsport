@@ -1969,3 +1969,32 @@ SSH/WSL Platform leftover apply now validates paths, deletes unique POSIX paths 
 ### Next Steps
 
 - 在浏览器演示态确认 fixtures 先于 store init 注册后，再勾掉该项验收。
+
+
+## Session 123: 归档 1.1.0 验收与毛玻璃父任务
+
+**Date**: 2026-10-29
+**Task**: 归档 1.1.0 验收与毛玻璃父任务
+**Branch**: `dev`
+
+### Summary
+
+按要求直接归档 10-21-v1-1-0-release-prep 与 10-21-v1-1-glass-ui-redesign。工作区在归档前已干净，门禁记录在 df77136a。安装与升级验收仍标为未在本机执行。
+
+### Main Changes
+
+- 归档 C9 版本准备任务和轻盈毛玻璃父任务。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `df77136a` | (see git log) |
+
+### Testing
+
+- [OK] 上一轮 just ci 已通过。本轮没有新的产品改动，也没有跑安装包。
+
+### Status
+
+[OK] **Completed**
