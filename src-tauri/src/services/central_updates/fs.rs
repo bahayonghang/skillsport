@@ -24,10 +24,12 @@ mod batch;
 mod operation;
 mod progress;
 mod remote_scripts;
+mod skill_tree;
 
 pub(crate) use batch::{CentralSkillWrite, CopyRefreshRequest};
 pub(crate) use operation::OperationUpdateStage;
 pub(crate) use progress::{StageWriteProgress, StageWriteProgressReporter};
+pub(crate) use skill_tree::{content_digest_of, sha256_hex, SkillTreeFile};
 
 #[cfg(test)]
 mod tests;

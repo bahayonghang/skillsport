@@ -662,6 +662,18 @@ export interface SkillsShFileEntry {
   is_dir: boolean;
 }
 
+// ─── Portable Bundle Types ──────────────────────────────────────────────────
+export type {
+  PortableBundleExportResult,
+  PortableBundleExportSummary,
+  PortableBundleJobStatus,
+  PortableBundlePhase,
+  PortableBundleProgressPayload,
+  PortableBundleSkipReason,
+  PortableBundleSkippedSkill,
+  PortableBundleTargetKind,
+} from "./portableBundle";
+
 // ─── Portable State Types ───────────────────────────────────────────────────
 export type {
   SkillportStateExportedTarget,

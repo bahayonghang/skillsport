@@ -36,7 +36,7 @@ pub(crate) use core::{
     update_central_skills_impl, update_skills_batch, JournaledCentralContentUpsert,
     SkillUpdatePlan,
 };
-pub(crate) use fs::{normalize_repo_path, CentralFs};
+pub(crate) use fs::{content_digest_of, normalize_repo_path, sha256_hex, CentralFs, SkillTreeFile};
 pub(crate) use repository_sync::{
     apply_central_repository_sync_impl, check_central_repository_sync_impl,
     collect_remote_added_skills,
