@@ -17,8 +17,8 @@
 
 ## 验收标准
 
-- [ ] `pnpm version:check`、`pnpm docs:gen:check`、`pnpm docs:build`、`just ci` 全绿。
-- [ ] 矩阵截图齐全；所有问题已修复或在报告中明确列为已知问题并获用户确认。
-- [ ] 从 1.0.2 升级安装后，旧主题偏好迁移正确、字体按 D-F1 规则处理、无数据丢失。
-- [ ] Win11 / Win10 安装包验收记录完整；未覆盖的硬件 / OS 组合明确列出。
-- [ ] 发布动作（tag / Release / updater）列为后续步骤，未在本任务执行。
+- [x] `pnpm version:check`、`pnpm docs:gen:check`、`pnpm docs:build`、`just ci` 全绿。2026-10-29：`just ci` 退出码 0，日志末行 `[ci] All checks passed.`。其中包含 `version:check`（已同步到 1.1.1）、`docs:gen:check` 与 `docs:site:build`（vitepress build complete）。当前版本是已发布的 1.1.1，不把版本退回 1.1.0。
+- [ ] 矩阵截图齐全；所有问题已修复或在报告中明确列为已知问题并获用户确认。2026-10-21 的 256 张矩阵与 F1–F3 修复仍在 `research/visual-matrix.md`。K1–K5 已写入该报告，还没有用户确认。
+- [ ] 从 1.0.2 升级安装后，旧主题偏好迁移正确、字体按 D-F1 规则处理、无数据丢失。主题迁移与 D-F1 有单测（`themeStore.test.ts`、`displayFont.test.ts`）。覆盖安装本身没有在本机执行。
+- [ ] Win11 / Win10 安装包验收记录完整；未覆盖的硬件 / OS 组合明确列出。清单与未覆盖组合在 `research/installer.md`，§2 全部仍是 UNVERIFIED。2026-10-29 本机为 build 26300 / 26H2（注册表 ProductName 仍显示 Windows 10 Pro）。未在日常账户安装、升级或卸载，以避免改写 `%USERPROFILE%\.skillsmanage`。
+- [x] 发布动作（tag / Release / updater）列为后续步骤，未在本任务执行。2026-10-29 仍未打 tag、未发布 GitHub Release、未上传 updater 元数据。
