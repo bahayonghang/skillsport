@@ -134,6 +134,26 @@ pub async fn get_skill_explanation_impl(
     cache::load_cached_skill_explanation(pool, &skill_id, &lang).await
 }
 
+/// Cached explanation text and the model that produced it.
+///
+/// `model` stays null when the row has no model. This read does not call the
+/// provider and does not delete empty rows.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct SkillExplanationRecord {
+    pub lang: String,
+    pub text: String,
+    pub model: Option<String>,
+}
+
+/// Read explanation and model for one skill and language. Never calls the provider.
+pub async fn get_skill_explanation_record_impl(
+    pool: &crate::db::DbPool,
+    skill_id: &str,
+    lang: &str,
+) -> Result<Option<SkillExplanationRecord>, AiProviderError> {
+    cache::load_skill_explanation_record(pool, skill_id, lang).await
+}
+
 /// Read cached explanations for many skills. Never triggers the AI provider.
 pub async fn get_skill_explanation_summaries_impl(
     pool: &crate::db::DbPool,

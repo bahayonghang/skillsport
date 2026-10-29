@@ -56,6 +56,37 @@ pub(crate) async fn load_cached_skill_explanation(
     }
 }
 
+/// Read explanation text and model. Empty text becomes `None` and the row is
+/// left in place; this path must not call the provider or delete cache rows.
+pub(crate) async fn load_skill_explanation_record(
+    pool: &crate::db::DbPool,
+    skill_id: &str,
+    lang: &str,
+) -> Result<Option<super::SkillExplanationRecord>, AiProviderError> {
+    use sqlx::Row;
+
+    let row = sqlx::query(
+        "SELECT lang, explanation, model FROM skill_explanations WHERE skill_id = ? AND lang = ?",
+    )
+    .bind(skill_id)
+    .bind(lang)
+    .fetch_optional(pool)
+    .await?;
+
+    let Some(row) = row else {
+        return Ok(None);
+    };
+    let explanation: String = row.get("explanation");
+    if !explanation_has_content(&explanation) {
+        return Ok(None);
+    }
+    Ok(Some(super::SkillExplanationRecord {
+        lang: row.get("lang"),
+        text: explanation,
+        model: row.get("model"),
+    }))
+}
+
 pub(crate) async fn load_cached_skill_explanation_summaries(
     pool: &crate::db::DbPool,
     skill_ids: &[String],

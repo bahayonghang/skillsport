@@ -1,4 +1,15 @@
+mod agents;
+mod projects;
 mod skills;
+mod tags;
+
+pub use agents::CliAgent;
+pub use projects::{CliProject, CliProjectSkill};
+pub use skills::{CliExplanation, CliSkillDetail, CliSkillProject, CliSkillTag};
+pub use tags::{CliTag, CliTagGroup};
+
+#[cfg(test)]
+mod read_tests;
 
 use std::sync::Arc;
 
@@ -90,6 +101,24 @@ impl CliApiError {
 impl From<sqlx::Error> for CliApiError {
     fn from(error: sqlx::Error) -> Self {
         Self::Internal(error.to_string())
+    }
+}
+
+impl From<crate::services::ai_provider::AiProviderError> for CliApiError {
+    fn from(error: crate::services::ai_provider::AiProviderError) -> Self {
+        Self::Internal(error.to_string())
+    }
+}
+
+impl From<crate::services::projects::ProjectsError> for CliApiError {
+    fn from(error: crate::services::projects::ProjectsError) -> Self {
+        use crate::services::projects::ProjectsError;
+        match &error {
+            ProjectsError::ProjectNotFound(_) => {
+                Self::not_found(CliEntity::Project, error.to_string())
+            }
+            _ => Self::Internal(error.to_string()),
+        }
     }
 }
 
@@ -327,7 +356,7 @@ mod tests {
         let context = CliContext::new(pool, Arc::new(crate::secrets::MockSecretStore::default()));
         let listed = context.list_skills().await.unwrap();
         assert_eq!(listed.len(), 1);
-        let shown = context.show_skill(&listed[0].uid).await.unwrap();
+        let shown = context.show_skill(&listed[0].uid, "en").await.unwrap();
         assert_eq!(shown.id, "react-best-practices");
         let sync = context
             .sync_skills(

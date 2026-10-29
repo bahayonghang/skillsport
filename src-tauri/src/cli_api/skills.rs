@@ -1,6 +1,9 @@
 use std::collections::HashSet;
 use std::path::PathBuf;
 
+use serde::Serialize;
+
+use crate::db::repos::{agents_repo, tags_repo};
 use crate::db::{self, DbPool};
 use crate::operation_log::{
     local_target_context, record_operation_log_best_effort, OperationLogEvent,
@@ -12,6 +15,47 @@ use super::{
     mutation_error, parse_install_source, CliApiError, CliContext, CliEntity, CliSkill,
     InstallFailure, InstallOutput, InstallSource, SyncOutput, SyncPlanItem,
 };
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CliSkillTag {
+    pub id: String,
+    pub name: String,
+    pub source: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CliSkillProject {
+    pub project_id: String,
+    pub name: String,
+    pub path: String,
+    pub agent_id: String,
+    pub installed_path: String,
+    pub link_type: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CliExplanation {
+    pub lang: String,
+    pub text: String,
+    pub model: Option<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CliSkillDetail {
+    pub uid: String,
+    pub id: String,
+    pub name: String,
+    pub description: Option<String>,
+    pub canonical_path: Option<String>,
+    pub linked_agents: Vec<String>,
+    pub tags: Vec<CliSkillTag>,
+    pub projects: Vec<CliSkillProject>,
+    pub explanation: Option<CliExplanation>,
+}
 
 fn github_error(error: github_import::GithubImportError) -> CliApiError {
     match error {
@@ -68,34 +112,88 @@ impl CliApiError {
 
 impl CliContext {
     pub async fn list_skills(&self) -> Result<Vec<CliSkill>, CliApiError> {
+        self.list_skills_filtered(&[], None, None).await
+    }
+
+    pub async fn list_skills_filtered(
+        &self,
+        tags: &[String],
+        agent_id: Option<&str>,
+        source: Option<&str>,
+    ) -> Result<Vec<CliSkill>, CliApiError> {
+        let tag_ids = resolve_tag_ids(&self.db, tags).await?;
+        if let Some(agent_id) = agent_id {
+            if agents_repo::get_agent_by_id(&self.db, agent_id)
+                .await?
+                .is_none()
+            {
+                return Err(CliApiError::not_found(
+                    CliEntity::Agent,
+                    format!("Agent '{agent_id}' not found"),
+                ));
+            }
+        }
+
         Ok(central_skills::get_central_skills_impl(&self.db)
             .await?
             .into_iter()
-            .map(|skill| CliSkill {
-                uid: skill.uid,
-                id: skill.id,
-                name: skill.name,
-                description: skill.description,
-                canonical_path: skill.canonical_path,
-                linked_agents: skill.linked_agents,
-            })
+            .filter(|skill| skill_matches_filters(skill, &tag_ids, agent_id, source))
+            .map(cli_skill_from_links)
             .collect())
     }
 
-    pub async fn show_skill(&self, reference: &str) -> Result<CliSkill, CliApiError> {
+    pub async fn show_skill(
+        &self,
+        reference: &str,
+        lang: &str,
+    ) -> Result<CliSkillDetail, CliApiError> {
         let skill = central_skills::resolve_skill_ref_impl(&self.db, reference).await?;
         let linked_agents = db::get_skill_installations(&self.db, &skill.id)
             .await?
             .into_iter()
             .map(|installation| installation.agent_id)
             .collect();
-        Ok(CliSkill {
+        let tags = tags_repo::list_skill_tag_links_for_skill(&self.db, &skill.id)
+            .await?
+            .into_iter()
+            .map(|link| CliSkillTag {
+                id: link.id,
+                name: link.name,
+                source: link.source,
+            })
+            .collect();
+        let projects =
+            crate::services::projects::list_projects_using_skill_impl(&self.db, &skill.id)
+                .await?
+                .into_iter()
+                .map(|project| CliSkillProject {
+                    project_id: project.project_id,
+                    name: project.project_name,
+                    path: project.project_path,
+                    agent_id: project.agent_id,
+                    installed_path: project.installed_path,
+                    link_type: project.link_type,
+                })
+                .collect();
+        let explanation = crate::services::ai_provider::get_skill_explanation_record_impl(
+            &self.db, &skill.id, lang,
+        )
+        .await?
+        .map(|record| CliExplanation {
+            lang: record.lang,
+            text: record.text,
+            model: record.model,
+        });
+        Ok(CliSkillDetail {
             uid: skill.uid,
             id: skill.id,
             name: skill.name,
             description: skill.description,
             canonical_path: skill.canonical_path,
             linked_agents,
+            tags,
+            projects,
+            explanation,
         })
     }
 
@@ -333,6 +431,48 @@ impl CliContext {
         .await;
         Ok(output)
     }
+}
+
+fn cli_skill_from_links(skill: central_skills::SkillWithLinks) -> CliSkill {
+    CliSkill {
+        uid: skill.uid,
+        id: skill.id,
+        name: skill.name,
+        description: skill.description,
+        canonical_path: skill.canonical_path,
+        linked_agents: skill.linked_agents,
+    }
+}
+
+fn skill_matches_filters(
+    skill: &central_skills::SkillWithLinks,
+    tag_ids: &[String],
+    agent_id: Option<&str>,
+    source: Option<&str>,
+) -> bool {
+    let tags_match = tag_ids
+        .iter()
+        .all(|tag_id| skill.tags.iter().any(|tag| tag.id == *tag_id));
+    let agent_matches =
+        agent_id.is_none_or(|agent_id| skill.linked_agents.iter().any(|linked| linked == agent_id));
+    let source_matches = source.is_none_or(|source| skill.source.as_deref() == Some(source));
+    tags_match && agent_matches && source_matches
+}
+
+async fn resolve_tag_ids(pool: &DbPool, tags: &[String]) -> Result<Vec<String>, CliApiError> {
+    let mut ids = Vec::with_capacity(tags.len());
+    for reference in tags {
+        let tag = match tags_repo::get_skill_tag_by_id(pool, reference).await? {
+            Some(tag) => tag,
+            None => tags_repo::get_skill_tag_by_name(pool, reference)
+                .await?
+                .ok_or_else(|| {
+                    CliApiError::not_found(CliEntity::Tag, format!("Tag '{reference}' not found"))
+                })?,
+        };
+        ids.push(tag.id);
+    }
+    Ok(ids)
 }
 
 fn validate_method(method: &str) -> Result<(), CliApiError> {

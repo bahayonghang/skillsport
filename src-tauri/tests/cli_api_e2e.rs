@@ -68,7 +68,7 @@ async fn public_identity_flows_from_list_and_show_into_dry_run_sync() {
     assert_eq!(listed[0].uid, skill.uid);
     assert_eq!(listed[0].id, skill.id);
 
-    let shown = context.show_skill(&skill.uid).await.unwrap();
+    let shown = context.show_skill(&skill.uid, "en").await.unwrap();
     assert_eq!(shown.uid, skill.uid);
     assert_eq!(shown.id, skill.id);
 
@@ -136,7 +136,7 @@ async fn ambiguous_name_preserves_the_public_error_contract() {
     .await;
     let context = cli_context(pool);
 
-    let error = context.show_skill("Shared Name").await.unwrap_err();
+    let error = context.show_skill("Shared Name", "en").await.unwrap_err();
     assert!(matches!(
         error,
         CliApiError::Ambiguous {
@@ -167,4 +167,34 @@ async fn invalid_sync_selections_fail_before_external_side_effects() {
             .sync_skills(vec![], true, vec![], "unsupported", true)
             .await,
     );
+}
+
+#[tokio::test]
+async fn empty_home_read_commands_return_json_arrays() {
+    let home = tempfile::tempdir().unwrap();
+    let bin = env!("CARGO_BIN_EXE_skillport-cli");
+    let commands: &[&[&str]] = &[
+        &["--json", "agents", "list"],
+        &["--json", "projects", "list"],
+        &["--json", "tags", "list"],
+    ];
+    for args in commands {
+        let output = std::process::Command::new(bin)
+            .args(*args)
+            .env("HOME", home.path())
+            .env("USERPROFILE", home.path())
+            .output()
+            .unwrap();
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        assert!(
+            output.status.success(),
+            "command {args:?} failed\nstdout: {stdout}\nstderr: {stderr}"
+        );
+        let envelope: serde_json::Value = serde_json::from_str(&stdout)
+            .unwrap_or_else(|error| panic!("invalid json: {error}\n{stdout}"));
+        assert_eq!(envelope["ok"], true);
+        assert_eq!(envelope["schemaVersion"], 1);
+        assert!(envelope["data"].is_array(), "{envelope}");
+    }
 }
