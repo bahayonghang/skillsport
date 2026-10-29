@@ -1,0 +1,10 @@
+{"file": ".trellis/tasks/10-29-agent-operable-skillport/design.md", "reason": "Parent design: layering, command surface, contracts"}
+{"file": ".trellis/tasks/10-29-agent-operable-skillport/research/current-surface.md", "reason": "Existing CLI surface and reusable backend entry points"}
+{"file": ".trellis/spec/backend/index.md", "reason": "Backend spec index"}
+{"file": ".trellis/spec/backend/shared-local-cli.md", "reason": "skillport-cli / cli_api contract"}
+{"file": ".trellis/spec/backend/layer-boundaries.md", "reason": "cli_api must call services/db, not commands"}
+{"file": ".trellis/spec/backend/domain-error-enums.md", "reason": "Error enum conventions for CliApiError extension"}
+{"file": ".trellis/spec/backend/test-support.md", "reason": "Temp DB / HOME test helpers"}
+{"file": ".trellis/spec/backend/central-skill-tags.md", "reason": "Tag data model for tags list and show"}
+{"file": ".trellis/spec/backend/central-project-install-visibility.md", "reason": "Project install visibility for projects skills"}
+{"file": ".trellis/spec/backend/redaction-policy.md", "reason": "No secrets in CLI output"}
