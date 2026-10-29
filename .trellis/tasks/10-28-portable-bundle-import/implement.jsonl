@@ -1,0 +1,23 @@
+{"file": ".trellis/tasks/10-28-central-state-portability-v2/prd.md", "reason": "父任务需求与验收"}
+{"file": ".trellis/tasks/10-28-central-state-portability-v2/design.md", "reason": "共享格式/IPC/管线契约"}
+{"file": ".trellis/tasks/10-28-central-state-portability-v2/research/root-cause-analysis.md", "reason": "根因与现场证据"}
+{"file": ".trellis/spec/backend/index.md", "reason": "后端规范索引"}
+{"file": ".trellis/spec/backend/layer-boundaries.md", "reason": "commands 与 services 分层"}
+{"file": ".trellis/spec/backend/domain-error-enums.md", "reason": "领域错误枚举与 IPC 映射"}
+{"file": ".trellis/spec/backend/redaction-policy.md", "reason": "包与错误脱敏"}
+{"file": ".trellis/spec/backend/operation-observability.md", "reason": "operation log 记录"}
+{"file": ".trellis/spec/backend/exclusive-job-lifecycle.md", "reason": "作业租约与取消"}
+{"file": ".trellis/spec/backend/spawn-blocking-io.md", "reason": "阻塞 IO 放到 blocking 线程"}
+{"file": ".trellis/spec/backend/path-policy.md", "reason": "路径安全"}
+{"file": ".trellis/spec/backend/target-context.md", "reason": "目标上下文解析"}
+{"file": ".trellis/spec/backend/transport-seam.md", "reason": "远程目标测试替身"}
+{"file": ".trellis/spec/backend/test-support.md", "reason": "Rust 测试支持"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "复用 CentralFs / archive inventory"}
+{"file": ".trellis/spec/backend/local-archive-import.md", "reason": "暂存/备份/交换与回滚"}
+{"file": ".trellis/spec/backend/fs-db-operation-journal.md", "reason": "内容写入的日志式恢复"}
+{"file": ".trellis/spec/backend/central-mutation-lock.md", "reason": "Central 互斥锁"}
+{"file": ".trellis/spec/backend/transactional-mutations.md", "reason": "元数据合并事务"}
+{"file": ".trellis/spec/backend/central-skill-tags.md", "reason": "标签/分组语义"}
+{"file": ".trellis/spec/backend/unknown-source-reset.md", "reason": "unknown 仓库归属"}
+{"file": ".trellis/spec/backend/central-update-batching.md", "reason": "content upsert 批处理"}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "IPC 契约跨层"}

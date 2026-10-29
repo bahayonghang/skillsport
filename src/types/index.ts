@@ -264,7 +264,6 @@ export interface CentralBatchInstallResult {
   failed: CentralBatchInstallFailure[];
 }
 
-
 export type { BatchUninstallSkillRequest, BatchUninstallSkillResult } from "./platformBatch";
 
 export type {
@@ -662,25 +661,30 @@ export interface SkillsShFileEntry {
   is_dir: boolean;
 }
 
-// ─── Portable State Types ───────────────────────────────────────────────────
+// ─── Portable Bundle Types ──────────────────────────────────────────────────
 export type {
-  SkillportStateExportedTarget,
-  SkillportStateImportFailure,
-  SkillportStateImportPreview,
-  SkillportStateImportPreviewSummary,
-  SkillportStateImportResolution,
-  SkillportStateImportResolutionType,
-  SkillportStateImportResult,
-  SkillportStateImportedSkill,
-  SkillportStatePortabilityJob,
-  SkillportStatePortabilityJobStatus,
-  SkillportStatePortabilityPhase,
-  SkillportStatePortabilityProgressPayload,
-  SkillportStateSkillPreview,
-  SkillportStateSkillStatus,
-  SkillportStateSourcePreview,
-  SkillportStateSourceStatus,
-} from "./portableState";
+  PortableBundleDecision,
+  PortableBundleDecisionAction,
+  PortableBundleExportResult,
+  PortableBundleExportSummary,
+  PortableBundleImportPreview,
+  PortableBundleImportResult,
+  PortableBundleJob,
+  PortableBundleJobKind,
+  PortableBundleJobStatus,
+  PortableBundleMetadataCounts,
+  PortableBundleMetadataPreview,
+  PortableBundleMetadataResult,
+  PortableBundlePhase,
+  PortableBundleProgressPayload,
+  PortableBundleRenamedSkill,
+  PortableBundleSkillIssue,
+  PortableBundleSkillPreview,
+  PortableBundleSkillStatus,
+  PortableBundleSkipReason,
+  PortableBundleSkippedSkill,
+  PortableBundleTargetKind,
+} from "./portableBundle";
 
 export type {
   DuplicateResolution,

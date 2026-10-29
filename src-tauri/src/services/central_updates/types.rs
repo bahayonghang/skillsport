@@ -7,7 +7,7 @@ use std::sync::Arc;
 
 pub use crate::db::SkillUpdateStatus;
 use crate::db::{Skill, SkillRepositoryAssignment, SkillUpdateState};
-use crate::services::github_import::{GitHubRepoRef, RemoteSkillCandidate};
+use crate::services::github_import::GitHubRepoRef;
 
 use super::fs::{normalize_repo_path, RemoteSkillFile};
 use super::CentralUpdatesError;
@@ -167,10 +167,32 @@ pub(crate) struct PreparedSkillUpdate {
     pub(crate) local_hash: Option<String>,
 }
 
+/// Where the content of a [`RemoteSkillContent`] came from. Decides the
+/// provenance written in the same DB transaction as the directory swap.
+#[derive(Debug, Clone)]
+pub(crate) enum ContentSource {
+    GitHub(GitHubUpdateSource),
+    /// Portable bundle payload. `github` restores the provenance recorded in
+    /// the bundle; `None` leaves the skill on the unknown repository.
+    Bundle {
+        github: Option<BundleGitHubSource>,
+    },
+}
+
+#[derive(Debug, Clone)]
+pub(crate) struct BundleGitHubSource {
+    pub(crate) owner: String,
+    pub(crate) repo: String,
+    /// `None` lets the update center resolve the default branch on check.
+    pub(crate) branch: Option<String>,
+    pub(crate) source_path: String,
+}
+
 #[derive(Debug, Clone)]
 pub(crate) struct RemoteSkillContent {
-    pub(crate) source: GitHubUpdateSource,
-    pub(crate) candidate: RemoteSkillCandidate,
+    pub(crate) source: ContentSource,
+    pub(crate) skill_name: String,
+    pub(crate) description: Option<String>,
     pub(crate) files: Vec<RemoteSkillFile>,
     pub(crate) remote_hash: String,
     pub(crate) local_hash: String,

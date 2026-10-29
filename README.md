@@ -27,6 +27,7 @@
 - Marketplace browsing and GitHub repository import with authenticated requests and retry fallback.
 - Fast search for large skill libraries with deferred queries, lazy indexing, and virtualization.
 - Light Glass interface: translucent panels on a mint-to-lavender canvas, with Glass Light and Glass Dark themes, a sans-serif (Geist) body font, and the Windows 11 Mica window material (opaque fallback on Windows 10).
+- Portable `.skillport` bundles: export the full Central library (skill files, tags, tag groups, saved views, and source registries) to one file and import it on another installation or target. Import previews every skill first, skips identical content automatically, and asks before overwriting changed skills (with a backup). Credentials are never included. Legacy JSON state exports are no longer accepted.
 - Bilingual UI, onboarding, and responsive navigation.
 - **Central Library V2 (default)**: structured query syntax (`tag:`, `repo:`, `owner:`, `has:source`, etc.), URL-as-state, saved views, command palette (`Ctrl+K`), tag groups, group-by views (none / repository / owner / tag / status). Use the "Switch to classic layout" link in the Beta badge area, or set `featureFlag.central.newLayout=off` in DevTools localStorage, to fall back to the V1 layout.
 

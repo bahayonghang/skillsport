@@ -19,7 +19,7 @@ Affected IPC commands require camelCase `jobId: string`:
 | Family | Start commands | Cancel command |
 | --- | --- | --- |
 | Central update | `check_central_skill_updates`, `check_central_repository_sync`, `update_central_skills`, `apply_skill_update_decisions` | `cancel_central_skill_updates` |
-| Portability | `export_skillport_state`, `preview_skillport_state_import`, `preview_skillport_state_import_file`, `import_skillport_state` | `cancel_skillport_state_portability` |
+| Portable bundle | `export_portable_bundle`, `preview_portable_bundle_import`, `apply_portable_bundle_import` | `cancel_portable_bundle_job` |
 | Skills CLI global | `skills_cli_add_global`, `skills_cli_remove_global`, `skills_cli_link_platform`, `skills_cli_unlink_platform` | `cancel_skills_cli_job` |
 
 ## 3. Contracts
@@ -28,8 +28,8 @@ Affected IPC commands require camelCase `jobId: string`:
 - `AppState` owns one `ExclusiveJobRegistry` per family. A command acquires its family lease before its first `.await` and passes the lease's explicit ID and cancel flag into services.
 - A lease releases only its own ID through `Drop`. Success, error, cancellation, and unwind therefore share the same release path; an old lease cannot clear a successor.
 - With no active job, cancel remembers one bounded pending ID. Acquiring the same ID starts cancelled; acquiring a different ID discards the stale pending request.
-- Every `central://skill-update-progress` and `central://state-portability-progress` payload carries the lease's `jobId`, including started, running, cancelled, failed, and completed events.
-- A top-level command acquires exactly once. File-based portability preview reads the file and calls an established-job helper; it must not call the JSON preview command and reacquire.
+- Every `central://skill-update-progress` and `central://portable-bundle-progress` payload carries the lease's `jobId`, including started, running, cancelled, failed, and completed events.
+- A top-level command acquires exactly once; helpers it calls run under that lease and never reacquire.
 - Services never inspect registry state. AI tagging, inventory refresh `operationId`, force update/mirror, and snapshot registries retain their own lifecycles.
 
 ## 4. Validation & Error Matrix

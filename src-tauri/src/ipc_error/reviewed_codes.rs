@@ -107,9 +107,24 @@ pub const REVIEWED_IPC_ERROR_CODES: &[&str] = &[
     "marketplace.source_unsupported",
     "operation.cancelled",
     "permission.denied",
-    "portable_state.invalid_manifest_json",
-    "portable_state.unsupported_export_kind",
-    "portable_state.unsupported_export_version",
+    "portable_bundle.budget_exceeded",
+    "portable_bundle.decision_required",
+    "portable_bundle.integrity_mismatch",
+    "portable_bundle.internal",
+    "portable_bundle.invalid_path",
+    "portable_bundle.io",
+    "portable_bundle.legacy_v1",
+    "portable_bundle.manifest_encoding",
+    "portable_bundle.manifest_invalid",
+    "portable_bundle.manifest_missing",
+    "portable_bundle.not_a_bundle",
+    "portable_bundle.preview_expired",
+    "portable_bundle.preview_stale",
+    "portable_bundle.rename_invalid",
+    "portable_bundle.target_changed",
+    "portable_bundle.target_io",
+    "portable_bundle.unsafe_entry",
+    "portable_bundle.unsupported_version",
     "recovery.reconcile_guard_unavailable",
     "recovery.reconcile_preflight_blocked",
     "resource.conflict",
@@ -202,15 +217,24 @@ pub(super) fn direct_public_message(code: &str) -> Option<&'static str> {
         }
         "operation.cancelled" => Some("The operation was cancelled."),
         "permission.denied" => Some("Permission was denied."),
-        "portable_state.invalid_manifest_json" => {
-            Some("The SkillPort state file is not valid JSON.")
-        }
-        "portable_state.unsupported_export_kind" => {
-            Some("The SkillPort state export kind is not supported.")
-        }
-        "portable_state.unsupported_export_version" => {
-            Some("The SkillPort state export version is not supported.")
-        }
+        "portable_bundle.budget_exceeded" => Some("The bundle exceeds the portable bundle size limits."),
+        "portable_bundle.decision_required" => Some("Choose overwrite, skip, or rename for every conflicting skill."),
+        "portable_bundle.integrity_mismatch" => Some("The bundle is damaged: file contents do not match its manifest."),
+        "portable_bundle.internal" => Some("The portable bundle operation failed."),
+        "portable_bundle.invalid_path" => Some("Choose a file with the .skillport or .zip extension."),
+        "portable_bundle.io" => Some("The bundle file could not be read or written."),
+        "portable_bundle.legacy_v1" => Some("This is a legacy SkillPort state export. Upgrade SkillPort on the source machine and export again."),
+        "portable_bundle.manifest_encoding" => Some("The bundle manifest is not UTF-8 encoded."),
+        "portable_bundle.manifest_invalid" => Some("The bundle manifest is malformed."),
+        "portable_bundle.manifest_missing" => Some("The bundle has no manifest."),
+        "portable_bundle.not_a_bundle" => Some("The selected file is not a SkillPort bundle."),
+        "portable_bundle.preview_expired" => Some("The import preview expired. Select the bundle again."),
+        "portable_bundle.preview_stale" => Some("The bundle file changed after it was previewed. Select it again."),
+        "portable_bundle.rename_invalid" => Some("The new skill id is invalid or already in use."),
+        "portable_bundle.target_changed" => Some("The active target changed after the preview. Select the bundle again."),
+        "portable_bundle.target_io" => Some("Skill files on the active target could not be read or written."),
+        "portable_bundle.unsafe_entry" => Some("The bundle contains an unsafe or unsupported entry."),
+        "portable_bundle.unsupported_version" => Some("The bundle was created by a newer SkillPort version."),
         "resource.conflict" => Some("The requested resource conflicts with existing data."),
         "resource.not_found" => Some("The requested resource was not found."),
         "runtime.desktop_required" => Some("This operation requires the Tauri desktop runtime."),

@@ -13,7 +13,9 @@ use crate::services::central_updates::fs::{
     collect_remote_skill_files, ensure_remote_skill_manifest, hash_remote_files, CentralFs,
     StageWriteProgressReporter,
 };
-use crate::services::central_updates::types::{GitHubUpdateSource, RemoteSkillContent};
+use crate::services::central_updates::types::{
+    ContentSource, GitHubUpdateSource, RemoteSkillContent,
+};
 
 pub(crate) struct JournaledCentralContentUpsert<'a> {
     pub(crate) skill: Skill,
@@ -81,16 +83,7 @@ fn content_upsert_plan(
     local_hash: String,
     existing: Option<Skill>,
 ) -> Result<SkillUpdatePlan, CentralUpdatesError> {
-    let target_skill_id = input
-        .target_dir
-        .file_name()
-        .map(|name| name.to_string_lossy().replace('\\', "/"))
-        .unwrap_or_default();
-    if target_skill_id != input.skill.id {
-        return Err(CentralUpdatesError::Batch(
-            "Central content upsert target identity does not match the skill id.".to_string(),
-        ));
-    }
+    ensure_target_identity(&input.target_dir, &input.skill.id)?;
     let files = collect_remote_skill_files(input.snapshot, &input.candidate.source_path)?;
     ensure_remote_skill_manifest(&files)?;
     let remote_hash = hash_remote_files(input.snapshot, &files)?;
@@ -102,11 +95,12 @@ fn content_upsert_plan(
     }
     let source_path = input.candidate.source_path.clone();
     let remote = RemoteSkillContent {
-        source: GitHubUpdateSource {
+        source: ContentSource::GitHub(GitHubUpdateSource {
             repo: input.repo,
             source_path,
-        },
-        candidate: input.candidate,
+        }),
+        skill_name: input.candidate.skill_name,
+        description: input.candidate.description,
         files,
         remote_hash,
         local_hash,
@@ -120,6 +114,22 @@ fn content_upsert_plan(
         refresh_copies: false,
         first_upsert,
     })
+}
+
+pub(super) fn ensure_target_identity(
+    target_dir: &std::path::Path,
+    skill_id: &str,
+) -> Result<(), CentralUpdatesError> {
+    let target_skill_id = target_dir
+        .file_name()
+        .map(|name| name.to_string_lossy().replace('\\', "/"))
+        .unwrap_or_default();
+    if target_skill_id != skill_id {
+        return Err(CentralUpdatesError::Batch(
+            "Central content upsert target identity does not match the skill id.".to_string(),
+        ));
+    }
+    Ok(())
 }
 
 #[cfg(test)]

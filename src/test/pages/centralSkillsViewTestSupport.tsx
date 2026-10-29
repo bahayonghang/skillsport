@@ -557,9 +557,7 @@ export const mockBatchUninstallSkillsFromAgent = vi.fn();
 export const mockPreviewGitHubRepoImport = vi.fn();
 export const mockImportGitHubRepoSkills = vi.fn();
 export const mockResetGitHubImport = vi.fn();
-export const mockExportSkillportState = vi.fn();
-export const mockPreviewSkillportStateImport = vi.fn();
-export const mockImportSkillportState = vi.fn();
+export const mockLoadPortabilityExportSummary = vi.fn();
 export const mockRefreshInstallations = vi.fn();
 export const mockUseCentralSkillsStore = vi.mocked(useCentralSkillsStore);
 export const mockUsePlatformStore = vi.mocked(usePlatformStore);
@@ -609,6 +607,22 @@ export function buildCentralStoreState(overrides = {}) {
       skipped: 0,
       items: {},
     },
+    portabilityJob: {
+      jobId: null,
+      kind: null,
+      phase: null,
+      status: "idle",
+      total: 0,
+      completed: 0,
+    },
+    portability: {
+      exportSummary: null,
+      lastExport: null,
+      preview: null,
+      previewPath: null,
+      decisions: {},
+      lastResult: null,
+    },
     aiTaggingAvailable: true,
     isLoading: false,
     isRefreshingList: false,
@@ -647,9 +661,8 @@ export function buildCentralStoreState(overrides = {}) {
     skipAiTagReview: mockSkipAiTagReview,
     subscribeAiTagProgress: mockSubscribeAiTagProgress.mockResolvedValue(() => {}),
     subscribeUpdateProgress: mockSubscribeUpdateProgress.mockResolvedValue(() => {}),
-    exportSkillportState: mockExportSkillportState,
-    previewSkillportStateImport: mockPreviewSkillportStateImport,
-    importSkillportState: mockImportSkillportState,
+    loadPortabilityExportSummary: mockLoadPortabilityExportSummary,
+    resetPortabilityDialog: vi.fn(),
     ...overrides,
   };
 }
@@ -832,17 +845,7 @@ export function resetCentralSkillsViewTestState() {
     symlinkFailures: [],
     completedAt: "2026-05-24T00:00:00Z",
   });
-  mockExportSkillportState.mockResolvedValue(
-    JSON.stringify({
-      kind: "skillport/state-export",
-      version: 1,
-      exportedAt: "2026-04-25T00:00:00Z",
-      exportedFrom: { app: "SkillPort" },
-      githubSources: [],
-      centralSkills: [],
-      unrestorableSkills: [],
-    })
-  );
+  mockLoadPortabilityExportSummary.mockResolvedValue(null);
 }
 
 export function cleanupCentralSkillsViewTestState() {

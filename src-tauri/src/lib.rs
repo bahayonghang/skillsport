@@ -61,7 +61,7 @@ pub struct AppState {
     /// and update commands. This lets "check, then update" reuse the archive
     /// that was just downloaded without copying credentials into target DBs.
     pub central_update_snapshots: CentralUpdateSnapshotCache,
-    pub portable_state_jobs: services::exclusive_job::ExclusiveJobRegistry,
+    pub portable_bundle_jobs: services::exclusive_job::ExclusiveJobRegistry,
     /// Skills CLI global add/remove family: exclusive within itself for
     /// cancel/progress only; filesystem mutual exclusion comes from the
     /// Local target mutation guard.
@@ -241,7 +241,7 @@ async fn install_ready_state(
             "A Central update job is already running.",
         ),
         central_update_snapshots: CentralUpdateSnapshotCache::default(),
-        portable_state_jobs: services::exclusive_job::ExclusiveJobRegistry::new(
+        portable_bundle_jobs: services::exclusive_job::ExclusiveJobRegistry::new(
             "job.portability_busy",
             "A portability job is already running.",
         ),
@@ -474,7 +474,7 @@ mod tests {
     fn app_state_does_not_restore_shared_update_or_portability_cancel_flags() {
         let source = include_str!("lib.rs");
         let central_field = ["pub central_update_", "cancel:"].concat();
-        let portability_field = ["pub portable_state_", "cancel:"].concat();
+        let portability_field = ["pub portable_bundle_", "cancel:"].concat();
         assert!(!source.contains(&central_field));
         assert!(!source.contains(&portability_field));
     }

@@ -84,29 +84,6 @@ pub(crate) async fn fetch_repo_skill_candidates_from_source(
     build_repo_skill_candidates_from_snapshot_at_path(repo, &snapshot, source_path)
 }
 
-pub(crate) async fn inspect_github_repo_skills_with_auth(
-    repo_url: &str,
-    auth_token: Option<&str>,
-) -> Result<InspectedGitHubRepoSkills, GithubImportError> {
-    let resolved = resolve_repo_source(repo_url, auth_token).await?;
-    inspect_repo_skill_candidates_from_source(
-        &resolved.repo,
-        resolved.source_path.as_deref(),
-        auth_token,
-    )
-    .await
-}
-
-pub(crate) async fn inspect_repo_skill_candidates_from_source(
-    repo: &GitHubRepoRef,
-    source_path: Option<&str>,
-    auth_token: Option<&str>,
-) -> Result<InspectedGitHubRepoSkills, GithubImportError> {
-    let client = github_client()?;
-    let snapshot = download_repo_snapshot(&client, repo, auth_token).await?;
-    inspect_repo_skill_candidates_from_snapshot_at_path(repo, &snapshot, source_path)
-}
-
 #[cfg(test)]
 pub(super) fn build_repo_skill_candidates_from_snapshot(
     repo: &GitHubRepoRef,

@@ -5,8 +5,8 @@ import {
   CentralSkillUpdateJob,
   CentralSkillUpdateProgressPayload,
   CentralSkillUpdateState,
-  SkillportStatePortabilityJob,
-  SkillportStatePortabilityProgressPayload,
+  PortableBundleJob,
+  PortableBundleProgressPayload,
   SkillRepositoryWithStats,
   SkillTag,
   SkillTagSuggestionResult,
@@ -18,10 +18,11 @@ import {
   getPlatformSkillDir,
   getPlatformSkillFilePath,
 } from "@/lib/platformPathPolicy";
+import type { PortabilityState } from "./centralSkillsStore.types";
 
 export const AI_TAG_PROGRESS_EVENT = "central://ai-tag-progress";
 export const CENTRAL_UPDATE_PROGRESS_EVENT = "central://skill-update-progress";
-export const PORTABILITY_PROGRESS_EVENT = "central://state-portability-progress";
+export const PORTABILITY_PROGRESS_EVENT = "central://portable-bundle-progress";
 
 const BROWSER_UNKNOWN_REPOSITORY: SkillRepositoryWithStats = {
   id: "local-unknown",
@@ -178,13 +179,29 @@ export function createIdleUpdateJob(): CentralSkillUpdateJob {
   };
 }
 
-export function createIdlePortabilityJob(): SkillportStatePortabilityJob {
+export function createIdlePortabilityJob(): PortableBundleJob {
   return {
     jobId: null,
+    kind: null,
     phase: null,
     status: "idle",
     total: 0,
     completed: 0,
+  };
+}
+
+export function isTerminalPortabilityStatus(status: PortableBundleJob["status"]): boolean {
+  return status === "completed" || status === "failed" || status === "cancelled";
+}
+
+export function createIdlePortabilityState(): PortabilityState {
+  return {
+    exportSummary: null,
+    lastExport: null,
+    preview: null,
+    previewPath: null,
+    decisions: {},
+    lastResult: null,
   };
 }
 
@@ -318,22 +335,20 @@ export function mergeUpdateProgress(
 }
 
 export function mergePortabilityProgress(
-  current: SkillportStatePortabilityJob,
-  payload: SkillportStatePortabilityProgressPayload
-): SkillportStatePortabilityJob {
+  current: PortableBundleJob,
+  payload: PortableBundleProgressPayload
+): PortableBundleJob {
   if (payload.jobId !== current.jobId) {
     return current;
   }
+  // A late running event must not resurrect a job that already settled.
+  if (isTerminalPortabilityStatus(current.status) && payload.status === "running") {
+    return current;
+  }
   const status =
-    payload.status === "completed"
-      ? "completed"
-      : payload.status === "cancelled"
-        ? "cancelled"
-        : payload.status === "failed"
-          ? "failed"
-          : current.status === "cancelling"
-            ? "cancelling"
-            : "running";
+    payload.status === "running" && current.status === "cancelling"
+      ? "cancelling"
+      : payload.status;
 
   return {
     ...current,
@@ -341,9 +356,7 @@ export function mergePortabilityProgress(
     status,
     total: payload.total,
     completed: payload.completed,
-    message: payload.message ?? current.message,
     currentItem: payload.currentItem ?? current.currentItem,
-    error: status === "completed" ? undefined : payload.error ?? current.error,
   };
 }
 
@@ -402,6 +415,7 @@ export function createCentralBrowserFixtureState() {
     aiTagReviews: [],
     updateStatuses: {},
     portabilityJob: createIdlePortabilityJob(),
+    portability: createIdlePortabilityState(),
     aiTaggingAvailable: false,
     isLoading: false,
     hasLoaded: true,
@@ -421,6 +435,7 @@ export function createCentralSkillsInitialState() {
     updateStatuses: {},
     updateJob: createIdleUpdateJob(),
     portabilityJob: createIdlePortabilityJob(),
+    portability: createIdlePortabilityState(),
     aiTaggingAvailable: false,
     isLoading: false,
     hasLoaded: false,

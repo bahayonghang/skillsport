@@ -1,0 +1,30 @@
+{
+  "id": "central-state-portability-v2",
+  "name": "central-state-portability-v2",
+  "title": "重构 Central 状态导入导出（便携包 v2）",
+  "description": "",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P1",
+  "creator": "lyh",
+  "assignee": "lyh",
+  "createdAt": "2026-10-28",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "dev",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [
+    "10-28-portable-bundle-core",
+    "10-28-portable-bundle-import",
+    "10-28-portable-bundle-ui"
+  ],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}

@@ -53,7 +53,8 @@ import type {
   CentralSkillUpdateJob,
   SkillRepositoryWithStats,
   SkillTag,
-  SkillportStatePortabilityJob,
+  PortableBundleJob,
+  TargetSummary,
 } from "@/types";
 
 /**
@@ -70,7 +71,10 @@ type ListContentProps = Omit<
   "t" | "selectedCount"
 >;
 type CategorizePanelProps = Omit<CentralSkillCategorizePanelProps, "t">;
-type DialogProps = Omit<ComponentProps<typeof CentralSkillDialogs>, "t">;
+type DialogProps = Omit<ComponentProps<typeof CentralSkillDialogs>, "t"> & {
+  activeTarget: TargetSummary;
+  loadCentralSkills: (options?: { throwOnError?: boolean }) => Promise<void>;
+};
 type InstalledSkillsFilterProps = Omit<
   CentralInstalledSkillsQuickFilterProps,
   "t"
@@ -146,7 +150,7 @@ export interface CentralSkillsShellProps {
     onOpenChange: (open: boolean) => void;
     aiTagJob: AiTagJob;
     updateJob: CentralSkillUpdateJob;
-    portabilityJob: SkillportStatePortabilityJob;
+    portabilityJob: PortableBundleJob;
     onCancelAiTag: () => void;
     onCancelUpdate: () => void;
     onCancelPortability: () => void;

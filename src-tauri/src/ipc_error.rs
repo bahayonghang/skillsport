@@ -87,31 +87,8 @@ impl IpcError {
         }
 
         let lower = trimmed.to_ascii_lowercase();
-        if lower == "skillport state portability cancelled"
-            || lower == "central update was cancelled."
-        {
+        if lower == "central update was cancelled." {
             return Self::new("operation.cancelled", "The operation was cancelled.", false);
-        }
-        if lower.starts_with("invalid skillport state json:") {
-            return Self::new(
-                "portable_state.invalid_manifest_json",
-                "The SkillPort state file is not valid JSON.",
-                false,
-            );
-        }
-        if lower == "unsupported skillport state export kind" {
-            return Self::new(
-                "portable_state.unsupported_export_kind",
-                "The SkillPort state export kind is not supported.",
-                false,
-            );
-        }
-        if lower.starts_with("unsupported skillport state export version:") {
-            return Self::new(
-                "portable_state.unsupported_export_version",
-                "The SkillPort state export version is not supported.",
-                false,
-            );
         }
         if lower.starts_with("github api access was denied while ")
             && lower.contains("rate limit was exceeded")

@@ -54,7 +54,7 @@ export function CentralSkillsView() {
     subscribeAiTagProgress,
     subscribeUpdateProgress,
     subscribePortabilityProgress,
-    cancelSkillportStatePortability,
+    cancelPortabilityJob,
     isMetadataUpdating,
     isSuggestingTags,
     isCheckingUpdates,
@@ -66,9 +66,6 @@ export function CentralSkillsView() {
     availableInstallAgents,
     githubImport,
     resetGitHubImport,
-    exportSkillportState, saveSkillportStateExport,
-    previewSkillportStateImport, previewSkillportStateImportFile,
-    importSkillportState,
     setRepositoryPinned,
     previewCentralStoreLocationChange,
     applyCentralStoreLocationChange,
@@ -296,7 +293,6 @@ export function CentralSkillsView() {
     githubImport,
     githubBranch: actionBindings.githubBranch,
     githubRepoUrl: actionBindings.githubRepoUrl,
-    importSkillportState,
     installTargetSkill: actionBindings.installTargetSkill,
     installableImportedSkills: actionBindings.installableImportedSkills,
     isBatchDeleteDialogOpen: actionBindings.isBatchDeleteDialogOpen,
@@ -327,7 +323,6 @@ export function CentralSkillsView() {
     isUpdateConfirmDialogOpen: actionBindings.isUpdateConfirmDialogOpen,
     loadCentralSkills,
     pendingUpdateStates: actionBindings.pendingUpdateStates,
-    previewSkillportStateImport, previewSkillportStateImportFile,
     remoteMissingError: actionBindings.remoteMissingError,
     remoteMissingPreview: actionBindings.remoteMissingPreview,
     remoteMissingStates: actionBindings.remoteMissingStates,
@@ -349,9 +344,6 @@ export function CentralSkillsView() {
     setIsGitHubImportOpen: actionBindings.setIsGitHubImportOpen,
     setIsPlatformManageOpen: actionBindings.setIsPlatformManageOpen,
     setIsPortabilityOpen: actionBindings.setIsPortabilityOpen,
-    exportSkillportState, saveSkillportStateExport,
-    portabilityJob,
-    cancelSkillportStatePortability,
     platformManagement: actionBindings.platformManagement,
     onAfterImportSuccess: actionBindings.handleAfterImportSuccess,
     onBatchDeleteCentralSkills: actionBindings.handleBatchDeleteCentralSkills,
@@ -367,7 +359,6 @@ export function CentralSkillsView() {
     onInstall: actionBindings.handleInstall,
     onInstallFromDrawer: actionBindings.handleInstallClick,
     onInstallImportedSkill: actionBindings.handleInstallImportedSkill,
-    onRefreshCounts: refreshCounts,
     onConfirmUpdateSkills: actionBindings.handleConfirmUpdateSkills,
     onRemoteMissingDialogOpenChange:
       actionBindings.handleRemoteMissingDialogOpenChange,
@@ -404,7 +395,7 @@ export function CentralSkillsView() {
       void actionBindings.handleCancelCentralUpdates();
     },
     onCancelPortability: () => {
-      void cancelSkillportStatePortability();
+      void cancelPortabilityJob().catch(() => {});
     },
     onViewAiReviews: handleViewAiReviews,
   };

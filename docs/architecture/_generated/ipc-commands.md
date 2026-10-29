@@ -208,18 +208,18 @@ Source: `src-tauri/src/commands/obsidian.rs`
 | `import_obsidian_skill_to_platform` | operation | Obsidian | Filesystem | StartedThenTerminal | success + failure; conditional partial/cancel; typed target; reviewed code; safe fields | `dir_path: String`<br>`agent_id: String`<br>`method: Option<String>` | `crate::ipc_error::IpcResult<ObsidianImportResult>` | — |
 | `open_obsidian_path` | operation | Obsidian | Filesystem | TerminalOnly | success + failure; conditional partial/cancel; typed target; reviewed code; safe fields | `path: String` | `crate::ipc_error::IpcResult<()>` | — |
 
-## `commands::portable_state`
+## `commands::portable_bundle`
 
-Source: `src-tauri/src/commands/portable_state.rs`
+Source: `src-tauri/src/commands/portable_bundle.rs`
 
 | Command / action | Log policy | Category | Phase | Lifecycle / reason | Audit evidence | Inputs | Returns | Doc |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `cancel_skillport_state_portability` | operation | PortableState | Job | TerminalOnly | success + failure; conditional partial/cancel; typed target; reviewed code; safe fields | `job_id: String` | `crate::ipc_error::IpcResult<()>` | — |
-| `export_skillport_state` | operation | PortableState | Filesystem | StartedThenTerminal | success + failure; conditional partial/cancel; typed target; reviewed code; safe fields | `job_id: String` | `crate::ipc_error::IpcResult<String>` | — |
-| `import_skillport_state` | operation | PortableState | Filesystem | StartedThenTerminal | success + failure; conditional partial/cancel; typed target; reviewed code; safe fields | `job_id: String`<br>`json: String`<br>`resolutions: Vec<SkillportStateImportResolution>` | `crate::ipc_error::IpcResult<SkillportStateImportResult>` | — |
-| `preview_skillport_state_import` | runtime-only | — | — | Preview | safe backend rejection only | `job_id: String`<br>`json: String` | `crate::ipc_error::IpcResult<SkillportStateImportPreview>` | — |
-| `preview_skillport_state_import_file` | runtime-only | — | — | Preview | safe backend rejection only | `job_id: String`<br>`path: String` | `crate::ipc_error::IpcResult<SkillportStateImportFilePreview>` | — |
-| `save_skillport_state_export` | operation | PortableState | Filesystem | StartedThenTerminal | success + failure; conditional partial/cancel; typed target; reviewed code; safe fields | `path: String`<br>`json: String` | `crate::ipc_error::IpcResult<()>` | — |
+| `apply_portable_bundle_import` | operation | PortableState | Filesystem | StartedThenTerminal | success + failure; conditional partial/cancel; typed target; reviewed code; safe fields | `job_id: String`<br>`preview_token: String`<br>`decisions: Vec<PortableBundleDecision>` | `crate::ipc_error::IpcResult<PortableBundleImportResult>` | — |
+| `cancel_portable_bundle_job` | operation | PortableState | Job | TerminalOnly | success + failure; conditional partial/cancel; typed target; reviewed code; safe fields | `job_id: String` | `crate::ipc_error::IpcResult<()>` | — |
+| `discard_portable_bundle_preview` | runtime-only | — | — | Preview | safe backend rejection only | `preview_token: String` | `crate::ipc_error::IpcResult<()>` | — |
+| `export_portable_bundle` | operation | PortableState | Filesystem | StartedThenTerminal | success + failure; conditional partial/cancel; typed target; reviewed code; safe fields | `job_id: String`<br>`path: String` | `crate::ipc_error::IpcResult<PortableBundleExportResult>` | — |
+| `get_portable_bundle_export_summary` | runtime-only | — | — | ReadOnly | safe backend rejection only | — | `crate::ipc_error::IpcResult<PortableBundleExportSummary>` | — |
+| `preview_portable_bundle_import` | operation | PortableState | Filesystem | FailureOnly | failure only; typed target; reviewed code; safe fields | `job_id: String`<br>`path: String` | `crate::ipc_error::IpcResult<PortableBundleImportPreview>` | — |
 
 ## `commands::projects`
 

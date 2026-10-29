@@ -175,10 +175,19 @@ describe("centralSkillsStore", () => {
       },
       portabilityJob: {
         jobId: null,
+        kind: null,
         phase: null,
         status: "idle",
         total: 0,
         completed: 0,
+      },
+      portability: {
+        exportSummary: null,
+        lastExport: null,
+        preview: null,
+        previewPath: null,
+        decisions: {},
+        lastResult: null,
       },
       aiTaggingAvailable: false,
       isLoading: false,
@@ -2099,89 +2108,6 @@ describe("centralSkillsStore", () => {
     expect(state.updateJob.error).toBeUndefined();
   });
 
-  it("updates SkillPort portability job state from progress events", async () => {
-    useCentralSkillsStore.setState((state) => ({
-      portabilityJob: {
-        ...state.portabilityJob,
-        jobId: "portability-job",
-        status: "running",
-      },
-    }));
-    let handler: ((event: { payload: unknown }) => void) | undefined;
-    const unlisten = vi.fn();
-    vi.mocked(listen).mockImplementation(async (_event, callback) => {
-      handler = callback as (event: { payload: unknown }) => void;
-      return unlisten;
-    });
-
-    await useCentralSkillsStore.getState().subscribePortabilityProgress();
-    handler?.({
-      payload: {
-        jobId: "portability-job",
-        phase: "previewing",
-        status: "running",
-        total: 3,
-        completed: 1,
-        message: "Checking GitHub source catalogs",
-      },
-    });
-
-    let state = useCentralSkillsStore.getState();
-    expect(state.portabilityJob.status).toBe("running");
-    expect(state.portabilityJob.phase).toBe("previewing");
-    expect(state.portabilityJob.completed).toBe(1);
-    expect(state.portabilityJob.message).toBe("Checking GitHub source catalogs");
-
-    handler?.({
-      payload: {
-        jobId: "stale-portability-job",
-        phase: "previewing",
-        status: "failed",
-        total: 99,
-        completed: 99,
-        error: "stale",
-      },
-    });
-    state = useCentralSkillsStore.getState();
-    expect(state.portabilityJob.status).toBe("running");
-    expect(state.portabilityJob.error).toBeUndefined();
-
-    handler?.({
-      payload: {
-        jobId: "portability-job",
-        phase: "previewing",
-        status: "cancelled",
-        total: 3,
-        completed: 1,
-        error: "cancelled",
-      },
-    });
-
-    state = useCentralSkillsStore.getState();
-    expect(state.portabilityJob.status).toBe("cancelled");
-    expect(state.portabilityJob.error).toBe("cancelled");
-  });
-
-  it("cancels the active SkillPort portability job", async () => {
-    useCentralSkillsStore.setState({
-      portabilityJob: {
-        jobId: "active-portability-job",
-        phase: "importing",
-        status: "running",
-        total: 2,
-        completed: 1,
-      },
-    });
-    vi.mocked(invoke).mockResolvedValueOnce(undefined);
-
-    await useCentralSkillsStore.getState().cancelSkillportStatePortability();
-
-    expect(invoke).toHaveBeenCalledWith("cancel_skillport_state_portability", {
-      jobId: "active-portability-job",
-    });
-    expect(useCentralSkillsStore.getState().portabilityJob.status).toBe("cancelling");
-  });
-
   it("cancels only the active Central update job ID", async () => {
     useCentralSkillsStore.setState((state) => ({
       updateJob: {
@@ -2214,256 +2140,13 @@ describe("centralSkillsStore", () => {
       useCentralSkillsStore.getState().updateSkills(["frontend-design"]),
     ).rejects.toThrow("job.central_update_busy");
     await expect(
-      useCentralSkillsStore.getState().exportSkillportState(),
+      useCentralSkillsStore.getState().exportPortableBundle("C:/out.skillport"),
     ).rejects.toThrow("job.portability_busy");
     expect(invoke).not.toHaveBeenCalled();
     expect(useCentralSkillsStore.getState().updateJob.jobId).toBe("active-update");
     expect(useCentralSkillsStore.getState().portabilityJob.jobId).toBe(
       "active-portability",
     );
-  });
-
-  it("exports the SkillPort portable state manifest", async () => {
-    vi.mocked(invoke).mockResolvedValueOnce("{\"kind\":\"skillport/state-export\"}");
-
-    const json = await useCentralSkillsStore.getState().exportSkillportState();
-
-    expect(json).toBe("{\"kind\":\"skillport/state-export\"}");
-    expect(invoke).toHaveBeenCalledWith("export_skillport_state", {
-      jobId: expect.any(String),
-      options: {},
-    });
-  });
-
-  it("saves portable state through the backend file adapter", async () => {
-    vi.mocked(invoke).mockResolvedValueOnce(undefined);
-
-    await useCentralSkillsStore
-      .getState()
-      .saveSkillportStateExport("D:\\exports\\state.json", "{\"kind\":\"skillport/state-export\"}");
-
-    expect(invoke).toHaveBeenCalledWith("save_skillport_state_export", {
-      path: "D:\\exports\\state.json",
-      json: "{\"kind\":\"skillport/state-export\"}",
-    });
-  });
-
-  it("previews a SkillPort portable state import", async () => {
-    const preview = {
-      githubSources: [],
-      skills: [],
-      summary: {
-        sourcesToAdd: 0,
-        sourcesExisting: 0,
-        ready: 0,
-        conflicts: 0,
-        missing: 0,
-        unrestorable: 0,
-      },
-      warnings: [],
-    };
-    vi.mocked(invoke).mockResolvedValueOnce(preview);
-
-    const result = await useCentralSkillsStore.getState().previewSkillportStateImport("{}");
-
-    expect(result).toEqual(preview);
-    expect(invoke).toHaveBeenCalledWith("preview_skillport_state_import", {
-      jobId: expect.any(String),
-      json: "{}",
-    });
-  });
-
-  it("reads and previews a portable state file through one backend command", async () => {
-    const result = {
-      json: "{}",
-      preview: {
-        githubSources: [],
-        skills: [],
-        summary: {
-          sourcesToAdd: 0,
-          sourcesExisting: 0,
-          sourcesDuplicate: 0,
-          ready: 0,
-          conflicts: 0,
-          missing: 0,
-          unrestorable: 0,
-          duplicateSkipped: 0,
-        },
-        warnings: [],
-      },
-    };
-    vi.mocked(invoke).mockResolvedValueOnce(result);
-
-    await expect(
-      useCentralSkillsStore
-        .getState()
-        .previewSkillportStateImportFile("D:\\imports\\state.json"),
-    ).resolves.toEqual(result);
-    expect(invoke).toHaveBeenCalledWith("preview_skillport_state_import_file", {
-      jobId: expect.any(String),
-      path: "D:\\imports\\state.json",
-    });
-  });
-
-  it("imports SkillPort portable state and refreshes Central metadata", async () => {
-    const resolutions = [
-      {
-        skillId: "frontend-design",
-        sourcePath: "skills/frontend-design/SKILL.md",
-        resolution: "overwrite" as const,
-        renamedSkillId: null,
-      },
-    ];
-    const importResult = {
-      sourcesAdded: 1,
-      sourcesSkipped: 0,
-      importedSkills: [
-        {
-          sourcePath: "skills/frontend-design/SKILL.md",
-          importedSkillId: "frontend-design",
-          skillName: "frontend-design",
-        },
-      ],
-      skippedSkills: [],
-      failedSkills: [],
-      tagsRestored: 1,
-    };
-    vi.mocked(invoke)
-      .mockResolvedValueOnce(importResult)
-      .mockResolvedValueOnce(mockSkills)
-      .mockResolvedValueOnce(mockRepositories)
-      .mockResolvedValueOnce(mockTags)
-      .mockResolvedValueOnce(mockUpdateStates);
-
-    const result = await useCentralSkillsStore
-      .getState()
-      .importSkillportState("{\"kind\":\"skillport/state-export\"}", resolutions);
-
-    expect(result).toEqual(importResult);
-    expect(invoke).toHaveBeenNthCalledWith(1, "import_skillport_state", {
-      jobId: expect.any(String),
-      json: "{\"kind\":\"skillport/state-export\"}",
-      resolutions,
-    });
-    expect(useCentralSkillsStore.getState().skills).toEqual(mockSkills);
-    expect(useCentralSkillsStore.getState().repositories).toEqual(mockRepositories);
-    expect(useCentralSkillsStore.getState().tags).toEqual(mockTags);
-    expect(useCentralSkillsStore.getState().updateStatuses["frontend-design"]).toEqual(
-      mockUpdateStates[0]
-    );
-  });
-
-  it("marks portable state import failed when post-import refresh rejects", async () => {
-    const refreshError = ipcFixtureError(
-      "storage.unavailable",
-      "Central refresh unavailable.",
-    );
-    const importResult = {
-      sourcesAdded: 0,
-      sourcesSkipped: 0,
-      importedSkills: [],
-      skippedSkills: [],
-      failedSkills: [],
-      tagsRestored: 0,
-    };
-    vi.mocked(invoke)
-      .mockResolvedValueOnce(importResult)
-      .mockRejectedValueOnce(refreshError)
-      .mockResolvedValueOnce(mockRepositories)
-      .mockResolvedValueOnce(mockTags)
-      .mockResolvedValueOnce(mockUpdateStates);
-
-    const importPromise = useCentralSkillsStore
-      .getState()
-      .importSkillportState("{\"kind\":\"skillport/state-export\"}", []);
-    const jobId = useCentralSkillsStore.getState().portabilityJob.jobId;
-
-    await expect(importPromise).rejects.toThrow("Central refresh unavailable.");
-
-    const state = useCentralSkillsStore.getState();
-    expect(jobId).toEqual(expect.any(String));
-    expect(state.portabilityJob).toMatchObject({
-      jobId,
-      status: "failed",
-      error: "Central refresh unavailable.",
-    });
-    expect(["running", "cancelling"]).not.toContain(state.portabilityJob.status);
-  });
-
-  it("ignores stale portable state refresh completion after target reset", async () => {
-    let resolveSkills!: (skills: SkillWithLinks[]) => void;
-    const importResult = {
-      sourcesAdded: 0,
-      sourcesSkipped: 0,
-      importedSkills: [],
-      skippedSkills: [],
-      failedSkills: [],
-      tagsRestored: 0,
-    };
-    vi.mocked(invoke)
-      .mockResolvedValueOnce(importResult)
-      .mockReturnValueOnce(new Promise<SkillWithLinks[]>((resolve) => {
-        resolveSkills = resolve;
-      }))
-      .mockResolvedValueOnce(mockRepositories)
-      .mockResolvedValueOnce(mockTags)
-      .mockResolvedValueOnce(mockUpdateStates);
-
-    const importPromise = useCentralSkillsStore
-      .getState()
-      .importSkillportState("{\"kind\":\"skillport/state-export\"}", []);
-    await vi.waitFor(() => expect(invoke).toHaveBeenCalledTimes(5));
-
-    useCentralSkillsStore.getState().resetForTargetChange();
-    useCentralSkillsStore.setState({ skills: [mockSkills[1]] });
-    resolveSkills(mockSkills);
-
-    await expect(importPromise).resolves.toEqual(importResult);
-    const state = useCentralSkillsStore.getState();
-    expect(state.skills).toEqual([mockSkills[1]]);
-    expect(state.repositories).toEqual([]);
-    expect(state.tags).toEqual([]);
-    expect(state.updateStatuses).toEqual({});
-    expect(state.portabilityJob).toMatchObject({ jobId: null, status: "idle" });
-  });
-
-  it("ignores stale portable state refresh error after target reset", async () => {
-    let rejectSkills!: (error: unknown) => void;
-    const refreshError = ipcFixtureError(
-      "storage.unavailable",
-      "Stale Central refresh unavailable.",
-    );
-    const importResult = {
-      sourcesAdded: 0,
-      sourcesSkipped: 0,
-      importedSkills: [],
-      skippedSkills: [],
-      failedSkills: [],
-      tagsRestored: 0,
-    };
-    vi.mocked(invoke)
-      .mockResolvedValueOnce(importResult)
-      .mockReturnValueOnce(new Promise<SkillWithLinks[]>((_resolve, reject) => {
-        rejectSkills = reject;
-      }))
-      .mockResolvedValueOnce(mockRepositories)
-      .mockResolvedValueOnce(mockTags)
-      .mockResolvedValueOnce(mockUpdateStates);
-
-    const importPromise = useCentralSkillsStore
-      .getState()
-      .importSkillportState("{\"kind\":\"skillport/state-export\"}", []);
-    await vi.waitFor(() => expect(invoke).toHaveBeenCalledTimes(5));
-
-    useCentralSkillsStore.getState().resetForTargetChange();
-    useCentralSkillsStore.setState({ skills: [mockSkills[1]] });
-    rejectSkills(refreshError);
-
-    await expect(importPromise).rejects.toThrow("Stale Central refresh unavailable.");
-    const state = useCentralSkillsStore.getState();
-    expect(state.skills).toEqual([mockSkills[1]]);
-    expect(state.error).toBeNull();
-    expect(state.portabilityJob).toMatchObject({ jobId: null, status: "idle" });
   });
 
   it("cancels the active AI tag job", async () => {

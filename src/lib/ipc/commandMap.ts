@@ -27,6 +27,11 @@ import type {
   OperationLogFilter,
   OperationLogPage,
   PendingFsDbOperation,
+  PortableBundleDecision,
+  PortableBundleExportResult,
+  PortableBundleExportSummary,
+  PortableBundleImportPreview,
+  PortableBundleImportResult,
   PreparedDeleteReconciliationPreview,
   LocalArchiveImportResolution,
   LocalArchiveImportResult,
@@ -42,9 +47,6 @@ import type {
   SkillCountsSummary,
   SkillDetail,
   SkillDetailRequest,
-  SkillportStateImportPreview,
-  SkillportStateImportResolution,
-  SkillportStateImportResult,
   SkillWithLinks,
   SshTargetTestResult,
   StartupStatus,
@@ -171,23 +173,28 @@ export const HANDWRITTEN_IPC_COMMANDS = {
     AgentWithStatus
   >(),
   remove_custom_agent: command<{ agentId: string }, void>(),
-  preview_skillport_state_import_file: command<
+  get_portable_bundle_export_summary: command<
+    undefined,
+    PortableBundleExportSummary
+  >(),
+  export_portable_bundle: command<
     { jobId: string; path: string },
-    { json: string; preview: SkillportStateImportPreview }
+    PortableBundleExportResult
   >(),
-  export_skillport_state: command<
-    { jobId: string; options: Record<string, never> },
-    string
+  preview_portable_bundle_import: command<
+    { jobId: string; path: string },
+    PortableBundleImportPreview
   >(),
-  preview_skillport_state_import: command<
-    { jobId: string; json: string },
-    SkillportStateImportPreview
+  apply_portable_bundle_import: command<
+    {
+      jobId: string;
+      previewToken: string;
+      decisions: PortableBundleDecision[];
+    },
+    PortableBundleImportResult
   >(),
-  import_skillport_state: command<
-    { jobId: string; json: string; resolutions: SkillportStateImportResolution[] },
-    SkillportStateImportResult
-  >(),
-  cancel_skillport_state_portability: command<{ jobId: string }, void>(),
+  discard_portable_bundle_preview: command<{ previewToken: string }, void>(),
+  cancel_portable_bundle_job: command<{ jobId: string }, void>(),
   check_central_skill_updates: command<
     { jobId: string; skillIds: string[] | null },
     CentralSkillUpdateState[]
@@ -205,7 +212,6 @@ export const HANDWRITTEN_IPC_COMMANDS = {
     { jobId: string; decisions: SkillUpdateDecisions },
     SkillUpdateApplyResult
   >(),
-  save_skillport_state_export: command<{ path: string; json: string }, void>(),
   // ── platform skills ───────────────────────────────────────────────────────
   get_skills_by_agent: command<{ agentId: string }, ScannedSkill[]>(),
   get_central_skills: command<undefined, SkillWithLinks[]>(),

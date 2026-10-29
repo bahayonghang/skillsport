@@ -3,6 +3,7 @@ import { createCentralSkillsInitialState } from "./centralSkillsStore.shared";
 import { createCentralInstallSlice } from "./centralSkillsStore.installSlice";
 import { createCentralListSlice } from "./centralSkillsStore.listSlice";
 import { createCentralMetadataSlice } from "./centralSkillsStore.metadataSlice";
+import { createCentralPortabilitySlice } from "./centralSkillsStore.portabilitySlice";
 import { createCentralUpdateSlice } from "./centralSkillsStore.updateSlice";
 import type { CentralSkillsState, CentralStoreContext } from "./centralSkillsStore.types";
 
@@ -24,5 +25,6 @@ export const useCentralSkillsStore = create<CentralSkillsState>((set, get) => {
     ...createCentralInstallSlice(context),
     ...createCentralMetadataSlice(context),
     ...createCentralUpdateSlice(context),
+    ...createCentralPortabilitySlice(context),
   };
 });

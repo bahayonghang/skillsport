@@ -17,7 +17,7 @@ use super::super::fs::{
 };
 use super::super::snapshots::{repo_cache_key, snapshot_cache_ttl, SharedGitHubSnapshots};
 use super::super::types::{
-    normalized_github_source_path, unsupported_reason_code, GitHubUpdateSource,
+    normalized_github_source_path, unsupported_reason_code, ContentSource, GitHubUpdateSource,
     PreparedSkillUpdate, RemoteSkillContent, RemoteSkillLoadError, SkillUpdateStatus,
     UnsupportedSkillReasonCode,
 };
@@ -145,8 +145,9 @@ pub(crate) fn load_remote_skill_content(
     })?;
 
     Ok(Some(RemoteSkillContent {
-        source,
-        candidate,
+        source: ContentSource::GitHub(source),
+        skill_name: candidate.skill_name,
+        description: candidate.description,
         files,
         remote_hash,
         local_hash,
@@ -254,13 +255,33 @@ pub(crate) fn state_from_remote(
     } else {
         SkillUpdateStatus::UpdateAvailable
     };
+    let (source_type, source_url, ref_name, source_path) = match &remote.source {
+        ContentSource::GitHub(source) => (
+            "github",
+            Some(source.repo.normalized_url.clone()),
+            Some(source.repo.branch.clone()),
+            Some(source.source_path.clone()),
+        ),
+        ContentSource::Bundle {
+            github: Some(source),
+        } => (
+            "github",
+            Some(format!(
+                "https://github.com/{}/{}",
+                source.owner, source.repo
+            )),
+            source.branch.clone(),
+            Some(source.source_path.clone()),
+        ),
+        ContentSource::Bundle { github: None } => ("unknown", None, None, None),
+    };
 
     SkillUpdateState {
         skill_id: skill.id.clone(),
-        source_type: "github".to_string(),
-        source_url: Some(remote.source.repo.normalized_url.clone()),
-        ref_name: Some(remote.source.repo.branch.clone()),
-        source_path: Some(remote.source.source_path.clone()),
+        source_type: source_type.to_string(),
+        source_url,
+        ref_name,
+        source_path,
         last_remote_hash: Some(if updated {
             remote.remote_hash.clone()
         } else {

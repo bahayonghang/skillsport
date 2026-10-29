@@ -13,7 +13,7 @@ pub mod local_remote_sync;
 pub mod logs;
 pub mod marketplace;
 pub mod obsidian;
-pub mod portable_state;
+pub mod portable_bundle;
 pub mod projects;
 pub mod rules;
 pub mod saved_views;

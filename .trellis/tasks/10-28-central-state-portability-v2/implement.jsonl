@@ -1,0 +1,5 @@
+{"file": ".trellis/tasks/10-28-central-state-portability-v2/prd.md", "reason": "父任务需求与验收"}
+{"file": ".trellis/tasks/10-28-central-state-portability-v2/design.md", "reason": "共享格式/IPC/管线契约"}
+{"file": ".trellis/tasks/10-28-central-state-portability-v2/research/root-cause-analysis.md", "reason": "根因与现场证据"}
+{"file": ".trellis/spec/backend/index.md", "reason": "后端索引"}
+{"file": ".trellis/spec/frontend/index.md", "reason": "前端索引"}

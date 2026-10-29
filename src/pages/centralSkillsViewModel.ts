@@ -24,14 +24,11 @@ import type {
   AiTagJob,
   CentralSkillUpdateJob,
   CentralSkillUpdateState,
-  SkillportStatePortabilityJob,
+  PortableBundleJob,
   SkillAiTagReview,
   SkillRepositoryWithStats,
   SkillTag,
   SkillWithLinks,
-  SkillportStateImportPreview,
-  SkillportStateImportResolution,
-  SkillportStateImportResult,
 } from "@/types";
 
 export type CentralSortField = "name" | "createdAt" | "updatedAt" | "installedPlatformCount";
@@ -92,8 +89,9 @@ const IDLE_UPDATE_JOB: CentralSkillUpdateJob = {
   skipped: 0,
   items: {},
 };
-const IDLE_PORTABILITY_JOB: SkillportStatePortabilityJob = {
+const IDLE_PORTABILITY_JOB: PortableBundleJob = {
   jobId: null,
+  kind: null,
   phase: null,
   status: "idle",
   total: 0,
@@ -109,41 +107,6 @@ const EMPTY_GITHUB_IMPORT_STATE = {
 };
 
 async function noopAsync(): Promise<void> {}
-
-async function noopExportSkillportState(): Promise<string> {
-  return JSON.stringify(
-    {
-      kind: "skillport/state-export",
-      version: 1,
-      exportedAt: new Date().toISOString(),
-      exportedFrom: { app: "SkillPort" },
-      githubSources: [],
-      centralSkills: [],
-      unrestorableSkills: [],
-    },
-    null,
-    2
-  );
-}
-
-async function noopSaveSkillportStateExport(_path: string, _json: string): Promise<void> {}
-
-async function noopPreviewSkillportStateImport(_json: string): Promise<SkillportStateImportPreview> {
-  throw new Error("State import is unavailable");
-}
-
-async function noopPreviewSkillportStateImportFile(
-  _path: string
-): Promise<{ json: string; preview: SkillportStateImportPreview }> {
-  throw new Error("State import is unavailable");
-}
-
-async function noopImportSkillportState(
-  _json: string,
-  _resolutions: SkillportStateImportResolution[]
-): Promise<SkillportStateImportResult> {
-  throw new Error("State import is unavailable");
-}
 
 async function noopUnlisten() {
   return () => {};
@@ -211,9 +174,8 @@ export function useCentralSkillsStoreBindings(t: TFunction) {
       useCentralSkillsStore((state) => state.subscribeUpdateProgress) ?? noopUnlisten,
     subscribePortabilityProgress:
       useCentralSkillsStore((state) => state.subscribePortabilityProgress) ?? noopUnlisten,
-    cancelSkillportStatePortability:
-      useCentralSkillsStore((state) => state.cancelSkillportStatePortability) ??
-      noopCancelPortability,
+    cancelPortabilityJob:
+      useCentralSkillsStore((state) => state.cancelPortabilityJob) ?? noopCancelPortability,
     isMetadataUpdating: useCentralSkillsStore((state) => state.isMetadataUpdating) ?? false,
     isSuggestingTags: useCentralSkillsStore((state) => state.isSuggestingTags) ?? false,
     isCheckingUpdates: useCentralSkillsStore((state) => state.isCheckingUpdates) ?? false,
@@ -226,19 +188,6 @@ export function useCentralSkillsStoreBindings(t: TFunction) {
     githubImport: useMarketplaceStore((state) => state.githubImport) ?? EMPTY_GITHUB_IMPORT_STATE,
     resetGitHubImport:
       useMarketplaceStore((state) => state.resetGitHubImport) ?? noopResetGitHubImport,
-    exportSkillportState:
-      useCentralSkillsStore((state) => state.exportSkillportState) ?? noopExportSkillportState,
-    saveSkillportStateExport:
-      useCentralSkillsStore((state) => state.saveSkillportStateExport) ??
-      noopSaveSkillportStateExport,
-    previewSkillportStateImport:
-      useCentralSkillsStore((state) => state.previewSkillportStateImport) ??
-      noopPreviewSkillportStateImport,
-    previewSkillportStateImportFile:
-      useCentralSkillsStore((state) => state.previewSkillportStateImportFile) ??
-      noopPreviewSkillportStateImportFile,
-    importSkillportState:
-      useCentralSkillsStore((state) => state.importSkillportState) ?? noopImportSkillportState,
     setRepositoryPinned: useCentralSkillsStore((state) => state.setRepositoryPinned) ?? noopAsync,
     previewCentralStoreLocationChange:
       useCentralSkillsStore((state) => state.previewCentralStoreLocationChange) ?? noopAsync,

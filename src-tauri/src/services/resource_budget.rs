@@ -81,6 +81,21 @@ impl ResourceBudget {
         Self::default()
     }
 
+    /// Caps for SkillPort portable bundles (a whole Central library in one
+    /// classic ZIP). Entry count and archive bytes stay below the classic
+    /// ZIP limits because ZIP64 is rejected by the shared inventory.
+    /// `file_bytes` equals the entry cap: inventory checks both per entry.
+    pub fn portable_bundle() -> Self {
+        Self {
+            archive_bytes: 1024 * 1024 * 1024,
+            archive_files: 60_000,
+            archive_expanded_bytes: 2 * 1024 * 1024 * 1024,
+            archive_entry_bytes: 64 * 1024 * 1024,
+            file_bytes: 64 * 1024 * 1024,
+            ..Self::default()
+        }
+    }
+
     pub fn reject_archive_size(self, size: u64) -> Result<(), BudgetExceeded> {
         reject_over_limit("GitHub repository archive", size, self.archive_bytes)
     }

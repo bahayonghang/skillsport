@@ -37,3 +37,4 @@
 - [Recoverable Desktop Startup Contract](./startup-recovery.md)
 - [Update Inventory Retry and Relocation Contract](./update-inventory-retry.md)
 - [Operation Observability And Correlation Contract](./operation-observability.md)
+- [Portable Bundle v2 Contract](./portable-bundle.md)

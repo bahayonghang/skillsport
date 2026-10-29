@@ -2,12 +2,10 @@ use std::collections::{HashMap, HashSet};
 use std::path::Path;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-use chrono::Utc;
 use tracing::Instrument;
 
 use crate::db::repos::fs_db_operations_repo;
 use crate::db::repos::installations_repo;
-use crate::db::repos::repositories_repo;
 use crate::db::{self, DbPool, Skill, SkillUpdateState};
 use crate::services::central_operation::OperationPhase;
 #[cfg(test)]
@@ -23,7 +21,12 @@ use crate::services::central_updates::types::{
     CentralUpdateFailurePhase, CentralUpdateItemError, RemoteSkillContent,
 };
 
+mod persist;
 mod recovery;
+
+#[cfg(test)]
+use persist::central_skill_persistence_paths;
+use persist::persist_updated_skill_in_transaction;
 
 use recovery::recover_selected_pending_update_operations;
 pub(crate) use recovery::{recover_pending_update_operation, recover_pending_update_operations};
@@ -632,63 +635,6 @@ async fn refresh_and_finalize_copies(
             }
         };
         results[update.index] = Some(result);
-    }
-}
-
-async fn persist_updated_skill_in_transaction(
-    transaction: &mut sqlx::Transaction<'_, sqlx::Sqlite>,
-    target_kind: crate::targets::TargetKind,
-    skill: &Skill,
-    remote: &RemoteSkillContent,
-) -> Result<(), sqlx::Error> {
-    let (skill_md_path, canonical_path) =
-        central_skill_persistence_paths(target_kind, &remote.target_dir);
-    let updated_skill = Skill {
-        id: skill.id.clone(),
-        uid: skill.uid.clone(),
-        name: remote.candidate.skill_name.clone(),
-        description: remote.candidate.description.clone(),
-        file_path: skill_md_path,
-        canonical_path: Some(canonical_path),
-        is_central: true,
-        source: Some(format!(
-            "github:{}/{}",
-            remote.source.repo.owner, remote.source.repo.repo
-        )),
-        content: skill.content.clone(),
-        scanned_at: Utc::now().to_rfc3339(),
-        fs_created_at: None,
-        fs_updated_at: None,
-    };
-    repositories_repo::upsert_skill_with_github_repository_in_transaction(
-        transaction,
-        &updated_skill,
-        &remote.source.repo.owner,
-        &remote.source.repo.repo,
-        &remote.source.repo.branch,
-        &remote.source.repo.normalized_url,
-        &remote.source.source_path,
-        remote.resolved_commit_sha.as_deref(),
-        remote.content_digest.as_deref(),
-    )
-    .await?;
-    Ok(())
-}
-
-fn central_skill_persistence_paths(
-    target_kind: crate::targets::TargetKind,
-    target_dir: &Path,
-) -> (String, String) {
-    match target_kind {
-        crate::targets::TargetKind::Local => (
-            target_dir.join("SKILL.md").to_string_lossy().into_owned(),
-            target_dir.to_string_lossy().into_owned(),
-        ),
-        crate::targets::TargetKind::Ssh | crate::targets::TargetKind::Wsl => {
-            let canonical_path = target_dir.to_string_lossy().replace('\\', "/");
-            let file_path = crate::targets::remote_join(&canonical_path, "SKILL.md");
-            (file_path, canonical_path)
-        }
     }
 }
 
