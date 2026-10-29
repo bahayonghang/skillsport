@@ -1,8 +1,9 @@
 use super::commit_fault::{set_commit_outcome_fault, CommitOutcomeFault};
 use super::*;
 use crate::services::central_updates::fs::RemoteSkillFile;
-use crate::services::central_updates::types::GitHubUpdateSource;
-use crate::services::github_import::{GitHubRepoRef, RemoteSkillCandidate};
+use crate::services::central_updates::types::{ContentSource, GitHubUpdateSource};
+use crate::services::github_import::GitHubRepoRef;
+use chrono::Utc;
 
 fn update_plan(target_dir: std::path::PathBuf) -> SkillUpdatePlan {
     let skill_id = "db-fail";
@@ -22,7 +23,7 @@ fn update_plan(target_dir: std::path::PathBuf) -> SkillUpdatePlan {
             fs_updated_at: None,
         },
         remote: RemoteSkillContent {
-            source: GitHubUpdateSource {
+            source: ContentSource::GitHub(GitHubUpdateSource {
                 repo: GitHubRepoRef {
                     owner: "owner".to_string(),
                     repo: "repo".to_string(),
@@ -30,17 +31,9 @@ fn update_plan(target_dir: std::path::PathBuf) -> SkillUpdatePlan {
                     normalized_url: "https://github.com/owner/repo".to_string(),
                 },
                 source_path: "skills/db-fail".to_string(),
-            },
-            candidate: RemoteSkillCandidate {
-                source_path: "skills/db-fail".to_string(),
-                skill_id: skill_id.to_string(),
-                skill_name: "New".to_string(),
-                description: None,
-                plugin_name: None,
-                root_directory: "skills".to_string(),
-                skill_directory_name: skill_id.to_string(),
-                download_url: "https://github.com/owner/repo/archive/main.zip".to_string(),
-            },
+            }),
+            skill_name: "New".to_string(),
+            description: None,
             files: vec![RemoteSkillFile {
                 repo_path: "skills/db-fail/SKILL.md".to_string(),
                 relative_path: "SKILL.md".to_string(),
@@ -64,11 +57,10 @@ fn named_update_plan(skill_id: &str, target_dir: std::path::PathBuf) -> SkillUpd
     plan.skill.name = format!("Old {skill_id}");
     plan.skill.file_path = target_dir.join("SKILL.md").to_string_lossy().into_owned();
     plan.skill.canonical_path = Some(target_dir.to_string_lossy().into_owned());
-    plan.remote.source.source_path = format!("skills/{skill_id}");
-    plan.remote.candidate.source_path = format!("skills/{skill_id}");
-    plan.remote.candidate.skill_id = skill_id.to_string();
-    plan.remote.candidate.skill_name = format!("New {skill_id}");
-    plan.remote.candidate.skill_directory_name = skill_id.to_string();
+    if let ContentSource::GitHub(source) = &mut plan.remote.source {
+        source.source_path = format!("skills/{skill_id}");
+    }
+    plan.remote.skill_name = format!("New {skill_id}");
     plan.remote.target_dir = target_dir;
     plan.remote.files = vec![RemoteSkillFile {
         repo_path: format!("skills/{skill_id}/SKILL.md"),
@@ -478,7 +470,6 @@ async fn partial_local_stage_is_cleaned_and_journal_rolls_back() {
     let mut plan = update_plan(target.clone());
     plan.skill.id = "partial-stage".to_string();
     plan.skill.uid = "uid-partial-stage".to_string();
-    plan.remote.candidate.skill_id = "partial-stage".to_string();
     plan.remote.target_dir = target.clone();
     plan.remote.files = vec![
         RemoteSkillFile {
@@ -524,7 +515,6 @@ async fn cancellation_after_durable_staging_finishes_the_operation() {
     let mut plan = update_plan(target.clone());
     plan.skill.id = "cancel-after-stage".to_string();
     plan.skill.uid = "uid-cancel-after-stage".to_string();
-    plan.remote.candidate.skill_id = "cancel-after-stage".to_string();
     plan.remote.target_dir = target.clone();
     plan.remote.files = std::iter::once(RemoteSkillFile {
         repo_path: "skills/cancel-after-stage/SKILL.md".to_string(),

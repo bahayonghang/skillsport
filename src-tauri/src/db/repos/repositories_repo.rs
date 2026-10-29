@@ -431,7 +431,7 @@ pub async fn upsert_skill_with_github_repository(
         skill,
         owner,
         repo,
-        branch,
+        Some(branch),
         url,
         source_path,
         resolved_commit_sha,
@@ -447,7 +447,7 @@ pub(crate) async fn upsert_skill_with_github_repository_in_transaction(
     skill: &Skill,
     owner: &str,
     repo: &str,
-    branch: &str,
+    branch: Option<&str>,
     url: &str,
     source_path: &str,
     resolved_commit_sha: Option<&str>,
@@ -455,7 +455,7 @@ pub(crate) async fn upsert_skill_with_github_repository_in_transaction(
 ) -> Result<(), sqlx::Error> {
     upsert_skill_in_transaction(transaction, skill).await?;
 
-    let repository_id = github_repository_id(owner, repo, branch);
+    let repository_id = github_repository_id(owner, repo, branch.unwrap_or_default());
     let repository_name = format!("{owner}/{repo}");
     let now = now_rfc3339();
 

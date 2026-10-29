@@ -29,12 +29,13 @@ pub use types::{
 
 pub(crate) use core::{
     check_central_skill_updates_impl, get_central_skill_update_states_impl,
-    journaled_central_content_upsert, journaled_central_content_upsert_with_fs,
+    journaled_bundle_content_upsert, journaled_central_content_upsert,
+    journaled_central_content_upsert_with_fs,
     journaled_central_content_upsert_with_fs_and_progress, keep_remote_missing_central_skills_impl,
     load_remote_skill_content, prepare_skill_updates, recover_pending_update_operation,
     recover_pending_update_operations, state_from_relocated_source, state_from_remote,
-    update_central_skills_impl, update_skills_batch, JournaledCentralContentUpsert,
-    SkillUpdatePlan,
+    update_central_skills_impl, update_skills_batch, BundleContentUpsert,
+    JournaledCentralContentUpsert, SkillUpdatePlan,
 };
 pub(crate) use fs::{content_digest_of, normalize_repo_path, sha256_hex, CentralFs, SkillTreeFile};
 pub(crate) use repository_sync::{
@@ -45,4 +46,5 @@ pub(crate) use snapshots::{
     prepare_snapshots_for_repo_refs_with_policy, repo_cache_key, SnapshotProgressEvent,
     SnapshotProgressReporter, SnapshotProgressStatus,
 };
+pub(crate) use types::BundleGitHubSource;
 pub(crate) use types::{PreparedSkillUpdate, RemoteSkillLoadError, SnapshotCachePolicy};
