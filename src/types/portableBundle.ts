@@ -55,3 +55,82 @@ export interface PortableBundleProgressPayload {
   completed: number;
   currentItem?: string | null;
 }
+
+export type PortableBundleSkillStatus =
+  | "new"
+  | "identical"
+  | "changed"
+  | "exists_unmanaged"
+  | "invalid";
+
+export interface PortableBundleSkillPreview {
+  id: string;
+  name: string;
+  description?: string | null;
+  status: PortableBundleSkillStatus;
+  /** Stable reason code for `invalid` entries. */
+  invalidReason?: string | null;
+  hasGithubSource: boolean;
+  fileCount: number;
+  contentBytes: number;
+}
+
+export interface PortableBundleMetadataCounts {
+  add: number;
+  exists: number;
+  update: number;
+}
+
+export interface PortableBundleMetadataPreview {
+  registries: PortableBundleMetadataCounts;
+  tagGroups: PortableBundleMetadataCounts;
+  tags: PortableBundleMetadataCounts;
+  savedViews: PortableBundleMetadataCounts;
+}
+
+export interface PortableBundleImportPreview {
+  /** Opaque handle for apply/discard; bound to the active target. */
+  previewToken: string;
+  createdAt: string;
+  appVersion: string;
+  originTargetKind: string;
+  skills: PortableBundleSkillPreview[];
+  metadata: PortableBundleMetadataPreview;
+  bundleSkippedSkills: PortableBundleSkippedSkill[];
+}
+
+export type PortableBundleDecisionAction = "skip" | "overwrite" | "rename";
+
+export interface PortableBundleDecision {
+  skillId: string;
+  action: PortableBundleDecisionAction;
+  /** Required for `rename`. */
+  renameTo?: string | null;
+}
+
+export interface PortableBundleRenamedSkill {
+  from: string;
+  to: string;
+}
+
+export interface PortableBundleSkillIssue {
+  id: string;
+  /** Stable reason or error code, e.g. `identical`, `write_failed`. */
+  code: string;
+}
+
+export interface PortableBundleMetadataResult {
+  added: number;
+  updated: number;
+  unchanged: number;
+}
+
+export interface PortableBundleImportResult {
+  imported: string[];
+  overwritten: string[];
+  renamed: PortableBundleRenamedSkill[];
+  skipped: PortableBundleSkillIssue[];
+  failed: PortableBundleSkillIssue[];
+  metadata: PortableBundleMetadataResult;
+  cancelled: boolean;
+}

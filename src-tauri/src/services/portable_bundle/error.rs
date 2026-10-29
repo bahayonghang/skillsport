@@ -1,8 +1,9 @@
 //! Typed errors for portable bundle export and inspection.
 //!
-//! Display text may contain internal diagnostics (paths, serde messages) for
-//! runtime logs. The IPC boundary must use [`PortableBundleError::to_ipc_error`],
-//! which only returns a reviewed code and a fixed public sentence.
+//! Display text may contain internal diagnostics (paths, serde messages) and
+//! must not reach IPC, the Operation Log, or tracing. The IPC boundary uses
+//! [`PortableBundleError::to_ipc_error`] (reviewed code + fixed sentence);
+//! logs record only [`PortableBundleError::code`].
 
 use crate::ipc_error::IpcError;
 use crate::services::central_updates::CentralUpdatesError;
@@ -62,6 +63,21 @@ pub enum PortableBundleError {
     #[error("The portable bundle operation was cancelled")]
     Cancelled,
 
+    #[error("The bundle file changed after it was previewed")]
+    PreviewStale,
+
+    #[error("The bundle preview expired or was discarded")]
+    PreviewExpired,
+
+    #[error("The active target changed after the bundle was previewed")]
+    TargetChanged,
+
+    #[error("Skill '{0}' needs an explicit import decision")]
+    DecisionRequired(String),
+
+    #[error("Skill '{0}' cannot be renamed to the requested id")]
+    RenameInvalid(String),
+
     #[error("Failed to join {label} task: {message}")]
     TaskJoin {
         label: &'static str,
@@ -97,6 +113,11 @@ impl PortableBundleError {
             Self::Io { .. } | Self::Zip(_) => "portable_bundle.io",
             Self::Central(_) => "portable_bundle.target_io",
             Self::Cancelled => "operation.cancelled",
+            Self::PreviewStale => "portable_bundle.preview_stale",
+            Self::PreviewExpired => "portable_bundle.preview_expired",
+            Self::TargetChanged => "portable_bundle.target_changed",
+            Self::DecisionRequired(_) => "portable_bundle.decision_required",
+            Self::RenameInvalid(_) => "portable_bundle.rename_invalid",
             Self::Db(_) | Self::Json(_) | Self::TaskJoin { .. } => "portable_bundle.internal",
         }
     }

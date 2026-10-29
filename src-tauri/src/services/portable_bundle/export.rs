@@ -80,8 +80,12 @@ pub(crate) async fn export_bundle(
                     .push(skipped(&skill, "budget_exceeded"));
                 continue;
             }
-            Err(error @ CentralUpdatesError::Io { .. }) => {
-                tracing::warn!(skill_id = %skill.id, %error, "skipping unreadable skill during bundle export");
+            Err(CentralUpdatesError::Io { .. }) => {
+                // The IO error carries the target path; log only the reason.
+                tracing::warn!(
+                    reason = "read_failed",
+                    "skipping unreadable skill during bundle export"
+                );
                 result.skipped_skills.push(skipped(&skill, "read_failed"));
                 continue;
             }

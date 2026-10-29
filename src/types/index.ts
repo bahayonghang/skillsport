@@ -664,11 +664,22 @@ export interface SkillsShFileEntry {
 
 // ─── Portable Bundle Types ──────────────────────────────────────────────────
 export type {
+  PortableBundleDecision,
+  PortableBundleDecisionAction,
   PortableBundleExportResult,
   PortableBundleExportSummary,
+  PortableBundleImportPreview,
+  PortableBundleImportResult,
   PortableBundleJobStatus,
+  PortableBundleMetadataCounts,
+  PortableBundleMetadataPreview,
+  PortableBundleMetadataResult,
   PortableBundlePhase,
   PortableBundleProgressPayload,
+  PortableBundleRenamedSkill,
+  PortableBundleSkillIssue,
+  PortableBundleSkillPreview,
+  PortableBundleSkillStatus,
   PortableBundleSkipReason,
   PortableBundleSkippedSkill,
   PortableBundleTargetKind,

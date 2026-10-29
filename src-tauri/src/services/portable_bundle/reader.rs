@@ -7,10 +7,6 @@
 //! problems confined to one skill are reported in
 //! [`ParsedBundle::invalid_skills`] so the rest of the bundle stays usable.
 
-// The import preview/apply commands (task `portable-bundle-import`) are the
-// production callers; until they land only tests exercise the reader.
-#![cfg_attr(not(test), allow(dead_code))]
-
 use std::collections::{BTreeMap, HashMap, HashSet};
 use std::io::{Cursor, Read};
 use std::path::Path;

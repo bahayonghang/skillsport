@@ -27,8 +27,11 @@ import type {
   OperationLogFilter,
   OperationLogPage,
   PendingFsDbOperation,
+  PortableBundleDecision,
   PortableBundleExportResult,
   PortableBundleExportSummary,
+  PortableBundleImportPreview,
+  PortableBundleImportResult,
   PreparedDeleteReconciliationPreview,
   LocalArchiveImportResolution,
   LocalArchiveImportResult,
@@ -181,6 +184,19 @@ export const HANDWRITTEN_IPC_COMMANDS = {
     { jobId: string; path: string },
     PortableBundleExportResult
   >(),
+  preview_portable_bundle_import: command<
+    { jobId: string; path: string },
+    PortableBundleImportPreview
+  >(),
+  apply_portable_bundle_import: command<
+    {
+      jobId: string;
+      previewToken: string;
+      decisions: PortableBundleDecision[];
+    },
+    PortableBundleImportResult
+  >(),
+  discard_portable_bundle_preview: command<{ previewToken: string }, void>(),
   cancel_portable_bundle_job: command<{ jobId: string }, void>(),
   preview_skillport_state_import_file: command<
     { jobId: string; path: string },

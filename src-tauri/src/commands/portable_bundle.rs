@@ -1,8 +1,8 @@
 //! Tauri IPC shells for SkillPort portable bundles (format v2).
 //!
 //! Business logic lives in `crate::services::portable_bundle`. The renderer
-//! only passes a destination path and a job id; the manifest and skill bytes
-//! never cross the IPC boundary. Errors use the reviewed
+//! passes file paths, job ids, preview tokens, and per-skill decisions; skill
+//! bytes never cross the IPC boundary. Errors use the reviewed
 //! `portable_bundle.*` codes and never echo paths.
 
 use std::path::PathBuf;
@@ -16,8 +16,10 @@ use crate::observability::{
 };
 use crate::services::central_updates::CentralFs;
 use crate::services::portable_bundle::{
-    export_bundle, export_summary, BundleJob, PortableBundleError, PortableBundleExportResult,
-    PortableBundleExportSummary, PortableBundleJobStatus, PortableBundlePhase,
+    apply_import, export_bundle, export_summary, preview_cache, preview_import, BundleJob,
+    PortableBundleDecision, PortableBundleError, PortableBundleExportResult,
+    PortableBundleExportSummary, PortableBundleImportPreview, PortableBundleImportResult,
+    PortableBundleJobStatus, PortableBundlePhase,
 };
 use crate::targets::{ActiveTarget, TargetKind};
 use crate::AppState;
@@ -80,7 +82,7 @@ pub async fn get_portable_bundle_export_summary(
             export_summary(request_context.db(), kind)
                 .await
                 .map_err(|error| {
-                    tracing::warn!(code = error.code(), %error, "portable bundle summary failed");
+                    tracing::warn!(code = error.code(), "portable bundle summary failed");
                     error.to_ipc_error()
                 })
         }
@@ -146,18 +148,170 @@ pub async fn export_portable_bundle(
                     }
                     .await;
                     if let Err(error) = &result {
-                        tracing::warn!(code = error.code(), %error, "portable bundle export failed");
-                        let status = if matches!(error, PortableBundleError::Cancelled) {
-                            PortableBundleJobStatus::Cancelled
-                        } else {
-                            PortableBundleJobStatus::Failed
-                        };
-                        job.emit(PortableBundlePhase::Export, status, 0, 0, None);
+                        log_job_failure(job, PortableBundlePhase::Export, error);
                     }
                     result.map_err(|error| reviewed_failure(definition, error.to_ipc_error()))
                 },
             )
             .await
+        }
+        .await
+    )
+}
+
+fn log_job_failure(job: BundleJob<'_>, phase: PortableBundlePhase, error: &PortableBundleError) {
+    tracing::warn!(code = error.code(), "portable bundle job failed");
+    let status = if matches!(error, PortableBundleError::Cancelled) {
+        PortableBundleJobStatus::Cancelled
+    } else {
+        PortableBundleJobStatus::Failed
+    };
+    job.emit(phase, status, 0, 0, None);
+}
+
+#[tauri::command]
+pub async fn preview_portable_bundle_import(
+    app: AppHandle,
+    state: State<'_, AppState>,
+    job_id: String,
+    path: String,
+) -> crate::ipc_error::IpcResult<PortableBundleImportPreview> {
+    crate::ipc_boundary!(
+        "preview_portable_bundle_import",
+        async move {
+            let request_context = state
+                .resolve_target_context()
+                .await
+                .map_err(IpcError::from)?;
+            let active_target = request_context.target().clone();
+            let pool = request_context.db().clone();
+            let definition = operation_definition("preview_portable_bundle_import");
+            let lease = state
+                .portable_state_jobs
+                .acquire(&job_id)
+                .map_err(IpcError::from_display)?;
+            crate::observability::run_operation(
+                &state,
+                definition,
+                OperationContext::new(operation_target(&active_target)),
+                |preview: &PortableBundleImportPreview| {
+                    SafeOperationResult::succeeded("Previewed portable SkillPort bundle.")
+                        .count(SafeDetailKey::AffectedCount, preview.skills.len() as u64)
+                },
+                || async move {
+                    let job = BundleJob {
+                        job_id: lease.job_id(),
+                        app: Some(&app),
+                        cancel: Some(lease.cancel_flag()),
+                    };
+                    let result = async {
+                        let fs = CentralFs::from_active_target(active_target.clone()).await?;
+                        preview_import(
+                            &pool,
+                            &fs,
+                            active_target.id(),
+                            PathBuf::from(path),
+                            preview_cache(),
+                            job,
+                        )
+                        .await
+                    }
+                    .await;
+                    if let Err(error) = &result {
+                        log_job_failure(job, PortableBundlePhase::Inspect, error);
+                    }
+                    result.map_err(|error| reviewed_failure(definition, error.to_ipc_error()))
+                },
+            )
+            .await
+        }
+        .await
+    )
+}
+
+#[tauri::command]
+pub async fn apply_portable_bundle_import(
+    app: AppHandle,
+    state: State<'_, AppState>,
+    job_id: String,
+    preview_token: String,
+    decisions: Vec<PortableBundleDecision>,
+) -> crate::ipc_error::IpcResult<PortableBundleImportResult> {
+    crate::ipc_boundary!(
+        "apply_portable_bundle_import",
+        async move {
+            let request_context = state
+                .resolve_target_context()
+                .await
+                .map_err(IpcError::from)?;
+            let active_target = request_context.target().clone();
+            let pool = request_context.db().clone();
+            let definition = operation_definition("apply_portable_bundle_import");
+            let lease = state
+                .portable_state_jobs
+                .acquire(&job_id)
+                .map_err(IpcError::from_display)?;
+            crate::observability::run_operation(
+                &state,
+                definition,
+                OperationContext::new(operation_target(&active_target)),
+                |result: &PortableBundleImportResult| {
+                    let written =
+                        result.imported.len() + result.overwritten.len() + result.renamed.len();
+                    let base = if result.cancelled {
+                        SafeOperationResult::partial("Portable bundle import was cancelled.")
+                    } else if result.failed.is_empty() {
+                        SafeOperationResult::succeeded("Imported portable SkillPort bundle.")
+                    } else {
+                        SafeOperationResult::partial(
+                            "Imported portable SkillPort bundle with failed skills.",
+                        )
+                    };
+                    base.count(SafeDetailKey::SucceededCount, written as u64)
+                        .count(SafeDetailKey::SkippedCount, result.skipped.len() as u64)
+                        .count(SafeDetailKey::FailedCount, result.failed.len() as u64)
+                },
+                || async move {
+                    let job = BundleJob {
+                        job_id: lease.job_id(),
+                        app: Some(&app),
+                        cancel: Some(lease.cancel_flag()),
+                    };
+                    let result = async {
+                        let fs = CentralFs::from_active_target(active_target.clone()).await?;
+                        apply_import(
+                            &pool,
+                            &fs,
+                            active_target.id(),
+                            &preview_token,
+                            &decisions,
+                            preview_cache(),
+                            job,
+                        )
+                        .await
+                    }
+                    .await;
+                    if let Err(error) = &result {
+                        log_job_failure(job, PortableBundlePhase::Apply, error);
+                    }
+                    result.map_err(|error| reviewed_failure(definition, error.to_ipc_error()))
+                },
+            )
+            .await
+        }
+        .await
+    )
+}
+
+#[tauri::command]
+pub async fn discard_portable_bundle_preview(
+    preview_token: String,
+) -> crate::ipc_error::IpcResult<()> {
+    crate::ipc_boundary!(
+        "discard_portable_bundle_preview",
+        async move {
+            preview_cache().discard(&preview_token);
+            Ok::<(), IpcError>(())
         }
         .await
     )

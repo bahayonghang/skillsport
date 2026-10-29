@@ -43,13 +43,13 @@ src-tauri/src/commands/portable_bundle.rs   # 薄命令层：解析目标上下�
    远程大库的提速（批量脚本）留作后续优化。
 3. `zip` v9：`SimpleFileOptions` + `large_file(false)`，只写普通文件条目，不写目录条目；先写 payload，最后写 manifest
    （条目顺序不影响读取器）。
-4. **不引入 `serde_path_to_error`**：serde_json 的错误信息已包含字段名和行列号，这些只写入运行时日志。
+4. **不引入 `serde_path_to_error`**：改用专用错误码区分失败；serde 的字段/行列信息只留在错误的 `Display` 中，不写入任何日志（import 子任务据 redaction-policy 收紧）。
 
 ## 与父设计的偏差
 
 - 作业租约复用 `AppState.portable_state_jobs`（busy 码 `job.portability_busy`），不新增 AppState 字段：
   v1 与 v2 同属一个作业族，互斥是正确行为；UI 子任务删除 v1 时再改名。
-- `IpcError` 信封没有 `detail` 字段。为避免改动全局信封，各种失败用**专用错误码**区分；字段路径/行列只进运行时日志。
+- `IpcError` 信封没有 `detail` 字段。为避免改动全局信封，各种失败用**专用错误码**区分；字段路径/行列不对外、不入日志。
 - manifest 的 `origin` 只记录 `targetKind`：SSH/WSL 标签由用户命名，常常就是主机名。
 - `commitSha` 目前恒为 `null`：数据库没有保存 commit SHA（`skill_update_states` 只有内容哈希）。
 - 读取器在内存中处理整个包（上限 1 GiB），由共享 inventory 先做全部安全检查；按 skill 流式解压留给 import 子任务按需实现。
@@ -60,5 +60,5 @@ src-tauri/src/commands/portable_bundle.rs   # 薄命令层：解析目标上下�
 ## 错误到 IPC 的映射
 
 - 每个变体都有固定的 `code()`；`to_ipc_error()` 用 `IpcError::new(code, public_message_for_code(code))` 生成信封，
-  对外只暴露错误码与审定文案；`Display` 中的字段路径、行列、预算维度只进运行时日志。
+  对外只暴露错误码与审定文案；日志只记录错误码；`Display` 中的字段路径、行列、预算维度不写入任何日志。
 - 命令层不得使用 `.map_err(|e| e.to_string())`（这是 RC5 的直接成因）。

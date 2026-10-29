@@ -194,3 +194,116 @@ pub struct PortableBundleProgressPayload {
     pub completed: usize,
     pub current_item: Option<String>,
 }
+
+/// How one bundle skill relates to the active target.
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum PortableBundleSkillStatus {
+    /// No skill with this id exists on the target.
+    New,
+    /// A Central skill with this id has byte-identical content.
+    Identical,
+    /// A Central skill with this id has different content.
+    Changed,
+    /// The id is taken by a non-Central skill or an unregistered directory.
+    ExistsUnmanaged,
+    /// The bundle entry failed verification and cannot be imported.
+    Invalid,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct PortableBundleSkillPreview {
+    pub id: String,
+    pub name: String,
+    pub description: Option<String>,
+    pub status: PortableBundleSkillStatus,
+    /// Stable reason code for `invalid` entries.
+    pub invalid_reason: Option<String>,
+    pub has_github_source: bool,
+    pub file_count: usize,
+    pub content_bytes: u64,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct PortableBundleMetadataCounts {
+    pub add: usize,
+    pub exists: usize,
+    pub update: usize,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct PortableBundleMetadataPreview {
+    pub registries: PortableBundleMetadataCounts,
+    pub tag_groups: PortableBundleMetadataCounts,
+    pub tags: PortableBundleMetadataCounts,
+    pub saved_views: PortableBundleMetadataCounts,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct PortableBundleImportPreview {
+    /// Opaque handle for apply/discard; bound to the active target.
+    pub preview_token: String,
+    pub created_at: String,
+    pub app_version: String,
+    pub origin_target_kind: String,
+    pub skills: Vec<PortableBundleSkillPreview>,
+    pub metadata: PortableBundleMetadataPreview,
+    /// Skills the exporting side could not include.
+    pub bundle_skipped_skills: Vec<BundleSkippedSkill>,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "snake_case")]
+pub enum PortableBundleDecisionAction {
+    Skip,
+    Overwrite,
+    Rename,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct PortableBundleDecision {
+    pub skill_id: String,
+    pub action: PortableBundleDecisionAction,
+    /// Required for `rename`: the new Central skill id.
+    pub rename_to: Option<String>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct PortableBundleRenamedSkill {
+    pub from: String,
+    pub to: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase")]
+pub struct PortableBundleSkillIssue {
+    pub id: String,
+    /// Stable reason or error code; never a path or raw error text.
+    pub code: String,
+}
+
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct PortableBundleMetadataResult {
+    pub added: usize,
+    pub updated: usize,
+    pub unchanged: usize,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct PortableBundleImportResult {
+    pub imported: Vec<String>,
+    pub overwritten: Vec<String>,
+    pub renamed: Vec<PortableBundleRenamedSkill>,
+    pub skipped: Vec<PortableBundleSkillIssue>,
+    pub failed: Vec<PortableBundleSkillIssue>,
+    pub metadata: PortableBundleMetadataResult,
+    pub cancelled: bool,
+}
