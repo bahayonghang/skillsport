@@ -466,7 +466,7 @@ mod tests {
                 "A Central update job is already running.",
             ),
             central_update_snapshots: crate::CentralUpdateSnapshotCache::default(),
-            portable_state_jobs: crate::services::exclusive_job::ExclusiveJobRegistry::new(
+            portable_bundle_jobs: crate::services::exclusive_job::ExclusiveJobRegistry::new(
                 "job.portability_busy",
                 "A portability job is already running.",
             ),

@@ -51,7 +51,7 @@ src-tauri/src/
 | `obsidian.rs` | Obsidian vault 扫描 + 源模式导入 |
 | `github_import.rs` | 仓库预览 + 导入 + raw fetch |
 | `marketplace.rs` | 源 + 缓存 + AI 解释 |
-| `portable_state.rs` | SkillPort 状态导入导出 |
+| `portable_bundle.rs` | `.skillport` 便携包导出、导入预览与执行 |
 
 完整命令清单参见 [IPC 命令字典](./ipc-commands.md)。
 

@@ -25,7 +25,9 @@
 - 写入临时文件后原子 `persist`；未完成的写入器在 drop 时删除临时文件。目标扩展名限定为 `.skillport` / `.zip`。
 - 单个 skill 失败（`invalid_id`、`budget_exceeded`、本地 `read_failed`、`manifest_missing`）记入 `skippedSkills`，
   不中断导出；远程目标的 `Remote` 错误视为整体失败。
-- 作业复用 `portable_state_jobs`（busy 码 `job.portability_busy`），支持取消；进度事件按 100 ms 节流。
+- 作业使用 `AppState.portable_bundle_jobs`（busy 码 `job.portability_busy`），支持取消；进度事件按 100 ms 节流。
+- v1 JSON 状态导出（`skillport/state-export`）已删除：不再有对应命令，读取器把它识别为 `portable_bundle.legacy_v1`，
+  前端据此提示用户在导出端升级后重新导出。
 
 ## Read / Validate
 

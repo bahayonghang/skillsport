@@ -145,22 +145,6 @@ fn unknown_coded_family_fails_closed() {
 fn maps_only_narrow_behavior_compatibility_messages() {
     let cases = [
             (
-                "SkillPort state portability cancelled",
-                "operation.cancelled",
-            ),
-            (
-                "Invalid SkillPort state JSON: expected value",
-                "portable_state.invalid_manifest_json",
-            ),
-            (
-                "Unsupported SkillPort state export kind",
-                "portable_state.unsupported_export_kind",
-            ),
-            (
-                "Unsupported SkillPort state export version: 99",
-                "portable_state.unsupported_export_version",
-            ),
-            (
                 "GitHub denied access while reading the repository (HTTP 403).",
                 "github_import.access_denied",
             ),

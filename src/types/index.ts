@@ -264,7 +264,6 @@ export interface CentralBatchInstallResult {
   failed: CentralBatchInstallFailure[];
 }
 
-
 export type { BatchUninstallSkillRequest, BatchUninstallSkillResult } from "./platformBatch";
 
 export type {
@@ -686,26 +685,6 @@ export type {
   PortableBundleSkippedSkill,
   PortableBundleTargetKind,
 } from "./portableBundle";
-
-// ─── Portable State Types ───────────────────────────────────────────────────
-export type {
-  SkillportStateExportedTarget,
-  SkillportStateImportFailure,
-  SkillportStateImportPreview,
-  SkillportStateImportPreviewSummary,
-  SkillportStateImportResolution,
-  SkillportStateImportResolutionType,
-  SkillportStateImportResult,
-  SkillportStateImportedSkill,
-  SkillportStatePortabilityJob,
-  SkillportStatePortabilityJobStatus,
-  SkillportStatePortabilityPhase,
-  SkillportStatePortabilityProgressPayload,
-  SkillportStateSkillPreview,
-  SkillportStateSkillStatus,
-  SkillportStateSourcePreview,
-  SkillportStateSourceStatus,
-} from "./portableState";
 
 export type {
   DuplicateResolution,

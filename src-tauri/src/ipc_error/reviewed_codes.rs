@@ -125,9 +125,6 @@ pub const REVIEWED_IPC_ERROR_CODES: &[&str] = &[
     "portable_bundle.target_io",
     "portable_bundle.unsafe_entry",
     "portable_bundle.unsupported_version",
-    "portable_state.invalid_manifest_json",
-    "portable_state.unsupported_export_kind",
-    "portable_state.unsupported_export_version",
     "recovery.reconcile_guard_unavailable",
     "recovery.reconcile_preflight_blocked",
     "resource.conflict",
@@ -238,15 +235,6 @@ pub(super) fn direct_public_message(code: &str) -> Option<&'static str> {
         "portable_bundle.target_io" => Some("Skill files on the active target could not be read or written."),
         "portable_bundle.unsafe_entry" => Some("The bundle contains an unsafe or unsupported entry."),
         "portable_bundle.unsupported_version" => Some("The bundle was created by a newer SkillPort version."),
-        "portable_state.invalid_manifest_json" => {
-            Some("The SkillPort state file is not valid JSON.")
-        }
-        "portable_state.unsupported_export_kind" => {
-            Some("The SkillPort state export kind is not supported.")
-        }
-        "portable_state.unsupported_export_version" => {
-            Some("The SkillPort state export version is not supported.")
-        }
         "resource.conflict" => Some("The requested resource conflicts with existing data."),
         "resource.not_found" => Some("The requested resource was not found."),
         "runtime.desktop_required" => Some("This operation requires the Tauri desktop runtime."),

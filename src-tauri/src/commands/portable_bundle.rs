@@ -108,7 +108,7 @@ pub async fn export_portable_bundle(
             let pool = request_context.db().clone();
             let definition = operation_definition("export_portable_bundle");
             let lease = state
-                .portable_state_jobs
+                .portable_bundle_jobs
                 .acquire(&job_id)
                 .map_err(IpcError::from_display)?;
             crate::observability::run_operation(
@@ -187,7 +187,7 @@ pub async fn preview_portable_bundle_import(
             let pool = request_context.db().clone();
             let definition = operation_definition("preview_portable_bundle_import");
             let lease = state
-                .portable_state_jobs
+                .portable_bundle_jobs
                 .acquire(&job_id)
                 .map_err(IpcError::from_display)?;
             crate::observability::run_operation(
@@ -248,7 +248,7 @@ pub async fn apply_portable_bundle_import(
             let pool = request_context.db().clone();
             let definition = operation_definition("apply_portable_bundle_import");
             let lease = state
-                .portable_state_jobs
+                .portable_bundle_jobs
                 .acquire(&job_id)
                 .map_err(IpcError::from_display)?;
             crate::observability::run_operation(
@@ -335,7 +335,7 @@ pub async fn cancel_portable_bundle_job(
                         .flag(SafeDetailKey::Changed, *changed)
                 },
                 || async {
-                    state.portable_state_jobs.cancel(&job_id).map_err(|error| {
+                    state.portable_bundle_jobs.cancel(&job_id).map_err(|error| {
                         reviewed_failure(definition, IpcError::from_display(error))
                     })
                 },

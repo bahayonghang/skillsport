@@ -105,8 +105,8 @@ use snapshot_import::import_github_repo_skills_from_preview;
 pub(crate) use snapshot_import::import_github_repo_skills_from_preview_with_branch;
 pub(crate) use source::{
     build_repo_skill_candidates_from_snapshot_at_path, fetch_repo_skill_candidates_from_source,
-    inspect_github_repo_skills_with_auth, inspect_repo_skill_candidates_from_snapshot_at_path,
-    repo_file_relative_to_source, resolve_repo_source, resolve_repo_source_with_branch,
+    inspect_repo_skill_candidates_from_snapshot_at_path, repo_file_relative_to_source,
+    resolve_repo_source, resolve_repo_source_with_branch,
 };
 pub(crate) use source_parse::{github_repository_key_from_source, normalize_github_source_url};
 pub use types::{

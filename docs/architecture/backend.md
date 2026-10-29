@@ -51,7 +51,7 @@ Every `#[tauri::command]` lives under `src-tauri/src/commands/`. Files are domai
 | `obsidian.rs` | Obsidian vault scan + source-only import |
 | `github_import.rs` | Repo preview + import + raw fetch |
 | `marketplace.rs` | Registries + cache + AI explanation |
-| `portable_state.rs` | SkillPort state import / export |
+| `portable_bundle.rs` | Portable `.skillport` bundle export, import preview and apply |
 
 The complete handler list is generated automatically — see [IPC Commands](./ipc-commands.md).
 
