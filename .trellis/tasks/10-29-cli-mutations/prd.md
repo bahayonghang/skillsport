@@ -41,7 +41,8 @@
 - [ ] 每个需要 `--yes` 的命令，缺少 `--yes` 时都返回 `input.confirmation_required` 并附带计划。
 - [ ] ZIP 导入覆盖：成功、重复导入（没有 `--replace`）、`--replace`、指纹不一致、路径穿越被拒绝。
 - [ ] 目录导入覆盖：成功、缺少 `SKILL.md`、目录位于 Central 内被拒绝、符号链接按 scanner 的策略处理。
-- [ ] 桌面应用持有 Central 锁时，导入、卸载和项目安装都返回 `mutation.busy` / 退出码 4。
+- [ ] 桌面应用持有 Central 锁时，导入和 `skills unlink` 都返回 `mutation.busy` / 退出码 4。
+      `projects install/uninstall` 只读 Central、写项目目录，与对应 GUI 命令一样不获取 Central 锁（2026-10-30 决定）。
 - [ ] `tags add` 默认写入 `source = 'agent'`；随后执行 AI 重新打标签，`agent` 来源的链接仍然保留。
 - [ ] `notes set` 写入后，桌面应用的解释视图能读到这条说明，`model` 以 `agent:` 开头。
 - [ ] 现有命令的回归测试通过；`just ci` 通过。

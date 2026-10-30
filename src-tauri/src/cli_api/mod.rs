@@ -8,12 +8,20 @@ mod tags;
 pub use agents::CliAgent;
 pub use confirm::{ConfirmDecision, MutationOutput};
 pub use notes::{CliNote, NoteInput, NotePlan};
-pub use projects::{CliProject, CliProjectSkill};
-pub use skills::{CliExplanation, CliSkillDetail, CliSkillProject, CliSkillTag};
+pub use projects::{
+    CliProject, CliProjectSkill, ProjectAddPlan, ProjectAddResult, ProjectInstallFailure,
+    ProjectInstallPlan, ProjectInstallRequest, ProjectInstallResult, ProjectInstallSuccess,
+};
+pub use skills::{
+    CliExplanation, CliSkillDetail, CliSkillProject, CliSkillTag, UnlinkFailure, UnlinkPlan,
+    UnlinkResult,
+};
 pub use tags::{
     CliTag, CliTagGroup, TagAddRequest, TagCreatePlan, TagCreateResult, TagLinkPlan, TagLinkResult,
 };
 
+#[cfg(test)]
+mod install_mutation_tests;
 #[cfg(test)]
 mod mutation_tests;
 #[cfg(test)]
@@ -151,6 +159,13 @@ impl From<crate::services::projects::ProjectsError> for CliApiError {
         match &error {
             ProjectsError::ProjectNotFound(_) => {
                 Self::not_found(CliEntity::Project, error.to_string())
+            }
+            ProjectsError::ProjectPathEmpty
+            | ProjectsError::ProjectPathInvalid(_)
+            | ProjectsError::ProjectPathMissingOrNotDir(_) => Self::InvalidPath(error.to_string()),
+            ProjectsError::AgentNotFound(_) => Self::not_found(CliEntity::Agent, error.to_string()),
+            ProjectsError::SkillNotFoundInCentral(_) => {
+                Self::not_found(CliEntity::Skill, error.to_string())
             }
             _ => Self::Internal(error.to_string()),
         }

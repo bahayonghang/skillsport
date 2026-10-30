@@ -571,3 +571,55 @@ async fn notes_get_unknown_skill_is_not_found() {
     let error = context(pool).get_note("missing", "en").await.unwrap_err();
     assert_eq!(error.code(), "skill.not_found");
 }
+
+#[tokio::test]
+async fn tags_create_with_group_rolls_back_the_tag_when_group_assignment_fails() {
+    let (pool, _temp) = seeded().await;
+    let group = tag_groups_repo::create_tag_group(
+        &pool,
+        tag_groups_repo::NewTagGroup {
+            name: "Writing",
+            color: None,
+        },
+    )
+    .await
+    .unwrap();
+    sqlx::query(
+        "CREATE TRIGGER fail_tag_group_assignment BEFORE UPDATE OF group_id ON skill_tags
+         BEGIN SELECT RAISE(ABORT, 'injected group failure'); END",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    let cli = context(pool.clone());
+    let tags_before = count(&pool, "skill_tags").await;
+
+    let error = cli
+        .create_tag("Grouped", Some(&group.id), None, None, false)
+        .await
+        .unwrap_err();
+    assert_eq!(error.code(), "internal.error");
+    assert_eq!(count(&pool, "skill_tags").await, tags_before);
+    assert!(tags_repo::get_skill_tag_by_name(&pool, "Grouped")
+        .await
+        .unwrap()
+        .is_none());
+    let (_, action, status, _) = last_log(&pool).await;
+    assert_eq!(
+        (action.as_str(), status.as_str()),
+        ("create_skill_tag", "failed")
+    );
+
+    sqlx::query("DROP TRIGGER fail_tag_group_assignment")
+        .execute(&pool)
+        .await
+        .unwrap();
+    let created = cli
+        .create_tag("Grouped", Some(&group.id), None, None, false)
+        .await
+        .unwrap()
+        .result
+        .unwrap();
+    assert!(created.created);
+    assert_eq!(created.tag.group.unwrap().id, group.id);
+}

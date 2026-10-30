@@ -142,17 +142,27 @@ impl CliContext {
             ));
         }
 
-        let outcome = async {
-            let mut tag = tags_repo::create_skill_tag(&self.db, name, description, color).await?;
-            if let Some(group) = &group {
-                tag_groups_repo::set_tag_group(&self.db, &tag.id, Some(&group.id)).await?;
-                tag.group_id = Some(group.id.clone());
-            }
-            Ok::<_, sqlx::Error>(tag)
-        }
+        // Tag insert and group assignment share one transaction: a failed
+        // group write rolls the tag back instead of leaving it group-less.
+        let outcome = tags_repo::create_skill_tag_with_group(
+            &self.db,
+            name,
+            description,
+            color,
+            group.as_ref().map(|group| group.id.as_str()),
+        )
         .await;
         match outcome {
-            Ok(tag) => {
+            // Another writer created the same name after planning; report it
+            // like the pre-existing case and write no log row.
+            Ok((tag, false)) => Ok(MutationOutput::applied(
+                plans,
+                TagCreateResult {
+                    created: false,
+                    tag: cli_tag(tag, &groups),
+                },
+            )),
+            Ok((tag, true)) => {
                 record_cli_mutation_log(
                     &self.db,
                     "create_skill_tag",
@@ -450,7 +460,7 @@ pub(super) async fn resolve_tags(
     Ok(tags)
 }
 
-async fn resolve_skills(
+pub(super) async fn resolve_skills(
     pool: &DbPool,
     references: &[String],
 ) -> Result<Vec<db::Skill>, CliApiError> {

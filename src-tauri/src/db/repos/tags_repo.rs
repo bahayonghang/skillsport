@@ -57,6 +57,55 @@ pub async fn create_skill_tag(
     Ok(tag)
 }
 
+/// Create a custom tag and assign its group in one transaction, so a failed
+/// group assignment never leaves a group-less tag behind.
+///
+/// Returns `(tag, created)`. When a tag with the trimmed name already exists it
+/// is returned unchanged with `created = false`; its group is not modified.
+/// A missing `group_id` fails before any write.
+pub async fn create_skill_tag_with_group(
+    pool: &DbPool,
+    name: &str,
+    description: Option<&str>,
+    color: Option<&str>,
+    group_id: Option<&str>,
+) -> Result<(SkillTag, bool), sqlx::Error> {
+    let mut transaction = pool.begin().await?;
+    if let Some(existing) = sqlx::query_as::<_, SkillTag>("SELECT * FROM skill_tags WHERE name = ?")
+        .bind(name.trim())
+        .fetch_optional(&mut *transaction)
+        .await?
+    {
+        transaction.commit().await?;
+        return Ok((existing, false));
+    }
+    if let Some(group_id) = group_id {
+        let group_exists = sqlx::query("SELECT 1 FROM skill_tag_groups WHERE id = ?")
+            .bind(group_id)
+            .fetch_optional(&mut *transaction)
+            .await?
+            .is_some();
+        if !group_exists {
+            return Err(sqlx::Error::InvalidArgument(format!(
+                "Tag group '{group_id}' not found"
+            )));
+        }
+    }
+    let mut tag =
+        create_skill_tag_in_transaction(&mut transaction, name, description, color).await?;
+    if let Some(group_id) = group_id {
+        sqlx::query("UPDATE skill_tags SET group_id = ?, updated_at = ? WHERE id = ?")
+            .bind(group_id)
+            .bind(now_rfc3339())
+            .bind(&tag.id)
+            .execute(&mut *transaction)
+            .await?;
+        tag.group_id = Some(group_id.to_string());
+    }
+    transaction.commit().await?;
+    Ok((tag, true))
+}
+
 pub fn derive_skill_tag_id(name: &str) -> String {
     let slug = normalize_repository_component(name);
     if !slug.is_empty() {

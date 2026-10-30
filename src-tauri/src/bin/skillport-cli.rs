@@ -5,7 +5,9 @@ use serde::Serialize;
 use serde_json::Value;
 use std::path::PathBuf;
 
-use skillport_lib::cli_api::{CliApiError, CliContext, NoteInput, TagAddRequest};
+use skillport_lib::cli_api::{
+    CliApiError, CliContext, NoteInput, ProjectInstallRequest, TagAddRequest,
+};
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
 enum Language {
@@ -60,7 +62,57 @@ enum AgentsCommand {
 #[derive(Debug, Subcommand)]
 enum ProjectsCommand {
     List,
-    Skills { project: String },
+    Skills {
+        project: String,
+    },
+    Add {
+        /// Project directory; defaults to the current directory.
+        path: Option<String>,
+        #[arg(long)]
+        dry_run: bool,
+    },
+    Install(ProjectInstallArgs),
+    Uninstall(ProjectUninstallArgs),
+}
+
+#[derive(Debug, Args)]
+struct ProjectInstallArgs {
+    project: String,
+    #[arg(required = true)]
+    references: Vec<String>,
+    #[arg(long = "agent", required = true)]
+    agent: String,
+    #[arg(long, default_value = "auto")]
+    method: String,
+    #[arg(long)]
+    dry_run: bool,
+    #[arg(long)]
+    yes: bool,
+}
+
+#[derive(Debug, Args)]
+struct ProjectUninstallArgs {
+    project: String,
+    #[arg(required = true)]
+    references: Vec<String>,
+    #[arg(long = "agent", required = true)]
+    agent: String,
+    #[arg(long)]
+    dry_run: bool,
+    #[arg(long)]
+    yes: bool,
+}
+
+#[derive(Debug, Args)]
+struct UnlinkArgs {
+    #[arg(required = true)]
+    references: Vec<String>,
+    #[arg(long = "agent", required = true)]
+    agent: String,
+    #[arg(long)]
+    dry_run: bool,
+    #[arg(long)]
+    yes: bool,
 }
 
 #[derive(Debug, Subcommand)]
@@ -154,6 +206,7 @@ enum SkillsCommand {
     },
     Install(InstallArgs),
     Sync(SyncArgs),
+    Unlink(UnlinkArgs),
 }
 
 #[derive(Debug, Args)]
@@ -245,14 +298,56 @@ async fn execute(cli: &Cli) -> Result<CommandOutput, CliApiError> {
                 partial: false,
                 action: "projects_list",
             }),
-            ProjectsCommand::Skills { project } => {
-                let cwd = std::env::current_dir()
-                    .map_err(|error| CliApiError::Internal(error.to_string()))?;
-                Ok(CommandOutput {
-                    data: to_value(context.list_project_skills(project, &cwd).await?)?,
-                    partial: false,
-                    action: "project_skills",
-                })
+            ProjectsCommand::Skills { project } => Ok(CommandOutput {
+                data: to_value(
+                    context
+                        .list_project_skills(project, &current_dir()?)
+                        .await?,
+                )?,
+                partial: false,
+                action: "project_skills",
+            }),
+            ProjectsCommand::Add { path, dry_run } => {
+                let output = context
+                    .add_project(path.as_deref(), &current_dir()?, *dry_run)
+                    .await?;
+                mutation_output(output.dry_run, output, "projects_add")
+            }
+            ProjectsCommand::Install(args) => {
+                let cwd = current_dir()?;
+                let output = context
+                    .install_to_project(ProjectInstallRequest {
+                        project_ref: &args.project,
+                        skill_refs: &args.references,
+                        agent_id: &args.agent,
+                        method: &args.method,
+                        cwd: &cwd,
+                        dry_run: args.dry_run,
+                        yes: args.yes,
+                    })
+                    .await?;
+                let partial = output
+                    .result
+                    .as_ref()
+                    .is_some_and(|result| result.has_failures());
+                partial_mutation_output(output.dry_run, output, partial, "projects_install")
+            }
+            ProjectsCommand::Uninstall(args) => {
+                let output = context
+                    .uninstall_from_project(
+                        &args.project,
+                        &args.references,
+                        &args.agent,
+                        &current_dir()?,
+                        args.dry_run,
+                        args.yes,
+                    )
+                    .await?;
+                let partial = output
+                    .result
+                    .as_ref()
+                    .is_some_and(|result| result.has_failures());
+                partial_mutation_output(output.dry_run, output, partial, "projects_uninstall")
             }
         },
         TopCommand::Tags { command } => match command {
@@ -386,6 +481,16 @@ async fn execute(cli: &Cli) -> Result<CommandOutput, CliApiError> {
                     action: if args.dry_run { "sync_preview" } else { "sync" },
                 })
             }
+            SkillsCommand::Unlink(args) => {
+                let output = context
+                    .unlink_skills(&args.references, &args.agent, args.dry_run, args.yes)
+                    .await?;
+                let partial = output
+                    .result
+                    .as_ref()
+                    .is_some_and(|result| result.has_failures());
+                partial_mutation_output(output.dry_run, output, partial, "unlink")
+            }
         },
     }
 }
@@ -402,11 +507,25 @@ fn mutation_output(
     output: impl Serialize,
     action: &'static str,
 ) -> Result<CommandOutput, CliApiError> {
+    partial_mutation_output(dry_run, output, false, action)
+}
+
+/// Like `mutation_output`, but a batch with failed items exits with code 5.
+fn partial_mutation_output(
+    dry_run: bool,
+    output: impl Serialize,
+    partial: bool,
+    action: &'static str,
+) -> Result<CommandOutput, CliApiError> {
     Ok(CommandOutput {
         data: to_value(output)?,
-        partial: false,
+        partial,
         action: if dry_run { "mutation_preview" } else { action },
     })
+}
+
+fn current_dir() -> Result<PathBuf, CliApiError> {
+    std::env::current_dir().map_err(|error| CliApiError::Internal(error.to_string()))
 }
 
 fn to_value(value: impl Serialize) -> Result<Value, CliApiError> {
@@ -455,6 +574,10 @@ fn success_label(lang: Language, action: &str) -> &'static str {
         (Language::Zh, "tags_remove") => "标签已移除",
         (Language::Zh, "notes_get") => "技能说明",
         (Language::Zh, "notes_set") => "说明已保存",
+        (Language::Zh, "projects_add") => "项目已添加",
+        (Language::Zh, "projects_install") => "项目安装结果",
+        (Language::Zh, "projects_uninstall") => "项目卸载结果",
+        (Language::Zh, "unlink") => "卸载结果",
         (Language::Zh, "mutation_preview") => "变更预览（未写入）",
         (Language::Zh, _) => "同步结果",
         (Language::En, "list") => "Central skills",
@@ -471,6 +594,10 @@ fn success_label(lang: Language, action: &str) -> &'static str {
         (Language::En, "tags_remove") => "Tags removed",
         (Language::En, "notes_get") => "Skill note",
         (Language::En, "notes_set") => "Note saved",
+        (Language::En, "projects_add") => "Project added",
+        (Language::En, "projects_install") => "Project install result",
+        (Language::En, "projects_uninstall") => "Project uninstall result",
+        (Language::En, "unlink") => "Unlink result",
         (Language::En, "mutation_preview") => "Change preview (nothing written)",
         (Language::En, _) => "Sync result",
     }
@@ -797,6 +924,114 @@ mod tests {
             Cli::try_parse_from(["skillport-cli", "notes", "set", "alpha", "--file", "b.md"])
                 .is_ok()
         );
+    }
+
+    #[test]
+    fn parser_accepts_project_and_unlink_mutations() {
+        let add = Cli::try_parse_from(["skillport-cli", "projects", "add"]).unwrap();
+        match add.command {
+            TopCommand::Projects {
+                command: ProjectsCommand::Add { path, dry_run },
+            } => {
+                assert!(path.is_none());
+                assert!(!dry_run);
+            }
+            other => panic!("unexpected command: {other:?}"),
+        }
+        let add_dot =
+            Cli::try_parse_from(["skillport-cli", "projects", "add", ".", "--dry-run"]).unwrap();
+        assert!(matches!(
+            add_dot.command,
+            TopCommand::Projects {
+                command: ProjectsCommand::Add { dry_run: true, .. }
+            }
+        ));
+
+        let install = Cli::try_parse_from([
+            "skillport-cli",
+            "--json",
+            "projects",
+            "install",
+            ".",
+            "alpha",
+            "beta",
+            "--agent",
+            "codex",
+            "--method",
+            "copy",
+            "--yes",
+        ])
+        .unwrap();
+        match install.command {
+            TopCommand::Projects {
+                command: ProjectsCommand::Install(args),
+            } => {
+                assert_eq!(args.project, ".");
+                assert_eq!(args.references, ["alpha", "beta"]);
+                assert_eq!(args.agent, "codex");
+                assert_eq!(args.method, "copy");
+                assert!(args.yes && !args.dry_run);
+            }
+            other => panic!("unexpected command: {other:?}"),
+        }
+        assert!(
+            Cli::try_parse_from(["skillport-cli", "projects", "install", ".", "alpha"]).is_err()
+        );
+        assert!(Cli::try_parse_from([
+            "skillport-cli",
+            "projects",
+            "install",
+            ".",
+            "--agent",
+            "codex"
+        ])
+        .is_err());
+
+        let uninstall = Cli::try_parse_from([
+            "skillport-cli",
+            "projects",
+            "uninstall",
+            "demo",
+            "alpha",
+            "--agent",
+            "codex",
+            "--dry-run",
+        ])
+        .unwrap();
+        assert!(matches!(
+            uninstall.command,
+            TopCommand::Projects {
+                command: ProjectsCommand::Uninstall(ProjectUninstallArgs { dry_run: true, .. })
+            }
+        ));
+
+        let unlink = Cli::try_parse_from([
+            "skillport-cli",
+            "skills",
+            "unlink",
+            "alpha",
+            "beta",
+            "--agent",
+            "codex",
+            "--yes",
+        ])
+        .unwrap();
+        match unlink.command {
+            TopCommand::Skills {
+                command: SkillsCommand::Unlink(args),
+            } => {
+                assert_eq!(args.references, ["alpha", "beta"]);
+                assert_eq!(args.agent, "codex");
+                assert!(args.yes);
+            }
+            other => panic!("unexpected command: {other:?}"),
+        }
+        assert!(Cli::try_parse_from(["skillport-cli", "skills", "unlink", "alpha"]).is_err());
+        assert!(
+            Cli::try_parse_from(["skillport-cli", "skills", "unlink", "--agent", "codex"]).is_err()
+        );
+        assert_eq!(success_label(Language::En, "unlink"), "Unlink result");
+        assert_eq!(success_label(Language::Zh, "projects_add"), "项目已添加");
     }
 
     #[test]

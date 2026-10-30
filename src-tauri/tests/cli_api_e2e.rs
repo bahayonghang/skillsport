@@ -329,3 +329,148 @@ async fn binary_mutations_use_dry_run_and_confirmation_envelopes() {
     assert_eq!(envelope["data"]["explanation"]["text"], "说明");
     assert_eq!(envelope["data"]["explanation"]["model"], "agent:cli");
 }
+
+fn run_cli_in(home: &Path, cwd: &Path, args: &[&str]) -> std::process::Output {
+    std::process::Command::new(env!("CARGO_BIN_EXE_skillport-cli"))
+        .args(args)
+        .current_dir(cwd)
+        .env("HOME", home)
+        .env("USERPROFILE", home)
+        .output()
+        .unwrap()
+}
+
+fn json(bytes: &[u8]) -> serde_json::Value {
+    serde_json::from_slice(bytes)
+        .unwrap_or_else(|error| panic!("invalid json: {error}\n{}", String::from_utf8_lossy(bytes)))
+}
+
+#[tokio::test]
+async fn binary_project_and_unlink_mutations_follow_the_confirmation_contract() {
+    let home = tempfile::tempdir().unwrap();
+    let db_path = home.path().join(".skillsmanage").join("db.sqlite");
+    std::fs::create_dir_all(db_path.parent().unwrap()).unwrap();
+    let pool = skillport_lib::db::open_database(&db_path).await.unwrap();
+    seed_central_skill(&pool, &home.path().join("central/demo"), "demo", "Demo").await;
+    pool.close().await;
+    let project = home.path().join("workspace");
+    std::fs::create_dir_all(&project).unwrap();
+
+    let preview = run_cli_in(
+        home.path(),
+        &project,
+        &["--json", "projects", "add", "--dry-run"],
+    );
+    assert_eq!(preview.status.code(), Some(0));
+    let envelope = json(&preview.stdout);
+    assert_eq!(envelope["data"]["dryRun"], true);
+    assert_eq!(envelope["data"]["plans"][0]["exists"], false);
+
+    let added = run_cli_in(home.path(), &project, &["--json", "projects", "add", "."]);
+    assert_eq!(
+        added.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&added.stderr)
+    );
+    let envelope = json(&added.stdout);
+    assert_eq!(envelope["data"]["result"]["created"], true);
+
+    let install_preview = run_cli_in(
+        home.path(),
+        &project,
+        &[
+            "--json",
+            "projects",
+            "install",
+            ".",
+            "demo",
+            "--agent",
+            "claude-code",
+            "--method",
+            "copy",
+            "--dry-run",
+        ],
+    );
+    assert_eq!(install_preview.status.code(), Some(0));
+    let envelope = json(&install_preview.stdout);
+    assert_eq!(envelope["data"]["plans"][0]["method"], "copy");
+    assert_eq!(envelope["data"]["plans"][0]["alreadyInstalled"], false);
+
+    let installed = run_cli_in(
+        home.path(),
+        &project,
+        &[
+            "--json",
+            "projects",
+            "install",
+            ".",
+            "demo",
+            "--agent",
+            "claude-code",
+            "--method",
+            "copy",
+        ],
+    );
+    assert_eq!(
+        installed.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&installed.stderr)
+    );
+    let envelope = json(&installed.stdout);
+    let installed_path = envelope["data"]["result"]["succeeded"][0]["installedPath"]
+        .as_str()
+        .unwrap()
+        .to_string();
+    assert!(Path::new(&installed_path).join("SKILL.md").is_file());
+
+    let unconfirmed = run_cli_in(
+        home.path(),
+        &project,
+        &[
+            "--json",
+            "projects",
+            "uninstall",
+            ".",
+            "demo",
+            "--agent",
+            "claude-code",
+        ],
+    );
+    assert_eq!(unconfirmed.status.code(), Some(2));
+    let envelope = json(&unconfirmed.stderr);
+    assert_eq!(envelope["error"]["code"], "input.confirmation_required");
+    assert_eq!(
+        envelope["error"]["details"]["plans"][0]["alreadyInstalled"],
+        true
+    );
+    assert!(Path::new(&installed_path).exists());
+
+    let central = run_cli_in(
+        home.path(),
+        &project,
+        &[
+            "--json", "projects", "install", ".", "demo", "--agent", "central",
+        ],
+    );
+    assert_eq!(central.status.code(), Some(2));
+    assert_eq!(json(&central.stderr)["error"]["code"], "input.invalid");
+
+    let unlink = run_cli_in(
+        home.path(),
+        &project,
+        &[
+            "--json",
+            "skills",
+            "unlink",
+            "demo",
+            "--agent",
+            "claude-code",
+        ],
+    );
+    assert_eq!(unlink.status.code(), Some(2));
+    let envelope = json(&unlink.stderr);
+    assert_eq!(envelope["error"]["code"], "input.confirmation_required");
+    assert_eq!(envelope["error"]["details"]["plans"][0]["skillId"], "demo");
+}
