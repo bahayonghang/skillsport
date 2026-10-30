@@ -364,6 +364,18 @@ async fn persist_ai_suggestions(
     Ok(())
 }
 
+/// Add externally produced suggestions (for example from an agent through
+/// `skillport-cli tags add --review`) to the pending AI review queue. Unlike
+/// an AI run, this merges rows and keeps the skill's other pending reviews.
+pub async fn enqueue_pending_tag_reviews(
+    pool: &DbPool,
+    skill_id: &str,
+    rows: &[db::PendingAiTagReviewInput],
+) -> Result<(), AiTaggingError> {
+    crate::db::repos::tags_repo::upsert_pending_ai_tag_reviews(pool, skill_id, rows).await?;
+    Ok(())
+}
+
 async fn persist_ai_review_suggestions(
     pool: &DbPool,
     skill_id: &str,

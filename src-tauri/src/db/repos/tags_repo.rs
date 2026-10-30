@@ -14,6 +14,11 @@ use crate::db::sqlite_batch::{
 use crate::db::types::{DbPool, PendingAiTagReviewInput, SkillAiTagReview, SkillTag};
 use crate::db::util::now_rfc3339;
 
+/// `skill_tag_links.source` values: `manual` (GUI), `ai` (AI tagging, replaced
+/// on every AI run), and `agent` (external agents through `skillport-cli`).
+/// Only `ai` links are deleted by AI re-tagging.
+pub const TAG_LINK_SOURCE_AGENT: &str = "agent";
+
 pub async fn get_skill_tags(pool: &DbPool) -> Result<Vec<SkillTag>, sqlx::Error> {
     sqlx::query_as::<_, SkillTag>("SELECT * FROM skill_tags ORDER BY is_builtin DESC, name")
         .fetch_all(pool)
@@ -297,12 +302,52 @@ pub async fn replace_pending_ai_tag_reviews(
     )
     .await?;
 
-    let now = now_rfc3339();
     sqlx::query("DELETE FROM skill_ai_tag_reviews WHERE skill_id = ? AND status = 'pending'")
         .bind(skill_id)
         .execute(&mut *transaction)
         .await?;
 
+    insert_pending_ai_tag_reviews_in_transaction(&mut transaction, skill_id, suggestions).await?;
+    transaction.commit().await
+}
+
+/// Merge pending review rows for one skill without deleting other pending rows.
+///
+/// `replace_pending_ai_tag_reviews` owns the AI run's full pending set. This
+/// entry adds or refreshes individual rows (for example agent-submitted review
+/// suggestions) and leaves unrelated pending rows untouched. Every referenced
+/// existing tag and the skill are validated before the first write.
+pub async fn upsert_pending_ai_tag_reviews(
+    pool: &DbPool,
+    skill_id: &str,
+    suggestions: &[PendingAiTagReviewInput],
+) -> Result<(), sqlx::Error> {
+    if suggestions.is_empty() {
+        return Ok(());
+    }
+    let mut transaction = pool.begin().await?;
+    let tag_ids = suggestions
+        .iter()
+        .map(|suggestion| suggestion.tag_id.clone())
+        .collect::<Vec<_>>();
+    validate_text_ids_exist(&mut transaction, TextIdTable::SkillTags, "Tag", &tag_ids).await?;
+    validate_text_ids_exist(
+        &mut transaction,
+        TextIdTable::Skills,
+        "Skill",
+        &[skill_id.to_string()],
+    )
+    .await?;
+    insert_pending_ai_tag_reviews_in_transaction(&mut transaction, skill_id, suggestions).await?;
+    transaction.commit().await
+}
+
+async fn insert_pending_ai_tag_reviews_in_transaction(
+    transaction: &mut Transaction<'_, Sqlite>,
+    skill_id: &str,
+    suggestions: &[PendingAiTagReviewInput],
+) -> Result<(), sqlx::Error> {
+    let now = now_rfc3339();
     let rows_per_batch = sqlite_rows_per_batch(8)?;
     for chunk in suggestions.chunks(rows_per_batch) {
         let mut builder = QueryBuilder::<Sqlite>::new(
@@ -330,10 +375,9 @@ pub async fn replace_pending_ai_tag_reviews(
                status = 'pending',
                updated_at = excluded.updated_at",
         );
-        builder.build().execute(&mut *transaction).await?;
+        builder.build().execute(&mut **transaction).await?;
     }
-
-    transaction.commit().await
+    Ok(())
 }
 
 pub async fn get_pending_ai_tag_reviews(

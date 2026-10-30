@@ -2,8 +2,10 @@ use std::process::ExitCode;
 
 use clap::{Args, Parser, Subcommand, ValueEnum};
 use serde::Serialize;
-use serde_json::{json, Value};
-use skillport_lib::cli_api::{CliApiError, CliContext};
+use serde_json::Value;
+use std::path::PathBuf;
+
+use skillport_lib::cli_api::{CliApiError, CliContext, NoteInput, TagAddRequest};
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
 enum Language {
@@ -44,6 +46,10 @@ enum TopCommand {
         #[command(subcommand)]
         command: TagsCommand,
     },
+    Notes {
+        #[command(subcommand)]
+        command: NotesCommand,
+    },
 }
 
 #[derive(Debug, Subcommand)]
@@ -60,6 +66,72 @@ enum ProjectsCommand {
 #[derive(Debug, Subcommand)]
 enum TagsCommand {
     List,
+    Create(TagCreateArgs),
+    Add(TagAddArgs),
+    Remove(TagRemoveArgs),
+}
+
+#[derive(Debug, Args)]
+struct TagCreateArgs {
+    name: String,
+    #[arg(long)]
+    group: Option<String>,
+    #[arg(long)]
+    color: Option<String>,
+    #[arg(long)]
+    description: Option<String>,
+    #[arg(long)]
+    dry_run: bool,
+}
+
+#[derive(Debug, Args)]
+struct TagAddArgs {
+    #[arg(required = true)]
+    references: Vec<String>,
+    #[arg(long = "tag", required = true)]
+    tags: Vec<String>,
+    #[arg(long)]
+    reason: Option<String>,
+    #[arg(long)]
+    confidence: Option<f64>,
+    #[arg(long)]
+    review: bool,
+    #[arg(long)]
+    dry_run: bool,
+    #[arg(long)]
+    yes: bool,
+}
+
+#[derive(Debug, Args)]
+struct TagRemoveArgs {
+    reference: String,
+    #[arg(long = "tag", required = true)]
+    tags: Vec<String>,
+    #[arg(long)]
+    dry_run: bool,
+    #[arg(long)]
+    yes: bool,
+}
+
+#[derive(Debug, Subcommand)]
+enum NotesCommand {
+    Get { reference: String },
+    Set(NoteSetArgs),
+}
+
+#[derive(Debug, Args)]
+struct NoteSetArgs {
+    reference: String,
+    #[arg(long, conflicts_with = "file", required_unless_present = "file")]
+    text: Option<String>,
+    #[arg(long)]
+    file: Option<PathBuf>,
+    #[arg(long)]
+    author: Option<String>,
+    #[arg(long)]
+    dry_run: bool,
+    #[arg(long)]
+    yes: bool,
 }
 
 #[derive(Debug, Subcommand)]
@@ -189,6 +261,67 @@ async fn execute(cli: &Cli) -> Result<CommandOutput, CliApiError> {
                 partial: false,
                 action: "tags_list",
             }),
+            TagsCommand::Create(args) => {
+                let output = context
+                    .create_tag(
+                        &args.name,
+                        args.group.as_deref(),
+                        args.color.as_deref(),
+                        args.description.as_deref(),
+                        args.dry_run,
+                    )
+                    .await?;
+                mutation_output(output.dry_run, output, "tags_create")
+            }
+            TagsCommand::Add(args) => {
+                let output = context
+                    .add_tags(TagAddRequest {
+                        skill_refs: &args.references,
+                        tag_refs: &args.tags,
+                        reason: args.reason.as_deref(),
+                        confidence: args.confidence,
+                        review: args.review,
+                        dry_run: args.dry_run,
+                        yes: args.yes,
+                    })
+                    .await?;
+                mutation_output(output.dry_run, output, "tags_add")
+            }
+            TagsCommand::Remove(args) => {
+                let output = context
+                    .remove_tags(&args.reference, &args.tags, args.dry_run, args.yes)
+                    .await?;
+                mutation_output(output.dry_run, output, "tags_remove")
+            }
+        },
+        TopCommand::Notes { command } => match command {
+            NotesCommand::Get { reference } => Ok(CommandOutput {
+                data: to_value(context.get_note(reference, language_code(cli.lang)).await?)?,
+                partial: false,
+                action: "notes_get",
+            }),
+            NotesCommand::Set(args) => {
+                let input = match (&args.text, &args.file) {
+                    (Some(text), None) => NoteInput::Text(text.clone()),
+                    (None, Some(file)) => NoteInput::File(file.clone()),
+                    _ => {
+                        return Err(CliApiError::InvalidInput(
+                            "Pass exactly one of --text or --file".to_string(),
+                        ))
+                    }
+                };
+                let output = context
+                    .set_note(
+                        &args.reference,
+                        input,
+                        language_code(cli.lang),
+                        args.author.as_deref(),
+                        args.dry_run,
+                        args.yes,
+                    )
+                    .await?;
+                mutation_output(output.dry_run, output, "notes_set")
+            }
         },
         TopCommand::Skills { command } => match command {
             SkillsCommand::List {
@@ -264,6 +397,18 @@ fn language_code(lang: Language) -> &'static str {
     }
 }
 
+fn mutation_output(
+    dry_run: bool,
+    output: impl Serialize,
+    action: &'static str,
+) -> Result<CommandOutput, CliApiError> {
+    Ok(CommandOutput {
+        data: to_value(output)?,
+        partial: false,
+        action: if dry_run { "mutation_preview" } else { action },
+    })
+}
+
 fn to_value(value: impl Serialize) -> Result<Value, CliApiError> {
     serde_json::to_value(value).map_err(|error| CliApiError::Internal(error.to_string()))
 }
@@ -305,6 +450,12 @@ fn success_label(lang: Language, action: &str) -> &'static str {
         (Language::Zh, "projects_list") => "项目",
         (Language::Zh, "project_skills") => "项目技能",
         (Language::Zh, "tags_list") => "标签",
+        (Language::Zh, "tags_create") => "标签已创建",
+        (Language::Zh, "tags_add") => "标签已添加",
+        (Language::Zh, "tags_remove") => "标签已移除",
+        (Language::Zh, "notes_get") => "技能说明",
+        (Language::Zh, "notes_set") => "说明已保存",
+        (Language::Zh, "mutation_preview") => "变更预览（未写入）",
         (Language::Zh, _) => "同步结果",
         (Language::En, "list") => "Central skills",
         (Language::En, "show") => "Skill details",
@@ -315,6 +466,12 @@ fn success_label(lang: Language, action: &str) -> &'static str {
         (Language::En, "projects_list") => "Projects",
         (Language::En, "project_skills") => "Project skills",
         (Language::En, "tags_list") => "Tags",
+        (Language::En, "tags_create") => "Tag created",
+        (Language::En, "tags_add") => "Tags added",
+        (Language::En, "tags_remove") => "Tags removed",
+        (Language::En, "notes_get") => "Skill note",
+        (Language::En, "notes_set") => "Note saved",
+        (Language::En, "mutation_preview") => "Change preview (nothing written)",
         (Language::En, _) => "Sync result",
     }
 }
@@ -324,11 +481,7 @@ fn render_error(cli: &Cli, error: &CliApiError) {
         let envelope = ErrorEnvelope {
             schema_version: 1,
             ok: false,
-            error: ErrorPayload {
-                code: error.code(),
-                message: error.to_string(),
-                details: json!({}),
-            },
+            error: error_payload(error),
         };
         eprintln!("{}", serde_json::to_string(&envelope).unwrap());
         return;
@@ -340,11 +493,23 @@ fn render_error(cli: &Cli, error: &CliApiError) {
             Language::Zh => "错误",
         }
     );
+    if let Some(plans) = error.details().get("plans") {
+        eprintln!("{}", serde_json::to_string_pretty(plans).unwrap());
+    }
+}
+
+fn error_payload(error: &CliApiError) -> ErrorPayload {
+    ErrorPayload {
+        code: error.code(),
+        message: error.to_string(),
+        details: error.details(),
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::json;
     use skillport_lib::cli_api::CliEntity;
 
     #[test]
@@ -471,6 +636,178 @@ mod tests {
             success_label(Language::En, "agents_list"),
             success_label(Language::En, "list")
         );
+    }
+
+    #[test]
+    fn confirmation_error_envelope_carries_plans() {
+        let error = CliApiError::ConfirmationRequired {
+            message: "confirm".to_string(),
+            plans: json!([{ "skillId": "alpha", "tagId": "docs" }]),
+        };
+        let encoded = serde_json::to_value(ErrorEnvelope {
+            schema_version: 1,
+            ok: false,
+            error: error_payload(&error),
+        })
+        .unwrap();
+        assert_eq!(encoded["schemaVersion"], 1);
+        assert_eq!(encoded["error"]["code"], "input.confirmation_required");
+        assert_eq!(encoded["error"]["details"]["plans"][0]["skillId"], "alpha");
+        assert_eq!(error.exit_code(), 2);
+
+        let plain = error_payload(&CliApiError::InvalidInput("x".into()));
+        assert_eq!(plain.details, json!({}));
+    }
+
+    #[test]
+    fn parser_accepts_tag_mutations() {
+        let create = Cli::try_parse_from([
+            "skillport-cli",
+            "tags",
+            "create",
+            "Release Notes",
+            "--group",
+            "Writing",
+            "--color",
+            "#fff",
+            "--description",
+            "Notes",
+            "--dry-run",
+        ])
+        .unwrap();
+        match create.command {
+            TopCommand::Tags {
+                command: TagsCommand::Create(args),
+            } => {
+                assert_eq!(args.name, "Release Notes");
+                assert_eq!(args.group.as_deref(), Some("Writing"));
+                assert!(args.dry_run);
+            }
+            other => panic!("unexpected command: {other:?}"),
+        }
+
+        let add = Cli::try_parse_from([
+            "skillport-cli",
+            "--json",
+            "tags",
+            "add",
+            "alpha",
+            "beta",
+            "--tag",
+            "docs",
+            "--tag",
+            "writing",
+            "--reason",
+            "fits",
+            "--confidence",
+            "0.7",
+            "--review",
+            "--yes",
+        ])
+        .unwrap();
+        match add.command {
+            TopCommand::Tags {
+                command: TagsCommand::Add(args),
+            } => {
+                assert_eq!(args.references, ["alpha", "beta"]);
+                assert_eq!(args.tags, ["docs", "writing"]);
+                assert_eq!(args.confidence, Some(0.7));
+                assert!(args.review && args.yes && !args.dry_run);
+            }
+            other => panic!("unexpected command: {other:?}"),
+        }
+        assert!(Cli::try_parse_from(["skillport-cli", "tags", "add", "alpha"]).is_err());
+        assert!(Cli::try_parse_from(["skillport-cli", "tags", "add", "--tag", "docs"]).is_err());
+
+        let remove = Cli::try_parse_from([
+            "skillport-cli",
+            "tags",
+            "remove",
+            "alpha",
+            "--tag",
+            "docs",
+            "--yes",
+        ])
+        .unwrap();
+        assert!(matches!(
+            remove.command,
+            TopCommand::Tags {
+                command: TagsCommand::Remove(TagRemoveArgs { yes: true, .. })
+            }
+        ));
+        assert!(Cli::try_parse_from([
+            "skillport-cli",
+            "tags",
+            "remove",
+            "alpha",
+            "beta",
+            "--tag",
+            "x"
+        ])
+        .is_err());
+    }
+
+    #[test]
+    fn parser_accepts_note_commands_and_requires_one_source() {
+        let get = Cli::try_parse_from(["skillport-cli", "--lang", "zh", "notes", "get", "alpha"])
+            .unwrap();
+        assert!(matches!(get.lang, Language::Zh));
+        assert!(matches!(
+            get.command,
+            TopCommand::Notes {
+                command: NotesCommand::Get { .. }
+            }
+        ));
+
+        let set = Cli::try_parse_from([
+            "skillport-cli",
+            "notes",
+            "set",
+            "alpha",
+            "--text",
+            "hello",
+            "--author",
+            "codex",
+            "--dry-run",
+        ])
+        .unwrap();
+        match set.command {
+            TopCommand::Notes {
+                command: NotesCommand::Set(args),
+            } => {
+                assert_eq!(args.text.as_deref(), Some("hello"));
+                assert_eq!(args.author.as_deref(), Some("codex"));
+                assert!(args.dry_run);
+            }
+            other => panic!("unexpected command: {other:?}"),
+        }
+        assert!(Cli::try_parse_from(["skillport-cli", "notes", "set", "alpha"]).is_err());
+        assert!(Cli::try_parse_from([
+            "skillport-cli",
+            "notes",
+            "set",
+            "alpha",
+            "--text",
+            "a",
+            "--file",
+            "b.md",
+        ])
+        .is_err());
+        assert!(
+            Cli::try_parse_from(["skillport-cli", "notes", "set", "alpha", "--file", "b.md"])
+                .is_ok()
+        );
+    }
+
+    #[test]
+    fn mutation_labels_are_distinct() {
+        assert_eq!(success_label(Language::En, "tags_add"), "Tags added");
+        assert_eq!(success_label(Language::Zh, "notes_set"), "说明已保存");
+        assert_eq!(
+            success_label(Language::En, "mutation_preview"),
+            "Change preview (nothing written)"
+        );
+        assert_ne!(success_label(Language::En, "tags_remove"), "Sync result");
     }
 
     #[test]

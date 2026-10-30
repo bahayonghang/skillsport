@@ -1,19 +1,28 @@
 mod agents;
+pub mod confirm;
+mod notes;
 mod projects;
 mod skills;
 mod tags;
 
 pub use agents::CliAgent;
+pub use confirm::{ConfirmDecision, MutationOutput};
+pub use notes::{CliNote, NoteInput, NotePlan};
 pub use projects::{CliProject, CliProjectSkill};
 pub use skills::{CliExplanation, CliSkillDetail, CliSkillProject, CliSkillTag};
-pub use tags::{CliTag, CliTagGroup};
+pub use tags::{
+    CliTag, CliTagGroup, TagAddRequest, TagCreatePlan, TagCreateResult, TagLinkPlan, TagLinkResult,
+};
 
+#[cfg(test)]
+mod mutation_tests;
 #[cfg(test)]
 mod read_tests;
 
 use std::sync::Arc;
 
 use serde::Serialize;
+use serde_json::Value;
 
 use crate::db::{self, DbPool};
 use crate::secrets::{SecretStore, SystemSecretStore};
@@ -32,12 +41,19 @@ pub enum CliEntity {
     Agent,
     Project,
     Tag,
+    TagGroup,
 }
 
 #[derive(Debug, thiserror::Error)]
 pub enum CliApiError {
     #[error("{0}")]
     InvalidInput(String),
+    /// A destructive or batch mutation was requested without `--yes`.
+    /// `plans` is the dry-run plan list the caller should show for confirmation.
+    #[error("{message}")]
+    ConfirmationRequired { message: String, plans: Value },
+    #[error("{0}")]
+    InvalidPath(String),
     #[error("{message}")]
     NotFound { entity: CliEntity, message: String },
     #[error("{message}")]
@@ -68,15 +84,19 @@ impl CliApiError {
     pub fn code(&self) -> &'static str {
         match self {
             Self::InvalidInput(_) => "input.invalid",
+            Self::ConfirmationRequired { .. } => "input.confirmation_required",
+            Self::InvalidPath(_) => "path.invalid",
             Self::NotFound { entity, .. } => match entity {
                 CliEntity::Skill => "skill.not_found",
                 CliEntity::Agent => "agent.not_found",
                 CliEntity::Project => "project.not_found",
                 CliEntity::Tag => "tag.not_found",
+                CliEntity::TagGroup => "tag_group.not_found",
             },
             Self::Ambiguous { entity, .. } => match entity {
                 CliEntity::Skill => "skill.ambiguous",
                 CliEntity::Project => "project.ambiguous",
+                CliEntity::TagGroup => "tag_group.ambiguous",
                 // No production call site uses these yet. The arms exist so the
                 // match stays exhaustive and the codes stay intentional.
                 CliEntity::Agent => "agent.ambiguous",
@@ -90,11 +110,26 @@ impl CliApiError {
 
     pub fn exit_code(&self) -> u8 {
         match self {
-            Self::InvalidInput(_) => 2,
+            Self::InvalidInput(_) | Self::ConfirmationRequired { .. } | Self::InvalidPath(_) => 2,
             Self::NotFound { .. } | Self::Ambiguous { .. } | Self::Duplicate(_) => 3,
             Self::Busy(_) => 4,
             Self::Internal(_) => 1,
         }
+    }
+
+    /// Structured error details for the JSON envelope. Only the confirmation
+    /// error carries details (`{ "plans": [...] }`); every other error is `{}`.
+    pub fn details(&self) -> Value {
+        match self {
+            Self::ConfirmationRequired { plans, .. } => serde_json::json!({ "plans": plans }),
+            _ => serde_json::json!({}),
+        }
+    }
+}
+
+impl From<crate::services::ai_tagging::AiTaggingError> for CliApiError {
+    fn from(error: crate::services::ai_tagging::AiTaggingError) -> Self {
+        Self::Internal(error.to_string())
     }
 }
 
@@ -239,6 +274,54 @@ impl CliContext {
             target: ActiveTarget::Local,
         }
     }
+}
+
+/// Record a best-effort, redacted Operation Log row for a CLI mutation.
+///
+/// Category, action, and phase come from the registered GUI command that
+/// performs the same mutation, so CLI and GUI rows share one audit taxonomy.
+/// `phase_override` replaces the GUI phase only when the GUI command does
+/// work the CLI does not (for example a network AI call).
+/// The CLI never owns that command's lifecycle or correlation id: this writes
+/// one terminal row with `source = "cli"`. `details` must contain only counts,
+/// booleans, and static values.
+async fn record_cli_mutation_log(
+    pool: &DbPool,
+    gui_command: &'static str,
+    phase_override: Option<&'static str>,
+    status: &str,
+    summary: &'static str,
+    error: Option<&'static str>,
+    details: Value,
+) {
+    use crate::observability::CommandLogPolicy;
+    use crate::operation_log::{
+        local_target_context, record_operation_log_best_effort, OperationLogEvent,
+    };
+
+    let (category, phase) =
+        match crate::ipc_registry::command_policy(gui_command).map(|entry| entry.policy) {
+            Some(CommandLogPolicy::Operation(definition)) => (
+                definition.category().as_str(),
+                definition.default_phase().as_str(),
+            ),
+            _ => ("cli", "database"),
+        };
+    let mut details = match details {
+        Value::Object(map) => map,
+        _ => serde_json::Map::new(),
+    };
+    details.insert("source".to_string(), Value::from("cli"));
+    details.insert(
+        "phase".to_string(),
+        Value::from(phase_override.unwrap_or(phase)),
+    );
+    let mut event = OperationLogEvent::new(category, gui_command, status, summary)
+        .details(Value::Object(details));
+    if let Some(error) = error {
+        event = event.error(error);
+    }
+    record_operation_log_best_effort(pool, local_target_context(), event).await;
 }
 
 pub fn parse_install_source(value: &str) -> Result<InstallSource, CliApiError> {
@@ -391,6 +474,7 @@ mod tests {
             CliEntity::Agent,
             CliEntity::Project,
             CliEntity::Tag,
+            CliEntity::TagGroup,
         ] {
             assert_eq!(CliApiError::not_found(entity, "x").exit_code(), 3);
             assert_eq!(CliApiError::ambiguous(entity, "x").exit_code(), 3);
