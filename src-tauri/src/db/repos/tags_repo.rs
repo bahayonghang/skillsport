@@ -532,6 +532,30 @@ pub async fn get_skill_tags_for_skill(
     .await
 }
 
+/// Tag identity plus the link `source`. `get_skill_tags_for_skill` drops source.
+#[derive(Debug, Clone, sqlx::FromRow)]
+pub struct SkillTagLinkSummary {
+    pub id: String,
+    pub name: String,
+    pub source: String,
+}
+
+pub async fn list_skill_tag_links_for_skill(
+    pool: &DbPool,
+    skill_id: &str,
+) -> Result<Vec<SkillTagLinkSummary>, sqlx::Error> {
+    sqlx::query_as::<_, SkillTagLinkSummary>(
+        "SELECT t.id AS id, t.name AS name, l.source AS source
+         FROM skill_tag_links l
+         JOIN skill_tags t ON t.id = l.tag_id
+         WHERE l.skill_id = ?
+         ORDER BY t.is_builtin DESC, t.name",
+    )
+    .bind(skill_id)
+    .fetch_all(pool)
+    .await
+}
+
 pub async fn get_skill_tags_for_skills(
     pool: &DbPool,
     skill_ids: &[String],

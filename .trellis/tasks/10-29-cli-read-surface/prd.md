@@ -29,10 +29,10 @@
 
 ## Acceptance Criteria
 
-- [ ] 现有 `skills list|show|search|install|sync` 的 JSON 回归测试通过，输出字段没有被删除或改名。
-- [ ] 每个新命令都有 Clap 解析测试和 `cli_api` 单元测试（使用 `test_support` 的临时 DB）。
-- [ ] 在临时 HOME 和空 DB 下，`npm run cli -- --json agents list|projects list|tags list` 都返回 `ok: true`。
-- [ ] `projects skills` 覆盖三种情况：项目不存在返回 `project.not_found`，项目名重复返回 `project.ambiguous`，`.` 能解析到当前目录。
-- [ ] 输出中不包含凭据字段。
-- [ ] `pnpm entrypointcheck` 和 `cargo test --bin skillport-cli` 通过；`just ci` 通过。
-- [ ] `.trellis/spec/backend/shared-local-cli.md` 的命令表和错误矩阵已更新。
+- [x] 现有 `skills list|show|search|install|sync` 的 JSON 回归测试通过，输出字段没有被删除或改名。
+- [x] 每个新命令都有 Clap 解析测试和 `cli_api` 单元测试（使用 `test_support` 的临时 DB）。
+- [x] 在临时 HOME 和空 DB 下，`npm run cli -- --json agents list|projects list|tags list` 都返回 `ok: true`。
+- [x] `projects skills` 覆盖三种情况：项目不存在返回 `project.not_found`，项目名重复返回 `project.ambiguous`，`.` 能解析到当前目录。
+- [x] 输出中不包含凭据字段。
+- [x] `pnpm entrypointcheck` 和 `cargo test --bin skillport-cli` 通过；`just ci` 通过。
+- [x] `.trellis/spec/backend/shared-local-cli.md` 的命令表和错误矩阵已更新。
