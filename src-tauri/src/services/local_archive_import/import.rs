@@ -161,8 +161,16 @@ pub(crate) async fn import_local_skill_archive_impl(
                 "target directory already exists for skill id '{final_skill_id}'"
             )));
         }
+        let backup_root = central_root.clone();
+        let backup_target = target_dir.clone();
         existing_backup = Some(
-            match backup_existing_skill_dir(&central_root, &target_dir) {
+            match crate::fs_util::run_blocking_fs_with(
+                "archive existing target backup",
+                move || backup_existing_skill_dir(&backup_root, &backup_target),
+                task_join,
+            )
+            .await
+            {
                 Ok(backup) => backup,
                 Err(error) => {
                     discard_staging_dir(&staging_path).await;
@@ -172,10 +180,21 @@ pub(crate) async fn import_local_skill_archive_impl(
         );
     }
 
-    if let Err(error) = std::fs::rename(&staging_path, &target_dir) {
+    let swap_source = staging_path.clone();
+    let swap_target = target_dir.clone();
+    let swapped = crate::fs_util::run_blocking_fs_with(
+        "archive target swap",
+        move || {
+            crate::fs_util::rename_with_retry(&swap_source, &swap_target)
+                .map_err(LocalArchiveImportError::Io)
+        },
+        task_join,
+    )
+    .await;
+    if let Err(error) = swapped {
         restore_or_cleanup_target_dir(&target_dir, existing_backup.take()).await?;
         discard_staging_dir(&staging_path).await;
-        return Err(LocalArchiveImportError::Io(error));
+        return Err(error);
     }
 
     let replaced_existing = existing_backup.is_some();
@@ -385,7 +404,7 @@ fn backup_existing_skill_dir(
     target_dir: &Path,
 ) -> Result<PathBuf, LocalArchiveImportError> {
     let backup = central_root.join(format!(".skillport-backup-{}", Uuid::new_v4()));
-    std::fs::rename(target_dir, &backup)
+    crate::fs_util::rename_with_retry(target_dir, &backup)
         .map_err(|e| LocalArchiveImportError::Internal(format!("backup: {e}")))?;
     Ok(backup)
 }
@@ -420,7 +439,7 @@ async fn restore_or_cleanup_target_dir(
                 })?;
             }
             if let Some(b) = backup {
-                std::fs::rename(&b, &t).map_err(|source| {
+                crate::fs_util::rename_with_retry(&b, &t).map_err(|source| {
                     LocalArchiveImportError::RollbackFailed {
                         stage: "restore previous target",
                         source,

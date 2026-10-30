@@ -1,12 +1,13 @@
 use std::process::ExitCode;
 
-use clap::{Args, Parser, Subcommand, ValueEnum};
+use clap::{ArgGroup, Args, Parser, Subcommand, ValueEnum};
 use serde::Serialize;
 use serde_json::Value;
 use std::path::PathBuf;
 
 use skillport_lib::cli_api::{
-    CliApiError, CliContext, NoteInput, ProjectInstallRequest, TagAddRequest,
+    CliApiError, CliContext, NoteInput, ProjectInstallRequest, SkillImportRequest,
+    SkillImportSource, TagAddRequest,
 };
 
 #[derive(Debug, Clone, Copy, ValueEnum)]
@@ -205,8 +206,36 @@ enum SkillsCommand {
         limit: Option<u32>,
     },
     Install(InstallArgs),
+    Import(ImportArgs),
     Sync(SyncArgs),
     Unlink(UnlinkArgs),
+}
+
+#[derive(Debug, Args)]
+#[command(group(
+    ArgGroup::new("import_source")
+        .required(true)
+        .args(["from_zip", "from_dir"])
+))]
+struct ImportArgs {
+    /// Local `.zip` skill archive.
+    #[arg(long, value_name = "FILE")]
+    from_zip: Option<PathBuf>,
+    /// Local directory that contains SKILL.md.
+    #[arg(long, value_name = "DIR")]
+    from_dir: Option<PathBuf>,
+    #[arg(long)]
+    replace: bool,
+    #[arg(long)]
+    yes: bool,
+    #[arg(long)]
+    sync: bool,
+    #[arg(long = "agent")]
+    agents: Vec<String>,
+    #[arg(long, default_value = "auto")]
+    method: String,
+    #[arg(long)]
+    dry_run: bool,
 }
 
 #[derive(Debug, Args)]
@@ -464,6 +493,35 @@ async fn execute(cli: &Cli) -> Result<CommandOutput, CliApiError> {
                     action: "install",
                 })
             }
+            SkillsCommand::Import(args) => {
+                let source = match (&args.from_zip, &args.from_dir) {
+                    (Some(file), None) => SkillImportSource::Zip(file.clone()),
+                    (None, Some(dir)) => SkillImportSource::Dir(dir.clone()),
+                    _ => {
+                        return Err(CliApiError::InvalidInput(
+                            "Pass exactly one of --from-zip or --from-dir".to_string(),
+                        ))
+                    }
+                };
+                let cwd = current_dir()?;
+                let output = context
+                    .import_skill(SkillImportRequest {
+                        source,
+                        replace: args.replace,
+                        sync: args.sync,
+                        agent_ids: &args.agents,
+                        method: &args.method,
+                        cwd: &cwd,
+                        dry_run: args.dry_run,
+                        yes: args.yes,
+                    })
+                    .await?;
+                let partial = output
+                    .result
+                    .as_ref()
+                    .is_some_and(|result| result.is_partial_failure());
+                partial_mutation_output(output.dry_run, output, partial, "import")
+            }
             SkillsCommand::Sync(args) => {
                 let result = context
                     .sync_skills(
@@ -578,6 +636,7 @@ fn success_label(lang: Language, action: &str) -> &'static str {
         (Language::Zh, "projects_install") => "项目安装结果",
         (Language::Zh, "projects_uninstall") => "项目卸载结果",
         (Language::Zh, "unlink") => "卸载结果",
+        (Language::Zh, "import") => "导入结果",
         (Language::Zh, "mutation_preview") => "变更预览（未写入）",
         (Language::Zh, _) => "同步结果",
         (Language::En, "list") => "Central skills",
@@ -598,6 +657,7 @@ fn success_label(lang: Language, action: &str) -> &'static str {
         (Language::En, "projects_install") => "Project install result",
         (Language::En, "projects_uninstall") => "Project uninstall result",
         (Language::En, "unlink") => "Unlink result",
+        (Language::En, "import") => "Import result",
         (Language::En, "mutation_preview") => "Change preview (nothing written)",
         (Language::En, _) => "Sync result",
     }
@@ -1032,6 +1092,75 @@ mod tests {
         );
         assert_eq!(success_label(Language::En, "unlink"), "Unlink result");
         assert_eq!(success_label(Language::Zh, "projects_add"), "项目已添加");
+    }
+
+    #[test]
+    fn parser_accepts_import_sources() {
+        let zip = Cli::try_parse_from([
+            "skillport-cli",
+            "--json",
+            "skills",
+            "import",
+            "--from-zip",
+            "demo.zip",
+            "--replace",
+            "--sync",
+            "--agent",
+            "codex",
+            "--agent",
+            "claude-code",
+            "--yes",
+        ])
+        .unwrap();
+        match zip.command {
+            TopCommand::Skills {
+                command: SkillsCommand::Import(args),
+            } => {
+                assert_eq!(args.from_zip, Some(PathBuf::from("demo.zip")));
+                assert!(args.from_dir.is_none());
+                assert_eq!(args.agents, ["codex", "claude-code"]);
+                assert_eq!(args.method, "auto");
+                assert!(args.replace && args.sync && args.yes && !args.dry_run);
+            }
+            other => panic!("unexpected command: {other:?}"),
+        }
+        let dir = Cli::try_parse_from([
+            "skillport-cli",
+            "skills",
+            "import",
+            "--from-dir",
+            "skills/skillport",
+            "--dry-run",
+        ])
+        .unwrap();
+        assert!(matches!(
+            dir.command,
+            TopCommand::Skills {
+                command: SkillsCommand::Import(ImportArgs { dry_run: true, .. })
+            }
+        ));
+        assert!(Cli::try_parse_from(["skillport-cli", "skills", "import"]).is_err());
+        assert!(Cli::try_parse_from([
+            "skillport-cli",
+            "skills",
+            "import",
+            "--from-zip",
+            "a.zip",
+            "--from-dir",
+            "b",
+        ])
+        .is_err());
+        assert_eq!(success_label(Language::En, "import"), "Import result");
+        assert_eq!(success_label(Language::Zh, "import"), "导入结果");
+    }
+
+    #[test]
+    fn archive_fingerprint_mismatch_maps_to_exit_three() {
+        let error = CliApiError::ArchiveChanged("changed".into());
+        let payload = error_payload(&error);
+        assert_eq!(payload.code, "archive.fingerprint_mismatch");
+        assert_eq!(payload.details, json!({}));
+        assert_eq!(error.exit_code(), 3);
     }
 
     #[test]

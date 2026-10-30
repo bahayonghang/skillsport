@@ -106,7 +106,7 @@ fn marketplace_error(error: marketplace::MarketplaceError) -> CliApiError {
 }
 
 impl CliApiError {
-    fn duplicate(skill: String) -> Self {
+    pub(super) fn duplicate(skill: String) -> Self {
         Self::Duplicate(format!(
             "Skill '{skill}' already exists; pass --replace to overwrite it"
         ))
@@ -654,7 +654,7 @@ async fn resolve_tag_ids(pool: &DbPool, tags: &[String]) -> Result<Vec<String>, 
     Ok(ids)
 }
 
-fn validate_method(method: &str) -> Result<(), CliApiError> {
+pub(super) fn validate_method(method: &str) -> Result<(), CliApiError> {
     if matches!(method, "auto" | "symlink" | "copy") {
         Ok(())
     } else {
@@ -664,7 +664,7 @@ fn validate_method(method: &str) -> Result<(), CliApiError> {
     }
 }
 
-async fn selected_agents(
+pub(super) async fn selected_agents(
     pool: &DbPool,
     requested: Vec<String>,
 ) -> Result<Vec<db::Agent>, CliApiError> {

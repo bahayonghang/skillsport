@@ -37,14 +37,14 @@
 
 ## Acceptance Criteria
 
-- [ ] 每个写命令都有测试证明 `--dry-run` 不产生副作用（数据库行数和目标目录快照不变）。
-- [ ] 每个需要 `--yes` 的命令，缺少 `--yes` 时都返回 `input.confirmation_required` 并附带计划。
-- [ ] ZIP 导入覆盖：成功、重复导入（没有 `--replace`）、`--replace`、指纹不一致、路径穿越被拒绝。
-- [ ] 目录导入覆盖：成功、缺少 `SKILL.md`、目录位于 Central 内被拒绝、符号链接按 scanner 的策略处理。
-- [ ] 桌面应用持有 Central 锁时，导入和 `skills unlink` 都返回 `mutation.busy` / 退出码 4。
+- [x] 每个写命令都有测试证明 `--dry-run` 不产生副作用（数据库行数和目标目录快照不变）。
+- [x] 每个需要 `--yes` 的命令，缺少 `--yes` 时都返回 `input.confirmation_required` 并附带计划。
+- [x] ZIP 导入覆盖：成功、重复导入（没有 `--replace`）、`--replace`、指纹不一致、路径穿越被拒绝。
+- [x] 目录导入覆盖：成功、缺少 `SKILL.md`、目录位于 Central 内被拒绝、符号链接按 scanner 的策略处理。
+- [x] 桌面应用持有 Central 锁时，导入和 `skills unlink` 都返回 `mutation.busy` / 退出码 4。
       `projects install/uninstall` 只读 Central、写项目目录，与对应 GUI 命令一样不获取 Central 锁（2026-10-30 决定）。
-- [ ] `tags add` 默认写入 `source = 'agent'`；随后执行 AI 重新打标签，`agent` 来源的链接仍然保留。
-- [ ] `notes set` 写入后，桌面应用的解释视图能读到这条说明，`model` 以 `agent:` 开头。
+- [x] `tags add` 默认写入 `source = 'agent'`；随后执行 AI 重新打标签，`agent` 来源的链接仍然保留。
+- [x] `notes set` 写入后，桌面应用的解释视图能读到这条说明，`model` 以 `agent:` 开头。
 - [ ] 现有命令的回归测试通过；`just ci` 通过。
-- [ ] `.trellis/spec/backend/shared-local-cli.md`（确认契约、错误码）和 `central-skill-tags.md`
+- [x] `.trellis/spec/backend/shared-local-cli.md`（确认契约、错误码）和 `central-skill-tags.md`
       （来源取值 `manual | ai | agent`）已更新。

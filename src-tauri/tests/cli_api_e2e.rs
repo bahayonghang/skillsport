@@ -474,3 +474,209 @@ async fn binary_project_and_unlink_mutations_follow_the_confirmation_contract() 
     assert_eq!(envelope["error"]["code"], "input.confirmation_required");
     assert_eq!(envelope["error"]["details"]["plans"][0]["skillId"], "demo");
 }
+
+fn write_skill_dir(dir: &Path, name: &str) {
+    std::fs::create_dir_all(dir).unwrap();
+    std::fs::write(
+        dir.join("SKILL.md"),
+        format!("---\nname: {name}\ndescription: e2e\n---\n# {name}\n"),
+    )
+    .unwrap();
+}
+
+fn write_skill_zip(path: &Path, name: &str) {
+    use std::io::Write;
+    let mut buffer = std::io::Cursor::new(Vec::new());
+    let mut writer = zip::ZipWriter::new(&mut buffer);
+    let options =
+        zip::write::SimpleFileOptions::default().compression_method(zip::CompressionMethod::Stored);
+    writer.start_file("SKILL.md", options).unwrap();
+    write!(writer, "---\nname: {name}\n---\n# {name}\n").unwrap();
+    writer.finish().unwrap();
+    std::fs::write(path, buffer.into_inner()).unwrap();
+}
+
+/// Relative paths under `root`, sorted. Symlinks are listed, not followed.
+fn snapshot_tree(root: &Path) -> Vec<PathBuf> {
+    fn walk(root: &Path, dir: &Path, out: &mut Vec<PathBuf>) {
+        let Ok(entries) = std::fs::read_dir(dir) else {
+            return;
+        };
+        for entry in entries.flatten() {
+            let path = entry.path();
+            out.push(path.strip_prefix(root).unwrap().to_path_buf());
+            if entry.file_type().is_ok_and(|kind| kind.is_dir()) {
+                walk(root, &path, out);
+            }
+        }
+    }
+    let mut out = Vec::new();
+    walk(root, root, &mut out);
+    out.sort();
+    out
+}
+
+/// The binary creates its own Local DB under a temporary HOME, imports a
+/// directory with `--sync`, then every Central-locking write is attempted
+/// while this test process holds the shared lock file. Each must exit 4 with
+/// `mutation.busy` and leave the Central and agent trees unchanged.
+#[test]
+fn binary_imports_and_reports_busy_while_the_central_lock_is_held() {
+    use fs2::FileExt;
+
+    let home = tempfile::tempdir().unwrap();
+    let src = home.path().join("src");
+    write_skill_dir(&src.join("demo"), "Demo");
+    write_skill_dir(&src.join("other"), "Other");
+    write_skill_zip(&src.join("zipped.zip"), "Zipped");
+
+    let preview = run_cli_in(
+        home.path(),
+        &src,
+        &[
+            "--json",
+            "skills",
+            "import",
+            "--from-dir",
+            "demo",
+            "--dry-run",
+        ],
+    );
+    assert_eq!(preview.status.code(), Some(0));
+    let envelope = json(&preview.stdout);
+    assert_eq!(envelope["data"]["dryRun"], true);
+    assert_eq!(envelope["data"]["plans"][0]["action"], "create");
+    let central = home.path().join(".skillsmanage").join("skills");
+    assert!(!central.join("demo").exists());
+
+    let imported = run_cli_in(
+        home.path(),
+        &src,
+        &[
+            "--json",
+            "skills",
+            "import",
+            "--from-dir",
+            "demo",
+            "--sync",
+            "--agent",
+            "claude-code",
+            "--method",
+            "copy",
+        ],
+    );
+    assert_eq!(
+        imported.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&imported.stderr)
+    );
+    let envelope = json(&imported.stdout);
+    assert_eq!(envelope["data"]["result"]["skillId"], "demo");
+    assert!(envelope["data"]["result"]["skillUid"].is_string());
+    assert!(central.join("demo").join("SKILL.md").is_file());
+
+    let duplicate = run_cli_in(
+        home.path(),
+        &src,
+        &["--json", "skills", "import", "--from-dir", "demo"],
+    );
+    assert_eq!(duplicate.status.code(), Some(3));
+    assert_eq!(json(&duplicate.stderr)["error"]["code"], "skill.duplicate");
+
+    let replace = run_cli_in(
+        home.path(),
+        &src,
+        &[
+            "--json",
+            "skills",
+            "import",
+            "--from-dir",
+            "demo",
+            "--replace",
+        ],
+    );
+    assert_eq!(replace.status.code(), Some(2));
+    let envelope = json(&replace.stderr);
+    assert_eq!(envelope["error"]["code"], "input.confirmation_required");
+    assert_eq!(
+        envelope["error"]["details"]["plans"][0]["action"],
+        "replace"
+    );
+
+    let agent_dir = home.path().join(".claude").join("skills");
+    let central_before = snapshot_tree(&central);
+    let agent_before = snapshot_tree(&agent_dir);
+    assert!(agent_before.contains(&PathBuf::from("demo")));
+
+    let lock_path = home
+        .path()
+        .join(".skillsmanage")
+        .join("locks")
+        .join("central-mutation.lock");
+    std::fs::create_dir_all(lock_path.parent().unwrap()).unwrap();
+    let lock = std::fs::OpenOptions::new()
+        .create(true)
+        .truncate(false)
+        .read(true)
+        .write(true)
+        .open(&lock_path)
+        .unwrap();
+    lock.lock_exclusive().unwrap();
+
+    let commands: [&[&str]; 3] = [
+        &["--json", "skills", "import", "--from-zip", "zipped.zip"],
+        &["--json", "skills", "import", "--from-dir", "other"],
+        &[
+            "--json",
+            "skills",
+            "unlink",
+            "demo",
+            "--agent",
+            "claude-code",
+            "--yes",
+        ],
+    ];
+    // Each contender waits for the 10 s lock timeout; run them in parallel.
+    let outputs = std::thread::scope(|scope| {
+        let handles = commands
+            .iter()
+            .map(|args| {
+                let home = home.path();
+                let src = src.as_path();
+                scope.spawn(move || run_cli_in(home, src, args))
+            })
+            .collect::<Vec<_>>();
+        handles
+            .into_iter()
+            .map(|handle| handle.join().unwrap())
+            .collect::<Vec<_>>()
+    });
+    for (args, output) in commands.iter().zip(&outputs) {
+        assert_eq!(
+            output.status.code(),
+            Some(4),
+            "{args:?}: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
+        assert!(output.stdout.is_empty());
+        assert_eq!(json(&output.stderr)["error"]["code"], "mutation.busy");
+    }
+    assert_eq!(snapshot_tree(&central), central_before);
+    assert_eq!(snapshot_tree(&agent_dir), agent_before);
+
+    FileExt::unlock(&lock).unwrap();
+    drop(lock);
+    let zipped = run_cli_in(
+        home.path(),
+        &src,
+        &["--json", "skills", "import", "--from-zip", "zipped.zip"],
+    );
+    assert_eq!(
+        zipped.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&zipped.stderr)
+    );
+    assert!(central.join("zipped").join("SKILL.md").is_file());
+}

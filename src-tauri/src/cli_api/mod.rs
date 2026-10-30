@@ -1,5 +1,6 @@
 mod agents;
 pub mod confirm;
+mod import;
 mod notes;
 mod projects;
 mod skills;
@@ -7,6 +8,9 @@ mod tags;
 
 pub use agents::CliAgent;
 pub use confirm::{ConfirmDecision, MutationOutput};
+pub use import::{
+    ImportPlan, ImportResult, ImportSyncError, SkillImportRequest, SkillImportSource,
+};
 pub use notes::{CliNote, NoteInput, NotePlan};
 pub use projects::{
     CliProject, CliProjectSkill, ProjectAddPlan, ProjectAddResult, ProjectInstallFailure,
@@ -20,6 +24,8 @@ pub use tags::{
     CliTag, CliTagGroup, TagAddRequest, TagCreatePlan, TagCreateResult, TagLinkPlan, TagLinkResult,
 };
 
+#[cfg(test)]
+mod import_tests;
 #[cfg(test)]
 mod install_mutation_tests;
 #[cfg(test)]
@@ -68,6 +74,9 @@ pub enum CliApiError {
     Ambiguous { entity: CliEntity, message: String },
     #[error("{0}")]
     Duplicate(String),
+    /// The ZIP archive bytes changed between the preview read and the import read.
+    #[error("{0}")]
+    ArchiveChanged(String),
     #[error("{0}")]
     Busy(String),
     #[error("{0}")]
@@ -111,6 +120,7 @@ impl CliApiError {
                 CliEntity::Tag => "tag.ambiguous",
             },
             Self::Duplicate(_) => "skill.duplicate",
+            Self::ArchiveChanged(_) => "archive.fingerprint_mismatch",
             Self::Busy(_) => "mutation.busy",
             Self::Internal(_) => "internal.error",
         }
@@ -119,7 +129,10 @@ impl CliApiError {
     pub fn exit_code(&self) -> u8 {
         match self {
             Self::InvalidInput(_) | Self::ConfirmationRequired { .. } | Self::InvalidPath(_) => 2,
-            Self::NotFound { .. } | Self::Ambiguous { .. } | Self::Duplicate(_) => 3,
+            Self::NotFound { .. }
+            | Self::Ambiguous { .. }
+            | Self::Duplicate(_)
+            | Self::ArchiveChanged(_) => 3,
             Self::Busy(_) => 4,
             Self::Internal(_) => 1,
         }
@@ -309,13 +322,40 @@ async fn record_cli_mutation_log(
     error: Option<&'static str>,
     details: Value,
 ) {
+    record_cli_mutation_log_as(
+        pool,
+        gui_command,
+        gui_command,
+        phase_override,
+        status,
+        summary,
+        error,
+        details,
+    )
+    .await;
+}
+
+/// Like [`record_cli_mutation_log`], but for a CLI mutation with no GUI
+/// command of its own: category and phase come from `policy_command`, the
+/// row's action is `action`.
+#[allow(clippy::too_many_arguments)]
+async fn record_cli_mutation_log_as(
+    pool: &DbPool,
+    policy_command: &'static str,
+    action: &'static str,
+    phase_override: Option<&'static str>,
+    status: &str,
+    summary: &'static str,
+    error: Option<&'static str>,
+    details: Value,
+) {
     use crate::observability::CommandLogPolicy;
     use crate::operation_log::{
         local_target_context, record_operation_log_best_effort, OperationLogEvent,
     };
 
     let (category, phase) =
-        match crate::ipc_registry::command_policy(gui_command).map(|entry| entry.policy) {
+        match crate::ipc_registry::command_policy(policy_command).map(|entry| entry.policy) {
             Some(CommandLogPolicy::Operation(definition)) => (
                 definition.category().as_str(),
                 definition.default_phase().as_str(),
@@ -331,8 +371,8 @@ async fn record_cli_mutation_log(
         "phase".to_string(),
         Value::from(phase_override.unwrap_or(phase)),
     );
-    let mut event = OperationLogEvent::new(category, gui_command, status, summary)
-        .details(Value::Object(details));
+    let mut event =
+        OperationLogEvent::new(category, action, status, summary).details(Value::Object(details));
     if let Some(error) = error {
         event = event.error(error);
     }
