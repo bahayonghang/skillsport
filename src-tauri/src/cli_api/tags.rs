@@ -182,17 +182,18 @@ impl CliContext {
                 ))
             }
             Err(error) => {
+                let error = CliApiError::from(error);
                 record_cli_mutation_log(
                     &self.db,
                     "create_skill_tag",
                     None,
                     "failed",
                     "Skill tag creation failed.",
-                    Some("Skill tag creation failed."),
+                    Some(error.code()),
                     serde_json::json!({}),
                 )
                 .await;
-                Err(error.into())
+                Err(error)
             }
         }
     }
@@ -236,17 +237,18 @@ impl CliContext {
                 if let Err(error) =
                     ai_tagging::enqueue_pending_tag_reviews(&self.db, &skill.id, &rows).await
                 {
+                    let error = CliApiError::from(error);
                     record_cli_mutation_log(
                         &self.db,
                         "suggest_skill_tags",
                         None,
                         "failed",
                         "Skill tag review queueing failed.",
-                        Some("Skill tag review queueing failed."),
+                        Some(error.code()),
                         serde_json::json!({ "skillCount": skills.len() }),
                     )
                     .await;
-                    return Err(error.into());
+                    return Err(error);
                 }
             }
             record_cli_mutation_log(
@@ -286,17 +288,18 @@ impl CliContext {
         )
         .await
         {
+            let error = CliApiError::from(error);
             record_cli_mutation_log(
                 &self.db,
                 "assign_skill_tags",
                 None,
                 "failed",
                 "Skill tag assignment failed.",
-                Some("Skill tag assignment failed."),
+                Some(error.code()),
                 serde_json::json!({ "skillCount": skills.len() }),
             )
             .await;
-            return Err(error.into());
+            return Err(error);
         }
         record_cli_mutation_log(
             &self.db,
@@ -340,17 +343,18 @@ impl CliContext {
         let skill = &skills[0];
         let tag_ids = tags.iter().map(|tag| tag.id.clone()).collect::<Vec<_>>();
         if let Err(error) = tags_repo::unassign_skill_tags(&self.db, &skill.id, &tag_ids).await {
+            let error = CliApiError::from(error);
             record_cli_mutation_log(
                 &self.db,
                 "unassign_skill_tags",
                 None,
                 "failed",
                 "Skill tag removal failed.",
-                Some("Skill tag removal failed."),
+                Some(error.code()),
                 serde_json::json!({}),
             )
             .await;
-            return Err(error.into());
+            return Err(error);
         }
         let removed = plans.iter().filter(|plan| plan.already_linked).count();
         record_cli_mutation_log(

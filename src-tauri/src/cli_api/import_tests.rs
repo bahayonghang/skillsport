@@ -712,3 +712,20 @@ async fn dir_symlink_root_is_followed_and_nested_symlinks_are_rejected() {
     assert!(error.to_string().contains("symbolic link"));
     assert_eq!(fx.state().await, before);
 }
+
+#[test]
+fn dir_copy_budget_errors_are_input_invalid() {
+    use crate::services::installation::InstallationError;
+    let entries = super::import::dir_import_error(InstallationError::CopyEntryBudgetExceeded {
+        root: "src".to_string(),
+        limit: 1,
+    });
+    assert_eq!(entries.code(), "input.invalid");
+    assert_eq!(entries.exit_code(), 2);
+    let bytes = super::import::dir_import_error(InstallationError::CopyByteBudgetExceeded {
+        root: "src".to_string(),
+        limit: 1,
+        path: "big".to_string(),
+    });
+    assert_eq!(bytes.code(), "input.invalid");
+}

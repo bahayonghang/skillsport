@@ -609,6 +609,12 @@ async fn tags_create_with_group_rolls_back_the_tag_when_group_assignment_fails()
         (action.as_str(), status.as_str()),
         ("create_skill_tag", "failed")
     );
+    let error_summary: Option<String> =
+        sqlx::query_scalar("SELECT error_summary FROM operation_logs ORDER BY rowid DESC LIMIT 1")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(error_summary.as_deref(), Some("internal.error"));
 
     sqlx::query("DROP TRIGGER fail_tag_group_assignment")
         .execute(&pool)

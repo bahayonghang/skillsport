@@ -414,7 +414,9 @@ pub(super) fn dir_import_error(error: InstallationError) -> CliApiError {
         | InstallationError::LocalImportSymlinkRejected(_) => {
             CliApiError::InvalidPath(error.to_string())
         }
-        InstallationError::LocalImportManifestInvalid(_) => {
+        InstallationError::LocalImportManifestInvalid(_)
+        | InstallationError::CopyEntryBudgetExceeded { .. }
+        | InstallationError::CopyByteBudgetExceeded { .. } => {
             CliApiError::InvalidInput(error.to_string())
         }
         InstallationError::LocalImportTargetExists(_) => CliApiError::Duplicate(error.to_string()),

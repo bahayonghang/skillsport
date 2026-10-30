@@ -528,12 +528,14 @@ impl CliContext {
             .map_err(|error| CliApiError::Internal(error.to_string()))?;
         let mut result = UnlinkResult::default();
         let mut busy: Option<String> = None;
+        let mut first_failure_code: Option<&'static str> = None;
         for plan in &plans {
             if !plan.installed {
                 result.skipped.push(plan.skill_id.clone());
                 continue;
             }
             if let Some(message) = &busy {
+                first_failure_code.get_or_insert("mutation.busy");
                 result.failed.push(UnlinkFailure {
                     skill_id: plan.skill_id.clone(),
                     error: message.clone(),
@@ -552,6 +554,7 @@ impl CliContext {
                 Ok(()) => result.succeeded.push(plan.skill_id.clone()),
                 Err(installation::InstallationError::CentralMutation(error)) => {
                     let mapped = mutation_error(error);
+                    first_failure_code.get_or_insert(mapped.code());
                     if !matches!(mapped, CliApiError::Busy(_)) {
                         result.failed.push(UnlinkFailure {
                             skill_id: plan.skill_id.clone(),
@@ -579,10 +582,13 @@ impl CliContext {
                     });
                     busy = Some(message);
                 }
-                Err(error) => result.failed.push(UnlinkFailure {
-                    skill_id: plan.skill_id.clone(),
-                    error: error.to_string(),
-                }),
+                Err(error) => {
+                    first_failure_code.get_or_insert("internal.error");
+                    result.failed.push(UnlinkFailure {
+                        skill_id: plan.skill_id.clone(),
+                        error: error.to_string(),
+                    });
+                }
             }
         }
         let status = match (
@@ -599,7 +605,7 @@ impl CliContext {
             None,
             status,
             "Skills uninstalled.",
-            result.has_failures().then_some("Skill uninstall failed."),
+            first_failure_code,
             serde_json::json!({
                 "planCount": plans.len(),
                 "succeededCount": result.succeeded.len(),

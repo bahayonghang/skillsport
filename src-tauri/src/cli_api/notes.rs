@@ -96,17 +96,18 @@ impl CliContext {
         )
         .await
         {
+            let error = CliApiError::from(error);
             record_cli_mutation_log(
                 &self.db,
                 "refresh_skill_explanation",
                 Some("database"),
                 "failed",
                 "Skill note write failed.",
-                Some("Skill note write failed."),
+                Some(error.code()),
                 serde_json::json!({}),
             )
             .await;
-            return Err(error.into());
+            return Err(error);
         }
         record_cli_mutation_log(
             &self.db,

@@ -185,17 +185,18 @@ impl CliContext {
         let project = match add_project_impl(&self.db, &normalized).await {
             Ok(project) => project,
             Err(error) => {
+                let error = CliApiError::from(error);
                 record_cli_mutation_log(
                     &self.db,
                     "add_project",
                     None,
                     "failed",
                     "Project add failed.",
-                    Some("Project add failed."),
+                    Some(error.code()),
                     serde_json::json!({}),
                 )
                 .await;
-                return Err(error.into());
+                return Err(error);
             }
         };
         let created = existing.is_none();
@@ -273,6 +274,7 @@ impl CliContext {
         }
 
         let mut result = ProjectInstallResult::default();
+        let mut first_failure_code: Option<&'static str> = None;
         for plan in &plans {
             match install_skill_to_project_impl(
                 &self.db,
@@ -288,11 +290,15 @@ impl CliContext {
                     agent_id: installation.agent_id,
                     installed_path: installation.installed_path,
                 }),
-                Err(error) => result.failed.push(ProjectInstallFailure {
-                    skill_id: plan.skill_id.clone(),
-                    agent_id: agent.id.clone(),
-                    error: error.to_string(),
-                }),
+                Err(error) => {
+                    let error = CliApiError::from(error);
+                    first_failure_code.get_or_insert(error.code());
+                    result.failed.push(ProjectInstallFailure {
+                        skill_id: plan.skill_id.clone(),
+                        agent_id: agent.id.clone(),
+                        error: error.to_string(),
+                    });
+                }
             }
         }
         record_cli_mutation_log(
@@ -301,9 +307,7 @@ impl CliContext {
             None,
             result.log_status(),
             "Skills installed to project.",
-            result
-                .has_failures()
-                .then_some("Project skill install failed."),
+            first_failure_code,
             result.log_details(plans.len()),
         )
         .await;
@@ -358,6 +362,7 @@ impl CliContext {
         }
 
         let mut result = ProjectInstallResult::default();
+        let mut first_failure_code: Option<&'static str> = None;
         for plan in &plans {
             if !plan.already_installed {
                 result.skipped.push(plan.skill_id.clone());
@@ -376,11 +381,15 @@ impl CliContext {
                     agent_id: agent.id.clone(),
                     installed_path: plan.target_path.clone(),
                 }),
-                Err(error) => result.failed.push(ProjectInstallFailure {
-                    skill_id: plan.skill_id.clone(),
-                    agent_id: agent.id.clone(),
-                    error: error.to_string(),
-                }),
+                Err(error) => {
+                    let error = CliApiError::from(error);
+                    first_failure_code.get_or_insert(error.code());
+                    result.failed.push(ProjectInstallFailure {
+                        skill_id: plan.skill_id.clone(),
+                        agent_id: agent.id.clone(),
+                        error: error.to_string(),
+                    });
+                }
             }
         }
         record_cli_mutation_log(
@@ -389,9 +398,7 @@ impl CliContext {
             None,
             result.log_status(),
             "Skills uninstalled from project.",
-            result
-                .has_failures()
-                .then_some("Project skill uninstall failed."),
+            first_failure_code,
             result.log_details(plans.len()),
         )
         .await;
