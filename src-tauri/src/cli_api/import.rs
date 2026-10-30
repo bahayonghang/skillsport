@@ -138,7 +138,7 @@ impl CliContext {
                     return Ok(MutationOutput::dry_run(vec![plan]));
                 }
                 let imported = self
-                    .apply_zip_import(&path, preview.fingerprint.clone())
+                    .apply_zip_import(&path, preview.fingerprint.clone(), request.replace)
                     .await?;
                 self.finish_import(plan, imported.0, imported.1, &request, sync_agents)
                     .await
@@ -174,15 +174,27 @@ impl CliContext {
         &self,
         path: &str,
         fingerprint: ArchiveFingerprint,
+        replace: bool,
     ) -> Result<(String, bool), CliApiError> {
-        let outcome = local_archive_import::import_local_skill_archive_impl(
-            &self.db,
-            path,
-            fingerprint,
-            local_archive_import::LocalArchiveImportResolution::Overwrite,
-            None,
-        )
-        .await;
+        // Without --replace, a target created after the preview must fail
+        // under the lock instead of being overwritten.
+        let outcome = if replace {
+            local_archive_import::import_local_skill_archive_impl(
+                &self.db,
+                path,
+                fingerprint,
+                local_archive_import::LocalArchiveImportResolution::Overwrite,
+                None,
+            )
+            .await
+        } else {
+            local_archive_import::import_local_skill_archive_new_only_impl(
+                &self.db,
+                path,
+                fingerprint,
+            )
+            .await
+        };
         match outcome {
             Ok(result) => {
                 record_cli_mutation_log(
@@ -194,7 +206,7 @@ impl CliContext {
                     None,
                     serde_json::json!({
                         "sourceType": "zip",
-                        "resolution": "overwrite",
+                        "resolution": if replace { "overwrite" } else { "new" },
                         "replacedExisting": result.replaced_existing,
                         "fileCount": result.file_count,
                     }),

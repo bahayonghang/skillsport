@@ -312,7 +312,7 @@ async fn zip_fingerprint_mismatch_stops_before_any_write() {
 
     let error = fx
         .context
-        .apply_zip_import(&zip.to_string_lossy(), preview.fingerprint)
+        .apply_zip_import(&zip.to_string_lossy(), preview.fingerprint, false)
         .await
         .unwrap_err();
     assert!(matches!(error, CliApiError::ArchiveChanged(_)));

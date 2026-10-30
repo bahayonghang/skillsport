@@ -89,6 +89,45 @@ pub(crate) async fn import_local_skill_archive_impl(
     resolution: LocalArchiveImportResolution,
     renamed_skill_id: Option<String>,
 ) -> ImportOutcome {
+    import_archive(
+        pool,
+        archive_path,
+        expected_fingerprint,
+        resolution,
+        renamed_skill_id,
+        true,
+    )
+    .await
+}
+
+/// Import under the archive's own skill id, failing with `PathConflict` when
+/// the target directory exists once the Central lock is held. Callers that
+/// checked for a conflict before the lock use this so a directory created in
+/// between is never overwritten.
+pub(crate) async fn import_local_skill_archive_new_only_impl(
+    pool: &DbPool,
+    archive_path: &str,
+    expected_fingerprint: ArchiveFingerprint,
+) -> ImportOutcome {
+    import_archive(
+        pool,
+        archive_path,
+        expected_fingerprint,
+        LocalArchiveImportResolution::Overwrite,
+        None,
+        false,
+    )
+    .await
+}
+
+async fn import_archive(
+    pool: &DbPool,
+    archive_path: &str,
+    expected_fingerprint: ArchiveFingerprint,
+    resolution: LocalArchiveImportResolution,
+    renamed_skill_id: Option<String>,
+    allow_overwrite: bool,
+) -> ImportOutcome {
     let budget = ResourceBudget::default_skill();
     let archive_path_owned = archive_path.to_string();
     let archive_bytes = crate::fs_util::run_blocking_fs_with(
@@ -155,7 +194,7 @@ pub(crate) async fn import_local_skill_archive_impl(
     let target_dir = central_root.join(&final_skill_id);
     let mut existing_backup: Option<PathBuf> = None;
     if target_dir.exists() {
-        if !matches!(resolution, LocalArchiveImportResolution::Overwrite) {
+        if !allow_overwrite || !matches!(resolution, LocalArchiveImportResolution::Overwrite) {
             discard_staging_dir(&staging_path).await;
             return Err(LocalArchiveImportError::PathConflict(format!(
                 "target directory already exists for skill id '{final_skill_id}'"

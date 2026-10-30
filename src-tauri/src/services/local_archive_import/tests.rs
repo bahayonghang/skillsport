@@ -16,7 +16,7 @@ use std::io::Write;
 use tempfile::TempDir;
 use zip::write::{SimpleFileOptions, ZipWriter};
 
-use super::import::import_local_skill_archive_impl;
+use super::import::{import_local_skill_archive_impl, import_local_skill_archive_new_only_impl};
 use super::inventory::{build_inventory, fingerprint_of, ArchiveFingerprint};
 use super::preview::preview_local_skill_archive_impl;
 use super::types::LocalArchiveImportResolution;
@@ -353,6 +353,38 @@ async fn preview_and_fingerprint_mismatch_do_not_mutate_central_or_logs() {
         .await
         .expect("list operation logs");
     assert_eq!(logs.total, 0, "service-level preview/import does not log");
+}
+
+#[tokio::test]
+async fn new_only_import_refuses_a_target_created_after_preview() {
+    let pool = test_support::mem_pool().await;
+    let fs = TempDir::new().expect("temp Central root");
+    let central_root = fs.path().join("central");
+    std::fs::create_dir_all(&central_root).expect("create Central root");
+    test_support::set_agent_dir(&pool, "central", &central_root).await;
+
+    // Another writer creates the target between the caller's check and the lock.
+    let racing_dir = central_root.join("demo-skill");
+    std::fs::create_dir_all(&racing_dir).expect("create racing target");
+    std::fs::write(racing_dir.join("other.txt"), b"other").expect("write racing marker");
+
+    let archive_dir = TempDir::new().expect("temp archive root");
+    let bytes = make_skill_zip("demo-skill", "new description", None);
+    let archive_path = write_archive(&archive_dir, "demo.zip", &bytes);
+
+    let error =
+        import_local_skill_archive_new_only_impl(&pool, &archive_path, fingerprint_of(&bytes))
+            .await
+            .expect_err("existing target must not be overwritten");
+
+    assert_eq!(error.code(), "path_conflict");
+    assert!(racing_dir.join("other.txt").is_file());
+    assert!(!racing_dir.join("SKILL.md").exists());
+    assert_eq!(work_artifacts(&central_root), Vec::<String>::new());
+    assert!(db::get_skill_by_id(&pool, "demo-skill")
+        .await
+        .expect("query skill")
+        .is_none());
 }
 
 #[tokio::test]
