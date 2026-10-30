@@ -45,6 +45,6 @@
       `projects install/uninstall` 只读 Central、写项目目录，与对应 GUI 命令一样不获取 Central 锁（2026-10-30 决定）。
 - [x] `tags add` 默认写入 `source = 'agent'`；随后执行 AI 重新打标签，`agent` 来源的链接仍然保留。
 - [x] `notes set` 写入后，桌面应用的解释视图能读到这条说明，`model` 以 `agent:` 开头。
-- [ ] 现有命令的回归测试通过；`just ci` 通过。
+- [x] 现有命令的回归测试通过；`just ci` 通过。
 - [x] `.trellis/spec/backend/shared-local-cli.md`（确认契约、错误码）和 `central-skill-tags.md`
       （来源取值 `manual | ai | agent`）已更新。
