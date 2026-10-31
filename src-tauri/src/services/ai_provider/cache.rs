@@ -167,22 +167,13 @@ pub(crate) async fn cache_skill_explanation(
         return Err(AiProviderError::EmptyExplanation);
     }
 
-    let now = chrono::Utc::now().to_rfc3339();
-    sqlx::query(
-        "INSERT OR REPLACE INTO skill_explanations (skill_id, explanation, lang, model, created_at, updated_at)
-         VALUES (?, ?, ?, ?,
-            COALESCE((SELECT created_at FROM skill_explanations WHERE skill_id = ? AND lang = ?), ?),
-            ?)",
+    crate::db::repos::skill_explanations_repo::upsert_skill_explanation(
+        pool,
+        skill_id,
+        lang,
+        model,
+        explanation,
     )
-    .bind(skill_id)
-    .bind(explanation)
-    .bind(lang)
-    .bind(model)
-    .bind(skill_id)
-    .bind(lang)
-    .bind(&now)
-    .bind(&now)
-    .execute(pool)
     .await
     .map_err(AiProviderError::CacheWrite)?;
 

@@ -30,3 +30,31 @@ where
         Err(e) => Err(join_error(label, e.to_string())),
     }
 }
+
+/// `std::fs::rename` that retries transient Windows sharing/access failures.
+///
+/// On Windows, antivirus or the indexer can briefly hold a handle inside a
+/// directory that was just written, so renaming it fails with OS error 5
+/// (access denied) or 32 (sharing violation). Retries for up to ~2 s; other
+/// platforms and other errors return immediately. Blocking: call it inside a
+/// `run_blocking_fs_with` closure.
+pub(crate) fn rename_with_retry(
+    source: &std::path::Path,
+    target: &std::path::Path,
+) -> std::io::Result<()> {
+    const ATTEMPTS: usize = 40;
+    for attempt in 0..ATTEMPTS {
+        match std::fs::rename(source, target) {
+            Ok(()) => return Ok(()),
+            Err(error)
+                if cfg!(windows)
+                    && attempt + 1 < ATTEMPTS
+                    && matches!(error.raw_os_error(), Some(5 | 32)) =>
+            {
+                std::thread::sleep(std::time::Duration::from_millis(50));
+            }
+            Err(error) => return Err(error),
+        }
+    }
+    unreachable!("rename retry loop always returns")
+}

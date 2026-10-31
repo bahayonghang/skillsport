@@ -14,6 +14,11 @@ use crate::db::sqlite_batch::{
 use crate::db::types::{DbPool, PendingAiTagReviewInput, SkillAiTagReview, SkillTag};
 use crate::db::util::now_rfc3339;
 
+/// `skill_tag_links.source` values: `manual` (GUI), `ai` (AI tagging, replaced
+/// on every AI run), and `agent` (external agents through `skillport-cli`).
+/// Only `ai` links are deleted by AI re-tagging.
+pub const TAG_LINK_SOURCE_AGENT: &str = "agent";
+
 pub async fn get_skill_tags(pool: &DbPool) -> Result<Vec<SkillTag>, sqlx::Error> {
     sqlx::query_as::<_, SkillTag>("SELECT * FROM skill_tags ORDER BY is_builtin DESC, name")
         .fetch_all(pool)
@@ -50,6 +55,55 @@ pub async fn create_skill_tag(
     let tag = create_skill_tag_in_transaction(&mut transaction, name, description, color).await?;
     transaction.commit().await?;
     Ok(tag)
+}
+
+/// Create a custom tag and assign its group in one transaction, so a failed
+/// group assignment never leaves a group-less tag behind.
+///
+/// Returns `(tag, created)`. When a tag with the trimmed name already exists it
+/// is returned unchanged with `created = false`; its group is not modified.
+/// A missing `group_id` fails before any write.
+pub async fn create_skill_tag_with_group(
+    pool: &DbPool,
+    name: &str,
+    description: Option<&str>,
+    color: Option<&str>,
+    group_id: Option<&str>,
+) -> Result<(SkillTag, bool), sqlx::Error> {
+    let mut transaction = pool.begin().await?;
+    if let Some(existing) = sqlx::query_as::<_, SkillTag>("SELECT * FROM skill_tags WHERE name = ?")
+        .bind(name.trim())
+        .fetch_optional(&mut *transaction)
+        .await?
+    {
+        transaction.commit().await?;
+        return Ok((existing, false));
+    }
+    if let Some(group_id) = group_id {
+        let group_exists = sqlx::query("SELECT 1 FROM skill_tag_groups WHERE id = ?")
+            .bind(group_id)
+            .fetch_optional(&mut *transaction)
+            .await?
+            .is_some();
+        if !group_exists {
+            return Err(sqlx::Error::InvalidArgument(format!(
+                "Tag group '{group_id}' not found"
+            )));
+        }
+    }
+    let mut tag =
+        create_skill_tag_in_transaction(&mut transaction, name, description, color).await?;
+    if let Some(group_id) = group_id {
+        sqlx::query("UPDATE skill_tags SET group_id = ?, updated_at = ? WHERE id = ?")
+            .bind(group_id)
+            .bind(now_rfc3339())
+            .bind(&tag.id)
+            .execute(&mut *transaction)
+            .await?;
+        tag.group_id = Some(group_id.to_string());
+    }
+    transaction.commit().await?;
+    Ok((tag, true))
 }
 
 pub fn derive_skill_tag_id(name: &str) -> String {
@@ -297,12 +351,52 @@ pub async fn replace_pending_ai_tag_reviews(
     )
     .await?;
 
-    let now = now_rfc3339();
     sqlx::query("DELETE FROM skill_ai_tag_reviews WHERE skill_id = ? AND status = 'pending'")
         .bind(skill_id)
         .execute(&mut *transaction)
         .await?;
 
+    insert_pending_ai_tag_reviews_in_transaction(&mut transaction, skill_id, suggestions).await?;
+    transaction.commit().await
+}
+
+/// Merge pending review rows for one skill without deleting other pending rows.
+///
+/// `replace_pending_ai_tag_reviews` owns the AI run's full pending set. This
+/// entry adds or refreshes individual rows (for example agent-submitted review
+/// suggestions) and leaves unrelated pending rows untouched. Every referenced
+/// existing tag and the skill are validated before the first write.
+pub async fn upsert_pending_ai_tag_reviews(
+    pool: &DbPool,
+    skill_id: &str,
+    suggestions: &[PendingAiTagReviewInput],
+) -> Result<(), sqlx::Error> {
+    if suggestions.is_empty() {
+        return Ok(());
+    }
+    let mut transaction = pool.begin().await?;
+    let tag_ids = suggestions
+        .iter()
+        .map(|suggestion| suggestion.tag_id.clone())
+        .collect::<Vec<_>>();
+    validate_text_ids_exist(&mut transaction, TextIdTable::SkillTags, "Tag", &tag_ids).await?;
+    validate_text_ids_exist(
+        &mut transaction,
+        TextIdTable::Skills,
+        "Skill",
+        &[skill_id.to_string()],
+    )
+    .await?;
+    insert_pending_ai_tag_reviews_in_transaction(&mut transaction, skill_id, suggestions).await?;
+    transaction.commit().await
+}
+
+async fn insert_pending_ai_tag_reviews_in_transaction(
+    transaction: &mut Transaction<'_, Sqlite>,
+    skill_id: &str,
+    suggestions: &[PendingAiTagReviewInput],
+) -> Result<(), sqlx::Error> {
+    let now = now_rfc3339();
     let rows_per_batch = sqlite_rows_per_batch(8)?;
     for chunk in suggestions.chunks(rows_per_batch) {
         let mut builder = QueryBuilder::<Sqlite>::new(
@@ -330,10 +424,9 @@ pub async fn replace_pending_ai_tag_reviews(
                status = 'pending',
                updated_at = excluded.updated_at",
         );
-        builder.build().execute(&mut *transaction).await?;
+        builder.build().execute(&mut **transaction).await?;
     }
-
-    transaction.commit().await
+    Ok(())
 }
 
 pub async fn get_pending_ai_tag_reviews(
@@ -655,121 +748,4 @@ pub async fn list_central_top_tags(
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::db::{upsert_skill, UNCATEGORIZED_TAG_ID};
-    use crate::test_support::{central_skill_row, mem_pool, mem_pool_single_conn};
-    use std::path::Path;
-
-    async fn add_skill(pool: &DbPool, id: &str, is_central: bool) {
-        let mut skill = central_skill_row(id, Path::new(&format!("/tmp/{id}")));
-        skill.is_central = is_central;
-        upsert_skill(pool, &skill).await.unwrap();
-    }
-
-    async fn link_tag(pool: &DbPool, skill_id: &str, tag_id: &str) {
-        assign_skill_tags(
-            pool,
-            &[skill_id.to_string()],
-            &[tag_id.to_string()],
-            "manual",
-            None,
-            None,
-        )
-        .await
-        .unwrap();
-    }
-
-    #[tokio::test]
-    async fn central_top_tags_excludes_non_central_and_orphan_links() {
-        let pool = mem_pool_single_conn().await;
-        let alpha = create_skill_tag(&pool, "alpha", None, None).await.unwrap();
-        add_skill(&pool, "central-one", true).await;
-        add_skill(&pool, "platform-copy", false).await;
-        link_tag(&pool, "central-one", &alpha.id).await;
-        link_tag(&pool, "platform-copy", &alpha.id).await;
-        // Semantic corruption fixture: migrated production connections keep FK
-        // enabled, so disable it explicitly on this single test connection.
-        sqlx::query("PRAGMA foreign_keys = OFF")
-            .execute(&pool)
-            .await
-            .unwrap();
-        sqlx::query(
-            "INSERT INTO skill_tag_links
-             (skill_id, tag_id, confidence, reason, source, added_at)
-             VALUES ('ghost-skill', ?, NULL, NULL, 'manual', ?)",
-        )
-        .bind(&alpha.id)
-        .bind(now_rfc3339())
-        .execute(&pool)
-        .await
-        .unwrap();
-
-        let top = list_central_top_tags(&pool, 10).await.unwrap();
-
-        assert_eq!(top.len(), 1);
-        assert_eq!(top[0].id, alpha.id);
-        assert_eq!(top[0].count, 1);
-    }
-
-    #[tokio::test]
-    async fn central_top_tags_excludes_uncategorized() {
-        let pool = mem_pool().await;
-        add_skill(&pool, "central-one", true).await;
-        link_tag(&pool, "central-one", UNCATEGORIZED_TAG_ID).await;
-
-        let top = list_central_top_tags(&pool, 10).await.unwrap();
-
-        assert!(top.is_empty());
-    }
-
-    #[tokio::test]
-    async fn central_top_tags_orders_by_count_desc_then_name_asc() {
-        let pool = mem_pool().await;
-        let beta = create_skill_tag(&pool, "beta", None, None).await.unwrap();
-        let delta = create_skill_tag(&pool, "delta", None, None).await.unwrap();
-        let gamma = create_skill_tag(&pool, "gamma", None, None).await.unwrap();
-        for skill_id in ["s1", "s2", "s3"] {
-            add_skill(&pool, skill_id, true).await;
-        }
-        // 多技能共享同一 tag：gamma 计数 3。
-        for skill_id in ["s1", "s2", "s3"] {
-            link_tag(&pool, skill_id, &gamma.id).await;
-        }
-        // beta / delta 并列 2：按 name ASC（beta < delta）。
-        for skill_id in ["s1", "s2"] {
-            link_tag(&pool, skill_id, &beta.id).await;
-            link_tag(&pool, skill_id, &delta.id).await;
-        }
-
-        let top = list_central_top_tags(&pool, 10).await.unwrap();
-
-        let summary: Vec<(&str, u32)> = top
-            .iter()
-            .map(|tag| (tag.name.as_str(), tag.count))
-            .collect();
-        assert_eq!(summary, [("gamma", 3), ("beta", 2), ("delta", 2)]);
-    }
-
-    #[tokio::test]
-    async fn central_top_tags_applies_limit_and_clamps_range() {
-        let pool = mem_pool().await;
-        add_skill(&pool, "central-one", true).await;
-        for index in 0..55 {
-            let tag = create_skill_tag(&pool, &format!("tag-{index:02}"), None, None)
-                .await
-                .unwrap();
-            link_tag(&pool, "central-one", &tag.id).await;
-        }
-
-        // limit 截断生效。
-        let top3 = list_central_top_tags(&pool, 3).await.unwrap();
-        assert_eq!(top3.len(), 3);
-
-        // clamp 范围 1..=50：0 → 1，999 → 50。
-        let clamped_low = list_central_top_tags(&pool, 0).await.unwrap();
-        assert_eq!(clamped_low.len(), 1);
-        let clamped_high = list_central_top_tags(&pool, 999).await.unwrap();
-        assert_eq!(clamped_high.len(), 50);
-    }
-}
+mod tests;
