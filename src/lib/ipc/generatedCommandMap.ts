@@ -52,12 +52,16 @@ export const GENERATED_IPC_COMMANDS = {
   get_central_skill_update_states: command<undefined, SkillUpdateState[]>(),
   get_collection_detail: command<{ collectionId: string }, CollectionDetail>(),
   get_collections: command<undefined, Collection[]>(),
+  get_data_change_marker: command<undefined, DataChangeMarker>(),
   get_github_pat: command<undefined, GitHubPatState_Serialize>(),
   get_pending_ai_tag_reviews: command<undefined, SkillAiTagReview[]>(),
   get_project_skills: command<{ id: string }, ProjectSkillDto[]>(),
   get_scan_directories: command<undefined, ScanDirectory[]>(),
   get_settings: command<{ keys: string[] }, { [key in string]: string | null }>(),
-  get_skill_explanation: command<{ skillId: string; lang: string }, string | null>(),
+  get_skill_explanation: command<{ skillId: string; lang: string }, {
+	explanation: string,
+	model: string | null,
+} | null>(),
   get_skill_repositories: command<undefined, SkillRepositoryWithStats[]>(),
   get_skill_tags: command<undefined, SkillTag[]>(),
   get_skill_update_inventory: command<{ scope: {
@@ -187,6 +191,7 @@ export const GENERATED_IPC_COMMAND_NAMES = [
   "get_central_skill_update_states",
   "get_collection_detail",
   "get_collections",
+  "get_data_change_marker",
   "get_github_pat",
   "get_pending_ai_tag_reviews",
   "get_project_skills",
@@ -692,6 +697,14 @@ export type CollectionDetail = {
 	/**  All skills that are members of this collection. */
 	skills: Skill[],
 };
+
+/**
+ *  IPC view of [`crate::db::data_change_marker`].
+ * 
+ *  Serde emits a bare number. Specta cannot export `i64` without losing
+ *  precision, so the field is typed as a TypeScript `number`.
+ */
+export type DataChangeMarker = number;
 
 /**  一日的调用数（用于 16 周热力图与每日趋势）。`date` 为 ISO `YYYY-MM-DD`。 */
 export type DayCount = {
@@ -1337,6 +1350,12 @@ export type SkillAiTagReview = {
 	suggested_at: string,
 	updated_at: string,
 	is_proposal: boolean,
+};
+
+/**  One present `skill_explanations` row. `model` is null when the column is null. */
+export type SkillExplanation = {
+	explanation: string,
+	model: string | null,
 };
 
 /**

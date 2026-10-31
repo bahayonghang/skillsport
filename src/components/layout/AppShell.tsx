@@ -15,6 +15,11 @@ import { useSkillStore } from "@/stores/skillStore";
 import { useMarketplaceStore } from "@/stores/marketplaceStore";
 import { useImportIntentStore } from "@/stores/importIntentStore";
 import { useProjectsStore } from "@/stores/projectsStore";
+import {
+  cancelScheduledExternalChangeRefresh,
+  captureExternalChangeBaseline,
+  scheduleExternalChangeRefresh,
+} from "@/stores/externalChangeWatcher";
 import { useSkillsCliStore } from "@/stores/skillsCliStore";
 import { isTauriRuntime, listen } from "@/lib/ipc";
 
@@ -146,6 +151,25 @@ export function AppShell() {
     if (!mainRef.current) return;
     mainRef.current.scrollTop = 0;
   }, [pathname]);
+
+  useEffect(() => {
+    captureExternalChangeBaseline();
+    const onFocus = () => {
+      scheduleExternalChangeRefresh();
+    };
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        scheduleExternalChangeRefresh();
+      }
+    };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      cancelScheduledExternalChangeRefresh();
+    };
+  }, []);
 
   useEffect(() => {
     if (!isTauriRuntime()) {

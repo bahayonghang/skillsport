@@ -565,7 +565,7 @@ pub async fn get_skill_explanation(
     state: State<'_, AppState>,
     skill_id: String,
     lang: String,
-) -> crate::ipc_error::IpcResult<Option<String>> {
+) -> crate::ipc_error::IpcResult<Option<ai_provider::SkillExplanation>> {
     crate::ipc_boundary!(
         "get_skill_explanation",
         async move {

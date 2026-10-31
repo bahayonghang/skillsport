@@ -126,6 +126,7 @@ export function SkillDetailView({
   const uninstallSkill = useSkillDetailStore((s) => s.uninstallSkill);
   const refreshInstallations = useSkillDetailStore((s) => s.refreshInstallations);
   const storeExplanation = useSkillDetailStore((s) => s.explanation);
+  const explanationModel = useSkillDetailStore((s) => s.explanationModel);
   const storeIsExplanationLoading = useSkillDetailStore((s) => s.isExplanationLoading);
   const isExplanationStreaming = useSkillDetailStore((s) => s.isExplanationStreaming);
   const explanationError = useSkillDetailStore((s) => s.explanationError);
@@ -190,6 +191,7 @@ export function SkillDetailView({
   const [selectedRepositoryId, setSelectedRepositoryId] = useState("");
   const [selectedTagId, setSelectedTagId] = useState("");
   const [isUpdateConfirmOpen, setIsUpdateConfirmOpen] = useState(false);
+  const [isAgentExplanationConfirmOpen, setIsAgentExplanationConfirmOpen] = useState(false);
   const [pendingUpdateStates, setPendingUpdateStates] = useState<CentralSkillUpdateState[]>([]);
   const [pendingPlatformUninstall, setPendingPlatformUninstall] =
     useState<InstalledPlatformUninstallRequest | null>(null);
@@ -430,9 +432,29 @@ export function SkillDetailView({
       return;
     }
     if (explanationRequestKey && content) {
+      if (explanationModel?.startsWith("agent:")) {
+        setIsAgentExplanationConfirmOpen(true);
+        return;
+      }
       refreshExplanation(explanationRequestKey, content, i18n.language);
     }
-  }, [content, explanationRequestKey, handleGenerateExplanation, i18n.language, isFileMode, refreshExplanation]);
+  }, [
+    content,
+    explanationModel,
+    explanationRequestKey,
+    handleGenerateExplanation,
+    i18n.language,
+    isFileMode,
+    refreshExplanation,
+  ]);
+
+  const handleConfirmAgentExplanationRefresh = useCallback(() => {
+    setIsAgentExplanationConfirmOpen(false);
+    if (!explanationRequestKey || !content || isFileMode) {
+      return;
+    }
+    refreshExplanation(explanationRequestKey, content, i18n.language);
+  }, [content, explanationRequestKey, i18n.language, isFileMode, refreshExplanation]);
 
   const handleOpenSourcePath = useCallback(async () => {
     if (!sourceMetadata) {
@@ -698,6 +720,36 @@ export function SkillDetailView({
         isApplying={isUpdatingThisSkill}
         onConfirm={handleConfirmUpdateSkill}
       />
+
+      <Dialog
+        open={isAgentExplanationConfirmOpen}
+        onOpenChange={setIsAgentExplanationConfirmOpen}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("detail.agentExplanationOverwriteTitle")}</DialogTitle>
+            <DialogDescription>
+              {t("detail.agentExplanationOverwriteDesc")}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsAgentExplanationConfirmOpen(false)}
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button
+              type="button"
+              data-testid="confirm-agent-explanation-overwrite"
+              onClick={handleConfirmAgentExplanationRefresh}
+            >
+              {t("detail.agentExplanationOverwriteConfirm")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={pendingPlatformUninstall !== null}
