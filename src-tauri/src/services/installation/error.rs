@@ -184,6 +184,28 @@ pub enum InstallationError {
 
     #[error("{0}")]
     ProjectInstallRecord(String),
+
+    // ── Local directory import ───────────────────────────────────────────────
+    #[error("Import source '{0}' is not an existing directory")]
+    LocalImportSourceInvalid(String),
+
+    #[error("Import source '{0}' overlaps the Central skills directory")]
+    LocalImportOverlapsCentral(String),
+
+    #[error("Import source '{0}' does not yield a valid skill id")]
+    LocalImportSkillIdInvalid(String),
+
+    #[error("Import source '{0}' does not contain a SKILL.md file")]
+    LocalImportManifestMissing(String),
+
+    #[error("SKILL.md in '{0}' has no frontmatter with a name")]
+    LocalImportManifestInvalid(String),
+
+    #[error("Import source contains a symbolic link at '{0}'")]
+    LocalImportSymlinkRejected(String),
+
+    #[error("Skill '{0}' already exists in Central; pass --replace to overwrite it")]
+    LocalImportTargetExists(String),
 }
 
 impl InstallationError {

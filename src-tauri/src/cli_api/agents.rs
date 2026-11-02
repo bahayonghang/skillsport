@@ -4,7 +4,7 @@ use crate::db::repos::agents_repo;
 use crate::db::Agent;
 use crate::paths::{path_to_string, platform_global_skills_dir, PlatformPathSpec};
 
-use super::{CliApiError, CliContext};
+use super::{CliApiError, CliContext, CliEntity};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -38,6 +38,33 @@ impl CliContext {
         }
         Ok(listed)
     }
+}
+
+/// Resolve the agent a write command targets. Unknown ids are
+/// `agent.not_found`; the Central agent is never a valid target. Install
+/// paths also reject disabled agents; uninstall paths accept them so stale
+/// installs can still be removed.
+pub(super) async fn resolve_target_agent(
+    pool: &crate::db::DbPool,
+    agent_id: &str,
+    require_enabled: bool,
+) -> Result<Agent, CliApiError> {
+    let agent = agents_repo::get_agent_by_id(pool, agent_id)
+        .await?
+        .ok_or_else(|| {
+            CliApiError::not_found(CliEntity::Agent, format!("Agent '{agent_id}' not found"))
+        })?;
+    if is_central_agent(&agent) {
+        return Err(CliApiError::InvalidInput(
+            "The Central agent cannot be an install or uninstall target".to_string(),
+        ));
+    }
+    if require_enabled && !agent.is_enabled {
+        return Err(CliApiError::InvalidInput(format!(
+            "Agent '{agent_id}' is disabled"
+        )));
+    }
+    Ok(agent)
 }
 
 fn is_central_agent(agent: &Agent) -> bool {

@@ -3,7 +3,7 @@ use std::path::PathBuf;
 
 use serde::Serialize;
 
-use crate::db::repos::{agents_repo, tags_repo};
+use crate::db::repos::{agents_repo, installations_repo, tags_repo};
 use crate::db::{self, DbPool};
 use crate::operation_log::{
     local_target_context, record_operation_log_best_effort, OperationLogEvent,
@@ -11,9 +11,12 @@ use crate::operation_log::{
 use crate::services::{central_skills, github_import, installation, marketplace};
 use crate::targets::ActiveTarget;
 
+use super::agents::resolve_target_agent;
+use super::confirm::{self, ConfirmDecision, MutationOutput};
+use super::tags::resolve_skills;
 use super::{
-    mutation_error, parse_install_source, CliApiError, CliContext, CliEntity, CliSkill,
-    InstallFailure, InstallOutput, InstallSource, SyncOutput, SyncPlanItem,
+    mutation_error, parse_install_source, record_cli_mutation_log, CliApiError, CliContext,
+    CliEntity, CliSkill, InstallFailure, InstallOutput, InstallSource, SyncOutput, SyncPlanItem,
 };
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -103,7 +106,7 @@ fn marketplace_error(error: marketplace::MarketplaceError) -> CliApiError {
 }
 
 impl CliApiError {
-    fn duplicate(skill: String) -> Self {
+    pub(super) fn duplicate(skill: String) -> Self {
         Self::Duplicate(format!(
             "Skill '{skill}' already exists; pass --replace to overwrite it"
         ))
@@ -433,6 +436,188 @@ impl CliContext {
     }
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UnlinkPlan {
+    pub skill_uid: String,
+    pub skill_id: String,
+    pub agent_id: String,
+    /// Recorded install path, or the agent global path the skill would occupy.
+    pub target_path: String,
+    /// Recorded link type (`symlink`, `copy`, `native`); `None` if not installed.
+    pub link_type: Option<String>,
+    /// A `skill_installations` row exists for this skill and agent.
+    pub installed: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UnlinkFailure {
+    pub skill_id: String,
+    pub error: String,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UnlinkResult {
+    pub succeeded: Vec<String>,
+    /// Skill ids with no install row for the agent; nothing was removed.
+    pub skipped: Vec<String>,
+    pub failed: Vec<UnlinkFailure>,
+}
+
+impl UnlinkResult {
+    pub fn has_failures(&self) -> bool {
+        !self.failed.is_empty()
+    }
+}
+
+impl CliContext {
+    /// Remove Central skills from one agent's global skills directory through
+    /// `installation::uninstall_skill`, the service the GUI
+    /// `uninstall_skill_from_agent` command uses. Each item takes the shared
+    /// Local Central mutation lock inside that service. Always needs `--yes`.
+    ///
+    /// If the lock is busy before anything was removed, the whole command
+    /// fails with `mutation.busy`. If it becomes busy after at least one
+    /// removal, the remaining items are reported as failed.
+    pub async fn unlink_skills(
+        &self,
+        references: &[String],
+        agent_id: &str,
+        dry_run: bool,
+        yes: bool,
+    ) -> Result<MutationOutput<UnlinkPlan, UnlinkResult>, CliApiError> {
+        let agent = resolve_target_agent(&self.db, agent_id, false).await?;
+        let skills = resolve_skills(&self.db, references).await?;
+        let mut plans = Vec::with_capacity(skills.len());
+        for skill in &skills {
+            let installation = installations_repo::get_skill_installations(&self.db, &skill.id)
+                .await?
+                .into_iter()
+                .find(|record| record.agent_id == agent.id);
+            let target_path = installation
+                .as_ref()
+                .map(|record| record.installed_path.clone())
+                .unwrap_or_else(|| {
+                    PathBuf::from(&agent.global_skills_dir)
+                        .join(&skill.id)
+                        .to_string_lossy()
+                        .into_owned()
+                });
+            plans.push(UnlinkPlan {
+                skill_uid: skill.uid.clone(),
+                skill_id: skill.id.clone(),
+                agent_id: agent.id.clone(),
+                target_path,
+                link_type: installation.as_ref().map(|record| record.link_type.clone()),
+                installed: installation.is_some(),
+            });
+        }
+        if confirm::require(&plans, true, yes, dry_run)? == ConfirmDecision::DryRun {
+            return Ok(MutationOutput::dry_run(plans));
+        }
+
+        let gui_command = if plans.len() > 1 {
+            "batch_uninstall_skills_from_agent"
+        } else {
+            "uninstall_skill_from_agent"
+        };
+        let transport = installation::InstallTransport::for_target(&self.target)
+            .await
+            .map_err(|error| CliApiError::Internal(error.to_string()))?;
+        let mut result = UnlinkResult::default();
+        let mut busy: Option<String> = None;
+        let mut first_failure_code: Option<&'static str> = None;
+        for plan in &plans {
+            if !plan.installed {
+                result.skipped.push(plan.skill_id.clone());
+                continue;
+            }
+            if let Some(message) = &busy {
+                first_failure_code.get_or_insert("mutation.busy");
+                result.failed.push(UnlinkFailure {
+                    skill_id: plan.skill_id.clone(),
+                    error: message.clone(),
+                });
+                continue;
+            }
+            match installation::uninstall_skill(
+                &self.db,
+                &transport,
+                &plan.skill_id,
+                &agent.id,
+                None,
+            )
+            .await
+            {
+                Ok(()) => result.succeeded.push(plan.skill_id.clone()),
+                Err(installation::InstallationError::CentralMutation(error)) => {
+                    let mapped = mutation_error(error);
+                    first_failure_code.get_or_insert(mapped.code());
+                    if !matches!(mapped, CliApiError::Busy(_)) {
+                        result.failed.push(UnlinkFailure {
+                            skill_id: plan.skill_id.clone(),
+                            error: mapped.to_string(),
+                        });
+                        continue;
+                    }
+                    if result.succeeded.is_empty() && result.failed.is_empty() {
+                        record_cli_mutation_log(
+                            &self.db,
+                            gui_command,
+                            None,
+                            "failed",
+                            "Skill uninstall failed.",
+                            Some("mutation.busy"),
+                            serde_json::json!({ "planCount": plans.len() }),
+                        )
+                        .await;
+                        return Err(mapped);
+                    }
+                    let message = mapped.to_string();
+                    result.failed.push(UnlinkFailure {
+                        skill_id: plan.skill_id.clone(),
+                        error: message.clone(),
+                    });
+                    busy = Some(message);
+                }
+                Err(error) => {
+                    first_failure_code.get_or_insert("internal.error");
+                    result.failed.push(UnlinkFailure {
+                        skill_id: plan.skill_id.clone(),
+                        error: error.to_string(),
+                    });
+                }
+            }
+        }
+        let status = match (
+            result.succeeded.len() + result.skipped.len(),
+            result.failed.len(),
+        ) {
+            (_, 0) => "succeeded",
+            (0, _) => "failed",
+            _ => "partial",
+        };
+        record_cli_mutation_log(
+            &self.db,
+            gui_command,
+            None,
+            status,
+            "Skills uninstalled.",
+            first_failure_code,
+            serde_json::json!({
+                "planCount": plans.len(),
+                "succeededCount": result.succeeded.len(),
+                "skippedCount": result.skipped.len(),
+                "failedCount": result.failed.len(),
+            }),
+        )
+        .await;
+        Ok(MutationOutput::applied(plans, result))
+    }
+}
+
 fn cli_skill_from_links(skill: central_skills::SkillWithLinks) -> CliSkill {
     CliSkill {
         uid: skill.uid,
@@ -475,7 +660,7 @@ async fn resolve_tag_ids(pool: &DbPool, tags: &[String]) -> Result<Vec<String>, 
     Ok(ids)
 }
 
-fn validate_method(method: &str) -> Result<(), CliApiError> {
+pub(super) fn validate_method(method: &str) -> Result<(), CliApiError> {
     if matches!(method, "auto" | "symlink" | "copy") {
         Ok(())
     } else {
@@ -485,7 +670,7 @@ fn validate_method(method: &str) -> Result<(), CliApiError> {
     }
 }
 
-async fn selected_agents(
+pub(super) async fn selected_agents(
     pool: &DbPool,
     requested: Vec<String>,
 ) -> Result<Vec<db::Agent>, CliApiError> {
