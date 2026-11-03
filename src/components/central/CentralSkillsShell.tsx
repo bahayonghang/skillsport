@@ -53,7 +53,8 @@ import type {
   CentralSkillUpdateJob,
   SkillRepositoryWithStats,
   SkillTag,
-  SkillportStatePortabilityJob,
+  PortableBundleJob,
+  TargetSummary,
 } from "@/types";
 
 /**
@@ -70,7 +71,10 @@ type ListContentProps = Omit<
   "t" | "selectedCount"
 >;
 type CategorizePanelProps = Omit<CentralSkillCategorizePanelProps, "t">;
-type DialogProps = Omit<ComponentProps<typeof CentralSkillDialogs>, "t">;
+type DialogProps = Omit<ComponentProps<typeof CentralSkillDialogs>, "t"> & {
+  activeTarget: TargetSummary;
+  loadCentralSkills: (options?: { throwOnError?: boolean }) => Promise<void>;
+};
 type InstalledSkillsFilterProps = Omit<
   CentralInstalledSkillsQuickFilterProps,
   "t"
@@ -146,7 +150,7 @@ export interface CentralSkillsShellProps {
     onOpenChange: (open: boolean) => void;
     aiTagJob: AiTagJob;
     updateJob: CentralSkillUpdateJob;
-    portabilityJob: SkillportStatePortabilityJob;
+    portabilityJob: PortableBundleJob;
     onCancelAiTag: () => void;
     onCancelUpdate: () => void;
     onCancelPortability: () => void;
@@ -174,6 +178,15 @@ export interface CentralSkillsShellProps {
 
   /** 命令面板触发。 */
   onOpenPalette?: () => void;
+  /**
+   * 一键清理入口：⋯ 菜单危险项 + 空状态「检查残留安装」。
+   * `showEmptyStateEntry` 仅在中央总数 0 且无筛选时为 true。
+   */
+  clearAll?: {
+    onOpen: () => void;
+    busy: boolean;
+    showEmptyStateEntry: boolean;
+  };
   /** Sidebar 顶部插槽。 */
   savedViewsSlot?: ReactNode;
 }
@@ -218,6 +231,7 @@ export function CentralSkillsShell(props: CentralSkillsShellProps) {
     onToggleRepositoryPin,
     onOpenPalette,
     savedViewsSlot,
+    clearAll,
   } = props;
 
   const openUpdateCenter = useUpdateCenterStore((s) => s.openDialog);
@@ -445,6 +459,8 @@ export function CentralSkillsShell(props: CentralSkillsShellProps) {
                 onOpenTaskCenter={() => taskCenter.onOpenChange(true)}
                 onOpenPlatformManage={() => setIsPlatformManageOpen(true)}
                 onOpenPortability={() => setIsPortabilityOpen(true)}
+                onOpenClearAll={clearAll?.onOpen}
+                clearAllBusy={clearAll?.busy}
               />
             </>
           }
@@ -583,10 +599,16 @@ export function CentralSkillsShell(props: CentralSkillsShellProps) {
           }}
           savedViewsSlot={savedViewsSlot}
         />
-        {viewState.group === "none" ? (
+        {viewState.group === "none" ||
+        (listContent.skillsCount === 0 && !listContent.isLoading) ? (
           <CentralSkillListContent
             {...listContent}
             selectedCount={bulkBar.selectedCount}
+            onCheckResidue={
+              clearAll?.showEmptyStateEntry && !clearAll.busy
+                ? clearAll.onOpen
+                : undefined
+            }
             t={t}
           />
         ) : (

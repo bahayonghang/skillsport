@@ -1,0 +1,11 @@
+{"file": ".trellis/tasks/11-02-central-clear-all/prd.md", "reason": "Parent requirements and scenario matrix"}
+{"file": ".trellis/tasks/11-02-central-clear-all/design.md", "reason": "IPC/event/error contract the UI consumes"}
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend spec index"}
+{"file": ".trellis/spec/frontend/module-boundaries.md", "reason": "Where workflow/store/components live"}
+{"file": ".trellis/spec/frontend/ipc-adapter.md", "reason": "commandMap and fixture seam"}
+{"file": ".trellis/spec/frontend/renderer-authority-boundary.md", "reason": "Renderer passes filters, backend authorizes"}
+{"file": ".trellis/spec/frontend/async-error-feedback.md", "reason": "formatBackendError and toast rules"}
+{"file": ".trellis/spec/frontend/job-correlation-cancellation.md", "reason": "jobId creation, event filtering, cancel"}
+{"file": ".trellis/spec/frontend/glass-surfaces.md", "reason": "Dialog and summary card surfaces"}
+{"file": ".trellis/spec/frontend/icon-control-hit-area.md", "reason": "Menu item and icon control sizing"}
+{"file": ".trellis/spec/frontend/async-ui-test-stability.md", "reason": "Stable async Vitest patterns"}

@@ -10,17 +10,20 @@ a Marketplace preview, or reads/writes a saved credential.
 
 ```rust
 #[tauri::command]
-pub async fn preview_skillport_state_import_file(
+pub async fn preview_portable_bundle_import(
     app: AppHandle,
     state: State<'_, AppState>,
+    job_id: String,
     path: String,
-) -> Result<SkillportStateImportFilePreview, String>;
+) -> Result<PortableBundleImportPreview, IpcError>;
 
 #[tauri::command]
-pub async fn save_skillport_state_export(
+pub async fn export_portable_bundle(
+    app: AppHandle,
+    state: State<'_, AppState>,
+    job_id: String,
     path: String,
-    json: String,
-) -> Result<(), String>;
+) -> Result<PortableBundleExportResult, IpcError>;
 ```
 
 ```ts
@@ -38,11 +41,11 @@ interface SecretValueInputProps {
 - The main WebView has no filesystem permission or `@tauri-apps/plugin-fs`
   dependency. File dialogs return paths only; backend services own all reads and
   writes.
-- Portable-state reads require a regular `.json` file, enforce the shared file
-  budget before and during allocation, reject growth after the opened-handle
-  metadata snapshot, and decode UTF-8 before parsing. Writes validate the
-  manifest and budget before using a same-directory temporary file plus atomic
-  persist.
+- Portable-bundle reads require a regular `.skillport` / `.zip` file and run the
+  shared archive inventory checks within `ResourceBudget::portable_bundle()`
+  before parsing the manifest. Exports write a same-directory temporary file and
+  atomically persist it. Apply re-fingerprints the file, so a file changed after
+  preview is rejected (`portable_bundle.preview_stale`).
 - Direct GitHub preview installation submits only `repoUrl` and `sourcePath` to
   a store action. That action performs a fresh backend preview and imports the
   matching candidate through the existing GitHub staging, target snapshot,
@@ -61,18 +64,19 @@ interface SecretValueInputProps {
 
 | Condition | Required behavior |
 | --- | --- |
-| Selected import is not `.json` or not a regular file | Backend returns a semantic portable-state error; renderer performs no read |
+| Selected import is not `.skillport` / `.zip` or not a regular file | Backend returns `portable_bundle.invalid_path`; renderer performs no read |
 | Declared or streamed bytes exceed the shared budget | Reject before parsing; do not allocate past cap plus one |
 | File grows after metadata snapshot | Reject as changed or over-budget; do not preview partial content |
-| Export payload is invalid or atomic persist fails | Preserve the existing destination and clean the temporary file |
+| Bundle write fails or is cancelled | Preserve the existing destination and clean the temporary file |
 | GitHub candidate disappeared before install | Discard the fresh preview workspace and perform no import |
 | Saved secret is configured | Render a fixed mask with an empty password input; never return plaintext |
 | Capability/import/dependency/inventory set drifts | `pnpm capabilitycheck` and therefore `just ci` fail |
 
 ## 5. Good / Base / Bad Cases
 
-- Good: renderer selects `state.json`; backend reads it with the shared budget,
-  returns `{ json, preview }`, and the existing editor/import flow continues.
+- Good: renderer selects `backup.skillport` and passes only the path; the backend
+  reads it within the bundle budget and returns a preview token plus per-skill
+  classification.
 - Base: an HTTP(S) external link still uses `shell:allow-open` after
   `externalUrl.ts` rejects every other scheme.
 - Bad: a component imports `plugin-fs`, a page fetches `downloadUrl` and writes
@@ -80,9 +84,9 @@ interface SecretValueInputProps {
 
 ## 6. Tests Required
 
-- Rust file-adapter tests: extension, missing/non-file, metadata cap, growth
-  within/over cap, UTF-8, invalid manifest, atomic overwrite, persist failure,
-  and temporary cleanup.
+- Rust portable-bundle tests (`portable_bundle/tests.rs`, `import_tests.rs`):
+  extension, unsafe entries, budget, manifest errors, legacy v1 detection,
+  atomic persist and temporary cleanup, stale/expired previews.
 - Frontend tests: path-only portability IPC, direct GitHub and registry install
   routing, disappeared candidate cleanup, fixed-mask secret UI, and absence of
   reveal commands in production entrypoints.

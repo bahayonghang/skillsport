@@ -10,13 +10,17 @@ fn test_app_state(pool: DbPool) -> AppState {
             "A Central update job is already running.",
         ),
         central_update_snapshots: crate::CentralUpdateSnapshotCache::default(),
-        portable_state_jobs: crate::services::exclusive_job::ExclusiveJobRegistry::new(
+        portable_bundle_jobs: crate::services::exclusive_job::ExclusiveJobRegistry::new(
             "job.portability_busy",
             "A portability job is already running.",
         ),
         skills_cli_jobs: crate::services::exclusive_job::ExclusiveJobRegistry::new(
             "job.skills_cli_busy",
             "A Skills CLI job is already running.",
+        ),
+        central_clear_jobs: crate::services::exclusive_job::ExclusiveJobRegistry::new(
+            "job.central_clear_busy",
+            "A Central clear job is already running.",
         ),
         secrets: std::sync::Arc::new(crate::secrets::MockSecretStore::default()),
         targets: crate::targets::TargetRegistry::default(),

@@ -4,13 +4,15 @@
 
 ### 1. Scope / Trigger
 
-- Trigger: Changing Central Skills taxonomy, skill tag seed data, AI tag suggestions, or frontend tag-filter compatibility.
+- Trigger: Changing Central Skills taxonomy, skill tag seed data, AI tag suggestions, CLI tag writes, or frontend tag-filter compatibility.
 - Owner files: `src-tauri/src/db/seed.rs`, `src-tauri/src/db/types.rs`, `src-tauri/src/services/ai_tagging/*`, and frontend Central Skills tag consumers.
 - Principle: treat `uncategorized` as a system fallback and smart-view filter, not as an ordinary user-facing category.
 
 ### 2. Signatures
 
 - DB tables: `skill_tags`, `skill_tag_links`, `skill_ai_tag_reviews`.
+- `skill_tag_links.source` values: `manual` (GUI assignment, column default), `ai` (AI tagging), `agent` (`skillport-cli tags add` without `--review`). The column has no CHECK constraint; these three are the only values producers may write.
+- CLI entry points: `db::assign_skill_tags(pool, skill_ids, tag_ids, source, confidence, reason)` with `source = "agent"`, and `ai_tagging::enqueue_pending_tag_reviews(pool, skill_id, rows)` for `tags add --review`.
 - Built-in tag constants:
   - `ACADEMIC_RESEARCH_WRITING_TAG_ID = "academic-research-writing"`
   - `UNCATEGORIZED_TAG_ID = "uncategorized"`
@@ -51,7 +53,10 @@
 - A proposal whose trimmed name or derived ID matches an existing tag downgrades to ordinary reuse. If a derived ID belongs to a different name during tag creation, creation falls back to a UUID.
 - Custom tag creation is atomic: insert with conflict handling, then read by unique name. Concurrent same-name creates and accepting the same proposal for multiple skills reuse one row.
 - Accepting a proposal runs tag creation, skill-link upsert, and review status changes in one transaction. The link uses the actual tag ID returned by name-idempotent creation.
-- Manual/AI assignment and pending-review replacement validate every referenced tag and skill before mutation. Each public call uses one transaction and bounded inserts; AI replacement deletes only `source='ai'`, so validation or insert failure restores the old AI/pending set and preserves manual links.
+- AI re-tagging deletes only `source = 'ai'` links, so `manual` and `agent` links survive it. Do not widen that delete.
+- `tags add --review` merges rows into the pending review queue through `enqueue_pending_tag_reviews`; unlike an AI run, it keeps the skill's other pending reviews and creates no link until the user accepts in the GUI.
+- `skillport-cli tags add` never creates a tag: an unknown id or name is `tag.not_found`. Only `tags create` creates tags.
+- Manual/AI/agent assignment and pending-review replacement validate every referenced tag and skill before mutation. Each public call uses one transaction and bounded inserts; AI replacement deletes only `source='ai'`, so validation or insert failure restores the old AI/pending set and preserves manual links.
 - Frontend ordinary filter surfaces must hide unused built-in tags and always hide `uncategorized`; custom tags remain visible even at zero usage. Tag management and assignment surfaces keep the full non-system taxonomy so an unused built-in can receive its first assignment.
 - Selected tag sanitization is based on known ids rather than current visibility. Special filter ids `uncategorized`, `updates`, and `ai-review` remain valid.
 
@@ -72,6 +77,9 @@
 | Two skills propose and accept the same new name | Create one custom tag and link both skills to it |
 | Proposal is skipped | Mark the review skipped; create no tag or link |
 | Pending review points to no tag and has no proposal metadata | Omit it from the review result |
+| CLI `tags add` links a tag, then an AI run re-tags the skill | The `agent` link remains; only `ai` links are replaced |
+| CLI `tags add --review` while other pending reviews exist | New rows merge in; existing pending rows remain; no link is written |
+| CLI `tags add` names a tag that does not exist | `tag.not_found`; no tag or link is created |
 | Normalized tag ID is already owned by another name | Create the new tag with a UUID while preserving name uniqueness |
 | URL or saved view contains a deleted ordinary tag id | Ignore or sanitize the stale id at runtime |
 | URL or saved view contains `uncategorized`, `updates`, or `ai-review` | Preserve the special filter |
@@ -100,6 +108,7 @@
 - Rust DB tests: concurrent same-name creation is idempotent; normalized-ID collisions fall back; accept reuses one tag across skills; skip leaves no tag/link.
 - Rust DB tests: mixed valid/missing assignment writes no links; AI and pending-review replacement survive a second-insert trigger with their old sets intact, then succeed on retry.
 - Rust service test: a proposal-only bulk result reports one proposal and one review count with no `uncategorized` link.
+- Rust CLI tests (`cli_api/mutation_tests.rs`): `tags add` writes `source = 'agent'` and the link survives `replace_skill_ai_tags`; `--review` queues without linking and keeps other pending rows; an unknown tag is `tag.not_found` and creates nothing.
 - Vitest: the review drawer shows the localized proposal badge and description, and accept/skip receive the proposal tag ID.
 - Vitest: ordinary filter UI hides `uncategorized` and unused built-ins, shows used built-ins, and always shows custom tags.
 - Vitest: selected tag sanitization drops stale ordinary ids and preserves special filters.

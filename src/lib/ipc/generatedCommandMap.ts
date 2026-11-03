@@ -52,12 +52,16 @@ export const GENERATED_IPC_COMMANDS = {
   get_central_skill_update_states: command<undefined, SkillUpdateState[]>(),
   get_collection_detail: command<{ collectionId: string }, CollectionDetail>(),
   get_collections: command<undefined, Collection[]>(),
+  get_data_change_marker: command<undefined, DataChangeMarker>(),
   get_github_pat: command<undefined, GitHubPatState_Serialize>(),
   get_pending_ai_tag_reviews: command<undefined, SkillAiTagReview[]>(),
   get_project_skills: command<{ id: string }, ProjectSkillDto[]>(),
   get_scan_directories: command<undefined, ScanDirectory[]>(),
   get_settings: command<{ keys: string[] }, { [key in string]: string | null }>(),
-  get_skill_explanation: command<{ skillId: string; lang: string }, string | null>(),
+  get_skill_explanation: command<{ skillId: string; lang: string }, {
+	explanation: string,
+	model: string | null,
+} | null>(),
   get_skill_repositories: command<undefined, SkillRepositoryWithStats[]>(),
   get_skill_tags: command<undefined, SkillTag[]>(),
   get_skill_update_inventory: command<{ scope: {
@@ -187,6 +191,7 @@ export const GENERATED_IPC_COMMAND_NAMES = [
   "get_central_skill_update_states",
   "get_collection_detail",
   "get_collections",
+  "get_data_change_marker",
   "get_github_pat",
   "get_pending_ai_tag_reviews",
   "get_project_skills",
@@ -299,6 +304,7 @@ export const GENERATED_REVIEWED_IPC_ERROR_CODES = [
   "ai.response_read_failed",
   "ai.timeout",
   "ai.tls",
+  "central.clear_failed",
   "central.reset_failed",
   "central_operation.delete_restore_collision",
   "central_skills.budget_exceeded",
@@ -348,6 +354,7 @@ export const GENERATED_REVIEWED_IPC_ERROR_CODES = [
   "input.invalid",
   "installation.pending_central_recovery",
   "internal.unexpected",
+  "job.central_clear_busy",
   "job.central_update_busy",
   "job.id_mismatch",
   "job.invalid_id",
@@ -378,9 +385,24 @@ export const GENERATED_REVIEWED_IPC_ERROR_CODES = [
   "marketplace.source_unsupported",
   "operation.cancelled",
   "permission.denied",
-  "portable_state.invalid_manifest_json",
-  "portable_state.unsupported_export_kind",
-  "portable_state.unsupported_export_version",
+  "portable_bundle.budget_exceeded",
+  "portable_bundle.decision_required",
+  "portable_bundle.integrity_mismatch",
+  "portable_bundle.internal",
+  "portable_bundle.invalid_path",
+  "portable_bundle.io",
+  "portable_bundle.legacy_v1",
+  "portable_bundle.manifest_encoding",
+  "portable_bundle.manifest_invalid",
+  "portable_bundle.manifest_missing",
+  "portable_bundle.not_a_bundle",
+  "portable_bundle.preview_expired",
+  "portable_bundle.preview_stale",
+  "portable_bundle.rename_invalid",
+  "portable_bundle.target_changed",
+  "portable_bundle.target_io",
+  "portable_bundle.unsafe_entry",
+  "portable_bundle.unsupported_version",
   "recovery.reconcile_guard_unavailable",
   "recovery.reconcile_preflight_blocked",
   "resource.conflict",
@@ -677,6 +699,14 @@ export type CollectionDetail = {
 	/**  All skills that are members of this collection. */
 	skills: Skill[],
 };
+
+/**
+ *  IPC view of [`crate::db::data_change_marker`].
+ * 
+ *  Serde emits a bare number. Specta cannot export `i64` without losing
+ *  precision, so the field is typed as a TypeScript `number`.
+ */
+export type DataChangeMarker = number;
 
 /**  一日的调用数（用于 16 周热力图与每日趋势）。`date` 为 ISO `YYYY-MM-DD`。 */
 export type DayCount = {
@@ -1322,6 +1352,12 @@ export type SkillAiTagReview = {
 	suggested_at: string,
 	updated_at: string,
 	is_proposal: boolean,
+};
+
+/**  One present `skill_explanations` row. `model` is null when the column is null. */
+export type SkillExplanation = {
+	explanation: string,
+	model: string | null,
 };
 
 /**

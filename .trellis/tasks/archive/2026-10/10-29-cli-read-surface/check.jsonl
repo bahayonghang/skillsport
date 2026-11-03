@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/backend/shared-local-cli.md", "reason": "Verify JSON envelope and exit codes unchanged"}
+{"file": ".trellis/spec/backend/layer-boundaries.md", "reason": "Verify no commands:: calls from cli_api"}
+{"file": ".trellis/spec/backend/redaction-policy.md", "reason": "Verify no credentials in output"}
+{"file": ".trellis/spec/quality/index.md", "reason": "Quality spec index"}
+{"file": ".trellis/spec/quality/ci-quality-gate.md", "reason": "just ci gate expectations"}

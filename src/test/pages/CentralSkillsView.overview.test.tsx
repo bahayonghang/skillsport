@@ -3,7 +3,7 @@ import { fireEvent, screen, waitFor } from "@testing-library/react";
 import * as S from "./centralSkillsViewTestSupport";
 
 const {
-  mockExportSkillportState,
+  mockLoadPortabilityExportSummary,
   renderCentralSkillsView,
 } = S;
 
@@ -30,8 +30,11 @@ describe("CentralSkillsView overview（V2 markup）", () => {
     fireEvent.click(screen.getByTestId("central-toolbar-more"));
     fireEvent.click(await screen.findByTestId("central-portability-open"));
 
-    expect(await screen.findByTestId("central-portability-save-export")).toBeInTheDocument();
-    await waitFor(() => expect(mockExportSkillportState).toHaveBeenCalled());
+    // The dialog is lazy-loaded; allow for slow module loading under a parallel run.
+    expect(
+      await screen.findByTestId("central-portability-export-save", {}, { timeout: 5_000 }),
+    ).toBeInTheDocument();
+    await waitFor(() => expect(mockLoadPortabilityExportSummary).toHaveBeenCalled());
   });
 
   it("在顶部直接暴露添加技能入口", () => {

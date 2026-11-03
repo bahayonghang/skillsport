@@ -1,6 +1,6 @@
 # IPC and Capability Inventory
 
-The main WebView has no direct filesystem permission and no saved-secret plaintext command. User-selected portability paths cross typed IPC into the portable-state service, and Marketplace preview installs reuse the Marketplace or GitHub import service boundary.
+The main WebView has no direct filesystem permission and no saved-secret plaintext command. User-selected portability paths cross typed IPC into the portable-bundle service, and Marketplace preview installs reuse the Marketplace or GitHub import service boundary.
 
 External links remain available through `@tauri-apps/plugin-shell`, but `src/lib/externalUrl.ts` accepts only parsed HTTP(S) URLs and the main capability grants only `shell:allow-open`.
 

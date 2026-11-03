@@ -1,7 +1,9 @@
+import { registerCentralClearFixtures } from "./centralClear";
 import { registerMiscFixtures, registerSettingsFixtures } from "./settings";
 import { registerObsidianFixtures } from "./obsidian";
 import { registerOperationLogFixtures } from "./operationLogs";
 import { registerPlatformFixtures } from "./platform";
+import { registerPortableBundleFixtures } from "./portableBundle";
 import { registerRuntimeLogFixtures } from "./runtimeLogs";
 import { registerSavedViewFixtures } from "./savedViews";
 import { registerSkillsFixtures } from "./skills";
@@ -33,4 +35,6 @@ export function installBrowserIpcFixtures(): void {
   registerTagGroupFixtures();
   registerSavedViewFixtures();
   registerRulesFixtures();
+  registerPortableBundleFixtures();
+  registerCentralClearFixtures();
 }

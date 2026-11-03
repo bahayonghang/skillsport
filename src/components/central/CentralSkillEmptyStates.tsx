@@ -1,4 +1,4 @@
-import { Blocks, FolderOpen, Settings } from "lucide-react";
+import { Blocks, FolderOpen, SearchCheck, Settings } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 
@@ -16,7 +16,12 @@ export function CentralSkillEmptyState({ message }: { message: string }) {
   );
 }
 
-export function CentralSkillFirstVisitEmptyState() {
+export function CentralSkillFirstVisitEmptyState({
+  onCheckResidue,
+}: {
+  /** Data-loss case (S5): open the clear-all preview to find leftover links. */
+  onCheckResidue?: () => void;
+} = {}) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const exampleSkillPath = getPlatformSkillFilePath(
@@ -53,6 +58,18 @@ export function CentralSkillFirstVisitEmptyState() {
           <Settings className="size-4" />
           {t("empty.goToSettings")}
         </Button>
+        {onCheckResidue ? (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={onCheckResidue}
+            className="gap-2"
+            data-testid="central-clear-all-empty-open"
+          >
+            <SearchCheck className="size-4" />
+            {t("central.clearAll.emptyStateButton")}
+          </Button>
+        ) : null}
       </div>
     </div>
   );

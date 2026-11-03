@@ -6,6 +6,7 @@ set windows-shell := ["powershell.exe", "-NoProfile", "-Command"]
 # 目标：
 # 1) 以 package.json 为唯一版本源
 # 2) 同步 Tauri / Cargo 元数据中的应用版本
+# 把 package.json 的版本写入 Tauri 与 Cargo
 sync-version:
     node scripts/check/sync-version.mjs
 
@@ -19,6 +20,7 @@ doctor:
 
 # 快速反馈入口；先自动同步版本元数据，再运行 quick lane
 # 提交前仍必须运行 just ci 与 just audit
+# 同步版本后运行 quick lane
 check: sync-version
     node scripts/check/run-ci.mjs --lane quick
 
@@ -31,6 +33,7 @@ check: sync-version
 # 3) 生成物检查保持只读，漂移时失败而不修改工作树
 # 4) GitHub Actions 直接调用 run-ci.mjs，不经过 just，因此 CI 侧版本检查仍然只读
 # 5) common 负责前端、文档、格式与静态合同；Rust lane 负责 Clippy 与测试
+# 同步版本后运行完整本地门禁
 ci: sync-version
     node scripts/check/run-ci.mjs
 
@@ -40,6 +43,7 @@ ci: sync-version
 # 目标：
 # 1) 阻断未批准的 npm high/critical advisory
 # 2) 阻断无精确例外的 Cargo vulnerability
+# 审计生产依赖
 audit:
     pnpm audit:dependencies
 
@@ -49,6 +53,7 @@ audit:
 # 目标：
 # 1) 按当前平台构建 Tauri 应用
 # 2) 把当前平台的安装包/包产物复制到项目根目录 outputs/
+# 构建当前平台安装包并复制到 outputs/
 build: sync-version
     node scripts/build/build.mjs
 
@@ -58,6 +63,7 @@ build: sync-version
 # 目标：
 # 1) macOS 上提示并转为 just build
 # 2) Windows 上复用 build 生成的 NSIS 产物并以 passive 模式运行安装器
+# 构建并安装桌面应用
 install:
     @just {{ if os() == "macos" { "_install_macos" } else if os() == "windows" { "_install_windows" } else { "_install_unsupported" } }}
 
@@ -77,7 +83,9 @@ _install_unsupported:
 # 目标：
 # 1) 启动 Tauri 开发环境
 # 2) 直接运行桌面应用
+# 检查 Tauri 版本后启动开发应用
 dev:
+    node scripts/check/tauri-package-alignment.mjs
     pnpm tauri dev
 
 # ========================================================================
@@ -86,5 +94,10 @@ dev:
 # 目标：
 # 1) 先按当前 Rust/数据库源码刷新 IPC 字典与 schema 表（pnpm docs:gen）
 # 2) 启动 VitePress 开发服务器，srcDir 为仓库根 docs/
+# 生成本地文档并启动预览
 docs:
     pnpm docs:dev
+
+# 列出全部公开配方
+help:
+    @just --list

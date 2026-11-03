@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 import type {
   AiTagJob,
   CentralSkillUpdateJob,
-  SkillportStatePortabilityJob,
+  PortableBundleJob,
 } from "@/types";
 
 /**
@@ -44,7 +44,7 @@ export interface TaskCenterDrawerProps {
   t: TFunction;
   aiTagJob: AiTagJob;
   updateJob: CentralSkillUpdateJob;
-  portabilityJob: SkillportStatePortabilityJob;
+  portabilityJob: PortableBundleJob;
   onCancelAiTag: () => void;
   onCancelUpdate: () => void;
   onCancelPortability: () => void;
@@ -457,7 +457,7 @@ function PortabilityTaskRow({
   onCancel,
 }: {
   t: TFunction;
-  job: SkillportStatePortabilityJob;
+  job: PortableBundleJob;
   onCancel: () => void;
 }) {
   const ratio = job.total > 0 ? Math.min(1, job.completed / job.total) : 0;
@@ -469,7 +469,7 @@ function PortabilityTaskRow({
   const phaseLabel = job.phase
     ? t(`central.portabilityPhase.${job.phase}`)
     : "";
-  const currentText = [job.message ?? phaseLabel, job.currentItem]
+  const currentText = [phaseLabel, job.currentItem]
     .filter((part) => Boolean(part))
     .join(" · ");
 
@@ -491,7 +491,7 @@ function PortabilityTaskRow({
           })}
         </span>
       }
-      error={job.error ?? null}
+      error={job.error ? formatBackendError(job.error, t) : null}
       actions={
         (isRunning || isCancelling) && (
           <Button

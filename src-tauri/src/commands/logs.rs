@@ -5,6 +5,7 @@
 //! thin: it only exposes the read/clear/export commands consumed by the
 //! front-end.
 
+use serde::{Deserialize, Serialize};
 use tauri::State;
 
 use crate::db::{
@@ -23,6 +24,17 @@ use crate::services::central_operation::{
     PendingOperationSummary, PreparedDeleteReconciliationPreview,
 };
 use crate::AppState;
+
+/// IPC view of [`crate::db::data_change_marker`].
+///
+/// Serde emits a bare number. Specta cannot export `i64` without losing
+/// precision, so the field is typed as a TypeScript `number`.
+#[cfg_attr(feature = "ipc-codegen", derive(specta::Type))]
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(transparent)]
+pub struct DataChangeMarker(
+    #[cfg_attr(feature = "ipc-codegen", specta(type = specta_typescript::Number))] pub i64,
+);
 
 fn operation_definition(command: &'static str) -> OperationDefinition {
     match crate::ipc_registry::command_policy(command)
@@ -60,6 +72,23 @@ pub async fn list_operation_logs(
         async move {
             db::list_operation_logs(&state.db, filter)
                 .await
+                .map_err(|e| e.to_string())
+        }
+        .await
+    )
+}
+
+#[tauri::command]
+#[cfg_attr(feature = "ipc-codegen", specta::specta)]
+pub async fn get_data_change_marker(
+    state: State<'_, AppState>,
+) -> crate::ipc_error::IpcResult<DataChangeMarker> {
+    crate::ipc_boundary!(
+        "get_data_change_marker",
+        async move {
+            db::data_change_marker(&state.db)
+                .await
+                .map(DataChangeMarker)
                 .map_err(|e| e.to_string())
         }
         .await

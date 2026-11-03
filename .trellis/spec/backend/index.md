@@ -27,6 +27,7 @@
 - [Local Archive Import Contract](./local-archive-import.md)
 - [Skill Deletion Integrity Contract](./skill-deletion-integrity.md)
 - [Unknown-Source Central Reset Contract](./unknown-source-reset.md)
+- [Central Clear-All Contract](./central-clear-all.md)
 - [Versioned SQLite Migration Contract](./database-migrations.md)
 - [Transactional Metadata and Cache Mutations](./transactional-mutations.md)
 - [Recoverable FS + DB Operation Journal Contract](./fs-db-operation-journal.md)
@@ -37,3 +38,4 @@
 - [Recoverable Desktop Startup Contract](./startup-recovery.md)
 - [Update Inventory Retry and Relocation Contract](./update-inventory-retry.md)
 - [Operation Observability And Correlation Contract](./operation-observability.md)
+- [Portable Bundle v2 Contract](./portable-bundle.md)

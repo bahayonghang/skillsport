@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/frontend/ipc-adapter.md", "reason": "Verify IPC adapter usage"}
+{"file": ".trellis/spec/frontend/renderer-authority-boundary.md", "reason": "Verify no direct invoke in components"}
+{"file": ".trellis/spec/quality/test-suite-layout.md", "reason": "Test placement"}
+{"file": ".trellis/spec/quality/index.md", "reason": "Quality spec index"}
+{"file": ".trellis/spec/quality/ci-quality-gate.md", "reason": "just ci gate expectations"}

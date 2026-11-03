@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend guideline index for startup, i18n, and bundling changes."}
+{"file": ".trellis/spec/frontend/ipc-adapter.md", "reason": "Fixture registration must stay on the IPC adapter seam and run before store init."}
+{"file": ".trellis/spec/quality/test-suite-layout.md", "reason": "Where to keep or extend Vitest coverage for i18n startup."}
+{"file": ".trellis/tasks/10-29-vite-chunk-size-warning/research/chunk-size-warning.md", "reason": "Measured chunk sizes and the failed experiment of deleting manualChunks entirely."}

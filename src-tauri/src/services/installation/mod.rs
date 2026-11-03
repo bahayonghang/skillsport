@@ -7,6 +7,7 @@
 //! - `install`    : single business orchestration of install / uninstall
 //! - `native`     : Local execution half (symlink, copy, fallback, native)
 //! - `remote`     : Remote (SSH/WSL) execution half via remote shell script
+//! - `local_dir_import`: copy an arbitrary local skill directory into Central
 //! - `project`    : project-scoped install (per-project skills directory)
 //! - `batch`      : Cartesian batch install over (skills, agents) pairs
 //! - `types`      : public IPC payload types
@@ -17,6 +18,7 @@ pub(crate) mod directory_link;
 pub mod error;
 pub mod fs_util;
 pub mod install;
+pub mod local_dir_import;
 pub mod native;
 pub mod project;
 pub mod remote;
@@ -33,6 +35,9 @@ pub use error::InstallationError;
 pub(crate) use fs_util::copy_dir_all_blocking;
 pub use fs_util::{copy_dir_all, create_symlink, make_relative_path, symlink_target_path};
 pub use install::{install_skill, uninstall_skill};
+pub use local_dir_import::{
+    import_local_dir, preview_local_dir_import, LocalDirImportPreview, LocalDirImportResult,
+};
 pub use transport::InstallTransport;
 pub use types::{
     BatchInstallResult, BatchUninstallSkillFailure, BatchUninstallSkillRequest,

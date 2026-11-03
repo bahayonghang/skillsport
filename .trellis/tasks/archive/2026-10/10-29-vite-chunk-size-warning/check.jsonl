@@ -1,0 +1,5 @@
+{"file": ".trellis/spec/frontend/index.md", "reason": "Check startup and frontend changes against frontend guidelines."}
+{"file": ".trellis/spec/frontend/ipc-adapter.md", "reason": "Check that browser fixtures still register through the IPC seam before store init."}
+{"file": ".trellis/spec/quality/ci-quality-gate.md", "reason": "Quality gate for the verification commands this task runs."}
+{"file": ".trellis/spec/quality/test-suite-layout.md", "reason": "Check that tests stay in the existing Vitest layout."}
+{"file": ".trellis/tasks/10-29-vite-chunk-size-warning/research/chunk-size-warning.md", "reason": "Acceptance evidence for the 500 kB chunk limit and startup graph."}

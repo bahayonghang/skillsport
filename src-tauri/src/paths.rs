@@ -347,6 +347,28 @@ pub fn paths_equivalent(left: &Path, right: &Path) -> bool {
     normalize_equivalence_path(left) == normalize_equivalence_path(right)
 }
 
+/// Like [`paths_equivalent`], but never follows the final component: a
+/// symlink/junction slot and the directory it points to are different
+/// physical paths. Ancestors are still canonicalized (8.3 names, extended prefix).
+pub fn slot_paths_equivalent(left: &Path, right: &Path) -> bool {
+    normalize_slot_path(left) == normalize_slot_path(right)
+}
+
+fn normalize_slot_path(path: &Path) -> String {
+    let resolved = match (path.parent(), path.file_name()) {
+        (Some(parent), Some(name)) if !parent.as_os_str().is_empty() => {
+            canonicalize_path_with_missing(parent).join(name)
+        }
+        _ => canonicalize_path_with_missing(path),
+    };
+    let value = normalize_stored_path(&resolved.to_string_lossy());
+
+    #[cfg(windows)]
+    let value = value.to_ascii_lowercase();
+
+    value
+}
+
 pub fn canonicalize_path_with_missing(path: &Path) -> PathBuf {
     if let Ok(resolved) = path.canonicalize() {
         return resolved;
@@ -355,6 +377,125 @@ pub fn canonicalize_path_with_missing(path: &Path) -> PathBuf {
         (Some(parent), Some(file_name)) => canonicalize_path_with_missing(parent).join(file_name),
         _ => path.to_path_buf(),
     }
+}
+
+/// Lexical comparison key for prefix/containment checks that must not touch
+/// the filesystem (dangling links, bulk sweeps). Strips the Windows `\\?\`
+/// prefix, uses `/` separators, resolves `.` / `..` lexically, trims trailing
+/// separators, and lowercases on Windows. It does not canonicalize; callers
+/// that need 8.3/symlink equivalence add canonical root variants themselves
+/// (see [`attributable_central_roots_with`]).
+pub fn path_comparison_key(path: &Path) -> String {
+    let value = lexical_normalize_slash_path(&normalize_stored_path(&path.to_string_lossy()));
+
+    #[cfg(windows)]
+    let value = value.to_ascii_lowercase();
+
+    value
+}
+
+/// True when `child` equals `root` or lies below it, by lexical comparison
+/// key (component-aware: `/a/skills` does not contain `/a/skills-old`).
+pub fn path_is_within(root: &Path, child: &Path) -> bool {
+    key_is_within(&path_comparison_key(root), &path_comparison_key(child))
+}
+
+/// Component-aware containment over two keys produced by
+/// [`path_comparison_key`] or [`remote_path_comparison_key`].
+pub fn key_is_within(root_key: &str, child_key: &str) -> bool {
+    if root_key.is_empty() {
+        return false;
+    }
+    if child_key == root_key {
+        return true;
+    }
+    let prefix = if root_key.ends_with('/') {
+        root_key.to_string()
+    } else {
+        format!("{root_key}/")
+    };
+    child_key.starts_with(&prefix)
+}
+
+/// POSIX lexical comparison key for remote paths (case-sensitive).
+pub fn remote_path_comparison_key(path: &str) -> String {
+    let mut value = path.trim().to_string();
+    while value.len() > 1 && value.ends_with('/') {
+        value.pop();
+    }
+    lexical_normalize_slash_path(&value)
+}
+
+/// Central roots whose links SkillPort may treat as its own: the configured
+/// root plus the default app-data and home-derived roots (a previous
+/// location). Each root is returned raw and canonicalized, deduplicated by
+/// comparison key.
+pub fn attributable_central_roots(current: &Path) -> Vec<PathBuf> {
+    attributable_central_roots_with(
+        current,
+        &[
+            central_skills_dir(),
+            central_skills_dir_from_home(&resolve_home_dir()),
+        ],
+    )
+}
+
+pub fn attributable_central_roots_with(current: &Path, defaults: &[PathBuf]) -> Vec<PathBuf> {
+    let mut roots: Vec<PathBuf> = Vec::new();
+    let mut seen = std::collections::HashSet::new();
+    for candidate in std::iter::once(current.to_path_buf()).chain(defaults.iter().cloned()) {
+        if candidate.as_os_str().is_empty() {
+            continue;
+        }
+        let canonical = canonicalize_path_with_missing(&candidate);
+        for path in [candidate, canonical] {
+            if seen.insert(path_comparison_key(&path)) {
+                roots.push(path);
+            }
+        }
+    }
+    roots
+}
+
+/// Remote counterpart of [`attributable_central_roots`]: the configured
+/// Central root and `<remote_home>/.skillsmanage/skills`, as comparison keys.
+pub fn remote_attributable_central_roots(current: &str, remote_home: &str) -> Vec<String> {
+    let mut roots = Vec::new();
+    for candidate in [current.to_string(), remote_central_skills_root(remote_home)] {
+        let key = remote_path_comparison_key(&candidate);
+        if key.starts_with('/') && key != "/" && !roots.contains(&key) {
+            roots.push(key);
+        }
+    }
+    roots
+}
+
+fn lexical_normalize_slash_path(value: &str) -> String {
+    let (prefix, rest) = if let Some(rest) = value.strip_prefix("//") {
+        ("//", rest)
+    } else if let Some(rest) = value.strip_prefix('/') {
+        ("/", rest)
+    } else {
+        ("", value)
+    };
+    let mut parts: Vec<&str> = Vec::new();
+    for segment in rest.split('/') {
+        match segment {
+            "" | "." => {}
+            ".." => {
+                let can_pop = parts
+                    .last()
+                    .is_some_and(|last| *last != ".." && !last.ends_with(':'));
+                if can_pop {
+                    parts.pop();
+                } else if prefix.is_empty() && parts.last().is_none_or(|last| *last == "..") {
+                    parts.push("..");
+                }
+            }
+            other => parts.push(other),
+        }
+    }
+    format!("{prefix}{}", parts.join("/"))
 }
 
 fn normalize_equivalence_path(path: &Path) -> String {

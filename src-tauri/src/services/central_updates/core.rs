@@ -26,6 +26,7 @@ use super::types::{
 const UPDATE_PROGRESS_EVENT: &str = "central://skill-update-progress";
 
 mod batch;
+mod bundle_upsert;
 mod content_upsert;
 #[cfg(test)]
 mod performance_benchmark;
@@ -37,6 +38,7 @@ pub(crate) use batch::{
     recover_pending_update_operation, recover_pending_update_operations, update_skills_batch,
     SkillUpdatePlan,
 };
+pub(crate) use bundle_upsert::{journaled_bundle_content_upsert, BundleContentUpsert};
 pub(crate) use content_upsert::{
     journaled_central_content_upsert, journaled_central_content_upsert_with_fs,
     journaled_central_content_upsert_with_fs_and_progress, JournaledCentralContentUpsert,

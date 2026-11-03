@@ -20,6 +20,10 @@ pub(super) use batch::delete_central_skills_for_target_with_connection_for_tests
 pub use batch::{
     delete_central_skills_impl, delete_central_skills_remote_impl, delete_central_skills_ssh_impl,
 };
+pub(super) use batch::{
+    delete_central_skills_under_guard, public_delete_batch_result,
+    recover_selected_pending_operations_under_guard,
+};
 
 pub use repository::{
     delete_skill_repository_impl, delete_skill_repository_remote_impl,
@@ -33,7 +37,7 @@ pub use reset::{
     reset_unknown_source_skills_impl,
 };
 
-fn skill_delete_dir(skill: &db::Skill) -> Result<PathBuf, CentralSkillsError> {
+pub(super) fn skill_delete_dir(skill: &db::Skill) -> Result<PathBuf, CentralSkillsError> {
     skill
         .canonical_path
         .as_deref()
@@ -42,9 +46,15 @@ fn skill_delete_dir(skill: &db::Skill) -> Result<PathBuf, CentralSkillsError> {
         .ok_or_else(|| CentralSkillsError::SkillNoCanonicalDir(skill.id.clone()))
 }
 
-fn ensure_child_path(root: &Path, child: &Path, label: &str) -> Result<(), CentralSkillsError> {
-    let root_cmp = root.canonicalize().unwrap_or_else(|_| root.to_path_buf());
-    let child_cmp = child.canonicalize().unwrap_or_else(|_| child.to_path_buf());
+pub(super) fn ensure_child_path(
+    root: &Path,
+    child: &Path,
+    label: &str,
+) -> Result<(), CentralSkillsError> {
+    // Path Policy: resolve existing ancestors so a missing child (Central
+    // directory already gone) still compares in the same canonical form.
+    let root_cmp = crate::paths::canonicalize_path_with_missing(root);
+    let child_cmp = crate::paths::canonicalize_path_with_missing(child);
 
     if crate::paths::paths_equivalent(&root_cmp, &child_cmp) {
         return Err(CentralSkillsError::CentralRootDeleteRefused(
@@ -62,7 +72,7 @@ fn ensure_child_path(root: &Path, child: &Path, label: &str) -> Result<(), Centr
     Ok(())
 }
 
-fn validate_skill_dir_removal(path: &Path) -> Result<(), CentralSkillsError> {
+pub(super) fn validate_skill_dir_removal(path: &Path) -> Result<(), CentralSkillsError> {
     match std::fs::symlink_metadata(path) {
         Ok(metadata) if metadata.file_type().is_symlink() || metadata.is_dir() => Ok(()),
         Ok(_) => Err(CentralSkillsError::NotADirectoryDeleteRefused(
@@ -97,7 +107,7 @@ fn validate_installation_removal(
     }
 }
 
-fn remote_skill_delete_dir(skill: &db::Skill) -> Result<String, CentralSkillsError> {
+pub(super) fn remote_skill_delete_dir(skill: &db::Skill) -> Result<String, CentralSkillsError> {
     skill
         .canonical_path
         .as_deref()
@@ -106,7 +116,7 @@ fn remote_skill_delete_dir(skill: &db::Skill) -> Result<String, CentralSkillsErr
         .ok_or_else(|| CentralSkillsError::SkillNoCanonicalDir(skill.id.clone()))
 }
 
-fn normalize_remote_path(path: &str) -> Result<String, CentralSkillsError> {
+pub(super) fn normalize_remote_path(path: &str) -> Result<String, CentralSkillsError> {
     let trimmed = path.trim();
     if trimmed.is_empty() || !trimmed.starts_with('/') || trimmed.contains('\0') {
         return Err(CentralSkillsError::InvalidRemotePath(path.to_string()));

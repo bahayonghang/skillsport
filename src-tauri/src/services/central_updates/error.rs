@@ -125,6 +125,9 @@ pub enum CentralUpdatesError {
     #[error("Remote skill path '{0}' contains unsupported components.")]
     UnsupportedRemotePath(String),
 
+    #[error("Skill file '{path}' exceeds the {limit}-byte entry limit.")]
+    SkillFileTooLarge { path: String, limit: u64 },
+
     #[error("Remote path '{child}' is not under expected root '{root}'.")]
     RemotePathOutsideRoot { child: String, root: String },
 

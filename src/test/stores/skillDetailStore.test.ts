@@ -119,6 +119,7 @@ describe("skillDetailStore", () => {
       installingAgentId: null,
       error: null,
       explanation: null,
+      explanationModel: null,
       isExplanationLoading: false,
       isExplanationStreaming: false,
       explanationError: null,
@@ -340,6 +341,7 @@ describe("skillDetailStore", () => {
       installingAgentId: null,
       error: null,
       explanation: null,
+      explanationModel: null,
       isExplanationLoading: false,
       isExplanationStreaming: false,
       explanationError: null,
@@ -432,6 +434,7 @@ describe("skillDetailStore", () => {
     expect(state.content).toBeNull();
     expect(state.isLoading).toBe(false);
     expect(state.error).toBeNull();
+    expect(state.explanationModel).toBeNull();
   });
 
   // ── explanation streaming ────────────────────────────────────────────────
@@ -671,7 +674,10 @@ describe("skillDetailStore", () => {
   });
 
   it("loads cached explanations with a row-aware Claude key", async () => {
-    vi.mocked(invoke).mockResolvedValueOnce("Plugin-specific explanation");
+    vi.mocked(invoke).mockResolvedValueOnce({
+      explanation: "Plugin-specific explanation",
+      model: "agent:test",
+    });
 
     await useSkillDetailStore
       .getState()
@@ -684,6 +690,29 @@ describe("skillDetailStore", () => {
     expect(useSkillDetailStore.getState().explanation).toBe(
       "Plugin-specific explanation"
     );
+    expect(useSkillDetailStore.getState().explanationModel).toBe("agent:test");
+  });
+
+  it("keeps a null explanation model and clears it when no row exists", async () => {
+    vi.mocked(invoke).mockResolvedValueOnce({
+      explanation: "Generated note",
+      model: null,
+    });
+
+    await useSkillDetailStore
+      .getState()
+      .loadCachedExplanation("frontend-design", "zh");
+
+    expect(useSkillDetailStore.getState().explanation).toBe("Generated note");
+    expect(useSkillDetailStore.getState().explanationModel).toBeNull();
+
+    vi.mocked(invoke).mockResolvedValueOnce(null);
+    await useSkillDetailStore
+      .getState()
+      .loadCachedExplanation("frontend-design", "en");
+
+    expect(useSkillDetailStore.getState().explanation).toBeNull();
+    expect(useSkillDetailStore.getState().explanationModel).toBeNull();
   });
 
   it("generates explanations with a row-aware Claude key", async () => {
@@ -719,12 +748,20 @@ describe("skillDetailStore", () => {
   });
 
   it("enters loading state immediately for cached explanation lookup and ignores stale responses", async () => {
-    let resolveFirst!: (value: string | null) => void;
-    let resolveSecond!: (value: string | null) => void;
+    let resolveFirst!: (value: { explanation: string; model: string | null } | null) => void;
+    let resolveSecond!: (value: { explanation: string; model: string | null } | null) => void;
 
     vi.mocked(invoke)
-      .mockReturnValueOnce(new Promise<string | null>((r) => (resolveFirst = r)))
-      .mockReturnValueOnce(new Promise<string | null>((r) => (resolveSecond = r)));
+      .mockReturnValueOnce(
+        new Promise((r) => {
+          resolveFirst = r;
+        }),
+      )
+      .mockReturnValueOnce(
+        new Promise((r) => {
+          resolveSecond = r;
+        }),
+      );
 
     const firstRequest = useSkillDetailStore
       .getState()
@@ -737,17 +774,18 @@ describe("skillDetailStore", () => {
       .getState()
       .loadCachedExplanation("frontend-design", "en");
 
-    resolveFirst("旧缓存");
+    resolveFirst({ explanation: "旧缓存", model: "agent:old" });
     await firstRequest;
 
     expect(useSkillDetailStore.getState().isExplanationLoading).toBe(true);
     expect(useSkillDetailStore.getState().explanation).toBeNull();
 
-    resolveSecond("Fresh cache");
+    resolveSecond({ explanation: "Fresh cache", model: null });
     await secondRequest;
 
     const state = useSkillDetailStore.getState();
     expect(state.explanation).toBe("Fresh cache");
+    expect(state.explanationModel).toBeNull();
     expect(state.isExplanationLoading).toBe(false);
     expect(state.explanationError).toBeNull();
   });

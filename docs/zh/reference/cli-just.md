@@ -11,6 +11,7 @@
 | `just dev` | 启动 Tauri 开发模式（`pnpm tauri dev`）。 |
 | `just build` | 按当前平台构建，并把产物拷入 `outputs/`。 |
 | `just install` | Windows 上构建 NSIS 安装包并以 passive 模式启动安装；macOS 上显示提醒并改为运行 `just build`。 |
+| `just help` | 列出全部公开配方。不带参数的 `just` 仍会运行第一条配方 `sync-version`。 |
 
 ## 实现
 
@@ -21,6 +22,7 @@ just sync-version  →  node scripts/check/sync-version.mjs
 just ci            →  node scripts/check/run-ci.mjs
 just build         →  node scripts/build/build.mjs
 just install       →  macOS：just build；Windows：先 just build，再 node scripts/build/install.mjs
+just help           →  just --list
 ```
 
 要看每条配方实际做什么，最快的方式是同时读 `justfile` 和对应 Node 脚本。

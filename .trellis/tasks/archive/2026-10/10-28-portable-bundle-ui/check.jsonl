@@ -1,0 +1,8 @@
+{"file": ".trellis/tasks/10-28-central-state-portability-v2/prd.md", "reason": "父任务需求与验收"}
+{"file": ".trellis/tasks/10-28-central-state-portability-v2/design.md", "reason": "共享格式/IPC/管线契约"}
+{"file": ".trellis/tasks/10-28-central-state-portability-v2/research/root-cause-analysis.md", "reason": "根因与现场证据"}
+{"file": ".trellis/spec/frontend/renderer-authority-boundary.md", "reason": "权限边界"}
+{"file": ".trellis/spec/frontend/job-correlation-cancellation.md", "reason": "作业状态"}
+{"file": ".trellis/spec/quality/index.md", "reason": "质量规范索引"}
+{"file": ".trellis/spec/quality/ci-quality-gate.md", "reason": "just ci 关口"}
+{"file": ".trellis/spec/quality/observability-gates.md", "reason": "日志与脱敏关口"}

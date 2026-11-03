@@ -1,0 +1,4 @@
+{"file": ".trellis/tasks/10-29-agent-operable-skillport/design.md", "reason": "Parent design: layering, command surface, contracts"}
+{"file": ".trellis/tasks/10-29-agent-operable-skillport/research/current-surface.md", "reason": "Existing CLI surface and reusable backend entry points"}
+{"file": ".trellis/spec/backend/shared-local-cli.md", "reason": "Commands, exit codes and confirmation contract the skill documents"}
+{"file": ".trellis/spec/guides/index.md", "reason": "Writing guides index"}

@@ -55,24 +55,6 @@ fn sibling_path(path: &Path, suffix: &str) -> Result<PathBuf, sqlx::Error> {
     Ok(path.with_file_name(name))
 }
 
-fn rename_with_retry(source: &Path, target: &Path) -> io::Result<()> {
-    const ATTEMPTS: usize = 40;
-    for attempt in 0..ATTEMPTS {
-        match std::fs::rename(source, target) {
-            Ok(()) => return Ok(()),
-            Err(error)
-                if cfg!(windows)
-                    && attempt + 1 < ATTEMPTS
-                    && matches!(error.raw_os_error(), Some(5 | 32)) =>
-            {
-                std::thread::sleep(std::time::Duration::from_millis(50));
-            }
-            Err(error) => return Err(error),
-        }
-    }
-    unreachable!("rename retry loop always returns")
-}
-
 async fn sqlite_integrity_result(path: &Path) -> Result<String, sqlx::Error> {
     let options = SqliteConnectOptions::new().filename(path).read_only(true);
     let mut connection = SqliteConnection::connect_with(&options).await?;
@@ -213,7 +195,7 @@ pub(super) async fn restore_backup(
         "database migration restore",
         move || {
             if restore_database_path.exists() {
-                rename_with_retry(&restore_database_path, &failed_path)
+                crate::fs_util::rename_with_retry(&restore_database_path, &failed_path)
                     .map_err(|error| io_context("quarantine database", error))?;
             }
             for companion in [

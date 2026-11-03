@@ -70,7 +70,7 @@ describe("backend error helpers", () => {
         "job.portability_busy:A portability job is already running.",
         i18n.t,
       ),
-    ).toBe("已有 SkillPort 状态导入或导出任务正在运行。");
+    ).toBe("已有便携包导入或导出任务在运行。");
   });
 
   it("preserves and localizes the archive redirect code without retaining details", async () => {

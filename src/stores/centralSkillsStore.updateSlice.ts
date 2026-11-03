@@ -1,23 +1,16 @@
 import { invoke, isTauriRuntime, listen } from "@/lib/ipc";
-import { parseBackendError } from "@/lib/backendError";
 import {
   AiTagProgressPayload,
   CentralSkillUpdateProgressPayload,
-  SkillportStatePortabilityProgressPayload,
-  SkillportStateImportResolution,
-  SkillportStateImportResult,
 } from "@/types";
 import {
   AI_TAG_PROGRESS_EVENT,
   CENTRAL_UPDATE_PROGRESS_EVENT,
-  PORTABILITY_PROGRESS_EVENT,
   createCentralSkillsInitialState,
-  createIdlePortabilityJob,
   createLocalJobId,
   createRunningUpdateJob,
   indexUpdateStates,
   mergeAiTagProgress,
-  mergePortabilityProgress,
   mergeUpdateProgress,
   mergeUpdateStates,
 } from "./centralSkillsStore.shared";
@@ -50,13 +43,6 @@ export function createCentralUpdateSlice({ set, get, bumpGeneration }: CentralSt
   | "cancelAiTagJob"
   | "subscribeAiTagProgress"
   | "subscribeUpdateProgress"
-  | "subscribePortabilityProgress"
-  | "cancelSkillportStatePortability"
-  | "exportSkillportState"
-  | "saveSkillportStateExport"
-  | "previewSkillportStateImport"
-  | "previewSkillportStateImportFile"
-  | "importSkillportState"
   | "resetForTargetChange"
 > {
   return {
@@ -416,227 +402,6 @@ export function createCentralUpdateSlice({ set, get, bumpGeneration }: CentralSt
         updateJob: mergeUpdateProgress(state.updateJob, event.payload),
       }));
     });
-  },
-
-  subscribePortabilityProgress: async () => {
-    if (!isTauriRuntime()) {
-      return () => {};
-    }
-
-    return listen<SkillportStatePortabilityProgressPayload>(PORTABILITY_PROGRESS_EVENT, (event) => {
-      set((state) => ({
-        portabilityJob: mergePortabilityProgress(state.portabilityJob, event.payload),
-      }));
-    });
-  },
-
-  cancelSkillportStatePortability: async () => {
-    if (!isTauriRuntime()) {
-      return;
-    }
-    const jobId = get().portabilityJob.jobId;
-    if (!jobId) {
-      return;
-    }
-    set((state) =>
-      state.portabilityJob.status === "running"
-        ? { portabilityJob: { ...state.portabilityJob, status: "cancelling" } }
-        : {}
-    );
-    try {
-      await invoke("cancel_skillport_state_portability", { jobId });
-    } catch (err) {
-      set((state) => state.portabilityJob.jobId === jobId ? { error: String(err) } : {});
-      throw err;
-    }
-  },
-
-  exportSkillportState: async () => {
-    assertJobCanStart(
-      get().portabilityJob.status,
-      "job.portability_busy",
-      "A portability job is already running.",
-    );
-    const jobId = createLocalJobId();
-    set({
-      portabilityJob: {
-        ...createIdlePortabilityJob(),
-        jobId,
-        phase: "exporting",
-        status: "running",
-        total: 1,
-      },
-    });
-    try {
-      const json = await invoke("export_skillport_state", { jobId, options: {} });
-      set((state) => state.portabilityJob.jobId === jobId ? ({
-        portabilityJob:
-          state.portabilityJob.jobId === jobId && state.portabilityJob.status === "running"
-            ? { ...state.portabilityJob, status: "completed", completed: state.portabilityJob.total }
-            : state.portabilityJob,
-      }) : {});
-      return json;
-    } catch (err) {
-      set((state) => state.portabilityJob.jobId === jobId ? ({
-        portabilityJob: {
-          ...state.portabilityJob,
-          status: parseBackendError(err).code === "operation.cancelled" ? "cancelled" : "failed",
-          error: String(err),
-        },
-      }) : {});
-      throw err;
-    }
-  },
-
-  saveSkillportStateExport: async (path: string, json: string) => {
-    await invoke("save_skillport_state_export", { path, json });
-  },
-
-  previewSkillportStateImport: async (json: string) => {
-    assertJobCanStart(
-      get().portabilityJob.status,
-      "job.portability_busy",
-      "A portability job is already running.",
-    );
-    const jobId = createLocalJobId();
-    set({
-      portabilityJob: {
-        ...createIdlePortabilityJob(),
-        jobId,
-        phase: "previewing",
-        status: "running",
-        total: 3,
-      },
-    });
-    try {
-      const preview = await invoke("preview_skillport_state_import", {
-        jobId,
-        json,
-      });
-      set((state) => state.portabilityJob.jobId === jobId ? ({
-        portabilityJob:
-          state.portabilityJob.jobId === jobId && state.portabilityJob.status === "running"
-            ? { ...state.portabilityJob, status: "completed", completed: state.portabilityJob.total }
-            : state.portabilityJob,
-      }) : {});
-      return preview;
-    } catch (err) {
-      set((state) => state.portabilityJob.jobId === jobId ? ({
-        portabilityJob: {
-          ...state.portabilityJob,
-          status: parseBackendError(err).code === "operation.cancelled" ? "cancelled" : "failed",
-          error: String(err),
-        },
-      }) : {});
-      throw err;
-    }
-  },
-
-  previewSkillportStateImportFile: async (path: string) => {
-    assertJobCanStart(
-      get().portabilityJob.status,
-      "job.portability_busy",
-      "A portability job is already running.",
-    );
-    const jobId = createLocalJobId();
-    set({
-      portabilityJob: {
-        ...createIdlePortabilityJob(),
-        jobId,
-        phase: "previewing",
-        status: "running",
-        total: 3,
-      },
-    });
-    try {
-      const result = await invoke(
-        "preview_skillport_state_import_file",
-        { jobId, path },
-      );
-      set((state) => state.portabilityJob.jobId === jobId ? ({
-        portabilityJob:
-          state.portabilityJob.jobId === jobId && state.portabilityJob.status === "running"
-            ? { ...state.portabilityJob, status: "completed", completed: state.portabilityJob.total }
-            : state.portabilityJob,
-      }) : {});
-      return result;
-    } catch (err) {
-      set((state) => state.portabilityJob.jobId === jobId ? ({
-        portabilityJob: {
-          ...state.portabilityJob,
-          status: parseBackendError(err).code === "operation.cancelled" ? "cancelled" : "failed",
-          error: String(err),
-        },
-      }) : {});
-      throw err;
-    }
-  },
-
-  importSkillportState: async (json: string, resolutions: SkillportStateImportResolution[]) => {
-    assertJobCanStart(
-      get().portabilityJob.status,
-      "job.portability_busy",
-      "A portability job is already running.",
-    );
-    const jobId = createLocalJobId();
-    set({
-      portabilityJob: {
-        ...createIdlePortabilityJob(),
-        jobId,
-        phase: "importing",
-        status: "running",
-        total: Math.max(1, resolutions.length),
-      },
-    });
-    let result: SkillportStateImportResult;
-    try {
-      result = await invoke("import_skillport_state", {
-        jobId,
-        json,
-        resolutions,
-      });
-    } catch (err) {
-      set((state) => state.portabilityJob.jobId === jobId ? ({
-        portabilityJob: {
-          ...state.portabilityJob,
-          status: parseBackendError(err).code === "operation.cancelled" ? "cancelled" : "failed",
-          error: String(err),
-        },
-      }) : {});
-      throw err;
-    }
-    try {
-      const [skills, repositories, tags, updateStates] = await Promise.all([
-        invoke("get_central_skills"),
-        invoke("get_skill_repositories"),
-        invoke("get_skill_tags"),
-        invoke("get_central_skill_update_states"),
-      ]);
-      set((state) => state.portabilityJob.jobId === jobId ? ({
-          skills: skills ?? [],
-          repositories: repositories ?? [],
-          tags: tags ?? [],
-          updateStatuses: indexUpdateStates(updateStates ?? []),
-          portabilityJob: {
-            ...state.portabilityJob,
-            status: result.cancelled
-              ? "cancelled"
-              : result.failedSkills.length > 0
-                ? "failed"
-                : "completed",
-          },
-        }) : {});
-      return result;
-    } catch (err) {
-      set((state) => state.portabilityJob.jobId === jobId ? ({
-        portabilityJob: {
-          ...state.portabilityJob,
-          status: "failed",
-          error: String(err),
-        },
-      }) : {});
-      throw err;
-    }
   },
 
   resetForTargetChange: () => {

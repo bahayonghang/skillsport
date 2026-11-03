@@ -345,6 +345,72 @@ async fn load_cached_skill_explanation_drops_empty_rows() {
 }
 
 #[tokio::test]
+async fn get_skill_explanation_impl_returns_model_and_drops_empty_rows() {
+    let (pool, dir) = setup_test_db().await;
+
+    for skill_id in ["with-model", "null-model", "empty-row"] {
+        crate::test_support::seed_central_skill(
+            &pool,
+            &dir.path().join(skill_id),
+            skill_id,
+            "Test skill",
+        )
+        .await;
+    }
+
+    for (skill_id, explanation, model) in [
+        ("with-model", "Agent note", Some("agent:test")),
+        ("null-model", "Generated note", None),
+        ("empty-row", "   ", Some("agent:test")),
+    ] {
+        sqlx::query(
+            "INSERT INTO skill_explanations (skill_id, explanation, lang, model, created_at, updated_at)
+             VALUES (?, ?, ?, ?, ?, ?)",
+        )
+        .bind(skill_id)
+        .bind(explanation)
+        .bind("zh")
+        .bind(model)
+        .bind("2026-04-19T00:00:00Z")
+        .bind("2026-04-19T00:00:00Z")
+        .execute(&pool)
+        .await
+        .expect("insert explanation");
+    }
+
+    let with_model =
+        super::get_skill_explanation_impl(&pool, "with-model".to_string(), "zh".to_string())
+            .await
+            .expect("load modeled explanation")
+            .expect("present row");
+    assert_eq!(with_model.explanation, "Agent note");
+    assert_eq!(with_model.model.as_deref(), Some("agent:test"));
+
+    let null_model =
+        super::get_skill_explanation_impl(&pool, "null-model".to_string(), "zh".to_string())
+            .await
+            .expect("load null model")
+            .expect("present row");
+    assert_eq!(null_model.explanation, "Generated note");
+    assert_eq!(null_model.model, None);
+
+    let empty = super::get_skill_explanation_impl(&pool, "empty-row".to_string(), "zh".to_string())
+        .await
+        .expect("load empty explanation");
+    assert!(empty.is_none());
+
+    let count: i64 = sqlx::query_scalar(
+        "SELECT COUNT(*) FROM skill_explanations WHERE skill_id = ? AND lang = ?",
+    )
+    .bind("empty-row")
+    .bind("zh")
+    .fetch_one(&pool)
+    .await
+    .expect("count empty explanations");
+    assert_eq!(count, 0);
+}
+
+#[tokio::test]
 async fn cache_skill_explanation_rejects_blank_text() {
     let (pool, _dir) = setup_test_db().await;
 

@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import type {
   AiTagJob,
   CentralSkillUpdateJob,
-  SkillportStatePortabilityJob,
+  PortableBundleJob,
 } from "@/types";
 
 /**
@@ -15,7 +15,7 @@ import type {
 export interface CentralProgressTopLineProps {
   aiTagJob: AiTagJob;
   updateJob: CentralSkillUpdateJob;
-  portabilityJob: SkillportStatePortabilityJob;
+  portabilityJob: PortableBundleJob;
 }
 
 function jobActive(status: string): boolean {

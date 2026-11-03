@@ -4,6 +4,8 @@ import { markAppPerformance } from "@/lib/performance";
 import { CentralSkillsShell } from "@/components/central/CentralSkillsShell";
 import { CentralStoreLocationDialog } from "@/components/central/CentralStoreLocationDialog";
 import { CommandPalette } from "@/components/central/CommandPalette";
+import { ClearCentralSkillsDialog } from "@/components/central/clearAll/ClearCentralSkillsDialog";
+import { useCentralClearAllWorkflow } from "@/pages/centralClearAllWorkflow";
 import { useCentralViewStateUrl } from "@/hooks/useCentralViewStateUrl";
 import {
   useCentralSkillsActionBindings,
@@ -54,7 +56,7 @@ export function CentralSkillsView() {
     subscribeAiTagProgress,
     subscribeUpdateProgress,
     subscribePortabilityProgress,
-    cancelSkillportStatePortability,
+    cancelPortabilityJob,
     isMetadataUpdating,
     isSuggestingTags,
     isCheckingUpdates,
@@ -66,9 +68,6 @@ export function CentralSkillsView() {
     availableInstallAgents,
     githubImport,
     resetGitHubImport,
-    exportSkillportState, saveSkillportStateExport,
-    previewSkillportStateImport, previewSkillportStateImportFile,
-    importSkillportState,
     setRepositoryPinned,
     previewCentralStoreLocationChange,
     applyCentralStoreLocationChange,
@@ -247,6 +246,21 @@ export function CentralSkillsView() {
     }
   }, [isLoading, skills.length]);
 
+  const { setSelectedSkillIds, setIsPortabilityOpen } = actionState;
+  const handleAfterClearAll = useCallback(() => {
+    setSelectedSkillIds([]);
+    setViewState((prev) => (prev.repos.length > 0 ? { ...prev, repos: [] } : prev));
+  }, [setSelectedSkillIds, setViewState]);
+  const handleOpenClearAllBackup = useCallback(
+    () => setIsPortabilityOpen(true),
+    [setIsPortabilityOpen],
+  );
+  const clearAll = useCentralClearAllWorkflow({
+    t,
+    onAfterClear: handleAfterClearAll,
+    onOpenBackup: handleOpenClearAllBackup,
+  });
+
   const { actions: paletteActions, groupByOptions } = useCentralPaletteActions({
     t,
     viewState,
@@ -254,6 +268,7 @@ export function CentralSkillsView() {
     canSaveCurrent: savedViewsBridge.canSaveCurrent,
     onSaveCurrentView: savedViewsBridge.handleSaveCurrentView,
     onCreateTagGroup: tagGroupsBridge.handleCreateTagGroup,
+    onClearCentral: clearAll.busy ? undefined : clearAll.openDialog,
   });
   const actionBindings = useCentralSkillsActionBindings({
     actionState,
@@ -296,7 +311,6 @@ export function CentralSkillsView() {
     githubImport,
     githubBranch: actionBindings.githubBranch,
     githubRepoUrl: actionBindings.githubRepoUrl,
-    importSkillportState,
     installTargetSkill: actionBindings.installTargetSkill,
     installableImportedSkills: actionBindings.installableImportedSkills,
     isBatchDeleteDialogOpen: actionBindings.isBatchDeleteDialogOpen,
@@ -327,7 +341,6 @@ export function CentralSkillsView() {
     isUpdateConfirmDialogOpen: actionBindings.isUpdateConfirmDialogOpen,
     loadCentralSkills,
     pendingUpdateStates: actionBindings.pendingUpdateStates,
-    previewSkillportStateImport, previewSkillportStateImportFile,
     remoteMissingError: actionBindings.remoteMissingError,
     remoteMissingPreview: actionBindings.remoteMissingPreview,
     remoteMissingStates: actionBindings.remoteMissingStates,
@@ -349,9 +362,6 @@ export function CentralSkillsView() {
     setIsGitHubImportOpen: actionBindings.setIsGitHubImportOpen,
     setIsPlatformManageOpen: actionBindings.setIsPlatformManageOpen,
     setIsPortabilityOpen: actionBindings.setIsPortabilityOpen,
-    exportSkillportState, saveSkillportStateExport,
-    portabilityJob,
-    cancelSkillportStatePortability,
     platformManagement: actionBindings.platformManagement,
     onAfterImportSuccess: actionBindings.handleAfterImportSuccess,
     onBatchDeleteCentralSkills: actionBindings.handleBatchDeleteCentralSkills,
@@ -367,7 +377,6 @@ export function CentralSkillsView() {
     onInstall: actionBindings.handleInstall,
     onInstallFromDrawer: actionBindings.handleInstallClick,
     onInstallImportedSkill: actionBindings.handleInstallImportedSkill,
-    onRefreshCounts: refreshCounts,
     onConfirmUpdateSkills: actionBindings.handleConfirmUpdateSkills,
     onRemoteMissingDialogOpenChange:
       actionBindings.handleRemoteMissingDialogOpenChange,
@@ -404,7 +413,7 @@ export function CentralSkillsView() {
       void actionBindings.handleCancelCentralUpdates();
     },
     onCancelPortability: () => {
-      void cancelSkillportStatePortability();
+      void cancelPortabilityJob().catch(() => {});
     },
     onViewAiReviews: handleViewAiReviews,
   };
@@ -561,6 +570,11 @@ export function CentralSkillsView() {
         checkModeControl={updateCheckMode.modeControl}
         checkButton={updateCheckMode.checkButton}
         onOpenPalette={() => setCommandPaletteOpen(true)}
+        clearAll={{
+          onOpen: clearAll.openDialog,
+          busy: clearAll.busy,
+          showEmptyStateEntry: skills.length === 0 && !hasCurrentFilters,
+        }}
         savedViewsSlot={savedViewsSlot}
         topFiltersTagGroups={tagGroupsSlot}
         onDeleteRepository={(repo) => {
@@ -596,6 +610,12 @@ export function CentralSkillsView() {
         onApplied={handleCentralStoreLocationApplied}
       />
       {updateCheckMode.dialog}
+      <ClearCentralSkillsDialog
+        t={t}
+        workflow={clearAll}
+        agents={agents}
+        target={activeTarget}
+      />
     </>
   );
 }

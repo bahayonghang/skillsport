@@ -248,7 +248,8 @@ The long-lived branch and promotion contract is separate from the existing
 `main` required-check contract:
 
 - `dev` remains the day-to-day development branch and is never deleted or retired.
-- Short-lived task branches target `dev`, use squash merge, and are automatically deleted after merge.
+- `dev` accepts direct pushes after a local `just ci`; only `main` requires a pull request.
+- Optional short-lived task branches target `dev`, use squash merge, and are automatically deleted after merge.
 - `dev -> main` promotion pull requests use a merge commit to preserve ancestry.
 - After each promotion, refresh and verify the exact promotion merge SHA, then
   fast-forward `dev` to that SHA before writing Trellis bookkeeping or starting
@@ -256,10 +257,10 @@ The long-lived branch and promotion contract is separate from the existing
 - Repository CI runs for pull requests targeting `dev` or `main`; ordinary push
   events do not trigger the CI workflow. Manual dispatch remains the package-smoke
   entrypoint.
-- The `dev` safety ruleset forbids force pushes and deletion without bypass. A
-  separate `dev` flow ruleset requires the PR, app-bound `just-ci`, strict update,
-  and linear history; its narrowly scoped maintenance bypass does not weaken the
-  safety ruleset. Remote settings are read before and after any authorized change.
+- The `dev` safety ruleset forbids force pushes and deletion without bypass. The
+  `dev-flow` ruleset (PR, app-bound `just-ci`, strict update, linear history) is
+  kept but disabled, so `dev` takes direct pushes; re-enable it to restore the PR
+  gate. Remote settings are read before and after any authorized change.
 
 For GitHub REST updates, `required_status_checks.checks` and legacy `contexts` are alternative schemas. Use `checks` alone when binding `app_id`; sending both returns HTTP 422.
 

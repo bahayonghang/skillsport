@@ -290,6 +290,57 @@ fn batch_row_parser_preserves_partial_success() {
 }
 
 #[tokio::test]
+async fn remote_skill_tree_reads_regular_files_and_matches_content_digest() {
+    let (runner, fs) = fake_remote_fs();
+    let root = PathBuf::from("/home/tester/.skillsmanage/skills/demo");
+    runner.push_success("SKILL.md\tfile\t\nrefs\tdir\t\nlinked\tsymlink\t\n");
+    runner.push_success("skill body");
+    runner.push_success("notes.md\tfile\t\n");
+    runner.push_success("notes");
+
+    let files = fs.read_skill_tree(&root, 1024).await.unwrap();
+
+    let paths = files
+        .iter()
+        .map(|file| file.relative_path.as_str())
+        .collect::<Vec<_>>();
+    assert_eq!(paths, vec!["SKILL.md", "refs/notes.md"]);
+    assert_eq!(files[1].bytes, b"notes");
+    let digest = content_digest_of(
+        files
+            .iter()
+            .map(|file| (file.relative_path.clone(), sha256_hex(&file.bytes)))
+            .collect(),
+    );
+    let local = TempDir::new().unwrap();
+    std::fs::create_dir_all(local.path().join("refs")).unwrap();
+    std::fs::write(local.path().join("SKILL.md"), "skill body").unwrap();
+    std::fs::write(local.path().join("refs/notes.md"), "notes").unwrap();
+    let local_root = local.path().to_path_buf();
+    let local_hash = CentralFs::Local
+        .hash_directories(std::slice::from_ref(&local_root))
+        .await
+        .unwrap();
+    assert_eq!(digest, local_hash[&local_root]);
+    let calls = runner.calls();
+    assert!(calls[1].args.last().unwrap().contains("bs=1025 count=1"));
+}
+
+#[tokio::test]
+async fn local_skill_tree_rejects_files_over_the_entry_limit() {
+    let dir = TempDir::new().unwrap();
+    std::fs::write(dir.path().join("SKILL.md"), "12345").unwrap();
+    let error = CentralFs::Local
+        .read_skill_tree(dir.path(), 4)
+        .await
+        .unwrap_err();
+    assert!(matches!(
+        error,
+        CentralUpdatesError::SkillFileTooLarge { .. }
+    ));
+}
+
+#[tokio::test]
 async fn remote_hash_fallback_bounds_entries_at_thirty_two_mib_plus_one() {
     let (runner, fs) = fake_remote_fs();
     let root = PathBuf::from("/home/tester/.skillsmanage/skills/demo");

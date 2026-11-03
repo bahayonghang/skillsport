@@ -491,10 +491,11 @@ export function createMarketplaceGitHubImportSlice({
             lang,
           });
         }
-        const summary = await invoke("get_skill_explanation", {
+        const cached = await invoke("get_skill_explanation", {
           skillId,
           lang,
         }).catch(() => null);
+        const cachedText = cached?.explanation?.trim() ? cached.explanation : null;
         if (generation === getGeneration()) {
           set((state) => ({
             githubImport: {
@@ -503,7 +504,7 @@ export function createMarketplaceGitHubImportSlice({
                 ...state.githubImport.aiSummaries,
                 [sourcePath]: {
                   summary:
-                    summary ??
+                    cachedText ??
                     state.githubImport.aiSummaries[sourcePath]?.summary ??
                     null,
                   isLoading: false,

@@ -1,0 +1,9 @@
+{"file": ".trellis/tasks/10-29-agent-operable-skillport/design.md", "reason": "Parent design: layering, command surface, contracts"}
+{"file": ".trellis/tasks/10-29-agent-operable-skillport/research/current-surface.md", "reason": "Existing CLI surface and reusable backend entry points"}
+{"file": ".trellis/spec/backend/index.md", "reason": "Backend spec index"}
+{"file": ".trellis/spec/backend/operation-observability.md", "reason": "Registering a runtime-only read command"}
+{"file": ".trellis/spec/frontend/index.md", "reason": "Frontend spec index"}
+{"file": ".trellis/spec/frontend/ipc-adapter.md", "reason": "Store IPC adapter pattern"}
+{"file": ".trellis/spec/frontend/renderer-authority-boundary.md", "reason": "Components do not call invoke directly"}
+{"file": ".trellis/spec/frontend/async-error-feedback.md", "reason": "Refresh failure feedback"}
+{"file": ".trellis/spec/frontend/async-ui-test-stability.md", "reason": "Debounce/focus test stability"}

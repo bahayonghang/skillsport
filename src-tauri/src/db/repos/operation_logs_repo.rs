@@ -337,6 +337,16 @@ pub async fn list_operation_logs(
     })
 }
 
+/// Highest `operation_logs.rowid`, or 0 when the table is empty.
+///
+/// Comparable across the WAL pool. `PRAGMA data_version` is not: each
+/// connection has its own value, and the writer does not bump its own.
+pub async fn data_change_marker(pool: &DbPool) -> Result<i64, sqlx::Error> {
+    sqlx::query_scalar("SELECT COALESCE(MAX(rowid), 0) FROM operation_logs")
+        .fetch_one(pool)
+        .await
+}
+
 pub async fn clear_operation_logs(
     pool: &DbPool,
     filter: OperationLogFilter,
@@ -514,6 +524,59 @@ mod tests {
             .iter()
             .map(|bucket| (bucket.date.as_str(), bucket.count))
             .collect()
+    }
+
+    fn sample_operation_log_entry() -> NewOperationLogEntry {
+        NewOperationLogEntry {
+            level: "info".to_string(),
+            target_kind: "local".to_string(),
+            target_id: "local".to_string(),
+            target_label: None,
+            category: "general".to_string(),
+            action: "test.op".to_string(),
+            status: "succeeded".to_string(),
+            subject_type: None,
+            subject_id: None,
+            subject_label: None,
+            summary: "external write".to_string(),
+            error_summary: None,
+            details_json: None,
+            duration_ms: None,
+            batch_id: None,
+        }
+    }
+
+    #[tokio::test]
+    async fn data_change_marker_tracks_inserts_from_another_connection() {
+        let (pool, dir) = crate::test_support::file_pool().await;
+        let before = data_change_marker(&pool).await.unwrap();
+        assert_eq!(before, 0);
+
+        let second = crate::db::open_database(&dir.path().join("test.sqlite"))
+            .await
+            .expect("second connection to the same database");
+        insert_operation_log(&second, sample_operation_log_entry())
+            .await
+            .expect("insert from the second connection");
+
+        let after = data_change_marker(&pool).await.unwrap();
+        assert!(
+            after > before,
+            "marker {before} did not increase after an insert on another connection"
+        );
+
+        let count_before: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM operation_logs")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+        let reread = data_change_marker(&pool).await.unwrap();
+        let count_after: i64 = sqlx::query_scalar("SELECT COUNT(*) FROM operation_logs")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+        assert_eq!(reread, after);
+        assert_eq!(count_before, count_after);
+        assert_eq!(count_before, 1);
     }
 
     #[tokio::test]

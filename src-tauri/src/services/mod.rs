@@ -20,7 +20,7 @@ pub mod local_archive_import;
 pub mod local_remote_sync;
 pub mod marketplace;
 pub mod obsidian;
-pub mod portable_state;
+pub mod portable_bundle;
 pub mod projects;
 pub mod resource_budget;
 pub mod rules;

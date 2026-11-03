@@ -64,12 +64,14 @@ just ci
 just dev
 just build
 just install
+just help
 ```
 
 - `just ci` runs frontend `typecheck` + `lint` + `test` + `sizecheck`, plus Rust `cargo test` and `cargo clippy`.
 - `just dev` starts the Tauri dev app.
 - `just build` builds the desktop app for the current platform and copies the latest bundle to `outputs/`.
 - `just install` builds the Windows NSIS installer and runs it in passive mode on Windows. On macOS, it prints a reminder and runs `just build` instead.
+- `just help` lists the public recipes.
 
 ## Documentation site
 

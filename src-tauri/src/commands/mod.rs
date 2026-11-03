@@ -1,6 +1,7 @@
 pub mod agents;
 pub mod app_runtime;
 pub mod bootstrap;
+pub mod central_clear;
 pub mod central_metadata;
 pub mod central_store_location;
 pub mod central_updates;
@@ -13,7 +14,7 @@ pub mod local_remote_sync;
 pub mod logs;
 pub mod marketplace;
 pub mod obsidian;
-pub mod portable_state;
+pub mod portable_bundle;
 pub mod projects;
 pub mod rules;
 pub mod saved_views;

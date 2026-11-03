@@ -1,0 +1,18 @@
+{"file": ".trellis/tasks/11-02-central-clear-all/prd.md", "reason": "Parent requirements and scenario matrix S1-S16"}
+{"file": ".trellis/tasks/11-02-central-clear-all/design.md", "reason": "Cross-layer IPC/event/error contract and apply ordering"}
+{"file": ".trellis/spec/backend/index.md", "reason": "Backend spec index"}
+{"file": ".trellis/spec/backend/layer-boundaries.md", "reason": "commands vs services vs repos boundary"}
+{"file": ".trellis/spec/backend/unknown-source-reset.md", "reason": "Closest prior pattern: preview without lock, re-list under lock, intersect"}
+{"file": ".trellis/spec/backend/skill-deletion-integrity.md", "reason": "Owned relations and psi lifecycle on skill delete"}
+{"file": ".trellis/spec/backend/fs-db-operation-journal.md", "reason": "Journaled Central delete and pending recovery"}
+{"file": ".trellis/spec/backend/central-mutation-lock.md", "reason": "Single lock acquisition, no re-entry"}
+{"file": ".trellis/spec/backend/exclusive-job-lifecycle.md", "reason": "New central_clear job family, progress, cancel"}
+{"file": ".trellis/spec/backend/central-project-install-visibility.md", "reason": "project_skill_installations semantics"}
+{"file": ".trellis/spec/backend/path-policy.md", "reason": "Path comparison helpers belong in paths.rs"}
+{"file": ".trellis/spec/backend/transport-seam.md", "reason": "Local/SSH/WSL operation transport"}
+{"file": ".trellis/spec/backend/target-context.md", "reason": "resolve_target_context once per command"}
+{"file": ".trellis/spec/backend/spawn-blocking-io.md", "reason": "Parallel read_dir sweep on blocking pool"}
+{"file": ".trellis/spec/backend/operation-observability.md", "reason": "Operation log central.clear_all without paths"}
+{"file": ".trellis/spec/backend/redaction-policy.md", "reason": "Error and log redaction"}
+{"file": ".trellis/spec/backend/domain-error-enums.md", "reason": "CentralSkillsError extension style"}
+{"file": ".trellis/spec/backend/test-support.md", "reason": "mem_pool/file_pool/TempDir fixtures; no real user DB"}

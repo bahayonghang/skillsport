@@ -30,11 +30,6 @@ import type {
   GitHubRepoImportResult,
   SkillRepositoryWithStats,
   SkillWithLinks,
-  SkillportStateImportPreview,
-  SkillportStateImportResolution,
-  SkillportStateImportResult,
-  SkillportStatePortabilityJob,
-  TargetSummary,
 } from "@/types";
 import type {
   CentralRepositoryAdditionSkipRequest,
@@ -51,9 +46,9 @@ type GitHubImportState = {
   error: string | null;
 };
 
-const CentralStatePortabilityDialog = lazy(async () => {
-  const module = await import("@/components/central/CentralStatePortabilityDialog");
-  return { default: module.CentralStatePortabilityDialog };
+const PortabilityDialog = lazy(async () => {
+  const module = await import("@/components/central/portability/PortabilityDialog");
+  return { default: module.PortabilityDialog };
 });
 
 const GitHubRepoImportWizard = lazy(async () => {
@@ -73,7 +68,6 @@ type PlatformManagementProps = Omit<
 
 export function CentralSkillDialogs({
   agents,
-  activeTarget,
   availableInstallAgents,
   batchDeletePreview,
   batchDeletePreviewError,
@@ -85,7 +79,6 @@ export function CentralSkillDialogs({
   githubImport,
   githubBranch,
   githubRepoUrl,
-  importSkillportState,
   installTargetSkill,
   installableImportedSkills,
   isBatchDeleteDialogOpen,
@@ -110,10 +103,7 @@ export function CentralSkillDialogs({
   isResolvingRemoteMissing,
   isUpdatingSkills,
   isUpdateConfirmDialogOpen,
-  loadCentralSkills,
   pendingUpdateStates,
-  previewSkillportStateImport,
-  previewSkillportStateImportFile,
   remoteMissingError,
   remoteMissingPreview,
   remoteMissingStates,
@@ -136,10 +126,6 @@ export function CentralSkillDialogs({
   setIsPlatformManageOpen,
   setIsPortabilityOpen,
   t,
-  exportSkillportState,
-  saveSkillportStateExport,
-  portabilityJob,
-  cancelSkillportStatePortability,
   platformManagement,
   onAfterImportSuccess,
   onBatchDeleteCentralSkills,
@@ -153,7 +139,6 @@ export function CentralSkillDialogs({
   onInstall,
   onInstallFromDrawer,
   onInstallImportedSkill,
-  onRefreshCounts,
   onConfirmUpdateSkills,
   onRemoteMissingDialogOpenChange,
   onRepositorySyncDialogOpenChange,
@@ -164,7 +149,6 @@ export function CentralSkillDialogs({
   onResolveRemoteMissing,
 }: {
   agents: AgentWithStatus[];
-  activeTarget: TargetSummary;
   availableInstallAgents: PlatformTarget[];
   batchDeletePreview: BatchDeleteCentralSkillPreviewResult | null;
   batchDeletePreviewError: string | null;
@@ -176,10 +160,6 @@ export function CentralSkillDialogs({
   githubImport: GitHubImportState;
   githubBranch: string;
   githubRepoUrl: string;
-  importSkillportState: (
-    json: string,
-    resolutions: SkillportStateImportResolution[]
-  ) => Promise<SkillportStateImportResult>;
   installTargetSkill: SkillWithLinks | null;
   installableImportedSkills: SkillWithLinks[];
   isBatchDeleteDialogOpen: boolean;
@@ -204,12 +184,7 @@ export function CentralSkillDialogs({
   isResolvingRemoteMissing: boolean;
   isUpdatingSkills: boolean;
   isUpdateConfirmDialogOpen: boolean;
-  loadCentralSkills: (options?: { throwOnError?: boolean }) => Promise<void>;
   pendingUpdateStates: CentralSkillUpdateState[];
-  previewSkillportStateImport: (json: string) => Promise<SkillportStateImportPreview>;
-  previewSkillportStateImportFile: (
-    path: string,
-  ) => Promise<{ json: string; preview: SkillportStateImportPreview }>;
   remoteMissingError: string | null;
   remoteMissingPreview: BatchDeleteCentralSkillPreviewResult | null;
   remoteMissingStates: CentralSkillUpdateState[];
@@ -240,10 +215,6 @@ export function CentralSkillDialogs({
   setIsPlatformManageOpen: (open: boolean) => void;
   setIsPortabilityOpen: (open: boolean) => void;
   t: TFunction;
-  exportSkillportState: () => Promise<string>;
-  saveSkillportStateExport: (path: string, json: string) => Promise<void>;
-  portabilityJob: SkillportStatePortabilityJob;
-  cancelSkillportStatePortability: () => Promise<void>;
   platformManagement: PlatformManagementProps;
   onAfterImportSuccess: () => Promise<void>;
   onBatchDeleteCentralSkills: (
@@ -275,7 +246,6 @@ export function CentralSkillDialogs({
     method: "symlink" | "copy",
     projectPath?: string | null
   ) => Promise<BatchInstallResult>;
-  onRefreshCounts: () => Promise<void>;
   onConfirmUpdateSkills: (skillIds: string[]) => Promise<void>;
   onRemoteMissingDialogOpenChange: (open: boolean) => void;
   onRepositorySyncDialogOpenChange: (open: boolean) => void;
@@ -491,21 +461,7 @@ export function CentralSkillDialogs({
             </div>
           }
         >
-          <CentralStatePortabilityDialog
-            open={isPortabilityOpen}
-            onOpenChange={setIsPortabilityOpen}
-            activeTarget={activeTarget}
-            exportState={exportSkillportState}
-            saveExport={saveSkillportStateExport}
-            previewImport={previewSkillportStateImport}
-            previewImportFile={previewSkillportStateImportFile}
-            importState={importSkillportState}
-            portabilityJob={portabilityJob}
-            onCancelJob={cancelSkillportStatePortability}
-            onAfterImport={async () => {
-              await Promise.all([onRefreshCounts(), loadCentralSkills()]);
-            }}
-          />
+          <PortabilityDialog open={isPortabilityOpen} onOpenChange={setIsPortabilityOpen} />
         </Suspense>
       )}
     </>

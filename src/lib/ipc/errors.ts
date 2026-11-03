@@ -180,6 +180,10 @@ function canonicalMessage(code: string): string | null {
       return "A Central update job is already running.";
     case "job.portability_busy":
       return "A portability job is already running.";
+    case "job.central_clear_busy":
+      return "A Central clear job is already running.";
+    case "central.clear_failed":
+      return "The Central library could not be cleared.";
     case "startup.rebuild_unavailable":
       return "Database rebuild is not available.";
     case "usage.remote_permission":

@@ -7,7 +7,18 @@
 
 use std::collections::{HashMap, HashSet};
 
+use serde::{Deserialize, Serialize};
+
 use super::error::AiProviderError;
+
+/// One present `skill_explanations` row. `model` is null when the column is null.
+#[cfg_attr(feature = "ipc-codegen", derive(specta::Type))]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct SkillExplanation {
+    pub explanation: String,
+    pub model: Option<String>,
+}
 
 pub(crate) fn explanation_has_content(explanation: &str) -> bool {
     !explanation.trim().is_empty()
@@ -30,21 +41,25 @@ pub(crate) async fn load_cached_skill_explanation(
     pool: &crate::db::DbPool,
     skill_id: &str,
     lang: &str,
-) -> Result<Option<String>, AiProviderError> {
+) -> Result<Option<SkillExplanation>, AiProviderError> {
     use sqlx::Row;
 
-    let row =
-        sqlx::query("SELECT explanation FROM skill_explanations WHERE skill_id = ? AND lang = ?")
-            .bind(skill_id)
-            .bind(lang)
-            .fetch_optional(pool)
-            .await?;
+    let row = sqlx::query(
+        "SELECT explanation, model FROM skill_explanations WHERE skill_id = ? AND lang = ?",
+    )
+    .bind(skill_id)
+    .bind(lang)
+    .fetch_optional(pool)
+    .await?;
 
     match row {
         Some(row) => {
             let explanation: String = row.get("explanation");
             if explanation_has_content(&explanation) {
-                Ok(Some(explanation))
+                Ok(Some(SkillExplanation {
+                    explanation,
+                    model: row.get("model"),
+                }))
             } else {
                 // Older builds could persist empty strings. Treat them as cache
                 // corruption so the next request re-generates a fresh explanation.
@@ -54,6 +69,37 @@ pub(crate) async fn load_cached_skill_explanation(
         }
         None => Ok(None),
     }
+}
+
+/// Read explanation text and model. Empty text becomes `None` and the row is
+/// left in place; this path must not call the provider or delete cache rows.
+pub(crate) async fn load_skill_explanation_record(
+    pool: &crate::db::DbPool,
+    skill_id: &str,
+    lang: &str,
+) -> Result<Option<super::SkillExplanationRecord>, AiProviderError> {
+    use sqlx::Row;
+
+    let row = sqlx::query(
+        "SELECT lang, explanation, model FROM skill_explanations WHERE skill_id = ? AND lang = ?",
+    )
+    .bind(skill_id)
+    .bind(lang)
+    .fetch_optional(pool)
+    .await?;
+
+    let Some(row) = row else {
+        return Ok(None);
+    };
+    let explanation: String = row.get("explanation");
+    if !explanation_has_content(&explanation) {
+        return Ok(None);
+    }
+    Ok(Some(super::SkillExplanationRecord {
+        lang: row.get("lang"),
+        text: explanation,
+        model: row.get("model"),
+    }))
 }
 
 pub(crate) async fn load_cached_skill_explanation_summaries(
@@ -121,22 +167,13 @@ pub(crate) async fn cache_skill_explanation(
         return Err(AiProviderError::EmptyExplanation);
     }
 
-    let now = chrono::Utc::now().to_rfc3339();
-    sqlx::query(
-        "INSERT OR REPLACE INTO skill_explanations (skill_id, explanation, lang, model, created_at, updated_at)
-         VALUES (?, ?, ?, ?,
-            COALESCE((SELECT created_at FROM skill_explanations WHERE skill_id = ? AND lang = ?), ?),
-            ?)",
+    crate::db::repos::skill_explanations_repo::upsert_skill_explanation(
+        pool,
+        skill_id,
+        lang,
+        model,
+        explanation,
     )
-    .bind(skill_id)
-    .bind(explanation)
-    .bind(lang)
-    .bind(model)
-    .bind(skill_id)
-    .bind(lang)
-    .bind(&now)
-    .bind(&now)
-    .execute(pool)
     .await
     .map_err(AiProviderError::CacheWrite)?;
 

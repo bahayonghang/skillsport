@@ -1,0 +1,7 @@
+{"file": ".trellis/spec/backend/shared-local-cli.md", "reason": "Verify confirmation contract and error matrix"}
+{"file": ".trellis/spec/backend/central-mutation-lock.md", "reason": "Verify lock coverage and busy exit code"}
+{"file": ".trellis/spec/backend/central-skill-tags.md", "reason": "Verify agent-source links survive AI replacement"}
+{"file": ".trellis/spec/backend/local-archive-import.md", "reason": "Verify archive safety checks reused"}
+{"file": ".trellis/spec/backend/redaction-policy.md", "reason": "Verify redaction"}
+{"file": ".trellis/spec/quality/index.md", "reason": "Quality spec index"}
+{"file": ".trellis/spec/quality/ci-quality-gate.md", "reason": "just ci gate expectations"}

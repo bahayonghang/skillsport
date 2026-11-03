@@ -9,6 +9,7 @@ import {
   Rows3,
   Rows4,
   SlidersHorizontal,
+  Trash2,
 } from "lucide-react";
 import type { TFunction } from "i18next";
 
@@ -58,12 +59,18 @@ export function ToolbarMoreMenu({
   onOpenTaskCenter,
   onOpenPlatformManage,
   onOpenPortability,
+  onOpenClearAll,
+  clearAllBusy = false,
 }: {
   t: TFunction;
   activeTaskCount: number;
   onOpenTaskCenter: () => void;
   onOpenPlatformManage: () => void;
   onOpenPortability: () => void;
+  /** Opens the clear-all preview dialog; omitted = entry hidden. */
+  onOpenClearAll?: () => void;
+  /** A clear-all job is running: entry disabled with a "clearing" label. */
+  clearAllBusy?: boolean;
 }) {
   return (
     <Menu>
@@ -102,6 +109,22 @@ export function ToolbarMoreMenu({
           <FileJson className="size-3.5 shrink-0" />
           {t("central.portabilityOpen")}
         </MenuItem>
+        {onOpenClearAll ? (
+          <>
+            <MenuSeparator />
+            <MenuItem
+              variant="destructive"
+              data-testid="central-clear-all-open"
+              disabled={clearAllBusy}
+              onClick={onOpenClearAll}
+            >
+              <Trash2 className="size-3.5 shrink-0" />
+              {clearAllBusy
+                ? t("central.clearAll.menuItemBusy")
+                : t("central.clearAll.menuItem")}
+            </MenuItem>
+          </>
+        ) : null}
       </MenuContent>
     </Menu>
   );

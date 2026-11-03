@@ -1350,6 +1350,108 @@ describe("SkillDetailView", () => {
     });
   });
 
+  it("asks before overwriting an Agent explanation and refreshes only after confirm", async () => {
+    applyStoreMocks({
+      explanation: "Agent 写入的说明。",
+      explanationModel: "agent:test",
+    });
+    render(
+      <MemoryRouter>
+        <SkillDetailView skillId="frontend-design" variant="page" />
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByRole("tab", { name: /AI 解释/i }));
+    fireEvent.click(screen.getByRole("button", { name: /重新生成/i }));
+
+    const dialog = await screen.findByRole("dialog", { name: "覆盖 Agent 写入的说明？" });
+    expect(within(dialog).getByText(/这条说明由 Agent 写入/)).toBeInTheDocument();
+    expect(mockRefreshExplanation).not.toHaveBeenCalled();
+
+    fireEvent.click(within(dialog).getByRole("button", { name: "取消" }));
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog", { name: "覆盖 Agent 写入的说明？" })).toBeNull();
+    });
+    expect(mockRefreshExplanation).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: /重新生成/i }));
+    const confirmDialog = await screen.findByRole("dialog", { name: "覆盖 Agent 写入的说明？" });
+    fireEvent.click(within(confirmDialog).getByTestId("confirm-agent-explanation-overwrite"));
+
+    await waitFor(() => {
+      expect(mockRefreshExplanation).toHaveBeenCalledWith("frontend-design", mockContent, "zh");
+    });
+  });
+
+  it("refreshes a non-agent explanation without a confirm dialog", async () => {
+    applyStoreMocks({
+      explanation: "这是缓存的技能解释。",
+      explanationModel: "MiniMax-M2.7",
+    });
+    render(
+      <MemoryRouter>
+        <SkillDetailView skillId="frontend-design" variant="page" />
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByRole("tab", { name: /AI 解释/i }));
+    fireEvent.click(screen.getByRole("button", { name: /重新生成/i }));
+
+    expect(screen.queryByRole("dialog", { name: "覆盖 Agent 写入的说明？" })).toBeNull();
+    await waitFor(() => {
+      expect(mockRefreshExplanation).toHaveBeenCalledWith("frontend-design", mockContent, "zh");
+    });
+  });
+
+  it("refreshes when the explanation model is null", async () => {
+    applyStoreMocks({
+      explanation: "这是缓存的技能解释。",
+      explanationModel: null,
+    });
+    render(
+      <MemoryRouter>
+        <SkillDetailView skillId="frontend-design" variant="page" />
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByRole("tab", { name: /AI 解释/i }));
+    fireEvent.click(screen.getByRole("button", { name: /重新生成/i }));
+
+    expect(screen.queryByRole("dialog", { name: "覆盖 Agent 写入的说明？" })).toBeNull();
+    await waitFor(() => {
+      expect(mockRefreshExplanation).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  it("does not confirm Agent overwrites in file mode", async () => {
+    const mockExplainFileContent = vi.fn();
+    applyStoreMocks({
+      detail: null,
+      content: null,
+      fileContent: mockContent,
+      fileExplanation: "Agent 写入的文件说明。",
+      explanationModel: "agent:test",
+      explainFileContent: mockExplainFileContent,
+      loadFileContent: vi.fn(),
+      resetFileMode: vi.fn(),
+    });
+
+    render(
+      <MemoryRouter>
+        <SkillDetailView filePath="D:/tmp/frontend-design/SKILL.md" variant="page" />
+      </MemoryRouter>
+    );
+
+    fireEvent.click(screen.getByRole("tab", { name: /AI 解释/i }));
+    fireEvent.click(screen.getByRole("button", { name: /重新生成/i }));
+
+    expect(screen.queryByRole("dialog", { name: "覆盖 Agent 写入的说明？" })).toBeNull();
+    expect(mockRefreshExplanation).not.toHaveBeenCalled();
+    await waitFor(() => {
+      expect(mockExplainFileContent).toHaveBeenCalledWith(mockContent);
+    });
+  });
+
   it("calls refreshExplanation when cached explanation exists", async () => {
     applyStoreMocks({ explanation: "这是缓存的技能解释。" });
     render(

@@ -26,6 +26,7 @@
 - 支持 marketplace 浏览，以及带鉴权请求和重试回退的 GitHub 仓库导入。
 - 通过延迟查询、懒加载索引和虚拟列表提升大规模 skill 库搜索体验。
 - 轻盈毛玻璃界面：薄荷到薰衣草的低饱和 canvas 上叠半透明面板，提供「浅色玻璃 / 深色玻璃」两套主题，正文默认无衬线字体 Geist，Windows 11 支持 Mica 窗口材质（Windows 10 使用不透明背景）。
+- `.skillport` 便携包：把整个中央库（技能文件、标签、标签分组、保存的视图与来源注册表）导出为一个文件，在另一台机器或另一个目标上导入。导入前逐个预览，内容相同的技能自动跳过，内容不同的技能需确认后才覆盖（覆盖前备份）。便携包从不包含凭据。不再接受旧版 JSON 状态导出文件。
 - 提供中英文界面、首次引导和响应式导航。
 - **中央技能库 V2（默认开启）**：支持结构化查询语法（`tag:`、`repo:`、`owner:`、`has:source` 等）、URL-as-state、保存视图、命令面板（`Ctrl+K`）、标签分组、列表分组视图（不分组 / 按仓库 / 按 owner / 按标签 / 按状态）。通过 Beta 徽章旁的"切回经典布局"链接，或在 DevTools localStorage 中设 `featureFlag.central.newLayout=off`，可退回 V1 布局。
 
@@ -219,6 +220,7 @@ just version-check
 just dev
 just build
 just install
+just help
 ```
 
 - `just doctor` 是只读的工具链与 Tauri 前置依赖诊断；它只报告缺失或版本漂移，不会安装依赖、修改 PATH 或切换 toolchain。
@@ -228,6 +230,7 @@ just install
 - `just dev` 会直接启动 Tauri 开发应用。
 - `just build` 会按当前平台构建桌面应用，并把最新打包产物复制到 `outputs/`（Windows 为 `.exe`，macOS 为 `.app` + `.dmg`，Linux 为 `.AppImage`/`.deb`）。
 - `just install` 会构建 Windows NSIS 安装包、复制到 `outputs/`，并以 passive 模式运行安装器；在 macOS 上会显示提醒并改为运行 `just build`。
+- `just help` 列出全部公开配方。不带参数的 `just` 仍会运行第一条配方 `sync-version`。
 
 ### 启动开发环境
 

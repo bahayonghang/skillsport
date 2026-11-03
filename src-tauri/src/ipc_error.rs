@@ -87,31 +87,8 @@ impl IpcError {
         }
 
         let lower = trimmed.to_ascii_lowercase();
-        if lower == "skillport state portability cancelled"
-            || lower == "central update was cancelled."
-        {
+        if lower == "central update was cancelled." {
             return Self::new("operation.cancelled", "The operation was cancelled.", false);
-        }
-        if lower.starts_with("invalid skillport state json:") {
-            return Self::new(
-                "portable_state.invalid_manifest_json",
-                "The SkillPort state file is not valid JSON.",
-                false,
-            );
-        }
-        if lower == "unsupported skillport state export kind" {
-            return Self::new(
-                "portable_state.unsupported_export_kind",
-                "The SkillPort state export kind is not supported.",
-                false,
-            );
-        }
-        if lower.starts_with("unsupported skillport state export version:") {
-            return Self::new(
-                "portable_state.unsupported_export_version",
-                "The SkillPort state export version is not supported.",
-                false,
-            );
         }
         if lower.starts_with("github api access was denied while ")
             && lower.contains("rate limit was exceeded")
@@ -431,6 +408,7 @@ fn legacy_code_message(code: &str) -> Option<&'static str> {
             "The repository content did not match the update inventory. Refresh and try again.",
         ),
         "central.reset_failed" => Some("Unknown-source Central skills could not be reset."),
+        "central.clear_failed" => Some("Central skills could not be cleared."),
         "central_skills.mutation_lock_failed" => {
             Some("Central is busy with another change. Try again shortly.")
         }
@@ -456,6 +434,7 @@ fn legacy_code_message(code: &str) -> Option<&'static str> {
             Some("The prepared delete operation no longer passes reconciliation checks.")
         }
         "job.portability_busy" => Some("A portability job is already running."),
+        "job.central_clear_busy" => Some("A Central clear job is already running."),
         "skills_cli.local_target_only" => {
             Some("Skills CLI is available only on the Local target.")
         }

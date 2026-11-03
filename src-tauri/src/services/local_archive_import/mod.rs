@@ -39,7 +39,9 @@ pub mod types;
 
 pub use error::LocalArchiveImportError;
 #[allow(unused_imports)]
-pub(crate) use import::{import_local_skill_archive_impl, ImportOutcome};
+pub(crate) use import::{
+    import_local_skill_archive_impl, import_local_skill_archive_new_only_impl, ImportOutcome,
+};
 pub use inventory::{ArchiveFingerprint, ZipInventory, ZipInventoryEntry};
 pub(crate) use preview::preview_local_skill_archive_impl;
 pub use types::{
