@@ -7,9 +7,9 @@
 ## Current Status
 
 <!-- @@@auto:current-status -->
-- **Active File**: `journal-2.md`
-- **Total Sessions**: 123
-- **Last Active**: 2026-10-29
+- **Active File**: `journal-3.md`
+- **Total Sessions**: 124
+- **Last Active**: 2026-11-03
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,8 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-2.md` | ~2000 | Active |
+| `journal-3.md` | ~29 | Active |
+| `journal-2.md` | ~2000 | Archived |
 | `journal-1.md` | ~1994 | Archived |
 <!-- @@@/auto:active-documents -->
 
@@ -30,6 +31,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 124 | 2026-11-03 | Central 一键清理：后端、前端与合并 | `6c9d812f`, `1951c325` | `chore/archive-central-clear` |
 | 123 | 2026-10-29 | 归档 1.1.0 验收与毛玻璃父任务 | `df77136a` | `dev` |
 | 122 | 2026-10-29 | 拆分启动 JS 并将版本升到 1.1.1 | `5980bc53`, `8ceb8101`, `12c9cffa` | `dev` |
 | 121 | 2026-10-20 | GitHub 导入：缺失分支误报修复、失败审计与输入卡片优化 | `b5d53bc6`, `09ec111b`, `fe3f1160` | `fix/github-import-branch-default` |
