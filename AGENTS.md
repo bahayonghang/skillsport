@@ -44,9 +44,10 @@ Run the smallest relevant checks while iterating and run `just ci` before declar
 work complete. Report skipped checks and unverified external, provider, hardware, or production
 evidence explicitly.
 
-Task PRs target `dev` and use squash merge. Promotion to `main` uses a merge commit, after which
-`dev` is fast-forwarded to the promotion merge SHA; see the Git and release guide for the full
-remote-write and read-back rules.
+Only `main` requires a pull request. `dev` accepts direct pushes once `just ci` passes locally;
+a task PR into `dev` is optional and uses squash merge. Promotion to `main` uses a merge commit,
+after which `dev` is fast-forwarded to the promotion merge SHA; see the Git and release guide for
+the full remote-write and read-back rules.
 
 <!-- TRELLIS:START -->
 # Trellis Instructions

@@ -40,7 +40,7 @@
 
 ## Merge path
 
-<!-- Task PRs target `dev` and use squash merge; do not use this section to request a promotion. -->
+<!-- Task PRs into `dev` are optional and use squash merge; `dev` also accepts direct pushes after `just ci`. Do not use this section to request a promotion. -->
 <!-- Promotion PRs target `main`, use a merge commit, and require an exact-head check immediately before merge. -->
 
 - [ ] This is a task PR into `dev` (squash merge)

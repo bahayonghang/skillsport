@@ -10,8 +10,11 @@
 python ./.trellis/scripts/task.py create "<title>" --base-branch dev
 ```
 
-- Short-lived task branches target `dev` and use squash merge; the task branch is deleted after
-  merge according to repository policy.
+- `dev` accepts direct pushes; run `just ci` locally first, because pushes do not trigger the
+  CI workflow. Force pushes and deletion stay blocked by the `dev-safety` ruleset.
+- A short-lived task branch with a PR into `dev` is optional (useful for remote CI or review);
+  it uses squash merge and the branch is deleted after merge.
+- Only `main` requires a pull request.
 - A `dev` to `main` promotion uses a merge commit. Refresh and verify the exact promotion merge
   SHA, then fast-forward `dev` to that SHA before writing Trellis bookkeeping or starting another
   task.
@@ -22,7 +25,7 @@ python ./.trellis/scripts/task.py create "<title>" --base-branch dev
 ## Documentation And Release
 
 - Keep local `just ci` checks aligned with GitHub Actions. CI is PR-targeted at `dev` or `main`;
-  ordinary pushes do not trigger the required workflow.
+  ordinary pushes do not trigger the workflow, so a direct push to `dev` relies on local `just ci`.
 - Docs deployment runs only for a published release or an explicitly authorized canonical `main`
   manual run. A single Pages artifact goes through deploy and online smoke; do not restore a
   second deploy build or recreate the legacy `gh-pages` branch without approval.

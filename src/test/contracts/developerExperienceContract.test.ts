@@ -109,7 +109,7 @@ describe("developer and PR experience contract", () => {
     ]) {
       expect(template).toContain(heading);
     }
-    expect(template.toLowerCase()).toContain("task prs target `dev` and use squash merge");
+    expect(template.toLowerCase()).toContain("task prs into `dev` are optional and use squash merge");
     expect(template).toContain("Promotion PRs target `main`, use a merge commit");
     expect(template).toContain("fast-forwarded to the promotion merge SHA");
   });
