@@ -1,0 +1,29 @@
+{
+  "id": "central-clear-all",
+  "name": "central-clear-all",
+  "title": "Central 一键清理（中央仓库 + Agent 安装残留）",
+  "description": "一键清理中央仓库全部 skills，并清理各 Agent/项目目录中的对应安装与孤儿链接",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "lyh",
+  "assignee": "lyh",
+  "createdAt": "2026-11-02",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "dev",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [
+    "11-02-central-clear-backend",
+    "11-02-central-clear-frontend"
+  ],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {}
+}
