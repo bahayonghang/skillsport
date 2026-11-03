@@ -28,7 +28,7 @@ tauri = { version = "2", features = [] }
 tauri-plugin-sql = { version = "2", default-features = false, features = ["sqlite"] }
 tauri-plugin-dialog = "2"
 tauri-plugin-shell = "2"
-tauri-plugin-updater = "2.10.1"
+tauri-plugin-updater = "2.14.1"
 tauri-plugin-process = "2.3.1"
 tauri-plugin-deep-link = "2.4.9"
 tauri-plugin-single-instance = "2.4.3"
