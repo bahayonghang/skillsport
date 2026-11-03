@@ -83,7 +83,9 @@ _install_unsupported:
 # 目标：
 # 1) 启动 Tauri 开发环境
 # 2) 直接运行桌面应用
+# 检查 Tauri 版本后启动开发应用
 dev:
+    node scripts/check/tauri-package-alignment.mjs
     pnpm tauri dev
 
 # ========================================================================

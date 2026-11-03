@@ -60,9 +60,9 @@ inject hooks fail closed. Platform-inapplicable skips remain skips. Linux and ma
 ## Desktop Build
 
 - `just help` lists the public recipes. `just` with no arguments still runs `sync-version`.
-- `just dev` starts Tauri development mode.
+- `just dev` starts Tauri development mode after checking that installed Tauri npm packages match the lockfile and Cargo.lock major.minor.
 - `just build` runs the platform bundle and copies the newest Windows NSIS installer into
-  `outputs/`.
+  `outputs/`. It fails before the Tauri CLI when `node_modules` is behind `pnpm-lock.yaml`.
 - `just install` builds first, then runs the newest Windows installer passively.
 - Packaging changes require a successful `pnpm tauri build` and confirmation that the installer
   artifact exists. A frontend-only build is insufficient.

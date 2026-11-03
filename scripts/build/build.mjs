@@ -11,6 +11,7 @@ import { join, relative } from "node:path";
 import { createRequire } from "node:module";
 import { spawnSync } from "node:child_process";
 import { resolveRepoRoot } from "../lib/repo-root.mjs";
+import { assertTauriPackageAlignment } from "../check/tauri-package-alignment.mjs";
 
 const require = createRequire(import.meta.url);
 const repoRoot = resolveRepoRoot(import.meta.url);
@@ -92,6 +93,12 @@ for (const staleOutput of config.staleOutputs) {
 }
 
 console.log(`[build] running Tauri build for ${process.platform}: ${config.bundles}`);
+try {
+  assertTauriPackageAlignment(repoRoot);
+} catch (error) {
+  console.error(error instanceof Error ? error.message : String(error));
+  process.exit(1);
+}
 run(process.execPath, [tauriCliEntry, "build", "--bundles", config.bundles]);
 
 const copied = [];
