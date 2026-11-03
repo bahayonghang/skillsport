@@ -421,3 +421,42 @@ fn path_basename_sort_key(path: &str) -> String {
         .unwrap_or(trimmed)
         .to_ascii_lowercase()
 }
+
+/// Every project skill installation row (all projects). Used by Central
+/// clear-all to find project links into Central with one query.
+pub async fn list_all_project_skill_installations(
+    pool: &DbPool,
+) -> Result<Vec<ProjectSkillInstallation>, sqlx::Error> {
+    sqlx::query_as::<_, ProjectSkillInstallation>(
+        "SELECT * FROM project_skill_installations
+         ORDER BY project_id, agent_id, skill_id",
+    )
+    .fetch_all(pool)
+    .await
+}
+
+/// Delete `(project_id, skill_id, agent_id)` rows in one transaction.
+pub async fn delete_project_skill_installations_batch(
+    pool: &DbPool,
+    keys: &[(String, String, String)],
+) -> Result<u64, sqlx::Error> {
+    if keys.is_empty() {
+        return Ok(0);
+    }
+    let mut tx = pool.begin().await?;
+    let mut deleted = 0;
+    for (project_id, skill_id, agent_id) in keys {
+        deleted += sqlx::query(
+            "DELETE FROM project_skill_installations
+             WHERE project_id = ? AND skill_id = ? AND agent_id = ?",
+        )
+        .bind(project_id)
+        .bind(skill_id)
+        .bind(agent_id)
+        .execute(&mut *tx)
+        .await?
+        .rows_affected();
+    }
+    tx.commit().await?;
+    Ok(deleted)
+}

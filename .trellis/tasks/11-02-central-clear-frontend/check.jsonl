@@ -1,0 +1,5 @@
+{"file": ".trellis/tasks/11-02-central-clear-all/prd.md", "reason": "Acceptance criteria to verify"}
+{"file": ".trellis/tasks/11-02-central-clear-all/design.md", "reason": "Contract to verify against"}
+{"file": ".trellis/spec/quality/ci-quality-gate.md", "reason": "just ci gate"}
+{"file": ".trellis/spec/quality/test-suite-layout.md", "reason": "Test placement and discovery"}
+{"file": ".trellis/spec/frontend/async-error-feedback.md", "reason": "Error feedback check"}

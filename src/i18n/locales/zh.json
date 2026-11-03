@@ -181,7 +181,8 @@
       "portability_busy": "已有便携包导入或导出任务在运行。",
       "id_mismatch": "该取消请求属于较早的任务，已忽略。",
       "invalid_id": "任务标识无效，请重试此操作。",
-      "registry_unavailable": "任务协调暂时不可用，请重启 SkillPort 后重试。"
+      "registry_unavailable": "任务协调暂时不可用，请重启 SkillPort 后重试。",
+      "central_clear_busy": "已有中央仓库清理任务在运行，请等待完成或先取消。"
     },
     "skills_cli": {
       "local_target_only": "Skills CLI 仅可在本机 Local 目标上使用。",
@@ -329,7 +330,8 @@
       "unknown": "本地 ZIP 导入失败，请重试或检查操作日志。"
     },
     "central": {
-      "reset_failed": "无法重置缺少远端来源的中央技能。"
+      "reset_failed": "无法重置缺少远端来源的中央技能。",
+      "clear_failed": "中央仓库清理失败。"
     },
     "central_skills": {
       "mutation_lock_failed": "中央技能库正在处理其他变更，请稍后再试。",
@@ -359,6 +361,10 @@
       "target_io": "无法读写当前目标上的技能文件。",
       "unsafe_entry": "便携包包含不安全或不受支持的条目。",
       "unsupported_version": "该便携包由更新版本的 SkillPort 创建。"
+    },
+    "central_clear": {
+      "remove_failed": "该条目未能删除，可能被占用或无权限；关闭占用程序后重试。",
+      "path_outside_scope": "该路径不在清理范围内，未删除。"
     }
   },
   "targets": {
@@ -2319,6 +2325,83 @@
           "unsupported_version": "请先升级本机的 SkillPort 再重试。"
         }
       }
+    },
+    "clearAll": {
+      "menuItem": "一键清理中央仓库…",
+      "menuItemBusy": "清理中…",
+      "emptyStateButton": "检查残留安装",
+      "paletteAction": "一键清理中央仓库…",
+      "title": "一键清理中央仓库 · {{target}}",
+      "targetLocal": "本地",
+      "warning": "此操作会永久删除中央仓库中的全部 skill 及其在各 Agent 中的安装，不可撤销。",
+      "backupHint": "建议先导出备份。",
+      "backupLink": "导出备份",
+      "loadingPreview": "正在扫描中央仓库与各 Agent 目录…",
+      "previewError": "无法预览清理：{{error}}",
+      "retryPreview": "重试",
+      "nothingToClear": "无需清理：中央仓库为空，也没有发现残留链接。",
+      "statSkills": "中央 skill",
+      "statAgentLinks": "Agent 链接",
+      "statProjectLinks": "项目链接",
+      "statOrphanLinks": "孤儿链接",
+      "agentTableCaption": "各 Agent 安装",
+      "agentColumn": "Agent",
+      "linkColumn": "链接（自动）",
+      "copyColumn": "copy（默认保留）",
+      "orphanColumn": "孤儿链接",
+      "copyRemoveLabel": "一并删除",
+      "copyRemoveAria": "一并删除 {{agent}} 中的 copy 安装",
+      "noAgentRows": "没有需要清理的 Agent 安装。",
+      "toggleProjectLinks": "清理项目中的中央链接（{{count}}）",
+      "toggleOrphanLinks": "清理孤儿链接（{{count}}，其中 {{dangling}} 个已悬空）",
+      "toggleUntracked": "清理中央目录中未登记的条目（{{count}}）",
+      "showPaths": "查看路径",
+      "hidePaths": "收起路径",
+      "pathsTruncated": "仅显示部分（{{shown}} / {{total}}）。",
+      "listMore": "……另有 {{count}} 项。",
+      "danglingBadge": "已悬空",
+      "skippedUnmanaged": "已跳过 {{count}} 个非 SkillPort 管理的普通目录。",
+      "pendingRecovery": "将先恢复 {{count}} 个未完成的历史操作。",
+      "sweepWarnings": "{{count}} 个目录无法读取。",
+      "skillPreviewFailed": "{{count}} 个 skill 无法删除，将被跳过。",
+      "confirmPhrase": "清空中央仓库",
+      "confirmPrompt": "输入「{{phrase}}」以确认：",
+      "confirmInputLabel": "确认短语",
+      "confirmSkills": "永久清理 {{count}} 个 skill",
+      "confirmResidue": "清理 {{count}} 项残留",
+      "confirmRecoveryOnly": "恢复未完成的操作",
+      "cancel": "取消",
+      "cancelRunning": "取消",
+      "cancelling": "正在取消…",
+      "close": "关闭",
+      "rePreview": "重新预览",
+      "progressLabel": "清理进度",
+      "progressCount": "{{completed}} / {{total}}",
+      "phaseStarting": "正在开始…",
+      "phase": {
+        "recovery": "恢复历史操作",
+        "projectLinks": "清理项目链接",
+        "skills": "删除中央 skill",
+        "untracked": "清理未登记条目",
+        "orphanLinks": "清理孤儿链接",
+        "finalize": "收尾"
+      },
+      "resultTitleCancelled": "清理已取消",
+      "resultTitlePartial": "清理完成，但有失败项",
+      "resultTitleDone": "清理完成",
+      "resultSucceeded": "已删除：{{count}}",
+      "resultFailed": "失败：{{count}}",
+      "resultSkipped": "已跳过（预览后状态已变化）：{{count}}",
+      "resultRecovery": "已恢复操作：{{recovered}}（失败 {{failed}}）",
+      "resultCancelledHint": "已删除的条目不会回滚。可重新预览后继续。",
+      "failedListTitle": "失败项",
+      "failedItemFallback": "该条目未能删除。",
+      "successToast": "中央仓库已清理（删除 {{count}} 项）。",
+      "partialToast": "清理完成：删除 {{succeeded}} 项，失败 {{failed}} 项。",
+      "cancelledToast": "清理已取消，已删除 {{count}} 项。",
+      "applyError": "清理失败：{{error}}",
+      "refreshError": "清理已完成，但刷新列表失败：{{error}}",
+      "paletteKeywords": "清理 清空 重置 删除 clear reset"
     }
   },
   "installDialog": {

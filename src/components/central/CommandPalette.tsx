@@ -19,6 +19,8 @@ export interface CommandPaletteAction {
   id: string;
   label: string;
   shortcut?: string;
+  /** Extra search terms (cmdk `keywords`); the label is always searchable. */
+  keywords?: string[];
   onSelect: () => void;
   icon?: React.ReactNode;
 }
@@ -85,7 +87,12 @@ export function CommandPalette({
         {actions.length > 0 && (
           <CommandGroup heading={t("central.v2.commandPaletteGroupActions")}>
             {actions.map((action) => (
-              <CommandItem key={action.id} onSelect={handleSelect(action.onSelect)}>
+              <CommandItem
+                key={action.id}
+                keywords={action.keywords}
+                onSelect={handleSelect(action.onSelect)}
+                data-testid={`central-palette-action-${action.id}`}
+              >
                 {action.icon ?? <Sparkles className="opacity-60" />}
                 <span className="truncate">{action.label}</span>
                 {action.shortcut ? <CommandShortcut>{action.shortcut}</CommandShortcut> : null}

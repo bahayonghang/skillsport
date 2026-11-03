@@ -43,6 +43,7 @@ export function CentralSkillListContent({
   onInstallTo,
   onUninstallFromPlatforms,
   onRemoveSkillTag,
+  onCheckResidue,
   onTogglePlatform,
   onToggleSelection,
   onUpdateCentral,
@@ -72,6 +73,8 @@ export function CentralSkillListContent({
   onInstallTo: (skill: SkillWithLinks) => void;
   onUninstallFromPlatforms: (skill: SkillWithLinks) => void;
   onRemoveSkillTag?: (skillId: string, tagId: string) => void;
+  /** Empty Central (no filters): open the clear-all residue check. */
+  onCheckResidue?: () => void;
   onTogglePlatform: (skillId: string, agentId: string) => Promise<void>;
   onToggleSelection: (skillId: string) => void;
   onUpdateCentral: (skillIds: string[]) => void;
@@ -169,7 +172,7 @@ export function CentralSkillListContent({
       {isLoading ? (
         <CentralSkillEmptyState message={t("central.loading")} />
       ) : skillsCount === 0 ? (
-        <CentralSkillFirstVisitEmptyState />
+        <CentralSkillFirstVisitEmptyState onCheckResidue={onCheckResidue} />
       ) : filteredSkills.length === 0 ? (
         <CentralSkillEmptyState
           message={t("central.noMatch", { query: searchQuery })}

@@ -66,6 +66,9 @@ pub struct AppState {
     /// cancel/progress only; filesystem mutual exclusion comes from the
     /// Local target mutation guard.
     pub skills_cli_jobs: services::exclusive_job::ExclusiveJobRegistry,
+    /// Central clear-all family: one clear job per process for progress and
+    /// cancellation; filesystem exclusion comes from the target mutation guard.
+    pub central_clear_jobs: services::exclusive_job::ExclusiveJobRegistry,
     /// Commands receive this injectable store from AppState so unit tests do
     /// not need to touch the real OS credential vault.
     pub secrets: Arc<dyn secrets::SecretStore>,
@@ -248,6 +251,10 @@ async fn install_ready_state(
         skills_cli_jobs: services::exclusive_job::ExclusiveJobRegistry::new(
             "job.skills_cli_busy",
             "A Skills CLI job is already running.",
+        ),
+        central_clear_jobs: services::exclusive_job::ExclusiveJobRegistry::new(
+            "job.central_clear_busy",
+            "A Central clear job is already running.",
         ),
         secrets: Arc::clone(&secrets),
         targets: targets::TargetRegistry::default(),

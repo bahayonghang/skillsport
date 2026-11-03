@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { createCentralSkillsInitialState } from "./centralSkillsStore.shared";
+import { createCentralClearSlice } from "./centralSkillsStore.clearSlice";
 import { createCentralInstallSlice } from "./centralSkillsStore.installSlice";
 import { createCentralListSlice } from "./centralSkillsStore.listSlice";
 import { createCentralMetadataSlice } from "./centralSkillsStore.metadataSlice";
@@ -26,5 +27,6 @@ export const useCentralSkillsStore = create<CentralSkillsState>((set, get) => {
     ...createCentralMetadataSlice(context),
     ...createCentralUpdateSlice(context),
     ...createCentralPortabilitySlice(context),
+    ...createCentralClearSlice(context),
   };
 });

@@ -30,6 +30,10 @@ fn test_app_state(pool: SqlitePool) -> AppState {
             "job.skills_cli_busy",
             "A Skills CLI job is already running.",
         ),
+        central_clear_jobs: crate::services::exclusive_job::ExclusiveJobRegistry::new(
+            "job.central_clear_busy",
+            "A Central clear job is already running.",
+        ),
         secrets: std::sync::Arc::new(crate::secrets::MockSecretStore::default()),
         targets: crate::targets::TargetRegistry::default(),
     }

@@ -1,5 +1,10 @@
 import { GENERATED_IPC_COMMANDS } from "./generatedCommandMap";
 
+import type {
+  ClearCentralPreview,
+  ClearCentralRequest,
+  ClearCentralResult,
+} from "@/types/centralClear";
 import type { ResetUnknownSourceSkillsPreview } from "@/types/resetUnknownSource";
 import type {
   AgentWithStatus,
@@ -223,6 +228,12 @@ export const HANDWRITTEN_IPC_COMMANDS = {
     { skillIds: string[]; removeCopyAgentIds: string[] },
     BatchDeleteCentralSkillResult
   >(),
+  preview_clear_central_skills: command<undefined, ClearCentralPreview>(),
+  clear_central_skills: command<
+    { jobId: string; request: ClearCentralRequest },
+    ClearCentralResult
+  >(),
+  cancel_central_clear: command<{ jobId: string }, boolean>(),
   get_central_top_tags: command<{ limit: number }, CentralTopTag[]>(),
   uninstall_skill_from_agent: command<
     { skillId: string; agentId: string; rowId?: string },

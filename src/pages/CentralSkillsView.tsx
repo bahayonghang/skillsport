@@ -4,6 +4,8 @@ import { markAppPerformance } from "@/lib/performance";
 import { CentralSkillsShell } from "@/components/central/CentralSkillsShell";
 import { CentralStoreLocationDialog } from "@/components/central/CentralStoreLocationDialog";
 import { CommandPalette } from "@/components/central/CommandPalette";
+import { ClearCentralSkillsDialog } from "@/components/central/clearAll/ClearCentralSkillsDialog";
+import { useCentralClearAllWorkflow } from "@/pages/centralClearAllWorkflow";
 import { useCentralViewStateUrl } from "@/hooks/useCentralViewStateUrl";
 import {
   useCentralSkillsActionBindings,
@@ -244,6 +246,21 @@ export function CentralSkillsView() {
     }
   }, [isLoading, skills.length]);
 
+  const { setSelectedSkillIds, setIsPortabilityOpen } = actionState;
+  const handleAfterClearAll = useCallback(() => {
+    setSelectedSkillIds([]);
+    setViewState((prev) => (prev.repos.length > 0 ? { ...prev, repos: [] } : prev));
+  }, [setSelectedSkillIds, setViewState]);
+  const handleOpenClearAllBackup = useCallback(
+    () => setIsPortabilityOpen(true),
+    [setIsPortabilityOpen],
+  );
+  const clearAll = useCentralClearAllWorkflow({
+    t,
+    onAfterClear: handleAfterClearAll,
+    onOpenBackup: handleOpenClearAllBackup,
+  });
+
   const { actions: paletteActions, groupByOptions } = useCentralPaletteActions({
     t,
     viewState,
@@ -251,6 +268,7 @@ export function CentralSkillsView() {
     canSaveCurrent: savedViewsBridge.canSaveCurrent,
     onSaveCurrentView: savedViewsBridge.handleSaveCurrentView,
     onCreateTagGroup: tagGroupsBridge.handleCreateTagGroup,
+    onClearCentral: clearAll.busy ? undefined : clearAll.openDialog,
   });
   const actionBindings = useCentralSkillsActionBindings({
     actionState,
@@ -552,6 +570,11 @@ export function CentralSkillsView() {
         checkModeControl={updateCheckMode.modeControl}
         checkButton={updateCheckMode.checkButton}
         onOpenPalette={() => setCommandPaletteOpen(true)}
+        clearAll={{
+          onOpen: clearAll.openDialog,
+          busy: clearAll.busy,
+          showEmptyStateEntry: skills.length === 0 && !hasCurrentFilters,
+        }}
         savedViewsSlot={savedViewsSlot}
         topFiltersTagGroups={tagGroupsSlot}
         onDeleteRepository={(repo) => {
@@ -587,6 +610,12 @@ export function CentralSkillsView() {
         onApplied={handleCentralStoreLocationApplied}
       />
       {updateCheckMode.dialog}
+      <ClearCentralSkillsDialog
+        t={t}
+        workflow={clearAll}
+        agents={agents}
+        target={activeTarget}
+      />
     </>
   );
 }

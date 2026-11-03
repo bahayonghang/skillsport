@@ -31,6 +31,12 @@ import {
 } from "@/types";
 import type { ResetUnknownSourceSkillsPreview } from "@/types/resetUnknownSource";
 import type {
+  ClearCentralPhase,
+  ClearCentralPreview,
+  ClearCentralRequest,
+  ClearCentralResult,
+} from "@/types/centralClear";
+import type {
   CentralRepositorySyncApplyResult,
   CentralRepositorySyncDecisions,
   CentralRepositorySyncPreview,
@@ -47,6 +53,22 @@ export interface PortabilityState {
   lastResult: PortableBundleImportResult | null;
 }
 
+export type CentralClearJobStatus =
+  | "running"
+  | "cancelling"
+  | "completed"
+  | "failed"
+  | "cancelled";
+
+/** Active or last Central clear-all job; `null` = idle. */
+export interface CentralClearJob {
+  jobId: string;
+  phase: ClearCentralPhase | null;
+  status: CentralClearJobStatus;
+  completed: number;
+  total: number;
+}
+
 export interface CentralSkillsState {
   skills: SkillWithLinks[];
   agents: AgentWithStatus[];
@@ -58,6 +80,7 @@ export interface CentralSkillsState {
   updateJob: CentralSkillUpdateJob;
   portabilityJob: PortableBundleJob;
   portability: PortabilityState;
+  clearJob: CentralClearJob | null;
   aiTaggingAvailable: boolean;
   isLoading: boolean;
   /**
@@ -175,6 +198,13 @@ export interface CentralSkillsState {
   discardPortableBundlePreview: () => Promise<void>;
   /** Forget export/import results when the dialog closes; keeps a running job. */
   resetPortabilityDialog: () => void;
+  /** Read-only clear-all preview of the current target (no lock, no writes). */
+  previewClearCentral: () => Promise<ClearCentralPreview>;
+  /** Run clear-all; owns the jobId and its progress subscription. */
+  clearCentral: (request: ClearCentralRequest) => Promise<ClearCentralResult>;
+  cancelClearCentral: () => Promise<void>;
+  /** Forget a terminal clear job (no-op while running/cancelling). */
+  resetClearJob: () => void;
   resetForTargetChange: () => void;
 }
 

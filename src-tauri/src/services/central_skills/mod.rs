@@ -4,6 +4,7 @@
 //! repository deletion orchestration, and file/content helpers. Tauri IPC
 //! shells live in `crate::commands::skills`.
 
+mod clear_all;
 mod common;
 mod delete;
 mod error;
@@ -22,6 +23,14 @@ mod reset_tests;
 mod tests;
 
 pub use error::CentralSkillsError;
+
+pub use clear_all::{
+    clear_central_skills_impl, preview_clear_central_skills_impl, ClearCentralAgentSummary,
+    ClearCentralOwnerKind, ClearCentralPathFailure, ClearCentralPathItem, ClearCentralPathOutcome,
+    ClearCentralPhase, ClearCentralPreview, ClearCentralProgress, ClearCentralProgressStatus,
+    ClearCentralRecoveryOutcome, ClearCentralRequest, ClearCentralResult, ClearCentralSweepWarning,
+    ClearJob, ClearProgressSink, CENTRAL_CLEAR_PROGRESS_EVENT, CLEAR_ALL_WILDCARD_KEY,
+};
 
 pub use crate::services::central_operation::PendingDeleteRecoveryPreview;
 pub use delete::{

@@ -368,3 +368,97 @@ fn paths_equivalent_ignores_trailing_separator() {
         Path::new(r"C:\Users\lyh\.agents\skills")
     ));
 }
+
+#[test]
+fn path_is_within_is_component_aware_and_lexical() {
+    let root = Path::new("/home/a/.skillsmanage/skills");
+    assert!(path_is_within(
+        root,
+        Path::new("/home/a/.skillsmanage/skills/demo")
+    ));
+    assert!(path_is_within(
+        root,
+        Path::new("/home/a/.skillsmanage/skills/")
+    ));
+    assert!(!path_is_within(
+        root,
+        Path::new("/home/a/.skillsmanage/skills-old/demo")
+    ));
+    assert!(path_is_within(
+        root,
+        Path::new("/home/a/.claude/skills/../../.skillsmanage/skills/demo")
+    ));
+    assert!(!path_is_within(
+        root,
+        Path::new("/home/a/.skillsmanage/skills/../repos/demo")
+    ));
+}
+
+#[cfg(windows)]
+#[test]
+fn path_is_within_ignores_case_and_extended_prefix_on_windows() {
+    let root = Path::new(r"C:\Users\Lyh\.skillsmanage\skills");
+    assert!(path_is_within(
+        root,
+        Path::new(r"\\?\c:\users\lyh\.SKILLSMANAGE\skills\demo")
+    ));
+    assert!(path_is_within(
+        root,
+        Path::new("C:/Users/lyh/.skillsmanage/skills/x")
+    ));
+    assert!(!path_is_within(
+        root,
+        Path::new(r"D:\Users\lyh\.skillsmanage\skills\x")
+    ));
+}
+
+#[test]
+fn path_comparison_key_keeps_leading_parent_segments_for_relative_paths() {
+    assert_eq!(path_comparison_key(Path::new("../a/./b/../c")), "../a/c");
+}
+
+#[test]
+fn key_is_within_rejects_empty_root() {
+    assert!(!key_is_within("", "/anything"));
+}
+
+#[test]
+fn attributable_roots_include_defaults_and_dangling_children_match() {
+    let temp = TempDir::new().unwrap();
+    let current = temp.path().join("moved").join("skills");
+    let default_root = temp
+        .path()
+        .join("home")
+        .join(".skillsmanage")
+        .join("skills");
+    let roots = attributable_central_roots_with(&current, std::slice::from_ref(&default_root));
+    // A dangling link target under the old default root is still attributable.
+    let dangling = default_root.join("deleted-skill");
+    assert!(roots.iter().any(|root| path_is_within(root, &dangling)));
+    assert!(roots
+        .iter()
+        .any(|root| path_is_within(root, &current.join("x"))));
+    assert!(!roots
+        .iter()
+        .any(|root| path_is_within(root, &temp.path().join("elsewhere"))));
+}
+
+#[test]
+fn remote_attributable_roots_include_default_and_normalize() {
+    let roots = remote_attributable_central_roots("/data/central/", "/home/alice");
+    assert_eq!(
+        roots,
+        vec![
+            "/data/central".to_string(),
+            "/home/alice/.skillsmanage/skills".to_string()
+        ]
+    );
+    assert!(key_is_within(
+        &roots[1],
+        &remote_path_comparison_key("/home/alice/.claude/skills/../../.skillsmanage/skills/x")
+    ));
+    assert_eq!(
+        remote_attributable_central_roots("/", "/"),
+        vec!["/.skillsmanage/skills".to_string()]
+    );
+}
