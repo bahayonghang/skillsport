@@ -5,6 +5,7 @@
  * 1. 保存当前视图（仅当 saved-view 桥允许时）
  * 2. 创建标签分组
  * 3. 切换 group-by 模式（5 选其余 4）
+ * 4. 一键清理中央仓库（危险，打开预览对话框，不直接执行）
  */
 
 import { useMemo } from "react";
@@ -25,6 +26,8 @@ export interface UseCentralV2PaletteActionsArgs {
   canSaveCurrent: boolean;
   onSaveCurrentView: (defaultName: string) => void;
   onCreateTagGroup: () => void;
+  /** 打开一键清理预览；缺省则不提供该动作。 */
+  onClearCentral?: () => void;
   /** 可选注入 group-by 选项；默认从 t 派生 5 种内置模式。 */
   groupByOptions?: ReadonlyArray<GroupByOption>;
 }
@@ -41,6 +44,7 @@ export function useCentralPaletteActions({
   canSaveCurrent,
   onSaveCurrentView,
   onCreateTagGroup,
+  onClearCentral,
   groupByOptions: groupByOptionsArg,
 }: UseCentralV2PaletteActionsArgs): UseCentralV2PaletteActionsResult {
   const groupByOptions = useMemo<GroupByOption[]>(
@@ -84,6 +88,15 @@ export function useCentralPaletteActions({
       });
     }
 
+    if (onClearCentral) {
+      items.push({
+        id: "clear-central",
+        label: t("central.clearAll.paletteAction"),
+        keywords: t("central.clearAll.paletteKeywords").split(/\s+/).filter(Boolean),
+        onSelect: onClearCentral,
+      });
+    }
+
     return items;
   }, [
     t,
@@ -92,6 +105,7 @@ export function useCentralPaletteActions({
     canSaveCurrent,
     onSaveCurrentView,
     onCreateTagGroup,
+    onClearCentral,
     groupByOptions,
   ]);
 

@@ -18,7 +18,7 @@ import {
   getPlatformSkillDir,
   getPlatformSkillFilePath,
 } from "@/lib/platformPathPolicy";
-import type { PortabilityState } from "./centralSkillsStore.types";
+import type { CentralClearJob, PortabilityState } from "./centralSkillsStore.types";
 
 export const AI_TAG_PROGRESS_EVENT = "central://ai-tag-progress";
 export const CENTRAL_UPDATE_PROGRESS_EVENT = "central://skill-update-progress";
@@ -436,6 +436,7 @@ export function createCentralSkillsInitialState() {
     updateJob: createIdleUpdateJob(),
     portabilityJob: createIdlePortabilityJob(),
     portability: createIdlePortabilityState(),
+    clearJob: null as CentralClearJob | null,
     aiTaggingAvailable: false,
     isLoading: false,
     hasLoaded: false,

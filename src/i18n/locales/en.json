@@ -181,7 +181,8 @@
       "portability_busy": "A portable bundle import or export is already running.",
       "id_mismatch": "This cancellation request belongs to an older job and was ignored.",
       "invalid_id": "The job identifier is invalid. Retry the operation.",
-      "registry_unavailable": "Job coordination is temporarily unavailable. Restart SkillPort and try again."
+      "registry_unavailable": "Job coordination is temporarily unavailable. Restart SkillPort and try again.",
+      "central_clear_busy": "A Central clear is already running. Wait for it to finish or cancel it first."
     },
     "skills_cli": {
       "local_target_only": "Skills CLI is available only on the Local target.",
@@ -329,7 +330,8 @@
       "unknown": "The local ZIP import failed. Try again or inspect the Operation Logs."
     },
     "central": {
-      "reset_failed": "Unknown-source Central skills could not be reset."
+      "reset_failed": "Unknown-source Central skills could not be reset.",
+      "clear_failed": "The Central library could not be cleared."
     },
     "central_skills": {
       "mutation_lock_failed": "Central is busy with another change. Try again shortly.",
@@ -359,6 +361,10 @@
       "target_io": "Skill files on the active target could not be read or written.",
       "unsafe_entry": "The bundle contains an unsafe or unsupported entry.",
       "unsupported_version": "The bundle was created by a newer SkillPort version."
+    },
+    "central_clear": {
+      "remove_failed": "The item could not be removed. It may be in use or protected; close programs using it and retry.",
+      "path_outside_scope": "The path is outside the clear scope and was not removed."
     }
   },
   "targets": {
@@ -2319,6 +2325,83 @@
           "unsupported_version": "Update SkillPort on this machine, then try again."
         }
       }
+    },
+    "clearAll": {
+      "menuItem": "Clear Central library…",
+      "menuItemBusy": "Clearing…",
+      "emptyStateButton": "Check leftover installs",
+      "paletteAction": "Clear Central library…",
+      "title": "Clear Central library · {{target}}",
+      "targetLocal": "Local",
+      "warning": "This permanently deletes every skill in the Central library and its installs in each agent. It cannot be undone.",
+      "backupHint": "Consider exporting a backup first.",
+      "backupLink": "Export backup",
+      "loadingPreview": "Scanning the Central library and agent folders…",
+      "previewError": "Could not preview the clear: {{error}}",
+      "retryPreview": "Retry",
+      "nothingToClear": "Nothing to clear. The Central library is empty and no leftover links were found.",
+      "statSkills": "Central skills",
+      "statAgentLinks": "Agent links",
+      "statProjectLinks": "Project links",
+      "statOrphanLinks": "Orphan links",
+      "agentTableCaption": "Per-agent installs",
+      "agentColumn": "Agent",
+      "linkColumn": "Links (auto)",
+      "copyColumn": "Copies (kept by default)",
+      "orphanColumn": "Orphan links",
+      "copyRemoveLabel": "Also delete",
+      "copyRemoveAria": "Also delete copy installs in {{agent}}",
+      "noAgentRows": "No agent installs to clear.",
+      "toggleProjectLinks": "Clear Central links in projects ({{count}})",
+      "toggleOrphanLinks": "Clear orphan links ({{count}}, {{dangling}} broken)",
+      "toggleUntracked": "Clear unregistered entries in the Central folder ({{count}})",
+      "showPaths": "View paths",
+      "hidePaths": "Hide paths",
+      "pathsTruncated": "Showing only part of the list ({{shown}} of {{total}}).",
+      "listMore": "…and {{count}} more.",
+      "danglingBadge": "broken",
+      "skippedUnmanaged": "Plain folders skipped (not managed by SkillPort): {{count}}.",
+      "pendingRecovery": "Unfinished earlier operations to recover first: {{count}}.",
+      "sweepWarnings": "Folders that could not be read: {{count}}.",
+      "skillPreviewFailed": "Skills that cannot be deleted and will be skipped: {{count}}.",
+      "confirmPhrase": "clear central",
+      "confirmPrompt": "Type “{{phrase}}” to confirm:",
+      "confirmInputLabel": "Confirmation phrase",
+      "confirmSkills": "Permanently clear skills ({{count}})",
+      "confirmResidue": "Clear leftover items ({{count}})",
+      "confirmRecoveryOnly": "Recover pending operations",
+      "cancel": "Cancel",
+      "cancelRunning": "Cancel",
+      "cancelling": "Cancelling…",
+      "close": "Close",
+      "rePreview": "Preview again",
+      "progressLabel": "Clear progress",
+      "progressCount": "{{completed}} / {{total}}",
+      "phaseStarting": "Starting…",
+      "phase": {
+        "recovery": "Recovering earlier operations",
+        "projectLinks": "Clearing project links",
+        "skills": "Deleting Central skills",
+        "untracked": "Clearing unregistered entries",
+        "orphanLinks": "Clearing orphan links",
+        "finalize": "Finishing up"
+      },
+      "resultTitleCancelled": "Clear cancelled",
+      "resultTitlePartial": "Clear finished with failures",
+      "resultTitleDone": "Clear finished",
+      "resultSucceeded": "Removed: {{count}}",
+      "resultFailed": "Failed: {{count}}",
+      "resultSkipped": "Skipped (changed after preview): {{count}}",
+      "resultRecovery": "Recovered operations: {{recovered}} (failed {{failed}})",
+      "resultCancelledHint": "Items already removed stay removed. Preview again to continue.",
+      "failedListTitle": "Failed items",
+      "failedItemFallback": "The item could not be removed.",
+      "successToast": "Central library cleared. Items removed: {{count}}.",
+      "partialToast": "Clear finished: {{succeeded}} removed, {{failed}} failed.",
+      "cancelledToast": "Clear cancelled. Items removed before cancelling: {{count}}.",
+      "applyError": "Clear failed: {{error}}",
+      "refreshError": "The clear finished, but refreshing the list failed: {{error}}",
+      "paletteKeywords": "clear reset wipe remove delete all"
     }
   },
   "installDialog": {

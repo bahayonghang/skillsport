@@ -139,3 +139,27 @@ closed ──open──▶ loadingPreview ──ok──▶ preview ──confir
 | 目标显示 | SSH 目标标题包含目标名 |
 
 遵守 `async-ui-test-stability.md`（避免计时器竞态）与 `ipc-adapter.md`（fixture seam）。
+
+## 7. Deviations（实现回写）
+
+- 类型沿用后端已提交的 `src/types/centralClear.ts`（不是 `clearCentral.ts`），`commandMap.ts` 已登记三命令，无需改动；
+  与 Rust `types.rs` 对齐无缺项（`targetKind` 在 TS 侧收窄为 `"local" | "ssh" | "wsl"`）。
+- 纯函数放在中立层 `src/lib/centralClearAll.ts`：`buildClearCentralRequest`、`isClearCentralPreviewEmpty`、
+  `hasClearCentralWork`、`countSelectedResidue`、`matchesClearConfirmPhrase`、结果计数、`clearTargetLabel`。
+- 通配规则细化：仅当 `preview.truncated` **且**该类别返回列表短于其精确计数时才发 `["*"]`；
+  未被截断的类别即使其它类别截断也发精确 key（保持 S12：预览后新增条目不删）。
+- Store 状态为 `clearJob: CentralClearJob | null`（status `running|cancelling|completed|failed|cancelled`），另加
+  `resetClearJob()`。进度订阅在 `clearCentral` 动作内部：先 `listen` 再 `invoke`，按 jobId 过滤，`finally` 中必解除；
+  页面卸载不中止作业，invoke 结算时即解除订阅。同族重复启动抛 `job.central_clear_busy`。
+- 刷新使用现有 `loadCentralSkills({ throwOnError: true })`（不存在 `refreshCentralSkills`）+ `refreshCounts()`，各一次。
+  外层 apply 失败时（`job.central_clear_busy` / `central_skills.mutation_lock_failed` 除外）同样刷新一次，因为后端可能已部分提交。
+- 只有待恢复日志（无 skill、无残留）时视为“有工作”，确认按钮文案为“恢复未完成的操作”；全部残留开关关闭且无 skill/恢复时确认禁用。
+- 截断提示始终显示在类别行下方（不只在展开后）；路径窗口化阈值 200 行，固定 24px 行高。
+- 空状态入口：分组视图（group≠none）且中央总数为 0 时，Shell 改为渲染常规列表内容（首次访问空状态），否则 S5 场景在分组模式下看不到入口。
+- 命令面板：`CommandPaletteAction` 新增可选 `keywords`（cmdk `keywords`），关键词来自 i18n `central.clearAll.paletteKeywords`；作业运行中不提供该动作。
+- “导出备份”链接先关闭清理对话框再打开 Portability（避免两个模态叠加）；执行中禁用。
+- 单项错误经 `formatBackendError("<code>:<本地化兜底>")` 渲染；新增 i18n `backendErrors.central_clear.{remove_failed,path_outside_scope}`、
+  `backendErrors.central.clear_failed`、`backendErrors.job.central_clear_busy`，并在 `src/lib/ipc/errors.ts` 补 legacy canonical message。
+- Agent 名称取自 central store 的 `agents`（与页面其它处一致），组件以结构类型 `ClearCentralAgentRef` 接收，避免新增根 `@/types` barrel 导入。
+- 任务中心 / 顶部进度线未接入清理作业（不在本任务范围）。
+- implement 步骤 9（截图检查）未执行，由主会话负责视觉验证。
