@@ -116,7 +116,7 @@ fn observe_link_entry(link: &Path, expected: &Path) -> DirectorySlotObservation 
     }
 }
 
-fn inspect_link_kind_and_target(
+pub(crate) fn inspect_link_kind_and_target(
     link: &Path,
 ) -> Result<(ManagedDirectoryLinkKind, PathBuf), InstallationError> {
     #[cfg(windows)]

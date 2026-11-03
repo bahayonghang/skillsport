@@ -251,7 +251,7 @@ fn normalize_scan_key(dir: &Path) -> String {
     }
 }
 
-fn scan_parallelism_limit() -> usize {
+pub(crate) fn scan_parallelism_limit() -> usize {
     std::thread::available_parallelism()
         .map(|parallelism| parallelism.get().clamp(1, 8))
         .unwrap_or(4)

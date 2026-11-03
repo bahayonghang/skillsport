@@ -129,8 +129,10 @@ pub(crate) async fn build_local_delete_manifest(
 ) -> Result<DeleteManifest, CentralOperationError> {
     let mut managed = Vec::with_capacity(paths.len());
     for path in paths {
+        // Do not follow links here: an installed link and the Central
+        // directory it points to are two physical paths to stage.
         if managed.iter().any(|entry: &ManagedPath| {
-            crate::paths::paths_equivalent(Path::new(&entry.original), &path)
+            crate::paths::slot_paths_equivalent(Path::new(&entry.original), &path)
         }) {
             continue;
         }

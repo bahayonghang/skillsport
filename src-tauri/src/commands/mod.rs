@@ -1,6 +1,7 @@
 pub mod agents;
 pub mod app_runtime;
 pub mod bootstrap;
+pub mod central_clear;
 pub mod central_metadata;
 pub mod central_store_location;
 pub mod central_updates;

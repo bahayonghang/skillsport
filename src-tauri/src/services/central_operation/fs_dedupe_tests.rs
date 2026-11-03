@@ -86,3 +86,24 @@ async fn remote_delete_manifest_normalizes_and_deduplicates_before_inspection() 
         assert_eq!(runner.calls().len(), 2);
     }
 }
+
+#[tokio::test]
+async fn local_delete_manifest_keeps_link_slot_and_its_target_separate() {
+    let temp = tempfile::tempdir().unwrap();
+    let target = temp.path().join("central").join("skill");
+    fs::create_dir_all(&target).unwrap();
+    fs::write(target.join("SKILL.md"), "body").unwrap();
+    let link = temp.path().join("agent").join("skill");
+    fs::create_dir_all(link.parent().unwrap()).unwrap();
+    #[cfg(windows)]
+    crate::services::installation::fs_util::create_skills_cli_directory_link(&target, &link)
+        .unwrap();
+    #[cfg(not(windows))]
+    crate::test_support::symlink_dir(&target, &link);
+
+    let manifest =
+        build_local_delete_manifest("op-link-target", vec![link.clone(), target.clone()])
+            .await
+            .unwrap();
+    assert_eq!(manifest.paths.len(), 2);
+}

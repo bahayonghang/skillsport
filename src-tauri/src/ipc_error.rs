@@ -408,6 +408,7 @@ fn legacy_code_message(code: &str) -> Option<&'static str> {
             "The repository content did not match the update inventory. Refresh and try again.",
         ),
         "central.reset_failed" => Some("Unknown-source Central skills could not be reset."),
+        "central.clear_failed" => Some("Central skills could not be cleared."),
         "central_skills.mutation_lock_failed" => {
             Some("Central is busy with another change. Try again shortly.")
         }
@@ -433,6 +434,7 @@ fn legacy_code_message(code: &str) -> Option<&'static str> {
             Some("The prepared delete operation no longer passes reconciliation checks.")
         }
         "job.portability_busy" => Some("A portability job is already running."),
+        "job.central_clear_busy" => Some("A Central clear job is already running."),
         "skills_cli.local_target_only" => {
             Some("Skills CLI is available only on the Local target.")
         }

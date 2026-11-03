@@ -15,9 +15,9 @@ use super::super::types::{
 };
 use super::{delete_central_skill_local_under_guard, delete_central_skill_remote_under_guard};
 
-pub(super) struct CentralSkillDeleteItemError {
-    pub(super) phase: &'static str,
-    pub(super) error: CentralSkillsError,
+pub(in crate::services::central_skills) struct CentralSkillDeleteItemError {
+    pub(in crate::services::central_skills) phase: &'static str,
+    pub(in crate::services::central_skills) error: CentralSkillsError,
 }
 
 impl CentralSkillDeleteItemError {
@@ -29,7 +29,7 @@ impl CentralSkillDeleteItemError {
     }
 }
 
-pub(super) struct CentralSkillDeleteItemOutcome {
+pub(in crate::services::central_skills) struct CentralSkillDeleteItemOutcome {
     pub(super) skill_id: String,
     pub(super) result: Result<DeleteCentralSkillResult, CentralSkillDeleteItemError>,
 }
@@ -60,7 +60,7 @@ fn deduplicate_delete_requests(
     ordered_requests
 }
 
-async fn recover_selected_pending_operations_under_guard(
+pub(in crate::services::central_skills) async fn recover_selected_pending_operations_under_guard(
     pool: &DbPool,
     active_target: &ActiveTarget,
     remote: Option<&Arc<crate::targets::ConnectedRemoteTarget>>,
@@ -148,7 +148,7 @@ pub(super) async fn delete_central_skills_for_target(
     .await
 }
 
-pub(super) async fn delete_central_skills_under_guard(
+pub(in crate::services::central_skills) async fn delete_central_skills_under_guard(
     pool: &DbPool,
     active_target: &ActiveTarget,
     ordered_requests: Vec<BatchDeleteCentralSkillRequest>,
@@ -277,7 +277,7 @@ pub(crate) async fn delete_central_skills_for_target_with_connection_for_tests(
     Ok(public_delete_batch_result(outcomes))
 }
 
-pub(super) fn public_delete_batch_result(
+pub(in crate::services::central_skills) fn public_delete_batch_result(
     outcomes: Vec<CentralSkillDeleteItemOutcome>,
 ) -> BatchDeleteCentralSkillResult {
     let mut succeeded = Vec::new();
