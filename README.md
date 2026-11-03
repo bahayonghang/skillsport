@@ -221,6 +221,7 @@ just version-check
 just dev
 just build
 just install
+just help
 ```
 
 - `just doctor` is a read-only toolchain and Tauri prerequisite diagnostic. It reports missing or mismatched tools without installing packages, changing PATH, or switching toolchains.
@@ -230,6 +231,7 @@ just install
 - `just dev` starts the Tauri development app directly.
 - `just build` builds the desktop app for the current platform and copies the latest bundle artifact to `outputs/` (`.exe` on Windows, `.app` + `.dmg` on macOS, `.AppImage`/`.deb` on Linux).
 - `just install` builds the Windows NSIS installer, copies it to `outputs/`, and runs it in passive mode. On macOS, it prints a reminder and runs `just build` instead.
+- `just help` lists the public recipes. `just` with no arguments still runs `sync-version`, the first recipe.
 
 ### Run in Development
 

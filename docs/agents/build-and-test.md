@@ -59,6 +59,7 @@ inject hooks fail closed. Platform-inapplicable skips remain skips. Linux and ma
 
 ## Desktop Build
 
+- `just help` lists the public recipes. `just` with no arguments still runs `sync-version`.
 - `just dev` starts Tauri development mode.
 - `just build` runs the platform bundle and copies the newest Windows NSIS installer into
   `outputs/`.

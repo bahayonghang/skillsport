@@ -77,6 +77,7 @@ describe("developer and PR experience contract", () => {
     expect(justfile).toMatch(/check: sync-version\r?\n\s+node scripts\/check\/run-ci\.mjs --lane quick/);
     expect(justfile).toMatch(/ci: sync-version\r?\n\s+node scripts\/check\/run-ci\.mjs/);
     expect(justfile).toMatch(/audit:\r?\n\s+pnpm audit:dependencies/);
+    expect(justfile).toMatch(/help:\r?\n\s+@just --list/);
   });
 
   it("keeps repository scripts in classified subfolders", () => {

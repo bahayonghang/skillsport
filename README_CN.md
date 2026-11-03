@@ -220,6 +220,7 @@ just version-check
 just dev
 just build
 just install
+just help
 ```
 
 - `just doctor` 是只读的工具链与 Tauri 前置依赖诊断；它只报告缺失或版本漂移，不会安装依赖、修改 PATH 或切换 toolchain。
@@ -229,6 +230,7 @@ just install
 - `just dev` 会直接启动 Tauri 开发应用。
 - `just build` 会按当前平台构建桌面应用，并把最新打包产物复制到 `outputs/`（Windows 为 `.exe`，macOS 为 `.app` + `.dmg`，Linux 为 `.AppImage`/`.deb`）。
 - `just install` 会构建 Windows NSIS 安装包、复制到 `outputs/`，并以 passive 模式运行安装器；在 macOS 上会显示提醒并改为运行 `just build`。
+- `just help` 列出全部公开配方。不带参数的 `just` 仍会运行第一条配方 `sync-version`。
 
 ### 启动开发环境
 
