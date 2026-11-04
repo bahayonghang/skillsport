@@ -21,7 +21,9 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { PlatformIcon } from "@/components/platform/PlatformIcon";
+import { sshLibraryIsLive } from "@/lib/sshLibraryGate";
 import { usePlatformStore } from "@/stores/platformStore";
+import { useTargetStore } from "@/stores/targetStore";
 import { DEFAULT_PLATFORM_CATEGORY_VISIBILITY } from "@/lib/platformVisibility";
 import {
   getPlatformTargetGroups,
@@ -140,6 +142,16 @@ export function Sidebar() {
   const { t } = useTranslation();
   const agents = usePlatformStore((s) => s.agents);
   const skillsByAgent = usePlatformStore((s) => s.skillsByAgent);
+  const activeTarget = useTargetStore((s) => s.activeTarget);
+  const sshReachability = useTargetStore((s) => s.sshReachability);
+  const targetsResolved = useTargetStore((s) => s.targetsResolved);
+  const centralSkillCount = sshLibraryIsLive(
+    activeTarget,
+    sshReachability,
+    targetsResolved,
+  )
+    ? skillsByAgent["central"]
+    : undefined;
   const collectionCount = usePlatformStore((s) => s.collectionCount);
   const isLoading = usePlatformStore((s) => s.isLoading);
   const isRefreshing = usePlatformStore((s) => s.isRefreshing);
@@ -271,7 +283,7 @@ export function Sidebar() {
           onClick={() => navigate("/central")}
           icon={<Blocks className="size-5" />}
           expanded={expanded}
-          count={skillsByAgent["central"]}
+          count={centralSkillCount}
         />
         <NavItem
           label={t("sidebar.rules")}

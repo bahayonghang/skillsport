@@ -147,6 +147,38 @@ describe("PageHeader", () => {
     const { container } = render(<PageHeader title="Only title" />)
     expect(container.querySelector("[data-slot=page-header-aside]")).toBeNull()
   })
+
+  it("omits the status slot when status is not passed", () => {
+    const { container } = render(<PageHeader title="T" meta="M" />)
+    expect(container.querySelector("[data-slot=page-header-status]")).toBeNull()
+    expect(container.querySelector("[data-slot=page-header-title-group]")).toBeNull()
+    expect(screen.getByRole("heading", { level: 1 }).parentElement).toBe(
+      container.querySelector("[data-slot=page-header]")!.firstElementChild,
+    )
+  })
+
+  it("places status on the title row and lets it wrap with the title", () => {
+    const { container } = render(
+      <PageHeader
+        title="T"
+        meta="M"
+        actions={<button type="button">A</button>}
+        status={<button type="button">Flag</button>}
+      />,
+    )
+    const group = container.querySelector("[data-slot=page-header-title-group]")!
+    const status = container.querySelector<HTMLElement>(
+      "[data-slot=page-header-status]",
+    )!
+    const aside = container.querySelector("[data-slot=page-header-aside]")!
+    expect(group).toHaveClass("flex-wrap")
+    expect(group).toContainElement(screen.getByRole("heading", { level: 1 }))
+    expect(group).toContainElement(status)
+    expect(status).toHaveTextContent("Flag")
+    expect(aside).toHaveTextContent("M")
+    expect(aside).toHaveTextContent("A")
+    expect(group.compareDocumentPosition(aside) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
 })
 
 describe("Card", () => {

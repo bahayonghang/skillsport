@@ -3,9 +3,15 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes, useLocation } from "react-router-dom";
 
+import { toast } from "sonner";
+
 import { TargetQuickSwitcher } from "@/components/layout/TargetQuickSwitcher";
 import { useTargetStore } from "@/stores/targetStore";
 import type { TargetSummary } from "@/types";
+
+vi.mock("sonner", () => ({
+  toast: { error: vi.fn(), success: vi.fn() },
+}));
 
 vi.mock("@/stores/targetStore", () => ({
   useTargetStore: vi.fn(),
@@ -248,7 +254,7 @@ describe("TargetQuickSwitcher", () => {
   });
 
   it("keeps the menu open with the error when a switch fails", async () => {
-    const switchTarget = vi.fn().mockRejectedValue(new Error("boom"));
+    const switchTarget = vi.fn().mockRejectedValue(new Error("无法连接"));
     setupStore({ switchTarget, error: "无法连接" });
     renderSwitcher();
     fireEvent.click(screen.getByRole("button", { name: /切换当前目标/ }));
@@ -261,7 +267,10 @@ describe("TargetQuickSwitcher", () => {
     });
     expect(switchTarget).toHaveBeenCalledWith("ssh-dckj");
     expect(screen.getByRole("menu")).toBeInTheDocument();
-    expect(within(screen.getByRole("menu")).getByRole("alert")).toHaveTextContent("无法连接");
+    const alert = within(screen.getByRole("menu")).getByRole("alert");
+    expect(alert).toHaveTextContent("无法连接");
+    expect(alert.textContent).not.toMatch(/password|secret/i);
+    expect(toast.error).toHaveBeenCalledWith("无法连接");
   });
 
   it("supports arrow-key navigation inside the menu", async () => {

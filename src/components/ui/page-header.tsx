@@ -16,6 +16,9 @@ import { cn } from "@/lib/utils"
 // meta. The actions group is capped at the aside width (`max-w-full`), so a
 // long action row moves to its own line and then wraps button by button
 // instead of overflowing the header; callers never need their own wrapper.
+// Optional `status` sits on the title's row, left of the aside. Below 900px
+// it wraps with the title, not over the actions. Omitting it keeps the
+// original title/aside DOM.
 
 interface PageHeaderProps
   extends Omit<React.ComponentProps<"header">, "title"> {
@@ -24,6 +27,8 @@ interface PageHeaderProps
   meta?: React.ReactNode
   /** Page-level actions (Buttons). */
   actions?: React.ReactNode
+  /** Optional status on the title row, left of the aside. */
+  status?: React.ReactNode
   /** Optional id for the `<h1>` (aria-labelledby targets). */
   titleId?: string
 }
@@ -32,10 +37,13 @@ function PageHeader({
   title,
   meta,
   actions,
+  status,
   titleId,
   className,
   ...props
 }: PageHeaderProps) {
+  const titleClassName =
+    "min-w-0 font-display text-2xl leading-tight font-semibold tracking-tight break-words text-foreground"
   return (
     <header
       data-slot="page-header"
@@ -43,12 +51,29 @@ function PageHeader({
       {...props}
     >
       <div className="flex min-w-0 flex-col gap-2 @min-[900px]/page-header:flex-row @min-[900px]/page-header:items-center @min-[900px]/page-header:justify-between @min-[900px]/page-header:gap-6">
-        <h1
-          id={titleId}
-          className="min-w-0 font-display text-2xl leading-tight font-semibold tracking-tight break-words text-foreground @min-[900px]/page-header:max-w-2/3 @min-[900px]/page-header:shrink-0"
-        >
-          {title}
-        </h1>
+        {status ? (
+          <div
+            data-slot="page-header-title-group"
+            className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2 @min-[900px]/page-header:max-w-2/3 @min-[900px]/page-header:shrink-0"
+          >
+            <h1 id={titleId} className={titleClassName}>
+              {title}
+            </h1>
+            <div data-slot="page-header-status" className="shrink-0">
+              {status}
+            </div>
+          </div>
+        ) : (
+          <h1
+            id={titleId}
+            className={cn(
+              titleClassName,
+              "@min-[900px]/page-header:max-w-2/3 @min-[900px]/page-header:shrink-0",
+            )}
+          >
+            {title}
+          </h1>
+        )}
         {meta || actions ? (
           <div
             data-slot="page-header-aside"

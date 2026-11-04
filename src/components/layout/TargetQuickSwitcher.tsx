@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { ChevronDown, Loader2, Server, Settings2 } from "lucide-react";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
+import { formatBackendError } from "@/lib/backendError";
 import { buttonVariants } from "@/components/ui/button-variants";
 import {
   Menu,
@@ -64,8 +66,10 @@ export function TargetQuickSwitcher() {
     try {
       await switchTarget(targetId);
       setOpen(false);
-    } catch {
-      // store keeps the error; menu stays open so user can retry
+    } catch (err) {
+      // Menu stays open. The store error is the inline alert; toast is the
+      // second channel required when the switch never leaves this view.
+      toast.error(formatBackendError(err, t));
     }
   }
 
@@ -171,7 +175,7 @@ export function TargetQuickSwitcher() {
 
         {error && (
           <div role="alert" className="px-2.5 pb-2 text-xs text-destructive-text">
-            {error}
+            {formatBackendError(error, t)}
           </div>
         )}
 

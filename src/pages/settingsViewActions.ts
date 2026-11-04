@@ -20,6 +20,7 @@ import type {
   SshTargetFormState,
   WslTargetFormState,
 } from "@/components/settings/RemoteTargetsSettingsSection";
+import { formatBackendError } from "@/lib/backendError";
 import { isSshTarget, isWslTarget } from "@/lib/targetKind";
 import {
   EMPTY_SSH_TARGET_FORM,
@@ -419,7 +420,7 @@ export function createSettingsViewActions({
       await refreshAfterTargetChange();
       toast.success(t("targets.switched", { label: target.label }));
     } catch (err) {
-      const text = String(err);
+      const text = formatBackendError(err, t);
       setTargetMessage({ type: "error", text });
       toast.error(text);
     }

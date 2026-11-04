@@ -4,9 +4,10 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { useProjectsStore } from "@/stores/projectsStore";
+import { useTargetStore } from "@/stores/targetStore";
 import { useThemeStore } from "@/stores/themeStore";
 import { SIDEBAR_WORKSPACE_SECTIONS_KEY } from "@/lib/sidebarWorkspacePrefs";
-import type { Project } from "@/types";
+import type { Project, TargetSummary } from "@/types";
 
 vi.mock("@/stores/platformStore", () => ({
   usePlatformStore: vi.fn(),
@@ -137,6 +138,11 @@ describe("Sidebar", () => {
       projects: [],
       scanningProjectIds: new Set(),
     });
+    useTargetStore.setState({
+      activeTarget: { id: "local", kind: "local", label: "Local", isActive: true },
+      sshReachability: { phase: "idle" },
+      targetsResolved: true,
+    });
   });
 
   it("has no header row: the first focusable entry is Dashboard", () => {
@@ -204,6 +210,87 @@ describe("Sidebar", () => {
     expect(within(central).getByText("10").closest("[data-slot=badge]")).toHaveAttribute("data-tone", "primary");
     const universal = screen.getByRole("button", { name: /Universal/ });
     expect(within(universal).getByText("7").closest("[data-slot=badge]")).toHaveAttribute("data-tone", "neutral");
+  });
+
+  it.each([
+    {
+      name: "local",
+      activeTarget: { id: "local", kind: "local", label: "Local", isActive: true } satisfies TargetSummary,
+      reachability: { phase: "idle" as const },
+      visible: true,
+    },
+    {
+      name: "wsl with a stale ssh failure",
+      activeTarget: {
+        id: "wsl-ubuntu",
+        kind: "wsl",
+        label: "Ubuntu",
+        isActive: true,
+      } satisfies TargetSummary,
+      reachability: {
+        phase: "unreachable" as const,
+        targetId: "ssh-demo",
+        message: "connection refused",
+      },
+      visible: true,
+    },
+    {
+      name: "reachable ssh",
+      activeTarget: {
+        id: "ssh-demo",
+        kind: "ssh",
+        label: "Lab",
+        host: "lab.local",
+        isActive: true,
+      } satisfies TargetSummary,
+      reachability: { phase: "reachable" as const, targetId: "ssh-demo" },
+      visible: true,
+    },
+    {
+      name: "checking ssh",
+      activeTarget: {
+        id: "ssh-demo",
+        kind: "ssh",
+        label: "Lab",
+        host: "lab.local",
+        isActive: true,
+      } satisfies TargetSummary,
+      reachability: { phase: "checking" as const, targetId: "ssh-demo" },
+      visible: false,
+    },
+    {
+      name: "unreachable ssh",
+      activeTarget: {
+        id: "ssh-demo",
+        kind: "ssh",
+        label: "Lab",
+        host: "lab.local",
+        isActive: true,
+      } satisfies TargetSummary,
+      reachability: {
+        phase: "unreachable" as const,
+        targetId: "ssh-demo",
+        message: "connection refused",
+      },
+      visible: false,
+    },
+  ])("central count visibility when the active target is $name", ({ activeTarget, reachability, visible }) => {
+    useTargetStore.setState({ activeTarget, sshReachability: reachability });
+    renderSidebar("/central");
+    const central = screen.getByRole("button", { name: /中央技能库/ });
+    if (visible) {
+      expect(within(central).getByText("10")).toBeInTheDocument();
+    } else {
+      expect(within(central).queryByText("10")).not.toBeInTheDocument();
+    }
+    expect(within(screen.getByRole("button", { name: /Universal/ })).getByText("7")).toBeInTheDocument();
+  });
+
+  it("hides the central count before the target list resolves", () => {
+    useTargetStore.setState({ targetsResolved: false });
+    renderSidebar("/central");
+    const central = screen.getByRole("button", { name: /中央技能库/ });
+    expect(within(central).queryByText("10")).not.toBeInTheDocument();
   });
 
   it("renders expanded sidebar by default", () => {

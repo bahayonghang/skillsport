@@ -55,7 +55,7 @@ function expectSecretAbsentFromStore(): void {
 
 describe("targetStore", () => {
   beforeEach(() => {
-    useTargetStore.setState({
+    useTargetStore.setState((state) => ({
       targets: [localTarget],
       activeTarget: localTarget,
       quarantineStatus: null,
@@ -72,7 +72,10 @@ describe("targetStore", () => {
       requiresTargetReload: false,
       error: null,
       wslDistributionError: null,
-    });
+      targetsResolved: true,
+      sshReachability: { phase: "idle" },
+      sshProbeSerial: state.sshProbeSerial + 1,
+    }));
     vi.clearAllMocks();
   });
 
@@ -320,6 +323,7 @@ describe("targetStore", () => {
   it("switches active target and updates local state", async () => {
     useTargetStore.setState({ targets: [localTarget, sshTarget] });
     vi.mocked(invoke)
+      .mockResolvedValueOnce({ ok: true, message: "connected" })
       .mockResolvedValueOnce({ ...sshTarget, isActive: true })
       .mockResolvedValueOnce([
         { ...localTarget, isActive: false },
@@ -329,10 +333,18 @@ describe("targetStore", () => {
 
     await useTargetStore.getState().switchTarget("ssh-demo");
 
+    expect(invoke).toHaveBeenCalledWith("test_ssh_target", {
+      request: { id: "ssh-demo" },
+    });
     expect(invoke).toHaveBeenCalledWith("set_active_target", {
       targetId: "ssh-demo",
     });
     expect(useTargetStore.getState().activeTarget.id).toBe("ssh-demo");
+    expect(useTargetStore.getState().sshReachability).toEqual({
+      phase: "reachable",
+      targetId: "ssh-demo",
+    });
+    expect(JSON.stringify(vi.mocked(invoke).mock.calls)).not.toContain(SECRET_SENTINEL);
   });
 
   it("updates a stored ssh target password through the backend command", async () => {
@@ -420,7 +432,7 @@ describe("targetStore", () => {
     },
   ])(
     "preserves target state and rethrows when the $action command rejects",
-    async ({ run, idleState }) => {
+    async ({ action, run, idleState }) => {
       const activeSsh = { ...sshTarget, isActive: true };
       const targets = [{ ...localTarget, isActive: false }, activeSsh];
       useTargetStore.setState({ targets, activeTarget: activeSsh });
@@ -433,7 +445,7 @@ describe("targetStore", () => {
       expect(useTargetStore.getState()).toMatchObject({
         targets,
         activeTarget: activeSsh,
-        error: String(failure),
+        error: action === "switch" ? failure.message : String(failure),
         ...idleState,
       });
       expectSecretAbsentFromStore();
@@ -501,6 +513,7 @@ describe("targetStore", () => {
     const refreshFailure = new Error("target refresh failed");
     useTargetStore.setState({ targets: [localTarget, sshTarget] });
     vi.mocked(invoke)
+      .mockResolvedValueOnce({ ok: true, message: "connected" })
       .mockResolvedValueOnce(activated)
       .mockRejectedValueOnce(refreshFailure)
       .mockResolvedValueOnce(healthyQuarantineStatus);
@@ -561,5 +574,194 @@ describe("targetStore", () => {
     expect(useTargetStore.getState().targets).toEqual([localTarget]);
     expect(useTargetStore.getState().quarantineStatus).toEqual(healthyQuarantineStatus);
     expect(useTargetStore.getState().quarantineStatusError).toBe("status unavailable");
+  });
+
+  it("does not activate an unreachable ssh target and does not send a password", async () => {
+    useTargetStore.setState({
+      targets: [localTarget, sshTarget],
+      activeTarget: localTarget,
+    });
+    vi.mocked(invoke).mockResolvedValueOnce({
+      ok: false,
+      message: "connection refused",
+    });
+
+    await expect(useTargetStore.getState().switchTarget("ssh-demo")).rejects.toThrow(
+      "connection refused",
+    );
+
+    const probeCall = vi.mocked(invoke).mock.calls.find((call) => call[0] === "test_ssh_target");
+    expect(probeCall?.[1]).toEqual({ request: { id: "ssh-demo" } });
+    expect(JSON.stringify(probeCall)).not.toContain("password");
+    expect(JSON.stringify(probeCall)).not.toContain(SECRET_SENTINEL);
+    expect(invoke).not.toHaveBeenCalledWith("set_active_target", expect.anything());
+    expect(useTargetStore.getState().activeTarget.id).toBe("local");
+    expect(useTargetStore.getState().sshReachability).toEqual({ phase: "idle" });
+    expect(useTargetStore.getState().error).toBe("connection refused");
+    expect(JSON.stringify(useTargetStore.getState())).not.toContain(SECRET_SENTINEL);
+  });
+
+  it("keeps a reachable active target and its phase when a different ssh probe fails", async () => {
+    const other = { ...sshTarget, id: "ssh-other", label: "Other", host: "10.0.0.9" };
+    const active = { ...sshTarget, isActive: true };
+    useTargetStore.setState({
+      targets: [{ ...localTarget, isActive: false }, active, other],
+      activeTarget: active,
+      sshReachability: { phase: "reachable", targetId: active.id },
+    });
+    vi.mocked(invoke).mockResolvedValueOnce({
+      ok: false,
+      message: "no route to host",
+    });
+
+    await expect(useTargetStore.getState().switchTarget(other.id)).rejects.toThrow(
+      "no route to host",
+    );
+
+    expect(invoke).not.toHaveBeenCalledWith("set_active_target", expect.anything());
+    expect(useTargetStore.getState().activeTarget.id).toBe(active.id);
+    expect(useTargetStore.getState().sshReachability).toEqual({
+      phase: "reachable",
+      targetId: active.id,
+    });
+    expect(useTargetStore.getState().error).toBe("no route to host");
+  });
+
+  it("switches local and wsl targets without probing ssh", async () => {
+    useTargetStore.setState({
+      targets: [localTarget, wslTarget],
+      activeTarget: localTarget,
+      sshReachability: { phase: "reachable", targetId: "ssh-demo" },
+    });
+    const activated = { ...wslTarget, isActive: true };
+    vi.mocked(invoke)
+      .mockResolvedValueOnce(activated)
+      .mockResolvedValueOnce([{ ...localTarget, isActive: false }, activated])
+      .mockResolvedValueOnce(healthyQuarantineStatus);
+
+    await useTargetStore.getState().switchTarget("wsl-ubuntu");
+
+    expect(invoke).not.toHaveBeenCalledWith("test_ssh_target", expect.anything());
+    expect(invoke).toHaveBeenCalledWith("set_active_target", { targetId: "wsl-ubuntu" });
+    expect(useTargetStore.getState().sshReachability).toEqual({ phase: "idle" });
+  });
+
+  it("checks an active ssh target during load and ignores a stale probe", async () => {
+    let resolveProbe: (value: { ok: boolean; message: string }) => void = () => {};
+    const probe = new Promise<{ ok: boolean; message: string }>((resolve) => {
+      resolveProbe = resolve;
+    });
+    vi.mocked(invoke).mockImplementation(async (command: string) => {
+      if (command === "list_targets") {
+        return [
+          { ...localTarget, isActive: false },
+          { ...sshTarget, isActive: true },
+        ];
+      }
+      if (command === "get_target_config_quarantine_status") {
+        return healthyQuarantineStatus;
+      }
+      if (command === "test_ssh_target") return probe;
+      throw new Error(command);
+    });
+
+    try {
+      await useTargetStore.getState().loadTargets();
+      expect(useTargetStore.getState().activeTarget.id).toBe("ssh-demo");
+      expect(useTargetStore.getState().targetsResolved).toBe(true);
+      expect(useTargetStore.getState().sshReachability).toEqual({
+        phase: "checking",
+        targetId: "ssh-demo",
+      });
+      expect(invoke).not.toHaveBeenCalledWith("set_active_target", expect.anything());
+
+      const serialAtProbe = useTargetStore.getState().sshProbeSerial;
+      useTargetStore.setState({
+        activeTarget: localTarget,
+        sshReachability: { phase: "idle" },
+        sshProbeSerial: serialAtProbe + 1,
+      });
+      resolveProbe({ ok: false, message: `down ${SECRET_SENTINEL}` });
+      await probe;
+      await Promise.resolve();
+
+      expect(useTargetStore.getState().sshReachability).toEqual({ phase: "idle" });
+      expect(JSON.stringify(useTargetStore.getState())).not.toContain(SECRET_SENTINEL);
+    } finally {
+      vi.mocked(invoke).mockReset();
+    }
+  });
+
+  it("does not probe again when the same reachable ssh endpoint reloads", async () => {
+    const active = { ...sshTarget, isActive: true };
+    useTargetStore.setState({
+      targets: [{ ...localTarget, isActive: false }, active],
+      activeTarget: active,
+      sshReachability: { phase: "reachable", targetId: active.id },
+    });
+    vi.mocked(invoke)
+      .mockResolvedValueOnce([{ ...localTarget, isActive: false }, active])
+      .mockResolvedValueOnce(healthyQuarantineStatus);
+
+    await useTargetStore.getState().loadTargets();
+
+    expect(invoke).not.toHaveBeenCalledWith("test_ssh_target", expect.anything());
+    expect(useTargetStore.getState().sshReachability).toEqual({
+      phase: "reachable",
+      targetId: active.id,
+    });
+  });
+
+  it("probes again when the active ssh host changes", async () => {
+    const active = { ...sshTarget, isActive: true };
+    const moved = { ...active, host: "10.0.0.8" };
+    useTargetStore.setState({
+      targets: [{ ...localTarget, isActive: false }, active],
+      activeTarget: active,
+      sshReachability: { phase: "reachable", targetId: active.id },
+    });
+    vi.mocked(invoke)
+      .mockResolvedValueOnce([{ ...localTarget, isActive: false }, moved])
+      .mockResolvedValueOnce(healthyQuarantineStatus)
+      .mockResolvedValueOnce({ ok: true, message: "connected" });
+
+    await useTargetStore.getState().loadTargets();
+    await vi.waitFor(() => {
+      expect(useTargetStore.getState().sshReachability).toEqual({
+        phase: "reachable",
+        targetId: moved.id,
+      });
+    });
+
+    expect(invoke).toHaveBeenCalledWith("test_ssh_target", {
+      request: { id: moved.id },
+    });
+    expect(useTargetStore.getState().activeTarget.host).toBe("10.0.0.8");
+  });
+
+  it("verifies the active ssh target again without sending a password", async () => {
+    const active = { ...sshTarget, isActive: true };
+    useTargetStore.setState({
+      targets: [{ ...localTarget, isActive: false }, active],
+      activeTarget: active,
+      sshReachability: {
+        phase: "unreachable",
+        targetId: active.id,
+        message: "connection refused",
+      },
+    });
+    vi.mocked(invoke).mockResolvedValueOnce({ ok: true, message: "connected" });
+
+    await expect(useTargetStore.getState().verifyActiveSshTarget()).resolves.toBe(true);
+
+    expect(invoke).toHaveBeenCalledWith("test_ssh_target", {
+      request: { id: active.id },
+    });
+    expect(JSON.stringify(vi.mocked(invoke).mock.calls)).not.toContain("password");
+    expect(JSON.stringify(vi.mocked(invoke).mock.calls)).not.toContain(SECRET_SENTINEL);
+    expect(useTargetStore.getState().sshReachability).toEqual({
+      phase: "reachable",
+      targetId: active.id,
+    });
   });
 });

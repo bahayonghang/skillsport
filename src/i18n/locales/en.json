@@ -446,6 +446,10 @@
       "localFallback": "The active target was reset to Local because it was no longer valid."
     },
     "pathCopied": "Remote path copied",
+    "reachability": {
+      "unreachable": "Can't connect",
+      "checking": "Checking connection"
+    },
     "quickSwitch": {
       "trigger": "Switch active target",
       "manage": "Manage targets…",
@@ -1411,6 +1415,12 @@
     "loading": "Loading skills...",
     "noMatch": "No skills match \"{{query}}\"",
     "refresh": "Refresh central skills",
+    "sshReachability": {
+      "checking": "Checking whether this SSH target is reachable. The saved library stays hidden until it connects.",
+      "unreachable": "This SSH target is unreachable. The saved library stays hidden until the connection works.",
+      "retry": "Retry connection",
+      "openSettings": "Open SSH settings"
+    },
     "viewDetails": "[Details]",
     "viewDetailsLabel": "View details for {{name}}",
     "installLabel": "Install {{name}} to platforms",

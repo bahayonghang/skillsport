@@ -446,6 +446,10 @@
       "localFallback": "原当前目标已失效，应用已回退到本机。"
     },
     "pathCopied": "远程路径已复制",
+    "reachability": {
+      "unreachable": "无法连接",
+      "checking": "正在检查连接"
+    },
     "quickSwitch": {
       "trigger": "切换当前目标",
       "manage": "管理目标…",
@@ -1411,6 +1415,12 @@
     "loading": "正在加载技能...",
     "noMatch": "没有匹配的技能「{{query}}」",
     "refresh": "刷新中央技能库",
+    "sshReachability": {
+      "checking": "正在确认这个 SSH 目标能否连通。连通前不显示已保存的技能库。",
+      "unreachable": "这个 SSH 目标目前连不上。连通前不显示已保存的技能库。",
+      "retry": "重试连接",
+      "openSettings": "打开 SSH 设置"
+    },
     "viewDetails": "[详情]",
     "viewDetailsLabel": "查看 {{name}} 的详情",
     "installLabel": "将 {{name}} 安装到平台",

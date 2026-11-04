@@ -51,6 +51,8 @@ describe("CentralSkillsView updates + search（V2 markup）", () => {
     useTargetStore.setState({
       targets: [localTarget, remoteTarget],
       activeTarget: remoteTarget,
+      targetsResolved: true,
+      sshReachability: { phase: "reachable", targetId: remoteTarget.id },
     });
     mockBatchInstallSkills.mockResolvedValueOnce({
       succeeded: [
@@ -890,6 +892,8 @@ describe("CentralSkillsView updates + search（V2 markup）", () => {
     useTargetStore.setState({
       targets: [localTarget, remoteTarget],
       activeTarget: remoteTarget,
+      targetsResolved: true,
+      sshReachability: { phase: "reachable", targetId: remoteTarget.id },
     });
     renderCentralSkillsView();
 

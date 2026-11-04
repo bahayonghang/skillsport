@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import type { TFunction } from "i18next";
 
+import { useCentralSshLibraryGate } from "@/components/central/useCentralSshLibraryGate";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/ui/page-header";
@@ -236,6 +237,10 @@ export function CentralSkillsShell(props: CentralSkillsShellProps) {
 
   const openUpdateCenter = useUpdateCenterStore((s) => s.openDialog);
   const refreshButton = useCentralRefreshButton();
+  const sshLibrary = useCentralSshLibraryGate(
+    dialogs.activeTarget,
+    dialogs.loadCentralSkills,
+  );
   const openLocalArchiveImport = useLocalArchiveImportStore(
     (state) => state.openWizard,
   );
@@ -341,35 +346,38 @@ export function CentralSkillsShell(props: CentralSkillsShellProps) {
       <div className="shrink-0 space-y-3 px-4 pt-4 pb-2 sm:px-6 sm:pt-5">
         <PageHeader
           title={t("central.title")}
+          status={sshLibrary.status}
           meta={
-            <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-              <Badge
-                size="sm"
-                data-testid="central-result-count"
-                className="tabular-nums"
-              >
-                {listContent.sortedSkills.length}
-              </Badge>
-              <span
-                className="min-w-0 max-w-48 truncate font-mono text-ui-meta"
-                title={centralSkillsDir}
-              >
-                {centralSkillsDir}
+            sshLibrary.gate ? undefined : (
+              <span className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+                <Badge
+                  size="sm"
+                  data-testid="central-result-count"
+                  className="tabular-nums"
+                >
+                  {listContent.sortedSkills.length}
+                </Badge>
+                <span
+                  className="min-w-0 max-w-48 truncate font-mono text-ui-meta"
+                  title={centralSkillsDir}
+                >
+                  {centralSkillsDir}
+                </span>
+                <Button
+                  type="button"
+                  variant="link"
+                  size="xs"
+                  className="h-6 shrink-0 gap-1 px-1 text-xs"
+                  disabled={centralStoreLocation.disabled}
+                  onClick={centralStoreLocation.onOpen}
+                  title={centralStoreLocation.disabledReason}
+                  data-testid="central-store-location-open"
+                >
+                  <MapPin className="size-3" aria-hidden="true" />
+                  {t("central.storeLocation.changeButton")}
+                </Button>
               </span>
-              <Button
-                type="button"
-                variant="link"
-                size="xs"
-                className="h-6 shrink-0 gap-1 px-1 text-xs"
-                disabled={centralStoreLocation.disabled}
-                onClick={centralStoreLocation.onOpen}
-                title={centralStoreLocation.disabledReason}
-                data-testid="central-store-location-open"
-              >
-                <MapPin className="size-3" aria-hidden="true" />
-                {t("central.storeLocation.changeButton")}
-              </Button>
-            </span>
+            )
           }
           actions={
             // PageHeader 的 actions 槽自带 max-w-full + flex-wrap，窄窗口自动换行。
@@ -599,8 +607,9 @@ export function CentralSkillsShell(props: CentralSkillsShellProps) {
           }}
           savedViewsSlot={savedViewsSlot}
         />
-        {viewState.group === "none" ||
-        (listContent.skillsCount === 0 && !listContent.isLoading) ? (
+        {sshLibrary.panel ??
+        (viewState.group === "none" ||
+          (listContent.skillsCount === 0 && !listContent.isLoading) ? (
           <CentralSkillListContent
             {...listContent}
             selectedCount={bulkBar.selectedCount}
@@ -618,7 +627,7 @@ export function CentralSkillsShell(props: CentralSkillsShellProps) {
             group={viewState.group}
             t={t}
           />
-        )}
+        ))}
       </div>
 
       <CentralSkillDialogs {...dialogs} t={t} />

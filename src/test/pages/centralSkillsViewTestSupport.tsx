@@ -795,10 +795,15 @@ export function resetCentralSkillsViewTestState() {
   if (typeof window !== "undefined" && window.history && typeof window.history.replaceState === "function") {
     window.history.replaceState({}, "", "/");
   }
-  useTargetStore.setState({
+  useTargetStore.setState((state) => ({
     targets: [localTarget],
     activeTarget: localTarget,
-  });
+    error: null,
+    switchingTargetId: null,
+    targetsResolved: true,
+    sshReachability: { phase: "idle" },
+    sshProbeSerial: state.sshProbeSerial + 1,
+  }));
   useSettingsStore.setState({
     ...createSettingsStoreInitialState(),
     centralUpdateCheckModeLoaded: true,

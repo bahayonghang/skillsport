@@ -87,6 +87,8 @@ describe("CentralSkillsView repositories + installs（V2 markup）", () => {
         remoteOs: "linux",
         isActive: true,
       },
+      targetsResolved: true,
+      sshReachability: { phase: "reachable", targetId: "ssh-1" },
     });
 
     renderCentralSkillsView();
