@@ -1,0 +1,8 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/spec/frontend/glass-surfaces.md", "reason": "Header flag must use the glass button surface, not a non-interactive badge on the canvas."}
+{"file": ".trellis/spec/frontend/async-error-feedback.md", "reason": "Failed SSH switch stays on the current view and must show a public inline error plus toast."}
+{"file": ".trellis/spec/frontend/ipc-adapter.md", "reason": "Probe and switch stay behind targetStore and the typed IPC adapter."}
+{"file": ".trellis/spec/frontend/module-boundaries.md", "reason": "Reachability state lives in the store; pages do not own a second probe client."}
+{"file": ".trellis/spec/backend/redaction-policy.md", "reason": "Probe failures and logs must not carry passwords, keys, or passphrases."}
+{"file": ".trellis/spec/guides/cross-layer-thinking-guide.md", "reason": "Switch gating crosses the settings test command, the target store, and Central Skills rendering."}
+{"file": ".trellis/tasks/11-03-ssh-switch-reachability-flag/research/current-behavior.md", "reason": "Evidence for the no-probe switch, cache-backed library, and session-password gap."}
