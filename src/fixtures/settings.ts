@@ -24,5 +24,9 @@ export function registerMiscFixtures(): void {
       reason: "unsupportedPlatform",
       supported: false,
     }),
+    list_installed_font_families: () => ({
+      families: ["Segoe UI", "Microsoft YaHei", "Source Han Serif SC VF"],
+      available: true,
+    }),
   });
 }

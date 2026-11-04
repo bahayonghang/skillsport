@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { chooseSelectOption } from "@/test/support/selectOption";
 import { MemoryRouter } from "react-router-dom";
 import type { AgentWithStatus, CentralSkillUpdateState, SkillWithLinks, TargetSummary } from "@/types";
 import * as S from "./centralSkillsViewTestSupport";
@@ -602,7 +603,10 @@ describe("CentralSkillsView updates + search（V2 markup）", () => {
   it("opens mode selection before running the default regular check", async () => {
     renderCentralSkillsView();
 
-    expect(screen.getByTestId("central-update-check-mode-select")).toHaveValue("regular");
+    expect(screen.getByTestId("central-update-check-mode-select")).toHaveAttribute(
+      "data-value",
+      "regular",
+    );
 
     fireEvent.click(screen.getByTestId("central-check-updates"));
 
@@ -809,9 +813,10 @@ describe("CentralSkillsView updates + search（V2 markup）", () => {
   it("persists the visible update mode selector preference", async () => {
     renderCentralSkillsView();
 
-    fireEvent.change(screen.getByTestId("central-update-check-mode-select"), {
-      target: { value: "sync" },
-    });
+    await chooseSelectOption(
+      screen.getByTestId("central-update-check-mode-select"),
+      "增量和删减模式",
+    );
 
     await waitFor(() => {
       expect(settingsStore.getState().centralUpdateCheckMode).toBe("sync");

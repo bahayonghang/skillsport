@@ -6,7 +6,7 @@
 // States that CSS cannot hold statically (hover / focus-visible / active) are
 // tagged `data-force="hover|focus-visible|active"`; the screenshot script
 // forces those pseudo-classes over CDP. Overlays open via `?overlay=`
-// (menu | dialog | sheet | command | toast).
+// (menu | dialog | sheet | command | toast | select).
 import { useEffect, useState, type ReactNode } from "react"
 import { useSearchParams } from "react-router-dom"
 import { toast } from "sonner"
@@ -71,6 +71,7 @@ import {
 } from "@/components/ui/menu"
 import { PageHeader } from "@/components/ui/page-header"
 import { RadioGroup, RadioItem } from "@/components/ui/radio-group"
+import { Select } from "@/components/ui/select"
 import {
   Sheet,
   SheetBody,
@@ -158,6 +159,7 @@ const TONE_ICON: Record<string, ReactNode> = {
 
 function OverlayDemos({ overlay }: { overlay: string | null }) {
   const [checked, setChecked] = useState(true)
+  const [tone, setTone] = useState("mint")
 
   useEffect(() => {
     if (overlay !== "toast") return
@@ -199,6 +201,18 @@ function OverlayDemos({ overlay }: { overlay: string | null }) {
             </MenuItem>
           </MenuContent>
         </Menu>
+        <Select
+          ariaLabel="Overlay select"
+          value={tone}
+          onValueChange={setTone}
+          defaultOpen={overlay === "select"}
+          className="w-44"
+          options={[
+            { value: "mint", label: "Mint" },
+            { value: "ink", label: "Ink" },
+            { value: "disabled", label: "Disabled", disabled: true },
+          ]}
+        />
       </div>
 
       <Dialog defaultOpen={overlay === "dialog"}>
@@ -428,7 +442,7 @@ export function PrimitivesGallery() {
           />
         </Section>
 
-        <Section title="Overlays (?overlay=menu|dialog|sheet|command|toast)">
+        <Section title="Overlays (?overlay=menu|dialog|sheet|command|toast|select)">
           <OverlayDemos overlay={overlay} />
         </Section>
       </div>

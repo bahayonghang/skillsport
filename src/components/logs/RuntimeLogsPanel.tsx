@@ -28,6 +28,7 @@ import {
 } from "@/components/logs/logViewUtils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { InlineConfirmAction } from "@/components/ui/inline-confirm-action";
@@ -351,21 +352,22 @@ export function RuntimeLogsPanel({
                 className="pl-8"
               />
             </div>
-            <select
+            <Select
               value={filter.level ?? ""}
-              onChange={(event) =>
-                updateRuntimeFilter({ level: event.target.value as never })
+              onValueChange={(next) =>
+                updateRuntimeFilter({ level: next as never })
               }
-              aria-label={t("logs.filters.level")}
+              ariaLabel={t("logs.filters.level")}
               className={LOG_FILTER_SELECT_CLASS}
-            >
-              <option value="">{t("logs.filters.allLevels")}</option>
-              <option value="error">error</option>
-              <option value="warn">warn</option>
-              <option value="info">info</option>
-              <option value="debug">debug</option>
-              <option value="trace">trace</option>
-            </select>
+              options={[
+                { value: "", label: t("logs.filters.allLevels") },
+                { value: "error", label: "error" },
+                { value: "warn", label: "warn" },
+                { value: "info", label: "info" },
+                { value: "debug", label: "debug" },
+                { value: "trace", label: "trace" },
+              ]}
+            />
             <Input
               value={filter.source ?? ""}
               onChange={(event) =>
@@ -381,22 +383,21 @@ export function RuntimeLogsPanel({
               aria-label={t("logs.runtime.operationIdLabel")}
               className="font-mono"
             />
-            <select
+            <Select
               value={filter.eventSource ?? ""}
-              onChange={(event) =>
+              onValueChange={(next) =>
                 updateRuntimeFilter({
-                  eventSource: event.target.value as "backend" | "frontend" | "",
+                  eventSource: next as "backend" | "frontend" | "",
                 })
               }
-              aria-label={t("logs.runtime.eventSourceLabel")}
+              ariaLabel={t("logs.runtime.eventSourceLabel")}
               className={LOG_FILTER_SELECT_CLASS}
-            >
-              <option value="">{t("logs.runtime.allEventSources")}</option>
-              <option value="backend">{t("logs.runtime.sources.backend")}</option>
-              <option value="frontend">
-                {t("logs.runtime.sources.frontend")}
-              </option>
-            </select>
+              options={[
+                { value: "", label: t("logs.runtime.allEventSources") },
+                { value: "backend", label: t("logs.runtime.sources.backend") },
+                { value: "frontend", label: t("logs.runtime.sources.frontend") },
+              ]}
+            />
             <Button
               type="submit"
               size="sm"

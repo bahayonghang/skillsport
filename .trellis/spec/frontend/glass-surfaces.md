@@ -4,7 +4,7 @@
 
 ## 1. Scope / Trigger
 
-在 `src/**/*.ts(x)` 中新增或修改任何表面（卡片、面板、浮层、sticky 条、胶囊、数字块），使用圆角 / 阴影 / 模糊，或直接引用 `@base-ui/react/menu|dialog` 时适用。
+在 `src/**/*.ts(x)` 中新增或修改任何表面（卡片、面板、浮层、sticky 条、胶囊、数字块），使用圆角 / 阴影 / 模糊，或直接引用 `@base-ui/react/menu|dialog|select|combobox` 时适用。生产 TS/TSX 不得再写原生 `<select>`。
 
 ## 2. 四层模型与类名
 
@@ -12,7 +12,7 @@
 | --- | --- | --- | --- |
 | L1 canvas | 全窗渐变 + 光斑 | `.glass-canvas`：AppShell 根下独立的 `fixed inset-0 -z-10` 层（`data-slot="app-canvas"`，根容器 `isolate`），不随 `<main>` 滚动；Mica 透明化规则作用在这个元素上 | 否 |
 | L2 panel | 卡片、面板、表格容器、侧栏 | `<Card>` 或 `glass-panel rounded-card`；可交互加 `glass-panel-hover` | **否** |
-| L3 overlay | Dialog / Sheet / Menu / Command / Toast / BulkActionBar | `.glass-overlay`（Dialog / Sheet 再加 `.glass-overlay-dialog` 换 24px） | 是 |
+| L3 overlay | Dialog / Sheet / Menu / Select / 字体 Combobox / Command / Toast / BulkActionBar | `.glass-overlay`（Dialog / Sheet 再加 `.glass-overlay-dialog` 换 24px） | 是 |
 | L3 sticky | 分组头、facet 头、transfer rail 等 sticky 条 | `.glass-sticky` | 是 |
 
 - 真实模糊**只**存在于 `src/index.css` 的 `.glass-overlay` 与 `.glass-sticky` 两个规则块；新增使用点先在 DESIGN.md「真实模糊白名单」登记，再加类名。
@@ -28,7 +28,9 @@
 | `Badge` | `tone="neutral|primary|secondary|success|warning|destructive|info"`，`size="sm|md"`，`icon?`；children 文字必填（色不独立承载信息） |
 | `StatTile` | `tone="primary|secondary|neutral"`，`label`，`value: number | string | null`，`hint?`，`size="default|compact"`，`loading?`；`role="group"` + `aria-label="<label>: <value>"`；`null` 显示「—」而不是 0 |
 | `PageHeader` | `title`，`meta?`，`actions?`，`titleId?`；唯一 `<h1>`；容器宽 < 900px 时 meta / actions 换到标题下 |
-| `Menu*` | base-ui Menu 薄封装：`Menu` / `MenuTrigger` / `MenuContent`（Portal + Positioner + `.glass-overlay rounded-card`）/ `MenuItem`（`variant="destructive"`）/ `MenuCheckboxItem` / `MenuRadioGroup` / `MenuRadioItem` / `MenuGroup` / `MenuGroupLabel` / `MenuSeparator` / `MenuShortcut` / `MenuSubmenu` / `MenuSubmenuTrigger` |
+| `Menu*` | base-ui Menu 薄封装：`Menu` / `MenuTrigger` / `MenuContent`（Portal + Positioner + `.glass-overlay rounded-card`）/ `MenuItem`（`variant="destructive"`）/ `MenuCheckboxItem` / `MenuRadioGroup` / `MenuRadioItem` / `MenuGroup` / `MenuGroupLabel` / `MenuSeparator` / `MenuShortcut` / `MenuSubmenu` / `MenuSubmenuTrigger`。弹出层 class 与 Select、字体选择器共用 `ui/overlay-popup.ts` |
+| `Select` | 短列表单选。触发器是 button（`GLASS_SELECT_TRIGGER_CLASS`，`className` 可覆盖高度和圆角）。弹出层只带 popup class，列表自己滚动，这样搜索框不会被卷走。空字符串是合法 value。不渲染搜索框 |
+| `FontFamilyPicker` | 仅外观设置的四个字体字段。`@base-ui/react/combobox` 只能从 `ui/` 引用。搜索框留在弹出层里，列表滚动 |
 | `Sheet*` | base-ui Dialog 侧滑抽屉：`SheetContent side="right|left"`（浮动 8px、`rounded-shell`、`.glass-overlay-dialog`）+ Header / Title / Description / Body / Footer / Close。`backdropProps` 透传 scrim 的非 class 属性（如 `data-testid`），供迁移前的 overlay 测试锚点沿用 |
 | `Dialog*` / `Command*` | `.glass-overlay glass-overlay-dialog rounded-shell p-6`；遮罩 `bg-overlay`（canvas 30%，无 blur） |
 | `Toaster` | 封装 sonner；每个 toast 带 `.glass-overlay`；palette / 状态 tint / 图标色在 `index.css` 的 Toaster 段映射；不开 `richColors` |
@@ -46,7 +48,8 @@
 | 圆角 | `rounded-[...]` arbitrary | `rounded-control` / `inner` / `card` / `shell` / `pill` |
 | 原始色 | `bg-white/<n>`、`bg-black/<n>` | surface token（`bg-card` / `bg-popover` / `bg-accent` …） |
 | 旧卡片配方 | 同一 class 字符串里 `rounded-(xl|2xl|3xl)` + `ring-1 ring-border` 或 `border border-border` | `<Card>` 或 `glass-panel rounded-card` |
-| 直接 base-ui | `src/components/ui/` 外 import `@base-ui/react/menu` / `dialog` | `ui/menu`、`ui/sheet`、`ui/dialog` |
+| 直接 base-ui | `src/components/ui/` 外 import `@base-ui/react/menu` / `dialog` / `select` / `combobox` | `ui/menu`、`ui/sheet`、`ui/dialog`、`ui/select`、`ui/font-family-picker` |
+| 原生 select | 生产 TS/TSX（含 `ui/` 与 `src/dev`，不含 `src/test`）出现 `<select` | `ui/select`；字体字段用 `FontFamilyPicker` |
 
 另断言 `index.css` 中 `backdrop-filter` 只在 `.glass-overlay` / `.glass-sticky` 两块，`.glass-canvas` 不用 `filter`。
 
@@ -61,8 +64,9 @@ C4 落地时曾用 `PENDING_*` 清单 + `PENDING_CEILING` 记录存量违规（b
 <div className="rounded-2xl bg-white/60 backdrop-blur-md ring-1 ring-border">…</div>
 <div className="rounded-[10px] border border-border">…</div>
 
-// Wrong: 页面直接用 base-ui 菜单
+// Wrong: 页面直接用 base-ui 菜单或原生 select
 import { Menu } from "@base-ui/react/menu";
+<select value={level} onChange={onChange}>…</select>
 
 // Correct
 <Card>…</Card>
@@ -70,11 +74,12 @@ import { Menu } from "@base-ui/react/menu";
 <div className="glass-sticky sticky top-0">…</div>
 <StatTile tone="secondary" icon={<ArrowUpFromLine />} label={t("usage.output")} value={total} />
 import { Menu, MenuContent, MenuItem, MenuTrigger } from "@/components/ui/menu";
+import { Select } from "@/components/ui/select";
 ```
 
 ## 6. Tests Required
 
 - `src/test/contracts/glassSurfaceContract.test.ts`（本契约）。
 - `src/test/contracts/themeContrast.test.ts`（tint / panel / overlay 合成对比度，backdrop 只在两块）。
-- `src/test/components/ui/GlassPrimitives.test.tsx`（Badge 7 tone、StatTile aria / 格式化 / compact / loading / 不可用、PageHeader h1 与换行、Card variants、Button 形状与焦点、Menu / Sheet、`cn` token 合并）。
-- 视觉：DEV-only 路由 `/__primitives`（`src/dev/PrimitivesGallery.tsx`，`?overlay=menu|dialog|sheet|command|toast`）截图；生产 bundle 不含该 chunk。
+- `src/test/components/ui/GlassPrimitives.test.tsx`（Badge 7 tone、StatTile aria / 格式化 / compact / loading / 不可用、PageHeader h1 与换行、Card variants、Button 形状与焦点、Menu / Select / Sheet、`cn` token 合并）。
+- 视觉：DEV-only 路由 `/__primitives`（`src/dev/PrimitivesGallery.tsx`，`?overlay=menu|dialog|sheet|command|toast|select`）截图；生产 bundle 不含该 chunk。

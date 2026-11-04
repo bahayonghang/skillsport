@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { Loader2, RefreshCw } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import type { UpdateCenterTab } from "@/stores/updateCenterStore";
 import type {
   SkillRefreshMode,
@@ -41,50 +42,52 @@ export function UpdateCenterToolbar({
   return (
     <>
       <div className="flex flex-wrap items-center gap-2">
-        <label className="sr-only" htmlFor="update-center-scope">
-          {t("central.updateCenter.scopeLabel")}
-        </label>
-        <select
+        <Select
           id="update-center-scope"
-          className="focus-ring h-7 rounded-control border border-input bg-input-surface px-2 text-sm"
+          ariaLabel={t("central.updateCenter.scopeLabel")}
+          className="h-7 w-auto px-2"
           value={scopeKind}
-          onChange={(event) =>
-            onScopeKindChange(event.target.value as SkillRefreshScopeKind)
-          }
           disabled={isRefreshing}
-        >
-          <option value="all" disabled={!scopeEnabled.all}>
-            {t("central.updateCenter.scopeAll")}
-          </option>
-          <option value="repositories" disabled={!scopeEnabled.repositories}>
-            {t("central.updateCenter.scopeRepository")}
-          </option>
-          <option value="platform" disabled={!scopeEnabled.platform}>
-            {t("central.updateCenter.scopePlatform")}
-          </option>
-          <option value="skills" disabled={!scopeEnabled.skills}>
-            {t("central.updateCenter.scopeCurrent")}
-          </option>
-        </select>
-        <label className="sr-only" htmlFor="update-center-refresh-mode">
-          {t("central.updateCenter.modeLabel")}
-        </label>
-        <select
+          onValueChange={(next) =>
+            onScopeKindChange(next as SkillRefreshScopeKind)
+          }
+          options={[
+            {
+              value: "all",
+              label: t("central.updateCenter.scopeAll"),
+              disabled: !scopeEnabled.all,
+            },
+            {
+              value: "repositories",
+              label: t("central.updateCenter.scopeRepository"),
+              disabled: !scopeEnabled.repositories,
+            },
+            {
+              value: "platform",
+              label: t("central.updateCenter.scopePlatform"),
+              disabled: !scopeEnabled.platform,
+            },
+            {
+              value: "skills",
+              label: t("central.updateCenter.scopeCurrent"),
+              disabled: !scopeEnabled.skills,
+            },
+          ]}
+        />
+        <Select
           id="update-center-refresh-mode"
-          className="focus-ring h-7 rounded-control border border-input bg-input-surface px-2 text-sm"
+          ariaLabel={t("central.updateCenter.modeLabel")}
+          className="h-7 w-auto px-2"
           value={refreshMode}
-          onChange={(event) =>
-            onRefreshModeChange(event.target.value as SkillRefreshMode)
-          }
           disabled={isRefreshing}
-        >
-          <option value="regular">
-            {t("central.updateCenter.modeRegular")}
-          </option>
-          <option value="sync">
-            {t("central.updateCenter.modeSync")}
-          </option>
-        </select>
+          onValueChange={(next) =>
+            onRefreshModeChange(next as SkillRefreshMode)
+          }
+          options={[
+            { value: "regular", label: t("central.updateCenter.modeRegular") },
+            { value: "sync", label: t("central.updateCenter.modeSync") },
+          ]}
+        />
         <Button size="sm" onClick={onRefresh} disabled={isRefreshing}>
           {isRefreshing ? (
             <>

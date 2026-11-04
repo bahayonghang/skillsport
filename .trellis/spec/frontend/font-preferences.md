@@ -68,6 +68,11 @@ saveBodyChineseFallback(mode, key, custom): Promise<void>;
 - 自定义 family 的反斜线、引号和控制字符必须被处理，不能把输入解释成任意 CSS stack。
 - specimen 与 DOM apply 必须复用 `displayFont.ts` 的同一字体链解析函数。
 - 禁止为 fallback 新增 `@font-face`、字体二进制、下载/安装逻辑或 Tauri resource。
+- 四个外观字体字段用 `FontFamilyPicker`。短筛选下拉用 `ui/select`，不带搜索框。选择器不得调用 `invoke()`，本机列表只经 `src/lib/systemFonts.ts`。
+- 选中预设写入该 key，并把对应 custom 写成 `""`。选中已安装字体或「使用所输入名字」写入 `custom` 加该 family。一次保存同时写 key 和 custom。不新增 setting key。
+- 触发器显示预设的 i18n 标签；custom 非空时显示保存的 family 名。已保存但不在扫描结果里的名字仍显示并继续生效。
+- 去重只去掉非 system、非 custom 预设链里的第一个加引号 family。`sourceHanSerif` 去掉 `"Source Han Serif SC VF"` 和 `"思源宋体 VF"`。System 预设不吞掉 Segoe UI。不做 CJK cmap 过滤。
+- 手输名字仍走 `displayFont.ts` 的单 family 清洗，组件不拼 CSS stack。Windows 用 GDI `EnumFontFamiliesExW` 只返回族名；非 Windows 返回可用的空列表。枚举失败时预设和手输仍然可用。
 
 ## 4. Validation & Error Matrix
 
@@ -97,7 +102,7 @@ saveBodyChineseFallback(mode, key, custom): Promise<void>;
 - `src/test/stores/themeStore.test.ts`：两个 flavor 到 light/dark 的完整映射。
 - `src/test/lib/displayFont.test.ts`：默认值、三种 fallback、v1 双份迁移、部分/非法 v2、并发编辑保护、mode 隔离、安全字体链与全局 Scale；1.1.0 迁移：旧默认 `jetbrains` → `geist`、v1-only `jetbrains`、有 Custom 不改、标记已存在不重复、读取期间与改写期间的用户保存获胜。
 - 并发编辑测试必须分别覆盖读取阶段和迁移写回阶段，并断言未编辑字段仍从持久化结果合并、同 key 的最新用户值最终落盘。
-- `src/test/pages/SettingsView.test.tsx`：亮/暗 editor、当前标识、不切 Theme、Custom 渐进显示、mode-specific key 写入、specimen 与可访问名称。
+- `src/test/pages/SettingsView.test.tsx`：亮/暗 editor、当前标识、不切 Theme、字体选择写入既有 key、手输 family、mode-specific key 写入、specimen 与可访问名称。自定义 family 不再渲染独立输入框。
 - `src/test/contracts/fontContract.test.ts`：CSS token 生效、根 `--font-body` 默认 Geist，且没有 fallback `@font-face` 声明。
 - 改动后至少运行定向 Vitest、`pnpm build` 与 `just ci`。
 

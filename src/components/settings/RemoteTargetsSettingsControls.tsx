@@ -2,6 +2,7 @@ import { Loader2, Pencil, Plus, Server, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 import { Badge } from "@/components/ui/badge";
+import { Select } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { InlineConfirmAction } from "@/components/ui/inline-confirm-action";
 import { Input } from "@/components/ui/input";
@@ -611,37 +612,40 @@ export function WslTargetForm({
         >
           {t("targets.wslDistributionLabel")}
         </label>
-        <select
+        <Select
           id="new-wsl-distribution"
-          className="focus-ring h-10 w-full rounded-control border border-input bg-input-surface px-3 py-2 text-sm text-foreground transition-colors hover:border-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+          ariaLabel={t("targets.wslDistributionLabel")}
+          className="h-10"
           value={form.distribution}
           disabled={isLoadingDistributions || distributions.length === 0}
-          onChange={(event) => onUpdate("distribution", event.target.value)}
-        >
-          <option value="">
-            {isLoadingDistributions
-              ? t("targets.wslListLoading")
-              : t("targets.wslDistributionSelectPlaceholder")}
-          </option>
-          {distributions.map((distribution) => {
-            const alreadyAdded = existingDistributions.has(
-              distribution.name.toLowerCase(),
-            );
-            return (
-              <option
-                key={distribution.name}
-                value={distribution.name}
-                disabled={alreadyAdded}
-              >
-                {distribution.name}
-                {distribution.isDefault
-                  ? ` · ${t("targets.wslDefaultDistribution")}`
-                  : ""}
-                {alreadyAdded ? ` · ${t("targets.wslAlreadyAdded")}` : ""}
-              </option>
-            );
-          })}
-        </select>
+          onValueChange={(next) => onUpdate("distribution", next)}
+          options={[
+            {
+              value: "",
+              label: isLoadingDistributions
+                ? t("targets.wslListLoading")
+                : t("targets.wslDistributionSelectPlaceholder"),
+            },
+            ...distributions.map((distribution) => {
+              const alreadyAdded = existingDistributions.has(
+                distribution.name.toLowerCase(),
+              );
+              return {
+                value: distribution.name,
+                disabled: alreadyAdded,
+                label: [
+                  distribution.name,
+                  distribution.isDefault
+                    ? t("targets.wslDefaultDistribution")
+                    : "",
+                  alreadyAdded ? t("targets.wslAlreadyAdded") : "",
+                ]
+                  .filter(Boolean)
+                  .join(" · "),
+              };
+            }),
+          ]}
+        />
       </div>
       <div className="space-y-2 md:col-span-2">
         <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">

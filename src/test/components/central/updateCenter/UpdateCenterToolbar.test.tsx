@@ -1,4 +1,5 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
+import { chooseSelectOption } from "@/test/support/selectOption";
 import { describe, expect, it, vi } from "vitest";
 
 import { UpdateCenterToolbar } from "@/components/central/updateCenter/UpdateCenterToolbar";
@@ -27,7 +28,7 @@ const EMPTY_COUNTS: Record<UpdateCenterTab, number> = {
 };
 
 describe("UpdateCenterToolbar", () => {
-  it("renders an explicit refresh mode control", () => {
+  it("renders an explicit refresh mode control", async () => {
     const onRefreshModeChange = vi.fn();
 
     render(
@@ -48,9 +49,9 @@ describe("UpdateCenterToolbar", () => {
     );
 
     const modeSelect = screen.getByLabelText("刷新模式");
-    expect(modeSelect).toHaveValue("regular");
+    expect(modeSelect).toHaveAttribute("data-value", "regular");
 
-    fireEvent.change(modeSelect, { target: { value: "sync" } });
+    await chooseSelectOption(modeSelect, "增量和删减");
 
     expect(onRefreshModeChange).toHaveBeenCalledWith("sync");
   });

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { render, screen, fireEvent, waitFor, within, cleanup } from "@testing-library/react";
+import { chooseSelectOption } from "@/test/support/selectOption";
 import { MemoryRouter } from "react-router-dom";
 import { SkillDetailView } from "@/components/skill/SkillDetailView";
 import {
@@ -729,9 +730,7 @@ describe("SkillDetailView", () => {
   it("assigns repository from detail metadata controls", async () => {
     renderView();
 
-    fireEvent.change(screen.getByLabelText("仓库"), {
-      target: { value: "github-openai-skills-main" },
-    });
+    await chooseSelectOption(screen.getByLabelText("仓库"), "openai/skills");
     fireEvent.click(screen.getByRole("button", { name: "归仓" }));
 
     await waitFor(() => {
@@ -746,9 +745,10 @@ describe("SkillDetailView", () => {
   it("assigns tag from detail metadata controls", async () => {
     renderView();
 
-    fireEvent.change(screen.getByLabelText("分类"), {
-      target: { value: "programming-agent-engineering" },
-    });
+    await chooseSelectOption(
+      screen.getByLabelText("分类"),
+      "编程与 Agent 工程",
+    );
     fireEvent.click(screen.getByRole("button", { name: "打标签" }));
 
     await waitFor(() => {

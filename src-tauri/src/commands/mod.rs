@@ -7,6 +7,7 @@ pub mod central_store_location;
 pub mod central_updates;
 pub mod collections;
 pub mod deep_link;
+pub mod fonts;
 pub mod github_import;
 pub mod linker;
 pub mod local_archive_import;

@@ -81,6 +81,7 @@ export const GENERATED_IPC_COMMANDS = {
   install_skill_to_agent: command<{ skillId: string; agentId: string; method: string | null }, InstallResult>(),
   install_skill_to_project: command<{ projectId: string; skillId: string; agentId: string; method: string }, ProjectSkillInstallation>(),
   keep_remote_missing_central_skills: command<{ skillIds: string[] }, string[]>(),
+  list_installed_font_families: command<undefined, InstalledFontList>(),
   list_projects: command<undefined, ProjectDto[]>(),
   list_projects_using_skill: command<{ skillId: string }, ProjectUsingSkillDto[]>(),
   list_registries: command<undefined, SkillRegistry[]>(),
@@ -210,6 +211,7 @@ export const GENERATED_IPC_COMMAND_NAMES = [
   "install_skill_to_agent",
   "install_skill_to_project",
   "keep_remote_missing_central_skills",
+  "list_installed_font_families",
   "list_projects",
   "list_projects_using_skill",
   "list_registries",
@@ -958,6 +960,12 @@ export type ImportedGitHubSkillSummary = {
 /**  Result of a single skill install operation. */
 export type InstallResult = {
 	symlink_path: string,
+};
+
+export type InstalledFontList = {
+	families: string[],
+	/**  False only when this platform should enumerate fonts and the call failed. */
+	available: boolean,
 };
 
 /**  Stable error envelope serialized across the Tauri command boundary. */

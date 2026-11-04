@@ -3,9 +3,8 @@ import type { LogsListDensity } from "@/components/logs/LogsListRow";
 export const LOG_DENSITY_STORAGE_KEY = "skillport.logs.density";
 
 /**
- * Native filter <select> styled as DESIGN.md `input`: input surface, 1px
- * input stroke (>= 3:1), `rounded-control`, hover deepens the stroke, focus
- * = ring stroke + the unified outline. Used by both log console modes.
+ * Log filter trigger override for the shared Select. Keeps the compact
+ * field height used by both log console modes.
  */
 export const LOG_FILTER_SELECT_CLASS =
   "focus-ring h-8 rounded-control border border-input bg-input-surface px-2.5 text-sm text-foreground transition-colors duration-150 hover:border-muted-foreground focus-visible:border-ring";

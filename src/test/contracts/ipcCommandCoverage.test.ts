@@ -278,6 +278,7 @@ describe("ipc command coverage ratchet", () => {
     expect(infallible).toEqual([
       "get_app_runtime_info",
       "get_startup_status",
+      "list_installed_font_families",
       "record_frontend_runtime_log",
     ]);
     expect(

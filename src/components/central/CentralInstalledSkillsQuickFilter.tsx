@@ -2,6 +2,7 @@ import { Download, X } from "lucide-react";
 import type { TFunction } from "i18next";
 
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import {
   getPlatformTargetLabel,
   getPlatformTargetTitleHint,
@@ -67,41 +68,35 @@ export function CentralInstalledSkillsQuickFilter({
       >
         {t("central.installedSkillsFilterAny", { count: installedCount })}
       </Button>
-      <select
-        aria-label={t("central.installedSkillsFilterPlatformAria")}
+      <Select
+        ariaLabel={t("central.installedSkillsFilterPlatformAria")}
+        testId="installed-filter-platform"
         className={cn(
-          "focus-ring h-7 rounded-control border border-input bg-input-surface px-2 text-xs text-foreground outline-none transition-colors",
+          "h-7 w-auto px-2 text-xs",
           selectedPlatformId
             ? "border-primary-stroke bg-primary-tint text-primary-text"
             : null,
         )}
         value={selectedPlatformId ?? ""}
-        onChange={(event) => {
-          const nextPlatformId = event.target.value;
+        onValueChange={(nextPlatformId) => {
           onChange(
             nextPlatformId
               ? platformInstalledFilterValue(nextPlatformId)
               : "all",
           );
         }}
-        data-testid="installed-filter-platform"
-      >
-        <option value="">
-          {t("central.installedSkillsFilterPlatformPlaceholder")}
-        </option>
-        {platformOptions.map((agent) => {
-          const displayName = getPlatformDisplayName(agent, t);
-          return (
-            <option
-              key={agent.id}
-              value={agent.id}
-              title={getPlatformTargetTitleHint(agent)}
-            >
-              {displayName}
-            </option>
-          );
-        })}
-      </select>
+        options={[
+          {
+            value: "",
+            label: t("central.installedSkillsFilterPlatformPlaceholder"),
+          },
+          ...platformOptions.map((agent) => ({
+            value: agent.id,
+            label: getPlatformDisplayName(agent, t),
+            title: getPlatformTargetTitleHint(agent),
+          })),
+        ]}
+      />
       {hasFilter && (
         <>
           <span className="rounded-full bg-accent px-2.5 py-1 text-ui-meta text-muted-foreground">

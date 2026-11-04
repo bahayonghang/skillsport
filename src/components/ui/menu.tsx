@@ -3,12 +3,17 @@ import { Menu as MenuPrimitive } from "@base-ui/react/menu"
 import { CheckIcon, ChevronRightIcon } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+import {
+  GLASS_OVERLAY_ITEM_CLASS,
+  GLASS_OVERLAY_POPUP_CLASS,
+  GLASS_OVERLAY_POPUP_SCROLL_CLASS,
+} from "@/components/ui/overlay-popup"
 
 // DESIGN.md "其余 primitives" → Menu / dropdown: L3 `.glass-overlay` (real
 // blur, one of the two whitelisted blocks) + `rounded-card`; items are
 // `rounded-control` so 18px popup − 6px padding = 12px item (concentric).
 // Thin wrapper over base-ui Menu: behaviour, focus management, typeahead and
-// keyboard navigation stay with base-ui.
+// keyboard navigation stay with base-ui. Popup chrome is shared with Select.
 
 function Menu(props: MenuPrimitive.Root.Props) {
   return <MenuPrimitive.Root {...props} />
@@ -30,8 +35,10 @@ function MenuTrigger(props: MenuPrimitive.Trigger.Props) {
   return <MenuPrimitive.Trigger data-slot="menu-trigger" {...props} />
 }
 
-const POPUP_CLASS =
-  "glass-overlay min-w-44 rounded-card p-1.5 text-sm text-popover-foreground outline-none max-h-(--available-height) overflow-y-auto origin-(--transform-origin) data-[starting-style]:animate-in data-[starting-style]:fade-in-0 data-[starting-style]:zoom-in-95 data-[ending-style]:animate-out data-[ending-style]:fade-out-0 data-[ending-style]:zoom-out-95 animation-duration-100"
+const POPUP_CLASS = cn(
+  GLASS_OVERLAY_POPUP_CLASS,
+  GLASS_OVERLAY_POPUP_SCROLL_CLASS,
+)
 
 interface MenuContentProps extends MenuPrimitive.Popup.Props {
   align?: MenuPrimitive.Positioner.Props["align"]
@@ -69,8 +76,7 @@ function MenuContent({
   )
 }
 
-const ITEM_CLASS =
-  "relative flex cursor-default items-center gap-2 rounded-control px-2.5 py-1.5 text-sm outline-none select-none data-[highlighted]:bg-accent data-[highlighted]:text-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
+const ITEM_CLASS = GLASS_OVERLAY_ITEM_CLASS
 
 interface MenuItemProps extends MenuPrimitive.Item.Props {
   variant?: "default" | "destructive"

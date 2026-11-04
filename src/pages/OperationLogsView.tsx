@@ -42,6 +42,7 @@ import {
 } from "@/components/logs/logViewUtils";
 import { useLogsKeyboard } from "@/components/logs/useLogsKeyboard";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { Card } from "@/components/ui/card";
 import {
   Dialog,
@@ -501,48 +502,47 @@ function OperationLogsPanel({
                 className="pl-8"
               />
             </div>
-            <select
+            <Select
               value={filter.targetKind ?? ""}
-              onChange={(event) =>
-                updateFilter({ targetKind: event.target.value as never })
+              onValueChange={(next) =>
+                updateFilter({ targetKind: next as never })
               }
-              aria-label={t("logs.filters.target")}
+              ariaLabel={t("logs.filters.target")}
               className={LOG_FILTER_SELECT_CLASS}
-            >
-              <option value="">{t("logs.filters.allTargets")}</option>
-              <option value="local">{t("logs.targets.local")}</option>
-              <option value="ssh">{t("logs.targets.ssh")}</option>
-              <option value="wsl">{t("logs.targets.wsl")}</option>
-            </select>
-            <select
+              options={[
+                { value: "", label: t("logs.filters.allTargets") },
+                { value: "local", label: t("logs.targets.local") },
+                { value: "ssh", label: t("logs.targets.ssh") },
+                { value: "wsl", label: t("logs.targets.wsl") },
+              ]}
+            />
+            <Select
               value={filter.level ?? ""}
-              onChange={(event) =>
-                updateFilter({ level: event.target.value as never })
-              }
-              aria-label={t("logs.filters.level")}
+              onValueChange={(next) => updateFilter({ level: next as never })}
+              ariaLabel={t("logs.filters.level")}
               className={LOG_FILTER_SELECT_CLASS}
-            >
-              <option value="">{t("logs.filters.allLevels")}</option>
-              <option value="info">info</option>
-              <option value="warn">warn</option>
-              <option value="error">error</option>
-            </select>
-            <select
+              options={[
+                { value: "", label: t("logs.filters.allLevels") },
+                { value: "info", label: "info" },
+                { value: "warn", label: "warn" },
+                { value: "error", label: "error" },
+              ]}
+            />
+            <Select
               value={filter.status ?? ""}
-              onChange={(event) =>
-                updateFilter({ status: event.target.value as never })
-              }
-              aria-label={t("logs.filters.status")}
+              onValueChange={(next) => updateFilter({ status: next as never })}
+              ariaLabel={t("logs.filters.status")}
               className={LOG_FILTER_SELECT_CLASS}
-            >
-              <option value="">{t("logs.filters.allStatuses")}</option>
-              <option value="started">{t("logs.status.started")}</option>
-              <option value="succeeded">{t("logs.status.succeeded")}</option>
-              <option value="failed">{t("logs.status.failed")}</option>
-              <option value="partial">{t("logs.status.partial")}</option>
-              <option value="cancelled">{t("logs.status.cancelled")}</option>
-              <option value="interrupted">{t("logs.status.interrupted")}</option>
-            </select>
+              options={[
+                { value: "", label: t("logs.filters.allStatuses") },
+                { value: "started", label: t("logs.status.started") },
+                { value: "succeeded", label: t("logs.status.succeeded") },
+                { value: "failed", label: t("logs.status.failed") },
+                { value: "partial", label: t("logs.status.partial") },
+                { value: "cancelled", label: t("logs.status.cancelled") },
+                { value: "interrupted", label: t("logs.status.interrupted") },
+              ]}
+            />
             <Button type="submit" size="sm" disabled={isLoading}>
               {t("common.search")}
             </Button>

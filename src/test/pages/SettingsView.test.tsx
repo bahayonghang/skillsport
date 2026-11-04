@@ -13,6 +13,10 @@ import {
   WslDistributionSummary,
 } from "@/types";
 import { invoke } from "@/lib/ipc";
+import {
+  chooseSelectOption,
+  useTypedFontFamily,
+} from "@/test/support/selectOption";
 
 // Mock stores
 vi.mock("@/stores/settingsStore", () => ({
@@ -1225,9 +1229,7 @@ describe("SettingsView", () => {
     fireEvent.change(screen.getByLabelText("WSL 别名"), {
       target: { value: "Ubuntu" },
     });
-    fireEvent.change(screen.getByLabelText("WSL 发行版"), {
-      target: { value: "Ubuntu-24.04" },
-    });
+    await chooseSelectOption(screen.getByLabelText("WSL 发行版"), /Ubuntu-24.04/);
     fireEvent.click(screen.getAllByRole("button", { name: "测试" })[1]);
 
     await waitFor(() => {
@@ -1251,7 +1253,7 @@ describe("SettingsView", () => {
     expect(await screen.findByText("已创建目标 Ubuntu")).toBeTruthy();
   });
 
-  it("marks already-added WSL distributions in the add card", () => {
+  it("marks already-added WSL distributions in the add card", async () => {
     setupMocks({
       targets: [
         { id: "local", kind: "local" as const, label: "Local", isActive: true },
@@ -1274,10 +1276,11 @@ describe("SettingsView", () => {
     });
     renderSettingsView("/settings/connections");
 
-    const option = screen.getByRole("option", {
+    fireEvent.click(screen.getByLabelText("WSL 发行版"));
+    const option = await screen.findByRole("option", {
       name: /Ubuntu-24\.04.*已添加/,
     });
-    expect(option).toBeDisabled();
+    expect(option).toHaveAttribute("aria-disabled", "true");
     expect(screen.getByRole("button", { name: "新增 WSL" })).toBeDisabled();
   });
 
@@ -1728,9 +1731,10 @@ describe("SettingsView", () => {
     expect(lightMode).toHaveAttribute("aria-pressed", "true");
     expect(darkMode).toHaveAttribute("aria-pressed", "false");
     const displayGroup = screen.getByRole("group", { name: "标题字体选项" });
-    fireEvent.change(within(displayGroup).getByLabelText("标题字体"), {
-      target: { value: "serif" },
-    });
+    await chooseSelectOption(
+      within(displayGroup).getByLabelText("标题字体"),
+      "Instrument Serif",
+    );
 
     await waitFor(() => {
       expect(invoke).toHaveBeenCalledWith("set_setting", {
@@ -1795,7 +1799,7 @@ describe("SettingsView", () => {
     expect(defaultScale).toHaveAttribute("aria-pressed", "false");
   });
 
-  it("shows custom font inputs only inside the selected font group", () => {
+  it("keeps a typed family on the picker that received it", async () => {
     setupMocks();
     renderSettingsView("/settings");
 
@@ -1803,23 +1807,24 @@ describe("SettingsView", () => {
     expect(screen.queryByLabelText("自定义正文字体族")).toBeNull();
 
     const displayGroup = screen.getByRole("group", { name: "标题字体选项" });
-    fireEvent.change(within(displayGroup).getByLabelText("标题字体"), {
-      target: { value: "custom" },
-    });
+    await useTypedFontFamily(
+      within(displayGroup).getByLabelText("标题字体"),
+      "Iowan Old Style",
+    );
 
-    expect(within(displayGroup).getByLabelText("自定义标题字体族")).toBeTruthy();
+    const displayFont = within(displayGroup).getByLabelText("标题字体");
+    expect(displayFont).toHaveAttribute("data-value", "custom");
+    expect(displayFont).toHaveTextContent("Iowan Old Style");
+    expect(screen.queryByLabelText("自定义标题字体族")).toBeNull();
     expect(screen.queryByLabelText("自定义正文字体族")).toBeNull();
-
-    const bodyGroup = screen.getByRole("group", { name: "正文字体选项" });
-    fireEvent.change(within(bodyGroup).getByLabelText("正文字体"), {
-      target: { value: "custom" },
-    });
-
-    expect(within(displayGroup).getByLabelText("自定义标题字体族")).toBeTruthy();
-    expect(within(bodyGroup).getByLabelText("自定义正文字体族")).toBeTruthy();
+    expect(
+      within(screen.getByRole("group", { name: "正文字体选项" })).getByLabelText(
+        "正文字体",
+      ),
+    ).toHaveAttribute("data-value", "geist");
   });
 
-  it("updates font selectors, independent fallbacks, and mixed specimens", () => {
+  it("updates font selectors, independent fallbacks, and mixed specimens", async () => {
     setupMocks();
     renderSettingsView("/settings");
 
@@ -1828,25 +1833,33 @@ describe("SettingsView", () => {
     const displayGroup = screen.getByRole("group", { name: "标题字体选项" });
     const bodyGroup = screen.getByRole("group", { name: "正文字体选项" });
 
-    fireEvent.change(within(displayGroup).getByLabelText("标题字体"), {
-      target: { value: "serif" },
-    });
-    fireEvent.change(within(bodyGroup).getByLabelText("正文字体"), {
-      target: { value: "inter" },
-    });
-    fireEvent.change(within(displayGroup).getByLabelText("标题中文 fallback"), {
-      target: { value: "custom" },
-    });
+    await chooseSelectOption(
+      within(displayGroup).getByLabelText("标题字体"),
+      "Instrument Serif",
+    );
+    await chooseSelectOption(
+      within(bodyGroup).getByLabelText("正文字体"),
+      "Inter",
+    );
+    await chooseSelectOption(
+      within(displayGroup).getByLabelText("标题中文 fallback"),
+      "自定义",
+    );
     fireEvent.click(screen.getByRole("button", { name: /宽松/ }));
 
-    expect(within(displayGroup).getByLabelText("标题字体")).toHaveValue("serif");
-    expect(within(bodyGroup).getByLabelText("正文字体")).toHaveValue("inter");
+    expect(within(displayGroup).getByLabelText("标题字体")).toHaveAttribute(
+      "data-value",
+      "serif",
+    );
+    expect(within(bodyGroup).getByLabelText("正文字体")).toHaveAttribute(
+      "data-value",
+      "inter",
+    );
     expect(
-      within(displayGroup).getByLabelText("自定义标题中文 fallback 字体族")
-    ).toBeTruthy();
-    expect(
-      within(bodyGroup).queryByLabelText("自定义正文中文 fallback 字体族")
-    ).toBeNull();
+      within(displayGroup).getByLabelText("标题中文 fallback"),
+    ).toHaveAttribute("data-value", "custom");
+    expect(screen.queryByLabelText("自定义标题中文 fallback 字体族")).toBeNull();
+    expect(screen.queryByLabelText("自定义正文中文 fallback 字体族")).toBeNull();
     expect(
       (within(displayGroup).getByText("SkillPort 技能管理").parentElement as HTMLElement)
         .style.fontFamily,
@@ -1878,20 +1891,22 @@ describe("SettingsView", () => {
     renderSettingsView("/settings");
 
     const displayGroup = screen.getByRole("group", { name: "标题字体选项" });
-    fireEvent.change(within(displayGroup).getByLabelText("标题字体"), {
-      target: { value: "serif" },
-    });
+    await chooseSelectOption(
+      within(displayGroup).getByLabelText("标题字体"),
+      "Instrument Serif",
+    );
     releaseReads();
 
     await waitFor(() => {
-      expect(within(displayGroup).getByLabelText("标题字体")).toHaveValue(
+      expect(within(displayGroup).getByLabelText("标题字体")).toHaveAttribute(
+        "data-value",
         "serif",
       );
       expect(
         within(
           screen.getByRole("group", { name: "正文字体选项" }),
         ).getByLabelText("正文字体"),
-      ).toHaveValue("geist");
+      ).toHaveAttribute("data-value", "geist");
     });
   });
 
@@ -1902,15 +1917,13 @@ describe("SettingsView", () => {
     const displayGroup = screen.getByRole("group", { name: "标题字体选项" });
     const bodyGroup = screen.getByRole("group", { name: "正文字体选项" });
 
-    fireEvent.change(within(displayGroup).getByLabelText("标题中文 fallback"), {
-      target: { value: "sourceHanSerif" },
-    });
-    fireEvent.change(within(bodyGroup).getByLabelText("正文中文 fallback"), {
-      target: { value: "custom" },
-    });
-    fireEvent.change(
-      within(bodyGroup).getByLabelText("自定义正文中文 fallback 字体族"),
-      { target: { value: "Noto Serif CJK SC" } },
+    await chooseSelectOption(
+      within(displayGroup).getByLabelText("标题中文 fallback"),
+      "Source Han Serif SC VF",
+    );
+    await useTypedFontFamily(
+      within(bodyGroup).getByLabelText("正文中文 fallback"),
+      "Noto Serif CJK SC",
     );
 
     await waitFor(() => {

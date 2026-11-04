@@ -19,6 +19,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
 import { repositoryDisplayName } from "@/lib/centralConflictSource";
 import { cn } from "@/lib/utils";
 import { formatPathForDisplay } from "@/lib/path";
@@ -590,20 +591,20 @@ export function SkillDetailSidebar({
                   <label htmlFor="detail-repository-select" className={inspectorFieldLabelClassName}>
                     {t("central.repositorySelectLabel")}
                   </label>
-                  <select
+                  <Select
                     id="detail-repository-select"
                     className={inspectorSelectClassName}
                     value={selectedRepositoryId}
-                    aria-label={t("central.repositorySelectLabel")}
-                    onChange={(event) => onSelectedRepositoryChange(event.target.value)}
-                  >
-                    <option value="">{t("central.chooseRepository")}</option>
-                    {repositories.map((repository) => (
-                      <option key={repository.id} value={repository.id}>
-                        {repository.name}
-                      </option>
-                    ))}
-                  </select>
+                    ariaLabel={t("central.repositorySelectLabel")}
+                    onValueChange={onSelectedRepositoryChange}
+                    options={[
+                      { value: "", label: t("central.chooseRepository") },
+                      ...repositories.map((repository) => ({
+                        value: repository.id,
+                        label: repository.name,
+                      })),
+                    ]}
+                  />
                   <Button
                     type="button"
                     size="sm"
@@ -619,20 +620,20 @@ export function SkillDetailSidebar({
                   <label htmlFor="detail-tag-select" className={inspectorFieldLabelClassName}>
                     {t("central.tagSelectLabel")}
                   </label>
-                  <select
+                  <Select
                     id="detail-tag-select"
                     className={inspectorSelectClassName}
                     value={selectedTagId}
-                    aria-label={t("central.tagSelectLabel")}
-                    onChange={(event) => onSelectedTagChange(event.target.value)}
-                  >
-                    <option value="">{t("central.chooseTag")}</option>
-                    {tags.map((tag) => (
-                      <option key={tag.id} value={tag.id}>
-                        {tag.name}
-                      </option>
-                    ))}
-                  </select>
+                    ariaLabel={t("central.tagSelectLabel")}
+                    onValueChange={onSelectedTagChange}
+                    options={[
+                      { value: "", label: t("central.chooseTag") },
+                      ...tags.map((tag) => ({
+                        value: tag.id,
+                        label: tag.name,
+                      })),
+                    ]}
+                  />
                   <Button
                     type="button"
                     size="sm"

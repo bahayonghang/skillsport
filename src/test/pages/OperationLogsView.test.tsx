@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { chooseSelectOption } from "@/test/support/selectOption";
 
 vi.mock("@/lib/ipc", () => ({
   invoke: vi.fn(),
@@ -352,9 +353,7 @@ describe("OperationLogsView", () => {
     render(<OperationLogsView />);
 
     await screen.findByText("scan.all");
-    fireEvent.change(screen.getByLabelText("级别"), {
-      target: { value: "error" },
-    });
+    await chooseSelectOption(screen.getByLabelText("级别"), "error");
 
     await waitFor(() => {
       expect(invoke).toHaveBeenLastCalledWith("list_operation_logs", {
@@ -480,9 +479,7 @@ describe("OperationLogsView", () => {
     expect(await screen.findByText("运行时诊断")).toBeInTheDocument();
     expect(await screen.findByText("Render exploded")).toBeInTheDocument();
 
-    fireEvent.change(screen.getByLabelText("级别"), {
-      target: { value: "error" },
-    });
+    await chooseSelectOption(screen.getByLabelText("级别"), "error");
 
     await waitFor(() => {
       expect(invoke).toHaveBeenLastCalledWith("read_runtime_log_file", {
@@ -592,7 +589,7 @@ describe("OperationLogsView", () => {
     fireEvent.click(await screen.findByTestId("logs-detail-view-runtime"));
 
     expect(await screen.findByText("运行时诊断")).toBeInTheDocument();
-    expect((await screen.findAllByText("前端")).length).toBeGreaterThan(1);
+    expect(await screen.findByText("前端")).toBeInTheDocument();
     await waitFor(() =>
       expect(invoke).toHaveBeenCalledWith("read_runtime_log_file", {
         request: expect.objectContaining({ operationId: OPERATION_ID }),

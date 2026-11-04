@@ -12,6 +12,7 @@ import {
   MenuTrigger,
 } from "@/components/ui/menu"
 import { PageHeader } from "@/components/ui/page-header"
+import { Select } from "@/components/ui/select"
 import {
   Sheet,
   SheetContent,
@@ -270,6 +271,29 @@ describe("Menu", () => {
     )
     expect(within(menu).getByRole("menuitem", { name: "Delete" })).toHaveClass(
       "text-destructive-text",
+    )
+  })
+})
+
+describe("Select", () => {
+  it("opens a glass overlay listbox", async () => {
+    render(
+      <Select
+        ariaLabel="Tone"
+        value="mint"
+        onValueChange={() => {}}
+        options={[
+          { value: "mint", label: "Mint" },
+          { value: "ink", label: "Ink" },
+        ]}
+      />,
+    )
+    fireEvent.click(screen.getByRole("combobox", { name: "Tone" }))
+    const list = await screen.findByRole("listbox")
+    const popup = list.closest("[data-slot=select-popup]")
+    expect(popup).toHaveClass("glass-overlay", "rounded-card")
+    expect(within(list).getByRole("option", { name: "Mint" })).toHaveClass(
+      "rounded-control",
     )
   })
 })

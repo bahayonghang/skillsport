@@ -14,8 +14,10 @@ import { describe, expect, it } from "vitest";
  * - No arbitrary `rounded-[...]`, no raw `bg-white/` / `bg-black/` washes.
  * - No legacy hand-written card recipe (`rounded-xl|2xl|3xl` together with
  *   `ring-1 ring-border` or `border border-border` in one class string).
- * - Menus / drawers go through `ui/menu` / `ui/sheet` / `ui/dialog`, not
- *   `@base-ui/react/menu|dialog` directly.
+ * - Menus / drawers / selects go through `ui/menu` / `ui/sheet` /
+ *   `ui/dialog` / `ui/select` / `ui/font-family-picker`, not
+ *   `@base-ui/react/menu|dialog|select|combobox` directly.
+ * - Production TS/TSX does not contain a native `<select>`.
  *
  * The C4 migration allow-lists (PENDING_*) and their ceilings were retired in
  * C9 once every list reached zero: no production file may offend any rule.
@@ -58,7 +60,8 @@ const INDEX_CSS = readFileSync(resolve(SRC, "index.css"), "utf8");
 const BACKDROP_UTILITY = /(?<![\w-])backdrop-[\w[]/;
 const ARBITRARY_ROUNDED = /(?<![\w-])rounded(?:-[a-z]+)?-\[/;
 const RAW_WHITE_BLACK = /(?<![\w-])bg-(?:white|black)\//;
-const DIRECT_BASE_UI = /from\s+["']@base-ui\/react\/(?:menu|dialog)["']/;
+const DIRECT_BASE_UI = /from\s+["']@base-ui\/react\/(?:menu|dialog|select|combobox)["']/;
+const NATIVE_SELECT = /<select\b/;
 const STRING_LITERAL = /"([^"\\\n]*(?:\\.[^"\\\n]*)*)"|'([^'\\\n]*(?:\\.[^'\\\n]*)*)'|`([^`\\]*(?:\\.[^`\\]*)*)`/g;
 const LARGE_ROUNDED = new Set(["rounded-xl", "rounded-2xl", "rounded-3xl"]);
 
@@ -98,9 +101,13 @@ const RULES: Rule[] = [
     offends: ({ content }) => hasLegacyCardRecipe(content),
   },
   {
-    name: "direct @base-ui/react/menu|dialog import",
+    name: "direct @base-ui/react/menu|dialog|select|combobox import",
     offends: ({ path, content }) =>
       !path.startsWith(UI_ROOT) && DIRECT_BASE_UI.test(content),
+  },
+  {
+    name: "native <select>",
+    offends: ({ content }) => NATIVE_SELECT.test(content),
   },
 ];
 

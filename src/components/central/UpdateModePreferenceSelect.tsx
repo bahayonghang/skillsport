@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 
+import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import type { UpdateCheckMode } from "@/lib/updateCheckMode";
 
@@ -32,26 +33,25 @@ export function UpdateModePreferenceSelect({
       <span className="whitespace-nowrap font-medium">
         {t("central.updateCheckMode.inlineLabel")}
       </span>
-      <select
-        data-testid="central-update-check-mode-select"
-        className="focus-ring h-6 min-w-0 flex-1 rounded-full border border-input bg-input-surface px-2 text-xs font-medium text-foreground outline-none"
+      <Select
+        testId="central-update-check-mode-select"
+        ariaLabel={t("central.updateCheckMode.inlineLabel")}
+        className="h-6 min-w-0 flex-1 rounded-full px-2 text-xs font-medium"
         value={mode}
         disabled={disabled}
-        onChange={(event) => {
-          const next = event.target.value as UpdateCheckMode;
-          if (next === "sync" && syncDisabled) {
-            return;
-          }
-          onChange(next);
+        onValueChange={(next) => {
+          if (next === "sync" && syncDisabled) return;
+          onChange(next as UpdateCheckMode);
         }}
-      >
-        <option value="regular">
-          {t("central.updateCheckMode.regular.title")}
-        </option>
-        <option value="sync" disabled={syncDisabled}>
-          {t("central.updateCheckMode.sync.title")}
-        </option>
-      </select>
+        options={[
+          { value: "regular", label: t("central.updateCheckMode.regular.title") },
+          {
+            value: "sync",
+            label: t("central.updateCheckMode.sync.title"),
+            disabled: syncDisabled,
+          },
+        ]}
+      />
     </label>
   );
 }

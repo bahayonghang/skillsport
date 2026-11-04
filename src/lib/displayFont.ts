@@ -216,7 +216,7 @@ function fallbackChain(): string {
   return "ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif, 'JetBrains Mono Variable', ui-monospace, monospace";
 }
 
-function quoteFontFamily(family: string): string {
+export function quoteFontFamily(family: string): string {
   const sanitized = family.replace(/[\u0000-\u001f\u007f]/g, " ");
   return `"${sanitized.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
 }
@@ -252,6 +252,27 @@ function bodyFontChain(key: BodyFontKey, customFamily: string): string {
     return `${quoteFontFamily(customFamily.trim())}, ${fallbackChain()}`;
   }
   return BODY_FONT_CHAINS[key === "custom" ? "geist" : key];
+}
+
+export function displayRolePreviewFamily(
+  key: DisplayFontKey,
+  customFamily = "",
+): string {
+  return displayFontChain(key, customFamily);
+}
+
+export function bodyRolePreviewFamily(
+  key: BodyFontKey,
+  customFamily = "",
+): string {
+  return bodyFontChain(key, customFamily);
+}
+
+export function chineseFallbackPreviewFamily(
+  key: ChineseFallbackKey,
+  customFamily = "",
+): string | null {
+  return chineseFallbackFamily(key, customFamily);
 }
 
 function resolveFontFamily(

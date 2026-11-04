@@ -10,7 +10,7 @@ import { useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { FontFamilyPicker } from "@/components/ui/font-family-picker";
 import { WindowMaterialSetting } from "@/components/settings/WindowMaterialSetting";
 import {
   BODY_FONT_OPTIONS,
@@ -77,68 +77,36 @@ export function AppearanceSettingsSection({
     };
   }, []);
 
-  async function handleDisplayKey(key: DisplayFontKey) {
-    updateEditorProfile({ display: key });
-    await saveDisplayFont(editorFontMode, key, profile.displayCustom);
+  async function handleDisplayChoice(key: DisplayFontKey, custom: string) {
+    updateEditorProfile({ display: key, displayCustom: custom });
+    await saveDisplayFont(editorFontMode, key, custom);
   }
 
-  async function handleDisplayCustom(custom: string) {
-    updateEditorProfile({ displayCustom: custom });
-    if (profile.display === "custom") {
-      await saveDisplayFont(editorFontMode, "custom", custom);
-    }
+  async function handleDisplayChineseFallbackChoice(
+    key: ChineseFallbackKey,
+    custom: string,
+  ) {
+    updateEditorProfile({
+      displayChineseFallback: key,
+      displayChineseFallbackCustom: custom,
+    });
+    await saveDisplayChineseFallback(editorFontMode, key, custom);
   }
 
-  async function handleDisplayChineseFallback(key: ChineseFallbackKey) {
-    updateEditorProfile({ displayChineseFallback: key });
-    await saveDisplayChineseFallback(
-      editorFontMode,
-      key,
-      profile.displayChineseFallbackCustom,
-    );
+  async function handleBodyChoice(key: BodyFontKey, custom: string) {
+    updateEditorProfile({ body: key, bodyCustom: custom });
+    await saveBodyFont(editorFontMode, key, custom);
   }
 
-  async function handleDisplayChineseFallbackCustom(custom: string) {
-    updateEditorProfile({ displayChineseFallbackCustom: custom });
-    if (profile.displayChineseFallback === "custom") {
-      await saveDisplayChineseFallback(
-        editorFontMode,
-        "custom",
-        custom,
-      );
-    }
-  }
-
-  async function handleBodyKey(key: BodyFontKey) {
-    updateEditorProfile({ body: key });
-    await saveBodyFont(editorFontMode, key, profile.bodyCustom);
-  }
-
-  async function handleBodyCustom(custom: string) {
-    updateEditorProfile({ bodyCustom: custom });
-    if (profile.body === "custom") {
-      await saveBodyFont(editorFontMode, "custom", custom);
-    }
-  }
-
-  async function handleBodyChineseFallback(key: ChineseFallbackKey) {
-    updateEditorProfile({ bodyChineseFallback: key });
-    await saveBodyChineseFallback(
-      editorFontMode,
-      key,
-      profile.bodyChineseFallbackCustom,
-    );
-  }
-
-  async function handleBodyChineseFallbackCustom(custom: string) {
-    updateEditorProfile({ bodyChineseFallbackCustom: custom });
-    if (profile.bodyChineseFallback === "custom") {
-      await saveBodyChineseFallback(
-        editorFontMode,
-        "custom",
-        custom,
-      );
-    }
+  async function handleBodyChineseFallbackChoice(
+    key: ChineseFallbackKey,
+    custom: string,
+  ) {
+    updateEditorProfile({
+      bodyChineseFallback: key,
+      bodyChineseFallbackCustom: custom,
+    });
+    await saveBodyChineseFallback(editorFontMode, key, custom);
   }
 
   async function handleScale(value: number) {
@@ -228,25 +196,17 @@ export function AppearanceSettingsSection({
               primaryOptions={DISPLAY_FONT_OPTIONS}
               primaryOptionNamespace="displayFontOption"
               primaryCustom={profile.displayCustom}
-              primaryCustomLabel={t("settings.appearance.displayCustomLabel")}
               chineseFallback={profile.displayChineseFallback}
               chineseFallbackLabel={t(
                 "settings.appearance.displayChineseFallback",
               )}
               chineseFallbackCustom={profile.displayChineseFallbackCustom}
-              chineseFallbackCustomLabel={t(
-                "settings.appearance.displayChineseFallbackCustomLabel",
-              )}
               specimenFontFamily={resolveDisplayFontFamily(profile)}
-              onPrimaryChange={(value) =>
-                void handleDisplayKey(value as DisplayFontKey)
+              onPrimaryChange={(key, custom) =>
+                void handleDisplayChoice(key as DisplayFontKey, custom)
               }
-              onPrimaryCustomChange={(value) => void handleDisplayCustom(value)}
-              onChineseFallbackChange={(value) =>
-                void handleDisplayChineseFallback(value)
-              }
-              onChineseFallbackCustomChange={(value) =>
-                void handleDisplayChineseFallbackCustom(value)
+              onChineseFallbackChange={(key, custom) =>
+                void handleDisplayChineseFallbackChoice(key, custom)
               }
             />
             <FontRoleControl
@@ -256,23 +216,17 @@ export function AppearanceSettingsSection({
               primaryOptions={BODY_FONT_OPTIONS}
               primaryOptionNamespace="bodyFontOption"
               primaryCustom={profile.bodyCustom}
-              primaryCustomLabel={t("settings.appearance.bodyCustomLabel")}
               chineseFallback={profile.bodyChineseFallback}
               chineseFallbackLabel={t(
                 "settings.appearance.bodyChineseFallback",
               )}
               chineseFallbackCustom={profile.bodyChineseFallbackCustom}
-              chineseFallbackCustomLabel={t(
-                "settings.appearance.bodyChineseFallbackCustomLabel",
-              )}
               specimenFontFamily={resolveBodyFontFamily(profile)}
-              onPrimaryChange={(value) => void handleBodyKey(value as BodyFontKey)}
-              onPrimaryCustomChange={(value) => void handleBodyCustom(value)}
-              onChineseFallbackChange={(value) =>
-                void handleBodyChineseFallback(value)
+              onPrimaryChange={(key, custom) =>
+                void handleBodyChoice(key as BodyFontKey, custom)
               }
-              onChineseFallbackCustomChange={(value) =>
-                void handleBodyChineseFallbackCustom(value)
+              onChineseFallbackChange={(key, custom) =>
+                void handleBodyChineseFallbackChoice(key, custom)
               }
             />
           </div>
@@ -480,16 +434,12 @@ function FontRoleControl({
   primaryOptions,
   primaryOptionNamespace,
   primaryCustom,
-  primaryCustomLabel,
   chineseFallback,
   chineseFallbackLabel,
   chineseFallbackCustom,
-  chineseFallbackCustomLabel,
   specimenFontFamily,
   onPrimaryChange,
-  onPrimaryCustomChange,
   onChineseFallbackChange,
-  onChineseFallbackCustomChange,
 }: {
   groupLabel: string;
   title: string;
@@ -497,16 +447,12 @@ function FontRoleControl({
   primaryOptions: readonly FontOption[];
   primaryOptionNamespace: "displayFontOption" | "bodyFontOption";
   primaryCustom: string;
-  primaryCustomLabel: string;
   chineseFallback: ChineseFallbackKey;
   chineseFallbackLabel: string;
   chineseFallbackCustom: string;
-  chineseFallbackCustomLabel: string;
   specimenFontFamily: string;
-  onPrimaryChange: (value: string) => void;
-  onPrimaryCustomChange: (value: string) => void;
-  onChineseFallbackChange: (value: ChineseFallbackKey) => void;
-  onChineseFallbackCustomChange: (value: string) => void;
+  onPrimaryChange: (key: string, customFamily: string) => void;
+  onChineseFallbackChange: (key: ChineseFallbackKey, customFamily: string) => void;
 }) {
   const { t } = useTranslation();
 
@@ -514,71 +460,35 @@ function FontRoleControl({
     <div className="grid min-w-0 content-start gap-4" role="group" aria-label={groupLabel}>
       <h3 className="font-heading text-sm font-semibold leading-5">{title}</h3>
       <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(min(14rem,100%),1fr))]">
-        <div className="space-y-3">
-          <label className="block space-y-1.5">
-            <span className="text-xs text-muted-foreground">
-              {t("settings.appearance.primaryFont")}
-            </span>
-            <select
-              value={primary}
-              onChange={(event) => onPrimaryChange(event.target.value)}
-              aria-label={title}
-              className="focus-ring h-10 w-full rounded-control border border-input bg-input-surface px-3 text-sm text-foreground transition-colors hover:border-muted-foreground"
-            >
-              {primaryOptions.map((option) => (
-                <option key={option.key} value={option.key}>
-                  {t(
-                    `settings.appearance.${primaryOptionNamespace}.${option.labelKey}`,
-                  )}
-                </option>
-              ))}
-            </select>
-          </label>
-          {primary === "custom" ? (
-            <Input
-              className="h-10"
-              placeholder={t("settings.appearance.customPlaceholder")}
-              value={primaryCustom}
-              onChange={(event) => onPrimaryCustomChange(event.target.value)}
-              aria-label={primaryCustomLabel}
-            />
-          ) : null}
+        <div className="block space-y-1.5">
+          <span className="text-xs text-muted-foreground">
+            {t("settings.appearance.primaryFont")}
+          </span>
+          <FontFamilyPicker
+            ariaLabel={title}
+            presetNamespace={primaryOptionNamespace}
+            presets={primaryOptions}
+            valueKey={primary}
+            customFamily={primaryCustom}
+            className="h-10"
+            onChange={onPrimaryChange}
+          />
         </div>
-        <div className="space-y-3">
-          <label className="block space-y-1.5">
-            <span className="text-xs text-muted-foreground">
-              {chineseFallbackLabel}
-            </span>
-            <select
-              value={chineseFallback}
-              onChange={(event) =>
-                onChineseFallbackChange(
-                  event.target.value as ChineseFallbackKey,
-                )
-              }
-              aria-label={chineseFallbackLabel}
-              className="focus-ring h-10 w-full rounded-control border border-input bg-input-surface px-3 text-sm text-foreground transition-colors hover:border-muted-foreground"
-            >
-              {CHINESE_FALLBACK_OPTIONS.map((option) => (
-                <option key={option.key} value={option.key}>
-                  {t(
-                    `settings.appearance.chineseFallbackOption.${option.labelKey}`,
-                  )}
-                </option>
-              ))}
-            </select>
-          </label>
-          {chineseFallback === "custom" ? (
-            <Input
-              className="h-10"
-              placeholder={t("settings.appearance.customPlaceholder")}
-              value={chineseFallbackCustom}
-              onChange={(event) =>
-                onChineseFallbackCustomChange(event.target.value)
-              }
-              aria-label={chineseFallbackCustomLabel}
-            />
-          ) : null}
+        <div className="block space-y-1.5">
+          <span className="text-xs text-muted-foreground">
+            {chineseFallbackLabel}
+          </span>
+          <FontFamilyPicker
+            ariaLabel={chineseFallbackLabel}
+            presetNamespace="chineseFallbackOption"
+            presets={CHINESE_FALLBACK_OPTIONS}
+            valueKey={chineseFallback}
+            customFamily={chineseFallbackCustom}
+            className="h-10"
+            onChange={(key, custom) =>
+              onChineseFallbackChange(key as ChineseFallbackKey, custom)
+            }
+          />
         </div>
       </div>
 

@@ -15,6 +15,7 @@ import { useSidebarExpansionSignal } from "@/components/central/useSidebarExpans
 import { groupRepositoriesForSidebar } from "@/lib/centralRepositoryGroups";
 import { getRepoDotColor } from "@/lib/tagColor";
 import { Badge } from "@/components/ui/badge";
+import { Select } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import type { FacetCounts } from "@/lib/centralFacetCounts";
 import type { SkillRepositoryWithStats, SkillTag, TagGroup } from "@/types";
@@ -421,28 +422,26 @@ export function SidebarTagRow({
 }: SidebarTagRowProps) {
   const showAssign = onAssignTagToGroup !== undefined && tagGroups.length > 0;
   const trailing = showAssign ? (
-    <select
-      aria-label={t ? t("central.v2.tagGroupsAssignTo") : "Assign tag to group"}
-      data-testid={`tag-assign-${tag.id}`}
+    <Select
+      ariaLabel={t ? t("central.v2.tagGroupsAssignTo") : "Assign tag to group"}
+      testId={`tag-assign-${tag.id}`}
       value={tag.group_id ?? ""}
-      onChange={(e) =>
-        onAssignTagToGroup(
-          tag.id,
-          e.target.value === "" ? null : e.target.value,
-        )
+      onValueChange={(next) =>
+        onAssignTagToGroup(tag.id, next === "" ? null : next)
       }
-      onClick={(e) => e.stopPropagation()}
-      className="ml-1 rounded-control border border-input bg-input-surface px-1 py-0.5 text-xs text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 focus:opacity-100"
-    >
-      <option value="">
-        {t ? t("central.v2.tagGroupsAssignNone") : "None"}
-      </option>
-      {tagGroups.map((g) => (
-        <option key={g.id} value={g.id}>
-          {g.name}
-        </option>
-      ))}
-    </select>
+      onTriggerClick={(event) => event.stopPropagation()}
+      className="ml-1 h-auto w-auto px-1 py-0.5 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 focus:opacity-100"
+      options={[
+        {
+          value: "",
+          label: t ? t("central.v2.tagGroupsAssignNone") : "None",
+        },
+        ...tagGroups.map((group) => ({
+          value: group.id,
+          label: group.name,
+        })),
+      ]}
+    />
   ) : undefined;
 
   return (
