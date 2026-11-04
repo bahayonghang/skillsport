@@ -87,3 +87,32 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 127: 归档已合并的 CLI 写命令任务
+
+**Date**: 2026-11-04
+**Task**: 归档已合并的 CLI 写命令任务
+**Branch**: `dev`
+
+### Summary
+
+10-29-cli-mutations 的写命令已在 dev 上，本次只归档任务记录。指导 skill 与父任务仍未完成。
+
+### Main Changes
+
+- 归档 10-29-cli-mutations
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `9a9a334c` | (see git log) |
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 10-29-skillport-guide-skill 仍缺 skills/skillport/SKILL.md、中英文 CLI 文档和端到端演练证据
