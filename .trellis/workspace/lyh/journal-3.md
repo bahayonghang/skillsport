@@ -27,3 +27,34 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 125: SSH 切换连通性门闩与失败旗标
+
+**Date**: 2026-11-04
+**Task**: SSH 切换连通性门闩与失败旗标
+**Branch**: `dev`
+
+### Summary
+
+切换和启动时先探测 SSH。连不上不改当前目标，也不把缓存技能库画成在线。失败旗标只在不可达时出现，并进入 SSH 设置。
+
+### Main Changes
+
+- 按 id 探测已有目标时附上会话密码且不写回设置
+- 中央技能页在不可达时隐藏缓存并显示玻璃失败旗标
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `3a260662fdff23093daf0b565966cb93a3f6d396` | (see git log) |
+| `c28fae619d74799f5bb912d6f5e7d805e8074f39` | (see git log) |
+
+### Testing
+
+- [OK] just ci
+
+### Status
+
+[OK] **Completed**
