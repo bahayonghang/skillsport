@@ -1857,4 +1857,90 @@ mkdir -p -- "$HOME/.skillsmanage/skills" && printf 'MKDIR_OK\n'"#
         assert_eq!(listed[0].distribution, "Ubuntu-24.04");
         assert!(!registry.has_cached_pool(&previous.id));
     }
+
+    fn id_only_ssh_test_request(id: &str) -> TestSshTargetRequest {
+        TestSshTargetRequest {
+            id: Some(id.to_string()),
+            label: None,
+            host: None,
+            username: None,
+            port: None,
+            auth_method: None,
+            key_path: None,
+            password: None,
+            passphrase: None,
+        }
+    }
+
+    async fn saved_password_target_with_session_secret(
+        secret: &str,
+    ) -> (Arc<MemoryCredentialBackend>, TargetRegistry, DbPool) {
+        let backend = Arc::new(MemoryCredentialBackend::default());
+        let registry = TargetRegistry::with_credential_backend(backend.clone());
+        let pool = memory_db().await;
+        let mut stored = password_target();
+        stored.password = None;
+        save_remote_targets(&pool, std::slice::from_ref(&stored))
+            .await
+            .unwrap();
+        registry
+            .set_session_password("ssh-demo:ssh-password", secret)
+            .unwrap();
+        (backend, registry, pool)
+    }
+
+    #[tokio::test]
+    async fn test_ssh_target_by_id_uses_session_password_and_does_not_persist_it() {
+        let secret = "session-only-secret";
+        let (backend, registry, pool) = saved_password_target_with_session_secret(secret).await;
+        let before = ssh_settings_raw(&pool).await;
+        let seen = Arc::new(Mutex::new(None::<String>));
+        let seen_probe = Arc::clone(&seen);
+
+        let failed = test_ssh_target_with_probe(
+            &registry,
+            &pool,
+            id_only_ssh_test_request("ssh-demo"),
+            async move |target| {
+                *seen_probe.lock().expect("seen password") = target.password.clone();
+                Err(TargetsError::ProbeHomeMissing)
+            },
+        )
+        .await
+        .unwrap();
+
+        assert!(!failed.ok);
+        assert_eq!(seen.lock().expect("seen password").as_deref(), Some(secret));
+        assert!(!failed.message.contains(secret));
+        assert_eq!(ssh_settings_raw(&pool).await, before);
+        assert!(!ssh_settings_raw(&pool).await.contains(secret));
+        assert_eq!(stored_password(backend.as_ref(), "ssh-demo"), None);
+        let loaded = load_remote_targets(&pool).await.unwrap();
+        assert!(loaded[0].password.is_none());
+        assert!(loaded[0].protected_password.is_none());
+
+        let succeeded = test_ssh_target_with_probe(
+            &registry,
+            &pool,
+            id_only_ssh_test_request("ssh-demo"),
+            async move |target| {
+                assert_eq!(target.password.as_deref(), Some(secret));
+                Ok(SshProbe {
+                    remote_home: "/home/alice".to_string(),
+                    remote_os: "Linux".to_string(),
+                })
+            },
+        )
+        .await
+        .unwrap();
+
+        assert!(succeeded.ok);
+        assert!(!succeeded.message.contains(secret));
+        assert_eq!(ssh_settings_raw(&pool).await, before);
+        assert!(!before.contains(secret));
+        assert_eq!(stored_password(backend.as_ref(), "ssh-demo"), None);
+        let loaded = load_remote_targets(&pool).await.unwrap();
+        assert!(loaded[0].password.is_none());
+        assert!(loaded[0].protected_password.is_none());
+    }
 }

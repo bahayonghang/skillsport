@@ -62,6 +62,15 @@ pub async fn test_ssh_target_impl(
     local_db: &DbPool,
     request: TestSshTargetRequest,
 ) -> Result<SshTargetTestResult, TargetsError> {
+    test_ssh_target_with_probe(registry, local_db, request, probe_ssh_target).await
+}
+
+pub(super) async fn test_ssh_target_with_probe(
+    registry: &TargetRegistry,
+    local_db: &DbPool,
+    request: TestSshTargetRequest,
+    probe: impl AsyncFnOnce(&RemoteTargetConfig) -> Result<SshProbe, TargetsError>,
+) -> Result<SshTargetTestResult, TargetsError> {
     let supplied_password = request.password.clone();
     let has_existing_target_id = request
         .id
@@ -80,9 +89,17 @@ pub async fn test_ssh_target_impl(
         && apply_supplied_password_to_existing_target(&mut target, supplied_password.as_deref())?
     {
         should_store_password = true;
+    } else if has_existing_target_id {
+        registry.attach_available_password(&mut target);
     }
 
-    match probe_ssh_target(&target).await {
+    let probe_result = probe(&target).await;
+    // Attached session or stored passwords are for this probe only.
+    if !should_store_password {
+        target.password = None;
+    }
+
+    match probe_result {
         Ok(probe) if is_supported_remote_os(&probe.remote_os) => {
             let credential_state = if should_store_password {
                 target.remote_home = probe.remote_home.clone();
