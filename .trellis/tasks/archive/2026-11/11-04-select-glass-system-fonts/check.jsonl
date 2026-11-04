@@ -1,0 +1,4 @@
+{"file": ".trellis/spec/frontend/glass-surfaces.md", "reason": "Check overlay class, blur whitelist, and the expanded base-ui import ban."}
+{"file": ".trellis/spec/frontend/font-preferences.md", "reason": "Check setting keys, mode isolation, and custom-family sanitizing still hold."}
+{"file": ".trellis/spec/frontend/ipc-adapter.md", "reason": "Check codegen, fixture registration, and no component invoke."}
+{"file": ".trellis/tasks/11-04-select-glass-system-fonts/research/native-select-inventory.md", "reason": "Check every listed native select was replaced and excluded widgets were left alone."}
