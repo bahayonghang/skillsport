@@ -58,3 +58,32 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 126: 统一下拉层样式并支持本机字体搜索
+
+**Date**: 2026-11-04
+**Task**: 统一下拉层样式并支持本机字体搜索
+**Branch**: `dev`
+
+### Summary
+
+原生下拉换成玻璃弹出层，四个字体选择可搜索本机已安装字体。
+
+### Main Changes
+
+- 新增玻璃 Select 与字体组合框，Windows 用 GDI 枚举字体族
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `772c761321a3f259d48294e9ddf69870700a94df` | (see git log) |
+
+### Testing
+
+- [OK] just ci；浏览器核对图库下拉和外观字体搜索
+
+### Status
+
+[OK] **Completed**
