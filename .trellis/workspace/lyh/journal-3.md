@@ -116,3 +116,38 @@
 ### Next Steps
 
 - 10-29-skillport-guide-skill 仍缺 skills/skillport/SKILL.md、中英文 CLI 文档和端到端演练证据
+
+
+## Session 128: 优化 SSH 技能导入并归档任务
+
+**Date**: 2026-11-05
+**Task**: 优化 SSH 技能导入并归档任务
+**Branch**: `dev`
+
+### Summary
+
+完成 SSH 导入链路分析、批量读取及完整性校验优化，复用市场远端预览；just ci 和 8 项远端路径测试通过，已按用户要求提交并归档。
+
+### Main Changes
+
+- SSH 确认导入按 64 文件或 32 MiB 批量读取，绑定已确认 SHA，保留事务恢复。
+- skills.sh 复用一次固定提交的远端预览，消除初始本机快照下载。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `f2508b5f` | (see git log) |
+
+### Testing
+
+- [OK] just ci PASS：2346 frontend tests；1742 Rust passed / 12 opt-in ignored；54 Python run / 4 platform skips。
+- [OK] 8 remote tests PASS，包括本地 Git Bash smoke；模拟 128 文件读取 1986.94ms/128 calls -> 30.77ms/2 calls。
+
+### Status
+
+[OK] **Completed**
+
+### Next Steps
+
+- 真实 SSH 端到端性能与安装包未验证；选中文件仍经本机内存中转。
