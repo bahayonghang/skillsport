@@ -19,6 +19,7 @@
 - [Request-scoped TargetContext Contract](./target-context.md)
 - [Central Update Batching Contract](./central-update-batching.md)
 - [GitHub Import Preview Contract](./github-import-preview-contract.md)
+- [Remote GitHub Import Transfer](./remote-github-import-transfer.md)
 - [Central Mutation Lock Contract](./central-mutation-lock.md)
 - [Shared Local CLI Contract](./shared-local-cli.md)
 - [Skill Usage Analytics Contract](./skill-usage-analytics.md)

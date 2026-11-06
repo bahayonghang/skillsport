@@ -1,6 +1,9 @@
 use crate::services::resource_budget::ResourceBudget;
 
 use super::*;
+mod batch_read;
+#[cfg(test)]
+mod import_tests;
 pub(super) async fn cleanup_expired_preview_snapshots_for_connection(
     connection: &ConnectedRemoteTarget,
 ) {
@@ -238,6 +241,7 @@ pub(crate) async fn import_github_repo_skills_remote_with_auth(
         &resolved.repo,
         resolved.source_path.as_deref(),
         &workspace,
+        None,
         selections,
         None,
         app,
@@ -304,6 +308,7 @@ pub(crate) async fn import_github_repo_skills_remote_from_pinned_snapshot(
             repo,
             None,
             &workspace,
+            Some(&repository_files),
             selections,
             Some(&provenance),
             app,
@@ -328,6 +333,7 @@ pub(super) async fn import_github_repo_skills_remote_from_workspace(
     repo: &GitHubRepoRef,
     source_path: Option<&str>,
     workspace: &GitHubPreviewWorkspace,
+    expected_files: Option<&[PreviewSnapshotFile]>,
     selections: Vec<GitHubSkillImportSelection>,
     provenance: Option<&ImportProvenance>,
     app: Option<&AppHandle>,
@@ -353,11 +359,6 @@ pub(super) async fn import_github_repo_skills_remote_from_workspace(
         .await?
         .ok_or(GithubImportError::CentralAgentMissing)?;
     let central_root = central.global_skills_dir;
-    connection
-        .mkdir_p(&central_root)
-        .await
-        .map_err(|e| GithubImportError::Remote(e.to_string()))?;
-
     let candidates = build_remote_repo_skill_candidates_from_workspace(
         &connection,
         repo,
@@ -370,10 +371,16 @@ pub(super) async fn import_github_repo_skills_remote_from_workspace(
         plan_import_staging(pool, &candidates, selections).await?;
 
     let snapshot =
-        github_snapshot_from_remote_workspace(&connection, workspace, &staging_ops).await?;
+        github_snapshot_from_remote_workspace(&connection, workspace, &staging_ops, expected_files)
+            .await?;
     for op in &mut staging_ops {
         op.source_files = collect_snapshot_source_files(&snapshot, &op.candidate.source_path)?;
     }
+
+    connection
+        .mkdir_p(&central_root)
+        .await
+        .map_err(|e| GithubImportError::Remote(e.to_string()))?;
 
     let total_files = staging_ops.len();
     let total_bytes = 0;
@@ -442,36 +449,30 @@ async fn github_snapshot_from_remote_workspace(
     connection: &ConnectedRemoteTarget,
     workspace: &GitHubPreviewWorkspace,
     staging_ops: &[StagedImport],
+    expected_files: Option<&[PreviewSnapshotFile]>,
 ) -> Result<GitHubRepoSnapshot, GithubImportError> {
     let source_paths = staging_ops
         .iter()
         .map(|op| op.candidate.source_path.as_str())
         .collect::<HashSet<_>>();
-    let inventory = remote_preview_repository_files(connection, &workspace.remote_repo_dir).await?;
-    let mut files = HashMap::new();
-    for file in inventory {
-        let included = source_paths.iter().any(|source_path| {
-            repo_file_relative_to_source(&file.repo_path, source_path).is_some()
-        });
-        if !included {
-            continue;
+    let acquired_inventory;
+    let inventory = match expected_files {
+        Some(files) => files,
+        None => {
+            acquired_inventory =
+                remote_preview_repository_files(connection, &workspace.remote_repo_dir).await?;
+            &acquired_inventory
         }
-        let remote_path = remote_join(&workspace.remote_repo_dir, &file.repo_path);
-        let bytes = connection
-            .read_file_bounded(&remote_path, file.byte_len)
-            .await
-            .map_err(|error| match error {
-                crate::targets::TargetsError::RemoteFileTooLarge { .. } => {
-                    GithubImportError::PreviewSnapshotIntegrity
-                }
-                error => GithubImportError::Remote(error.to_string()),
-            })?;
-        if bytes.len() as u64 != file.byte_len {
-            return Err(GithubImportError::PreviewSnapshotIntegrity);
-        }
-        files.insert(file.repo_path, bytes);
-    }
-    Ok(GitHubRepoSnapshot { files })
+    };
+    let selected = inventory
+        .iter()
+        .filter(|file| {
+            source_paths.iter().any(|source_path| {
+                repo_file_relative_to_source(&file.repo_path, source_path).is_some()
+            })
+        })
+        .collect::<Vec<_>>();
+    batch_read::read_verified_files(connection, &workspace.remote_repo_dir, &selected).await
 }
 
 /// Explicitly discard a registered preview snapshot and release its storage.

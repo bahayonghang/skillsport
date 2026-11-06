@@ -140,6 +140,7 @@ async fn import_from_preview_snapshot(
                 &snapshot.repo,
                 snapshot.source_path.as_deref(),
                 workspace,
+                Some(&snapshot.files),
                 selections,
                 Some(&provenance),
                 app,

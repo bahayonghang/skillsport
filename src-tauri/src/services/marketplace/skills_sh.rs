@@ -12,6 +12,10 @@ use crate::targets::ActiveTarget;
 
 use super::error::MarketplaceError;
 
+#[cfg(test)]
+#[path = "skills_sh_tests.rs"]
+mod tests;
+
 #[cfg_attr(feature = "ipc-codegen", derive(specta::Type))]
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct SkillsShSkill {
@@ -254,7 +258,11 @@ pub async fn install_from_skills_sh_with_options_impl(
     replace: bool,
 ) -> Result<String, MarketplaceError> {
     let auth = github_import::github_direct_auth_from_secret_store(pool, secrets).await?;
-    let (resolved, snapshot, auth_used) = skills_sh_snapshot_with_auth(&source, &auth).await?;
+    if active_target.is_remote_like() {
+        return install_skills_sh_remote(pool, &active_target, &source, &skill_id, replace, &auth)
+            .await;
+    }
+    let (resolved, snapshot, _) = skills_sh_snapshot_with_auth(&source, &auth).await?;
     let candidate =
         resolve_skills_sh_candidate_from_snapshot(&resolved.repo, &snapshot, &skill_id)?;
     let preview =
@@ -272,51 +280,134 @@ pub async fn install_from_skills_sh_with_options_impl(
         renamed_skill_id: None,
     };
 
-    match &active_target {
-        ActiveTarget::Local => {
-            let inspected = github_import::InspectedGitHubRepoSkills {
-                repo: resolved.repo.clone(),
-                valid_candidates: vec![candidate.clone()],
-                invalid_candidates: Vec::new(),
-            };
-            let central_root = github_import::central_skills_root(pool).await?;
-            std::fs::create_dir_all(&central_root).map_err(|e| {
-                MarketplaceError::io("Failed to create central skills directory", e)
-            })?;
-            let result = github_import::import_github_repo_skills_from_snapshot_partially(
+    let inspected = github_import::InspectedGitHubRepoSkills {
+        repo: resolved.repo.clone(),
+        valid_candidates: vec![candidate.clone()],
+        invalid_candidates: Vec::new(),
+    };
+    let central_root = github_import::central_skills_root(pool).await?;
+    std::fs::create_dir_all(&central_root)
+        .map_err(|e| MarketplaceError::io("Failed to create central skills directory", e))?;
+    let result = github_import::import_github_repo_skills_from_snapshot_partially(
+        pool,
+        &resolved.repo,
+        &snapshot,
+        inspected,
+        vec![selection],
+        &central_root,
+        None,
+    )
+    .await?;
+    let imported = result
+        .imported_skills
+        .first()
+        .ok_or_else(|| MarketplaceError::SkillNotImported(skill_id.clone()))?;
+    Ok(imported.imported_skill_id.clone())
+}
+
+async fn install_skills_sh_remote(
+    pool: &crate::db::DbPool,
+    active_target: &ActiveTarget,
+    source: &str,
+    skill_id: &str,
+    replace: bool,
+    auth: &Option<String>,
+) -> Result<String, MarketplaceError> {
+    normalize_skills_sh_skill_id(skill_id)?;
+    let repo_url = source_to_github_url(source)?;
+    // Acquire once on the target; confirmation reuses the pinned preview.
+    let preview = match github_import::preview_github_repo_import_remote_staged(
+        pool,
+        active_target,
+        &repo_url,
+        None,
+        auth.as_deref(),
+    )
+    .await
+    {
+        Ok(preview) => preview,
+        Err(failure) if retry_skills_sh_preview_without_auth(auth, &failure) => {
+            github_import::preview_github_repo_import_remote_staged(
                 pool,
-                &resolved.repo,
-                &snapshot,
-                inspected,
-                vec![selection],
-                &central_root,
-                None,
-            )
-            .await?;
-            let imported = result
-                .imported_skills
-                .first()
-                .ok_or_else(|| MarketplaceError::SkillNotImported(skill_id.clone()))?;
-            Ok(imported.imported_skill_id.clone())
-        }
-        ActiveTarget::Ssh(_) | ActiveTarget::Wsl(_) => {
-            let repo_url = source_to_github_url(&source)?;
-            let result = github_import::import_github_repo_skills_remote_with_auth(
-                pool,
-                &active_target,
+                active_target,
                 &repo_url,
-                vec![selection],
                 None,
-                auth_used.as_deref(),
+                None,
             )
-            .await?;
-            let imported = result
-                .imported_skills
-                .first()
-                .ok_or_else(|| MarketplaceError::SkillNotImported(skill_id.clone()))?;
-            Ok(imported.imported_skill_id.clone())
+            .await
+            .map_err(|_| MarketplaceError::from(failure.error))?
         }
+        Err(failure) => return Err(failure.error.into()),
+    };
+    let outcome = async {
+        let selection = skills_sh_selection_from_preview(&preview, skill_id, replace)?;
+        let result = github_import::import_github_repo_skills_from_preview_with_branch(
+            pool,
+            active_target,
+            &preview.preview_id,
+            &repo_url,
+            Some(&preview.repo.branch),
+            vec![selection],
+            None,
+        )
+        .await?;
+        result
+            .imported_skills
+            .first()
+            .map(|imported| imported.imported_skill_id.clone())
+            .ok_or_else(|| MarketplaceError::SkillNotImported(skill_id.to_string()))
     }
+    .await;
+    // Import consumes a successful preview. Rejection/failure must release its
+    // temporary workspace as well; failed cleanup stays in the registry.
+    github_import::discard_preview_snapshot_for_target(active_target, &preview.preview_id).await;
+    outcome
+}
+
+fn retry_skills_sh_preview_without_auth(
+    auth: &Option<String>,
+    failure: &github_import::PreviewFailure,
+) -> bool {
+    // Preserve source-resolution fallback without repeating archive acquisition
+    // after a later failure or pending cleanup.
+    auth.is_some() && matches!(failure.stage, github_import::PreviewStage::RepoInspect)
+}
+
+fn skills_sh_selection_from_preview(
+    preview: &github_import::GitHubRepoPreview,
+    skill_id: &str,
+    replace: bool,
+) -> Result<github_import::GitHubSkillImportSelection, MarketplaceError> {
+    let normalized = normalize_skills_sh_skill_id(skill_id)?;
+    let candidate = preview
+        .skills
+        .iter()
+        .filter_map(|candidate| {
+            skills_sh_match_rank(
+                &candidate.skill_id,
+                &candidate.skill_directory_name,
+                &candidate.source_path,
+                &normalized,
+            )
+            .map(|rank| (rank, candidate))
+        })
+        .min_by_key(|(rank, _)| *rank)
+        .map(|(_, candidate)| candidate)
+        .ok_or_else(|| MarketplaceError::SkillsShCandidateNotFound {
+            skill_id: skill_id.to_string(),
+            owner: preview.repo.owner.clone(),
+            repo: preview.repo.repo.clone(),
+        })?;
+    if candidate.conflict.is_some() && !replace {
+        return Err(MarketplaceError::DuplicateRequiresReplace(
+            skill_id.to_string(),
+        ));
+    }
+    Ok(github_import::GitHubSkillImportSelection {
+        source_path: candidate.source_path.clone(),
+        resolution: github_import::DuplicateResolution::Overwrite,
+        renamed_skill_id: None,
+    })
 }
 
 async fn skills_sh_snapshot_with_auth(
@@ -372,33 +463,45 @@ pub(crate) fn resolve_skills_sh_candidate_from_snapshot(
     let candidates =
         github_import::build_repo_skill_candidates_from_snapshot_at_path(repo, snapshot, None)?;
 
-    let mut fallback_match = None;
-    for candidate in candidates {
-        if candidate
-            .skill_id
-            .eq_ignore_ascii_case(&normalized_skill_id)
-            || candidate
-                .skill_directory_name
-                .eq_ignore_ascii_case(&normalized_skill_id)
-        {
-            return Ok(candidate);
-        }
-        if fallback_match.is_none()
-            && candidate
-                .source_path
-                .rsplit('/')
-                .next()
-                .is_some_and(|segment| segment.eq_ignore_ascii_case(&normalized_skill_id))
-        {
-            fallback_match = Some(candidate);
-        }
-    }
+    candidates
+        .into_iter()
+        .filter_map(|candidate| {
+            skills_sh_match_rank(
+                &candidate.skill_id,
+                &candidate.skill_directory_name,
+                &candidate.source_path,
+                &normalized_skill_id,
+            )
+            .map(|rank| (rank, candidate))
+        })
+        .min_by_key(|(rank, _)| *rank)
+        .map(|(_, candidate)| candidate)
+        .ok_or_else(|| MarketplaceError::SkillsShCandidateNotFound {
+            skill_id: skill_id.to_string(),
+            owner: repo.owner.clone(),
+            repo: repo.repo.clone(),
+        })
+}
 
-    fallback_match.ok_or_else(|| MarketplaceError::SkillsShCandidateNotFound {
-        skill_id: skill_id.to_string(),
-        owner: repo.owner.clone(),
-        repo: repo.repo.clone(),
-    })
+fn skills_sh_match_rank(
+    candidate_id: &str,
+    directory_name: &str,
+    source_path: &str,
+    requested_id: &str,
+) -> Option<u8> {
+    if candidate_id.eq_ignore_ascii_case(requested_id)
+        || directory_name.eq_ignore_ascii_case(requested_id)
+    {
+        Some(0)
+    } else if source_path
+        .rsplit('/')
+        .next()
+        .is_some_and(|segment| segment.eq_ignore_ascii_case(requested_id))
+    {
+        Some(1)
+    } else {
+        None
+    }
 }
 
 pub(crate) fn skills_sh_file_entries_from_snapshot(

@@ -1,0 +1,6 @@
+{"file":".trellis/spec/backend/transport-seam.md","reason":"SSH runner and transport boundary"}
+{"file":".trellis/spec/backend/github-import-preview-contract.md","reason":"Pinned snapshot and integrity"}
+{"file":".trellis/spec/backend/process-supervision.md","reason":"Bounded binary transfer"}
+{"file":".trellis/spec/backend/fs-db-operation-journal.md","reason":"Preserve journal and recovery"}
+{"file":".trellis/spec/backend/test-support.md","reason":"Fake transport fixtures"}
+{"file": ".trellis/spec/backend/remote-github-import-transfer.md", "reason": "Bounded batches and immutable payload verification"}
