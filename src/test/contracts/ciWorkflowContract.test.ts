@@ -236,6 +236,16 @@ describe("CI workflow contract", () => {
     ).toBeDefined();
   });
 
+  it("keeps the standalone CLI build out of the desktop pre-bundle hook", () => {
+    const tauri = JSON.parse(readFileSync("src-tauri/tauri.conf.json", "utf8"));
+    const manifest = JSON.parse(readFileSync("package.json", "utf8"));
+    const hook = tauri.build.beforeBundleCommand;
+    const hookScript = typeof hook === "string" ? hook : hook?.script;
+
+    expect(manifest.scripts["build:cli"]).toContain("--bin skillport-cli");
+    expect(hookScript ?? "").not.toContain("build:cli");
+  });
+
   it("limits smoke packaging to direct manual dispatches", () => {
     for (const jobId of packageJobIds) {
       expect(workflow.jobs[jobId]?.if, `${jobId} event guard`).toBe(packageEventGuard);

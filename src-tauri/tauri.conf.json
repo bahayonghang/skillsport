@@ -8,7 +8,6 @@
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:24200",
     "beforeBuildCommand": "pnpm build",
-    "beforeBundleCommand": "pnpm build:cli",
     "frontendDist": "../dist"
   },
   "app": {

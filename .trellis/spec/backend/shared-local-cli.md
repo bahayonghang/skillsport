@@ -143,7 +143,9 @@ cargo install --path src-tauri --bin skillport-cli --locked --force
 - Binary lock test (`tests/cli_api_e2e.rs`): with the test process holding `HOME/.skillsmanage/locks/central-mutation.lock`, ZIP import, directory import, and `skills unlink --yes` each exit 4 with `mutation.busy` and the Central and agent trees are unchanged; after release the ZIP import succeeds.
 - Temporary HOME binary smoke with an empty Local DB. On Windows set both `HOME` and `USERPROFILE` to that directory so the test cannot open the developer profile database.
 - `pnpm entrypointcheck`, `just ci`, locked release CLI build, and Windows `pnpm tauri build`.
-- Verify both `target/release/skillport.exe` and `target/release/skillport-cli.exe` exist and run their expected entry points.
+- Single-target desktop release builds run Cargo with `--bins --features tauri/custom-protocol` and produce the application and CLI in the target's release directory. The macOS universal workflows build the CLI and signature verifier for both architectures and use `lipo` to place them in `target/universal-apple-darwin/release` before bundling.
+- Keep `pnpm build:cli` as the standalone CLI entry point. Running that separate Cargo build from `beforeBundleCommand` recompiles the shared library with a different Tauri feature set.
+- On Windows, verify the NSIS installation contains the desktop executable and a sibling `skillport-cli.exe`. Run the installed CLI with `--version` and check it matches the release version.
 
 ## 7. Wrong vs Correct
 
