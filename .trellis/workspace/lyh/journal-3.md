@@ -151,3 +151,25 @@
 ### Next Steps
 
 - 真实 SSH 端到端性能与安装包未验证；选中文件仍经本机内存中转。
+
+
+## Session 129: 中央技能库仓库全选与 Windows 安装构建优化
+
+**Date**: 2026-11-19
+**Task**: 中央技能库仓库全选与 Windows 安装构建优化
+**Branch**: `dev`
+
+### Summary
+
+搜索工具栏在宽屏对齐、窄屏换行，仓库筛选结果可一次全选并批量安装。移除 Tauri 打包前的重复 CLI 编译。Windows 原生界面与 NSIS 安装验证通过，最终 just ci 通过。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `d2324d36` | (see git log) |
+| `d347dbe2` | (see git log) |
+
+### Status
+
+[OK] **Completed**

@@ -8,8 +8,8 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-3.md`
-- **Total Sessions**: 128
-- **Last Active**: 2026-11-05
+- **Total Sessions**: 129
+- **Last Active**: 2026-11-19
 <!-- @@@/auto:current-status -->
 
 ---
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-3.md` | ~153 | Active |
+| `journal-3.md` | ~175 | Active |
 | `journal-2.md` | ~2000 | Archived |
 | `journal-1.md` | ~1994 | Archived |
 <!-- @@@/auto:active-documents -->
@@ -31,6 +31,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 129 | 2026-11-19 | 中央技能库仓库全选与 Windows 安装构建优化 | `d2324d36`, `d347dbe2` | `dev` |
 | 128 | 2026-11-05 | 优化 SSH 技能导入并归档任务 | `f2508b5f` | `dev` |
 | 127 | 2026-11-04 | 归档已合并的 CLI 写命令任务 | `9a9a334c` | `dev` |
 | 126 | 2026-11-04 | 统一下拉层样式并支持本机字体搜索 | `772c761321a3f259d48294e9ddf69870700a94df` | `dev` |
