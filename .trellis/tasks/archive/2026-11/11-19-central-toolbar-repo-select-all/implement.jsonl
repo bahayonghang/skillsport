@@ -1,0 +1,3 @@
+{"file":".trellis/spec/frontend/module-boundaries.md","reason":"Preserve renderer boundaries and locale parity."}
+{"file":".trellis/spec/frontend/async-ui-test-stability.md","reason":"Test the filtered bulk install confirmation."}
+{"file":".trellis/spec/backend/shared-local-cli.md","reason":"Verify the desktop build and installed CLI are delivered by the same release build."}

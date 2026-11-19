@@ -1,0 +1,4 @@
+{"file":".trellis/spec/quality/ci-quality-gate.md","reason":"Run the repository completion gate."}
+{"file":".trellis/spec/frontend/async-ui-test-stability.md","reason":"Review workflow test scope and asynchronous assertions."}
+{"file":".trellis/spec/frontend/module-boundaries.md","reason":"Check renderer ownership and localization."}
+{"file":".trellis/spec/backend/shared-local-cli.md","reason":"Verify the desktop build and installed CLI are delivered by the same release build."}
