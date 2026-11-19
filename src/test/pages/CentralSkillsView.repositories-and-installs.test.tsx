@@ -449,6 +449,38 @@ describe("CentralSkillsView repositories + installs（V2 markup）", () => {
     expect(mockRescan).toHaveBeenCalled();
   });
 
+  it("selects every filtered repository match for installation, including offscreen skills", async () => {
+    window.localStorage.setItem("central.sidebarPinned", "true");
+    const skill = mockSkills[0]!;
+    const matches = Array.from({ length: 65 }, (_, index) => {
+      const id = `tool-${index + 1}`;
+      return { ...skill, id, name: id };
+    });
+    const otherRepo = { ...mockRepositories[1]!, id: "other", name: "openai/other", repo: "other" };
+    mockBatchInstallSkills.mockResolvedValueOnce({ succeeded: [], skipped: [], failed: [] });
+    renderCentralSkillsView({
+      centralOverrides: {
+        repositories: [...mockRepositories, otherRepo],
+        skills: [skill, ...matches, { ...skill, id: "tool-other", name: "tool-other", repository: otherRepo }],
+      },
+    });
+
+    fireEvent.click(screen.getByTestId("repo-github-openai-skills-main"));
+    fireEvent.change(screen.getByTestId("central-search-input-v2"), { target: { value: "tool-" } });
+    expect(screen.getAllByLabelText("选择技能").length).toBeLessThan(matches.length);
+    fireEvent.click(screen.getByRole("button", { name: "全选当前结果（65）" }));
+    fireEvent.click(screen.getByTestId("bulk-bar-batch-install"));
+
+    const dialog = within(await screen.findByRole("dialog", {}, { timeout: ASYNC_UI_TIMEOUT_MS }));
+    expect(mockBatchInstallSkills).not.toHaveBeenCalled();
+    fireEvent.click(dialog.getByText("Universal (.agents/skills)"));
+    fireEvent.click(dialog.getByRole("button", { name: /将 65 个技能安装到 1 个平台/ }));
+    await waitFor(() => expect(mockBatchInstallSkills).toHaveBeenCalledTimes(1));
+    expect(mockBatchInstallSkills).toHaveBeenCalledWith(
+      matches.map((match) => match.id), ["claude-code"], "symlink", null,
+    );
+  });
+
   it("treats skipped-only batch installs as non-failures", async () => {
     mockBatchInstallSkills.mockResolvedValueOnce({
       succeeded: [],

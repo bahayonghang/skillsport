@@ -1,5 +1,6 @@
 import { Search, X } from "lucide-react";
 import type { TFunction } from "i18next";
+import type { ReactNode } from "react";
 
 import { Input } from "@/components/ui/input";
 import { ShortcutHint } from "@/components/ui/shortcut-hint";
@@ -39,6 +40,8 @@ export interface CentralSearchBarProps {
   onOpenPalette?: () => void;
   placeholder?: string;
   inputId?: string;
+  children?: ReactNode;
+  selectionActions?: ReactNode;
 
   /** 已选仓库 ID 列表（来自 viewState.repos）。 */
   selectedRepoIds?: readonly string[];
@@ -70,6 +73,8 @@ export function CentralSearchBar({
   onOpenPalette,
   placeholder,
   inputId,
+  children,
+  selectionActions,
   selectedRepoIds,
   selectedTagIds,
   repositories,
@@ -105,8 +110,8 @@ export function CentralSearchBar({
     hasInvalid;
 
   return (
-    <div data-testid="central-search-bar-v2" className="flex flex-col gap-2">
-      <div className="relative flex w-full items-center">
+    <div data-testid="central-search-bar-v2" className="flex flex-wrap items-center gap-2">
+      <div className="relative flex min-w-0 flex-[1_1_18rem] items-center">
         <Search className="pointer-events-none absolute left-3 size-4 text-muted-foreground" />
         <Input
           id={inputId}
@@ -141,10 +146,14 @@ export function CentralSearchBar({
         </div>
       </div>
 
-      {hasAnyChip && (
+      {children && (
+        <div className="flex max-w-full flex-wrap items-center gap-2">{children}</div>
+      )}
+
+      {(hasAnyChip || selectionActions) && (
         <div
           data-testid="central-search-chip-row"
-          className="flex flex-wrap items-center gap-1.5 text-pretty text-ui-meta"
+          className="flex basis-full flex-wrap items-center gap-1.5 wrap-anywhere text-pretty text-ui-meta"
         >
           {queryAst.filters.map((filter, idx) => (
             <FilterChip
@@ -170,6 +179,7 @@ export function CentralSearchBar({
               tone="primary"
             />
           ))}
+          {selectionActions}
           {tagChips.map((chip) => (
             <SimpleChip
               key={`tag-${chip.id}`}
@@ -295,7 +305,7 @@ function FilterChip({
         type="button"
         onClick={onRemove}
         aria-label={t("central.v2.filtersRemove", { key: filter.kind, value })}
-        className="focus-ring grid size-5 place-items-center rounded-full transition-[scale,background-color] hover:bg-accent active:scale-[0.96]"
+        className="focus-ring grid size-5 shrink-0 place-items-center rounded-full transition-[scale,background-color] hover:bg-accent active:scale-[0.96]"
       >
         <X className="size-2.5" />
       </button>
@@ -333,7 +343,7 @@ function SimpleChip({
           type="button"
           onClick={onRemove}
           aria-label={ariaLabel}
-          className="focus-ring grid size-5 place-items-center rounded-full transition-[scale,background-color] hover:bg-accent active:scale-[0.96]"
+          className="focus-ring grid size-5 shrink-0 place-items-center rounded-full transition-[scale,background-color] hover:bg-accent active:scale-[0.96]"
         >
           <X className="size-2.5" />
         </button>

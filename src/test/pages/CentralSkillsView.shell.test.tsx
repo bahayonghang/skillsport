@@ -4,6 +4,7 @@ import {
   cleanupCentralSkillsViewTestState,
   mockLoadCentralSkills,
   mockRescan,
+  mockSkills,
   renderCentralSkillsView,
   resetCentralSkillsViewTestState,
 } from "./centralSkillsViewTestSupport";
@@ -165,6 +166,34 @@ describe("CentralSkillsView shell（V2 markup）", () => {
     await waitFor(() => {
       expect(screen.getByTestId("central-selection-summary")).toHaveTextContent("已选 1");
     });
+  });
+
+  it("仓库标签旁可以补齐部分勾选、清空选择，并禁用空结果的全选", () => {
+    window.localStorage.setItem("central.sidebarPinned", "true");
+    const skill = mockSkills[0]!;
+    renderCentralSkillsView({
+      centralOverrides: {
+        skills: [...mockSkills, { ...skill, id: "second-skill", name: "second-skill" }],
+      },
+    });
+    fireEvent.click(screen.getByTestId("repo-github-openai-skills-main"));
+
+    const chips = within(screen.getByTestId("central-search-chip-row"));
+    const selectAll = chips.getByRole("button", { name: "全选当前结果（2）" });
+    expect(screen.queryByTestId("central-bulk-action-bar")).not.toBeInTheDocument();
+    fireEvent.click(screen.getAllByLabelText("选择技能")[0]!);
+    fireEvent.click(selectAll);
+    expect(chips.getByTestId("central-selection-summary")).toHaveTextContent("已选 2");
+    expect(chips.queryByTestId("central-select-current-results")).not.toBeInTheDocument();
+    fireEvent.click(chips.getByRole("button", { name: "清空选择" }));
+    expect(screen.queryByTestId("central-bulk-action-bar")).not.toBeInTheDocument();
+
+    fireEvent.click(chips.getByRole("button", { name: "全选当前结果（2）" }));
+    fireEvent.click(screen.getByTestId("repo-local-unknown"));
+    expect(screen.queryByTestId("central-bulk-action-bar")).not.toBeInTheDocument();
+    expect(chips.getByRole("button", { name: "全选当前结果（1）" })).toBeEnabled();
+    fireEvent.change(screen.getByTestId("central-search-input-v2"), { target: { value: "no-match" } });
+    expect(chips.getByRole("button", { name: "全选当前结果（0）" })).toBeDisabled();
   });
 
   it("视图 menu 展开后含 group / installed / quick filters 段", async () => {

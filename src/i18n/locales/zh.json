@@ -2093,7 +2093,7 @@
     },
     "sortByInstalledPlatformCount": "安装平台数",
     "selectionSummary": "已选 {{selectedCount}} / 当前结果 {{currentCount}}",
-    "selectCurrentResults": "全选当前结果",
+    "selectCurrentResults": "全选当前结果（{{count}}）",
     "selectMostUniversal": "通用性优先",
     "selectMostUniversalTitle": "选择当前结果中覆盖平台最多的 {{count}} 个技能",
     "selectMostUniversalDisabled": "当前结果没有已安装覆盖，无法按通用性选择。",

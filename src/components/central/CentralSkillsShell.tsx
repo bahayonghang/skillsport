@@ -334,6 +334,13 @@ export function CentralSkillsShell(props: CentralSkillsShellProps) {
     taskCenter.updateJob,
     taskCenter.portabilityJob,
   );
+  const { selectedCount, currentResultCount, onSelectCurrentResults, onClearSelection } =
+    selectionControls;
+  const showSelectionActions = !sshLibrary.gate && (viewState.repos.length === 1 || selectedCount > 0);
+  const allResultsSelected =
+    currentResultCount > 0 &&
+    selectedCount === currentResultCount &&
+    listContent.sortedSkills.every((skill) => listContent.selectedSkillIdSet.has(skill.id));
 
   return (
     <div className="relative flex flex-col h-full" data-shell="v2">
@@ -475,30 +482,57 @@ export function CentralSkillsShell(props: CentralSkillsShellProps) {
         />
 
         {/* Search + toolbar ──────────────────────────────────────────── */}
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="min-w-72 flex-1">
-            <CentralSearchBar
-              t={t}
-              value={viewState.q}
-              onChange={handleQueryChange}
-              queryAst={queryAst}
-              onRemoveFilter={handleRemoveFilter}
-              onClear={handleQueryClear}
-              onOpenPalette={onOpenPalette}
-              selectedRepoIds={viewState.repos}
-              selectedTagIds={selectedTagIds}
-              repositories={repositories}
-              tags={tags}
-              onRemoveRepoFilter={handleRemoveRepo}
-              onRemoveTagFilter={handleRemoveTag}
-              installedFilterValue={installedSkillsFilter.value}
-              installedFilterMatchCount={installedSkillsFilter.filteredCount}
-              availableInstallAgents={
-                installedSkillsFilter.availableInstallAgents
-              }
-              onClearInstalledFilter={installedSkillsFilter.onClear}
-            />
-          </div>
+        <CentralSearchBar
+          t={t}
+          value={viewState.q}
+          onChange={handleQueryChange}
+          queryAst={queryAst}
+          onRemoveFilter={handleRemoveFilter}
+          onClear={handleQueryClear}
+          onOpenPalette={onOpenPalette}
+          selectedRepoIds={viewState.repos}
+          selectedTagIds={selectedTagIds}
+          repositories={repositories}
+          tags={tags}
+          onRemoveRepoFilter={handleRemoveRepo}
+          onRemoveTagFilter={handleRemoveTag}
+          installedFilterValue={installedSkillsFilter.value}
+          installedFilterMatchCount={installedSkillsFilter.filteredCount}
+          availableInstallAgents={installedSkillsFilter.availableInstallAgents}
+          onClearInstalledFilter={installedSkillsFilter.onClear}
+          selectionActions={showSelectionActions && (
+            <>
+              <Button
+                type="button"
+                variant="glass"
+                size="sm"
+                disabled={currentResultCount === 0}
+                onClick={allResultsSelected ? onClearSelection : onSelectCurrentResults}
+                data-testid={allResultsSelected ? "central-clear-selection" : "central-select-current-results"}
+              >
+                {allResultsSelected
+                  ? t("central.clearSelection")
+                  : t("central.selectCurrentResults", { count: currentResultCount })}
+              </Button>
+              {selectedCount > 0 && (
+                <span data-testid="central-selection-summary" className="text-xs font-medium tabular-nums">
+                  {t("central.selectionInlineSummary", { count: selectedCount })}
+                </span>
+              )}
+              {selectedCount > 0 && !allResultsSelected && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={onClearSelection}
+                  data-testid="central-clear-selection"
+                >
+                  {t("central.clearSelection")}
+                </Button>
+              )}
+            </>
+          )}
+        >
           {checkModeControl}
           <ToolbarSortMenu
             t={t}
@@ -537,40 +571,7 @@ export function CentralSkillsShell(props: CentralSkillsShellProps) {
               </span>
             </Button>
           )}
-          {selectionControls.selectedCount > 0 && (
-            <div
-              data-testid="central-selection-summary"
-              className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground"
-            >
-              <span className="font-medium text-foreground">
-                {t("central.selectionInlineSummary", {
-                  count: selectionControls.selectedCount,
-                })}
-              </span>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="px-2 text-xs"
-                disabled={selectionControls.currentResultCount === 0}
-                onClick={selectionControls.onSelectCurrentResults}
-                data-testid="central-select-current-results"
-              >
-                {t("central.selectCurrentResults")}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="px-2 text-xs"
-                onClick={selectionControls.onClearSelection}
-                data-testid="central-clear-selection"
-              >
-                {t("central.clearSelection")}
-              </Button>
-            </div>
-          )}
-        </div>
+        </CentralSearchBar>
       </div>
 
       <CentralTopFilters
