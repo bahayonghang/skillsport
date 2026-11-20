@@ -715,7 +715,7 @@ async fn operation_log_export_contains_metadata_and_entries() {
 async fn test_builtin_agents_seeded() {
     let pool = setup_test_db().await;
     let agents = get_all_agents(&pool).await.unwrap();
-    assert_eq!(agents.len(), 37, "Should have exactly 37 built-in agents");
+    assert_eq!(agents.len(), 36, "Should have exactly 36 built-in agents");
 
     let ids: Vec<&str> = agents.iter().map(|a| a.id.as_str()).collect();
     // Coding platforms
@@ -737,7 +737,7 @@ async fn test_builtin_agents_seeded() {
     assert!(ids.contains(&"ob1"));
     assert!(ids.contains(&"amp"));
     assert!(ids.contains(&"antigravity"));
-    assert!(ids.contains(&"antigravity-cli"));
+    assert!(!ids.contains(&"antigravity-cli"));
     assert!(ids.contains(&"zed"));
     assert!(ids.contains(&"cline"));
     assert!(ids.contains(&"deep-agents"));
@@ -815,8 +815,8 @@ async fn test_universal_agents_share_universal_skills_dir() {
         antigravity
             .global_skills_dir
             .replace('\\', "/")
-            .ends_with(".gemini/antigravity/skills"),
-        "antigravity should use ~/.gemini/antigravity/skills"
+            .ends_with(".gemini/config/skills"),
+        "antigravity should use ~/.gemini/config/skills"
     );
     assert_eq!(
         antigravity.project_skills_dir.as_deref(),
@@ -841,35 +841,6 @@ async fn test_universal_agents_share_universal_skills_dir() {
         "grok should use ~/.grok/skills"
     );
     assert_eq!(grok.project_skills_dir.as_deref(), Some(".grok/skills"));
-
-    let antigravity_cli = agents
-        .iter()
-        .find(|agent| agent.id == "antigravity-cli")
-        .expect("antigravity-cli agent should exist");
-    assert_eq!(antigravity_cli.display_name, "Antigravity CLI");
-    assert_ne!(antigravity_cli.id, antigravity.id);
-    assert_ne!(
-        antigravity_cli.global_skills_dir,
-        antigravity.global_skills_dir
-    );
-    assert!(
-        !crate::paths::paths_equivalent(
-            Path::new(&antigravity_cli.global_skills_dir),
-            &universal_dir
-        ),
-        "antigravity-cli global skills should stay separate from ~/.agents/skills"
-    );
-    assert!(
-        antigravity_cli
-            .global_skills_dir
-            .replace('\\', "/")
-            .ends_with(".gemini/antigravity-cli/skills"),
-        "antigravity-cli should use ~/.gemini/antigravity-cli/skills"
-    );
-    assert_eq!(
-        antigravity_cli.project_skills_dir.as_deref(),
-        Some(UNIVERSAL_PROJECT_SKILLS_DIR)
-    );
 
     let zed = agents
         .iter()
@@ -918,10 +889,7 @@ fn test_remote_builtin_agents_rewrite_google_platform_paths() {
         .iter()
         .find(|agent| agent.id == "antigravity")
         .expect("antigravity agent should exist");
-    let antigravity_cli = agents
-        .iter()
-        .find(|agent| agent.id == "antigravity-cli")
-        .expect("antigravity-cli agent should exist");
+    assert!(agents.iter().all(|agent| agent.id != "antigravity-cli"));
     let gemini_cli = agents
         .iter()
         .find(|agent| agent.id == "gemini-cli")
@@ -931,15 +899,11 @@ fn test_remote_builtin_agents_rewrite_google_platform_paths() {
     assert_eq!(grok.project_skills_dir.as_deref(), Some(".grok/skills"));
     assert_eq!(
         antigravity.global_skills_dir,
-        "/home/alice/.gemini/antigravity/skills"
-    );
-    assert_eq!(
-        antigravity_cli.global_skills_dir,
-        "/home/alice/.gemini/antigravity-cli/skills"
+        "/home/alice/.gemini/config/skills"
     );
     assert_eq!(gemini_cli.global_skills_dir, "/home/alice/.gemini/skills");
     assert_eq!(
-        antigravity_cli.project_skills_dir.as_deref(),
+        antigravity.project_skills_dir.as_deref(),
         Some(UNIVERSAL_PROJECT_SKILLS_DIR)
     );
 }
@@ -960,7 +924,6 @@ async fn test_builtin_agents_seed_default_enabled_subset() {
         "codex",
         "grok",
         "antigravity",
-        "antigravity-cli",
         "opencode",
         "kiro",
         "central",
@@ -974,7 +937,7 @@ async fn test_init_does_not_duplicate_agents_on_reinit() {
     let pool = setup_test_db().await;
     init_database(&pool).await.unwrap(); // Call a second time
     let agents = get_all_agents(&pool).await.unwrap();
-    assert_eq!(agents.len(), 37, "Reinit must not duplicate agents");
+    assert_eq!(agents.len(), 36, "Reinit must not duplicate agents");
 }
 
 // ── Skills ────────────────────────────────────────────────────────────────
@@ -1782,7 +1745,7 @@ async fn test_insert_custom_agent() {
     insert_custom_agent(&pool, &custom).await.unwrap();
 
     let all = get_all_agents(&pool).await.unwrap();
-    assert_eq!(all.len(), 38, "Should have 37 builtins + 1 custom");
+    assert_eq!(all.len(), 37, "Should have 36 builtins + 1 custom");
 
     let retrieved = get_agent_by_id(&pool, "my-custom-agent")
         .await
@@ -3360,7 +3323,7 @@ async fn transactional_project_delete_uses_per_connection_fk_and_cascade() {
 /// Returns the number of *unique* global_skills_dir paths across all
 /// built-in agents. This is the number of rows that seed_builtin_scan_directories
 /// inserts, with global Universal agents sharing ~/.agents/skills,
-/// Antigravity using ~/.gemini/antigravity/skills, and Central using
+/// Antigravity using ~/.gemini/config/skills, and Central using
 /// ~/.skillsmanage/skills.
 fn expected_builtin_scan_dir_count() -> usize {
     let mut paths = std::collections::HashSet::new();

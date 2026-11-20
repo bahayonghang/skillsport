@@ -97,12 +97,7 @@ describe("platformTargetGroups", () => {
   it("keeps Antigravity as a standalone global install target", () => {
     const agents = [
       agent("codex", "Codex CLI", "~/.agents/skills"),
-      agent("antigravity", "Antigravity", "~/.gemini/antigravity/skills"),
-      agent(
-        "antigravity-cli",
-        "Antigravity CLI",
-        "~/.gemini/antigravity-cli/skills",
-      ),
+      agent("antigravity", "Antigravity", "~/.gemini/config/skills"),
       agent("gemini-cli", "Gemini CLI (legacy)", "~/.gemini/skills", false),
       agent("central", "Central Skills", "~/.skillsmanage/skills"),
     ];
@@ -115,13 +110,10 @@ describe("platformTargetGroups", () => {
     expect(groups.map((group) => group.id)).toEqual([
       "universal-agents",
       "antigravity",
-      "antigravity-cli",
     ]);
     expect(getPlatformTargetMemberIds(groups[0])).toEqual(["codex"]);
     expect(isUniversalPlatformTarget(groups[1])).toBe(false);
     expect(hasProjectSkillPattern(groups[1])).toBe(true);
-    expect(isUniversalPlatformTarget(groups[2])).toBe(false);
-    expect(hasProjectSkillPattern(groups[2])).toBe(true);
   });
 
   it("folds Antigravity into the project Universal target", () => {
@@ -131,12 +123,7 @@ describe("platformTargetGroups", () => {
         ...agent("grok", "Grok", "~/.grok/skills"),
         project_skills_dir: ".grok/skills",
       },
-      agent("antigravity", "Antigravity", "~/.gemini/antigravity/skills"),
-      agent(
-        "antigravity-cli",
-        "Antigravity CLI",
-        "~/.gemini/antigravity-cli/skills",
-      ),
+      agent("antigravity", "Antigravity", "~/.gemini/config/skills"),
       agent("claude-code", "Claude Code", "~/.claude/skills"),
       agent("central", "Central Skills", "~/.skillsmanage/skills"),
     ];
@@ -153,7 +140,6 @@ describe("platformTargetGroups", () => {
     ]);
     expect(getPlatformTargetMemberIds(groups[0])).toEqual([
       "antigravity",
-      "antigravity-cli",
       "codex",
     ]);
     expect(getPlatformTargetInstallAgentIds(groups[0])).toEqual(["codex"]);

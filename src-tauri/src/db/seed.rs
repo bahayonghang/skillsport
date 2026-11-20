@@ -86,6 +86,14 @@ async fn seed_builtin_agents(pool: &DbPool, agents: &[Agent]) -> Result<(), sqlx
 
     for (id,) in &all_db_agents {
         if !builtin_ids.contains(&id.as_str()) {
+            sqlx::query("DELETE FROM skill_installations WHERE agent_id = ?")
+                .bind(id)
+                .execute(pool)
+                .await?;
+            sqlx::query("DELETE FROM agent_skill_observations WHERE agent_id = ?")
+                .bind(id)
+                .execute(pool)
+                .await?;
             sqlx::query("DELETE FROM agents WHERE id = ? AND is_builtin = 1")
                 .bind(id)
                 .execute(pool)

@@ -64,9 +64,8 @@ impl std::str::FromStr for SkillUpdateStatus {
 /// Global Universal Agents targets share the user-level `~/.agents/skills` directory.
 ///
 /// Google-branded global targets are intentionally not part of this set:
-/// Antigravity uses `~/.gemini/antigravity/skills`, Antigravity CLI uses
-/// `~/.gemini/antigravity-cli/skills`, and legacy Gemini CLI carries the
-/// shared Google `~/.gemini/skills` target.
+/// unified Antigravity (App / IDE / CLI) uses `~/.gemini/config/skills`, and
+/// legacy Gemini CLI carries the shared Google `~/.gemini/skills` target.
 pub const UNIVERSAL_AGENT_IDS: [&str; 10] = [
     "amp",
     "cline",
@@ -84,10 +83,9 @@ pub const UNIVERSAL_AGENT_IDS: [&str; 10] = [
 pub const UNIVERSAL_PROJECT_SKILLS_DIR: &str = crate::paths::UNIVERSAL_SKILLS_REL;
 
 /// Workspace-level Universal Agents targets share `<workspace>/.agents/skills`.
-pub const UNIVERSAL_PROJECT_AGENT_IDS: [&str; 13] = [
+pub const UNIVERSAL_PROJECT_AGENT_IDS: [&str; 12] = [
     "amp",
     "antigravity",
-    "antigravity-cli",
     "cline",
     "codex",
     "cursor",
@@ -102,10 +100,9 @@ pub const UNIVERSAL_PROJECT_AGENT_IDS: [&str; 13] = [
 
 /// Preferred raw agent id used when a project-level Universal directory is
 /// stored in `project_skill_installations`.
-pub const UNIVERSAL_PROJECT_REPRESENTATIVE_AGENT_IDS: [&str; 7] = [
+pub const UNIVERSAL_PROJECT_REPRESENTATIVE_AGENT_IDS: [&str; 6] = [
     "codex",
     "opencode",
-    "antigravity-cli",
     "antigravity",
     "gemini-cli",
     "cursor",

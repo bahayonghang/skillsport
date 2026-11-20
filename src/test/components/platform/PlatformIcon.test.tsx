@@ -9,7 +9,6 @@ const ORIGINAL_PLATFORM_IDS = [
   "codex",
   "cursor",
   "antigravity",
-  "antigravity-cli",
   "gemini-cli",
   "trae",
   "factory-droid",
@@ -66,11 +65,6 @@ describe("PlatformIcon", () => {
 
   it("renders an SVG element for antigravity", () => {
     const { container } = render(<PlatformIcon agentId="antigravity" />);
-    expect(container.querySelector("svg")).toBeInTheDocument();
-  });
-
-  it("renders an SVG element for antigravity-cli", () => {
-    const { container } = render(<PlatformIcon agentId="antigravity-cli" />);
     expect(container.querySelector("svg")).toBeInTheDocument();
   });
 
@@ -224,14 +218,7 @@ describe("PlatformIcon", () => {
       const svg = container.querySelector("svg");
       expect(svg).toBeInTheDocument();
       const inner = svg?.innerHTML ?? "";
-      const duplicate = svgContents.get(inner);
-      if (duplicate) {
-        expect(
-          new Set([duplicate, id]),
-          `Duplicate SVG for ${id}`
-        ).toEqual(new Set(["antigravity", "antigravity-cli"]));
-        continue;
-      }
+      expect(svgContents.has(inner), `Duplicate SVG for ${id} (matches ${svgContents.get(inner)})`).toBe(false);
       svgContents.set(inner, id);
     }
   });

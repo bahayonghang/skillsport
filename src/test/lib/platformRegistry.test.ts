@@ -25,7 +25,6 @@ const LEGACY_UNIVERSAL_AGENT_ID_ORDER = [
 const LEGACY_UNIVERSAL_PROJECT_AGENT_ID_ORDER = [
   "amp",
   "antigravity",
-  "antigravity-cli",
   "cline",
   "codex",
   "cursor",
@@ -41,7 +40,6 @@ const LEGACY_UNIVERSAL_PROJECT_AGENT_ID_ORDER = [
 const LEGACY_UNIVERSAL_INSTALL_AGENT_ORDER = [
   "codex",
   "opencode",
-  "antigravity-cli",
   "antigravity",
   "gemini-cli",
   "cursor",
@@ -53,7 +51,6 @@ const LEGACY_DEFAULT_ENABLED_PLATFORM_IDS = [
   "codex",
   "grok",
   "antigravity",
-  "antigravity-cli",
   "opencode",
   "kiro",
 ];

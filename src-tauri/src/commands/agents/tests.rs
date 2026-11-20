@@ -4,7 +4,7 @@ use crate::test_support::mem_pool as setup_test_db;
 use std::fs;
 use tempfile::TempDir;
 
-const BUILTIN_AGENT_COUNT: usize = 37;
+const BUILTIN_AGENT_COUNT: usize = 36;
 
 #[test]
 fn test_is_detected_existing_dir() {
@@ -71,13 +71,14 @@ async fn test_list_platform_paths_resolves_remote_paths() {
 
     assert_eq!(claude.global_skills_dir, "/home/alice/.claude/skills");
     assert_eq!(claude.project_skills_dir.as_deref(), Some(".claude/skills"));
-    let antigravity_cli = paths.get("antigravity-cli").unwrap();
+    assert!(!paths.contains_key("antigravity-cli"));
+    let antigravity = paths.get("antigravity").unwrap();
     assert_eq!(
-        antigravity_cli.global_skills_dir,
-        "/home/alice/.gemini/antigravity-cli/skills"
+        antigravity.global_skills_dir,
+        "/home/alice/.gemini/config/skills"
     );
     assert_eq!(
-        antigravity_cli.project_skills_dir.as_deref(),
+        antigravity.project_skills_dir.as_deref(),
         Some(".agents/skills")
     );
     let grok = paths.get("grok").unwrap();

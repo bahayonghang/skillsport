@@ -27,7 +27,6 @@ pub const SKILLS_CLI_AGENT_MAP: &[(&str, &str)] = &[
     ("hermes", "hermes-agent"),
     ("copilot", "github-copilot"),
     ("antigravity", "antigravity"),
-    ("antigravity-cli", "antigravity-cli"),
     ("zed", "zed"),
     ("cline", "cline"),
     ("deep-agents", "deepagents"),

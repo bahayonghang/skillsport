@@ -16,15 +16,14 @@ export interface UniversalPlatformRegistration {
 
 /** 一行一个 universal 成员，数组顺序即展示顺序（project 场景全集）。 */
 const UNIVERSAL_PLATFORM_REGISTRY_ENTRIES = [
-  { id: "amp", globalGroup: true, installPreference: 7 },
-  { id: "antigravity", globalGroup: false, installPreference: 4 },
-  { id: "antigravity-cli", globalGroup: false, installPreference: 3 },
+  { id: "amp", globalGroup: true, installPreference: 6 },
+  { id: "antigravity", globalGroup: false, installPreference: 3 },
   { id: "cline", globalGroup: true },
   { id: "codex", globalGroup: true, installPreference: 1 },
-  { id: "cursor", globalGroup: true, installPreference: 6 },
+  { id: "cursor", globalGroup: true, installPreference: 5 },
   { id: "deep-agents", globalGroup: true },
   { id: "firebender", globalGroup: true },
-  { id: "gemini-cli", globalGroup: false, installPreference: 5 },
+  { id: "gemini-cli", globalGroup: false, installPreference: 4 },
   { id: "copilot", globalGroup: true },
   { id: "kimi-code-cli", globalGroup: true },
   { id: "opencode", globalGroup: true, installPreference: 2 },
@@ -60,7 +59,6 @@ export const DEFAULT_ENABLED_PLATFORM_IDS = [
   "codex",
   "grok",
   "antigravity",
-  "antigravity-cli",
   "opencode",
   "kiro",
 ] as const;

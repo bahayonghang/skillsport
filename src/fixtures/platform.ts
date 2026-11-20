@@ -46,15 +46,6 @@ export const BROWSER_FIXTURE_AGENTS: AgentWithStatus[] = [
     is_enabled: true,
   },
   {
-    id: "antigravity-cli",
-    display_name: "Antigravity CLI",
-    category: "coding",
-    global_skills_dir: "",
-    is_detected: true,
-    is_builtin: true,
-    is_enabled: true,
-  },
-  {
     id: "gemini-cli",
     display_name: "Gemini CLI (legacy)",
     category: "coding",
@@ -112,13 +103,12 @@ export const BROWSER_FIXTURE_AGENTS: AgentWithStatus[] = [
 
 export const BROWSER_FIXTURE_COUNTS: ScanResult = {
   total_skills: 6,
-  agents_scanned: 11,
+  agents_scanned: 10,
   skills_by_agent: {
     "claude-code": 1,
     codex: 1,
     grok: 0,
     antigravity: 1,
-    "antigravity-cli": 1,
     "gemini-cli": 0,
     opencode: 1,
     kiro: 1,

@@ -2,12 +2,11 @@ use std::path::Path;
 
 use super::super::types::*;
 
-const DEFAULT_ENABLED_PLATFORM_IDS: [&str; 7] = [
+const DEFAULT_ENABLED_PLATFORM_IDS: [&str; 6] = [
     "claude-code",
     "codex",
     "grok",
     "antigravity",
-    "antigravity-cli",
     "opencode",
     "kiro",
 ];
@@ -349,23 +348,12 @@ fn builtin_agents_for_home(home: &Path) -> Vec<Agent> {
             id: "antigravity".to_string(),
             display_name: "Antigravity".to_string(),
             category: "coding".to_string(),
-            global_skills_dir: skill_dir(&[".gemini", "antigravity", "skills"]),
+            global_skills_dir: skill_dir(&[".gemini", "config", "skills"]),
             project_skills_dir: Some(UNIVERSAL_PROJECT_SKILLS_DIR.to_string()),
             icon_name: Some("antigravity".to_string()),
             is_detected: false,
             is_builtin: true,
             is_enabled: is_builtin_agent_enabled_by_default("antigravity", "coding"),
-        },
-        Agent {
-            id: "antigravity-cli".to_string(),
-            display_name: "Antigravity CLI".to_string(),
-            category: "coding".to_string(),
-            global_skills_dir: skill_dir(&[".gemini", "antigravity-cli", "skills"]),
-            project_skills_dir: Some(UNIVERSAL_PROJECT_SKILLS_DIR.to_string()),
-            icon_name: Some("antigravity".to_string()),
-            is_detected: false,
-            is_builtin: true,
-            is_enabled: is_builtin_agent_enabled_by_default("antigravity-cli", "coding"),
         },
         Agent {
             id: "zed".to_string(),

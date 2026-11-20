@@ -166,8 +166,8 @@ describe("platformVisibility helpers", () => {
       },
       {
         ...baseAgent,
-        id: "antigravity-cli",
-        display_name: "Antigravity CLI",
+        id: "antigravity",
+        display_name: "Antigravity",
         category: "coding",
         is_enabled: true,
       },
@@ -211,7 +211,7 @@ describe("platformVisibility helpers", () => {
     expect(sortPlatformVisibilityAgents(agents).map((agent) => agent.id)).toEqual([
       "codex",
       "grok",
-      "antigravity-cli",
+      "antigravity",
       "opencode",
       "cursor",
       "kiro",
