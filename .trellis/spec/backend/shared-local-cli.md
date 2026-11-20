@@ -91,6 +91,7 @@ cargo install --path src-tauri --bin skillport-cli --locked --force
 - `--sync` after an import calls `sync_skills` for the new skill. If that sync fails as a whole, the import result is still returned with `syncError` set, and the process exits 5.
 - Windows renames of freshly written Central directories go through `fs_util::rename_with_retry` (OS error 5/32, bounded to about 2 s) inside a blocking closure. Antivirus or indexer handles otherwise make the swap flaky.
 - `skills show` explanation reads `skill_explanations` for `--lang` (default `en`) through `get_skill_explanation_record_impl`. That read does not call the AI provider and does not delete empty rows. No row, or blank text, is `explanation: null`.
+- The agent guide skill lives in `skills/skillport/` (`SKILL.md` plus `references/commands.md`) and is distributed as an ordinary skill: `skills import --from-dir skills/skillport`, then `skills sync skillport --agent <id>`. It may reference only commands and flags present in `skillport-cli --help`. Any change to the command surface, plan/result keys, error codes, or confirmation policy updates, in the same change, `skills/skillport/`, `docs/reference/skillport-cli.md`, and `docs/zh/reference/skillport-cli.md` (same section structure in both languages).
 
 ## 4. Validation & Error Matrix
 

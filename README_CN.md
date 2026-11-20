@@ -86,10 +86,15 @@ npm run cli -- skills list
 npm run cli -- skills show <uid、slug 或唯一名称>
 npm run cli -- skills search "react" --limit 10
 npm run cli -- skills install vercel-labs/agent-skills@react-best-practices --sync
+npm run cli -- skills import --from-dir ./my-skill --dry-run
 npm run cli -- skills sync <uid 或 slug> --agent codex --method copy --dry-run
+npm run cli -- projects install . <uid> --agent claude-code --dry-run
+npm run cli -- tags add <uid> --tag docs --dry-run
 ```
 
-重复安装默认停止，不会静默覆盖；需要覆盖时必须显式传入 `--replace`，从一个 GitHub URL 批量覆盖多个技能时还需 `--yes`。首版 CLI 只管理 Local 目标。CLI 修改不会向已经运行的桌面窗口推送事件，请在对应页面手动刷新。GitHub 凭据继续读取 SkillPort 现有的受保护 secret store。
+除 `skills` 外，CLI 还提供 `agents`、`projects`、`tags` 和 `notes` 命令组。写命令支持 `--dry-run`，风险较高的写入需要 `--yes`。重复安装默认停止，不会静默覆盖；需要覆盖时必须显式传入 `--replace`。CLI 只管理 Local 目标。已经运行的桌面窗口重新获得焦点时会重新加载变化的数据。GitHub 凭据继续读取 SkillPort 现有的受保护 secret store。
+
+仓库在 [`skills/skillport/`](skills/skillport/SKILL.md) 中提供一份面向编码 Agent 的指导 skill。用 `skillport-cli skills import --from-dir skills/skillport` 导入后同步到各 Agent，它们就能在任意项目中管理 SkillPort。
 
 使用以下命令把 binary 安装到 `PATH`：
 
@@ -97,7 +102,7 @@ npm run cli -- skills sync <uid 或 slug> --agent codex --method copy --dry-run
 cargo install --path src-tauri --bin skillport-cli --locked --force
 ```
 
-完整的命令参数、JSON 输出、退出码、重复项安全规则和同步工作流见
+完整的命令参数、JSON 输出、退出码、写操作确认和 Agent 用法见
 [SkillPort CLI 使用参考](docs/zh/reference/skillport-cli.md)。
 
 ## 下载

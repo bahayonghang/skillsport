@@ -87,10 +87,15 @@ npm run cli -- skills list
 npm run cli -- skills show <uid-or-slug-or-unique-name>
 npm run cli -- skills search "react" --limit 10
 npm run cli -- skills install vercel-labs/agent-skills@react-best-practices --sync
+npm run cli -- skills import --from-dir ./my-skill --dry-run
 npm run cli -- skills sync <uid-or-slug> --agent codex --method copy --dry-run
+npm run cli -- projects install . <uid> --agent claude-code --dry-run
+npm run cli -- tags add <uid> --tag docs --dry-run
 ```
 
-Duplicate installs stop by default; use `--replace` explicitly, and add `--yes` when replacing multiple skills from one GitHub URL. The first CLI release manages only the Local target. A running desktop window does not receive a push event from CLI changes, so refresh the relevant view to reload state. GitHub credentials continue to come from SkillPort's existing protected secret store.
+Beyond `skills`, the CLI has `agents`, `projects`, `tags`, and `notes` command groups. Write commands support `--dry-run`, and riskier writes require `--yes`. Duplicate installs stop by default; use `--replace` explicitly. The CLI manages only the Local target. A running desktop window reloads changed data when it regains focus. GitHub credentials continue to come from SkillPort's existing protected secret store.
+
+For coding agents, the repository ships a guide skill in [`skills/skillport/`](skills/skillport/SKILL.md). Import it with `skillport-cli skills import --from-dir skills/skillport`, then sync it to your agents so they can manage SkillPort from any project.
 
 Install the binary on `PATH` with:
 
@@ -99,7 +104,7 @@ cargo install --path src-tauri --bin skillport-cli --locked --force
 ```
 
 See the [full SkillPort CLI reference](docs/reference/skillport-cli.md) for command
-options, JSON output, exit codes, duplicate safety, and sync workflows.
+options, JSON output, exit codes, write confirmation, and agent usage.
 
 ## Download
 
