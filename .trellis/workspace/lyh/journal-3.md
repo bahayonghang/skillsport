@@ -173,3 +173,25 @@
 ### Status
 
 [OK] **Completed**
+
+
+## Session 130: Unify Antigravity platform to ~/.gemini/config/skills
+
+**Date**: 2026-11-20
+**Task**: Unify Antigravity platform to ~/.gemini/config/skills
+**Branch**: `dev`
+
+### Summary
+
+Merged Antigravity and Antigravity CLI into single Antigravity platform (~/.gemini/config/skills), added SQLite v9 compatibility migration, updated frontend/tests/docs/specs, passed just ci, and migrated local machine links safely.
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `93a3a6b1` | (see git log) |
+| `79749d59` | (see git log) |
+
+### Status
+
+[OK] **Completed**
