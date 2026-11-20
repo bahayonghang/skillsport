@@ -195,3 +195,27 @@ Merged Antigravity and Antigravity CLI into single Antigravity platform (~/.gemi
 ### Status
 
 [OK] **Completed**
+
+
+## Session 131: C3 SkillPort guide skill and parent integration
+
+**Date**: 2026-11-20
+**Task**: C3 SkillPort guide skill and parent integration
+**Branch**: `dev`
+
+### Summary
+
+新增 skills/skillport 指导 skill（SKILL.md + references/commands.md），中英文 CLI 文档与 README 补齐写命令、确认契约、错误码和 Agent 用法，shared-local-cli 规范登记 skill 与文档同步约束。隔离 HOME 冒烟 28 步全部符合预期；just ci 两条 lane 串行全绿（并行有偶发计时类失败）。真实 Claude Code 会话、install:cli 安装、桌面手工刷新按用户决定未验证。C3 与父任务已归档，未推送。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `99a9b675` | (see git log) |
+| `4a0fbad6` | (see git log) |
+| `7d59e599` | (see git log) |
+| `01a76784` | (see git log) |
+
+### Status
+
+[OK] **Completed**

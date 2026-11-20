@@ -8,7 +8,7 @@
 
 <!-- @@@auto:current-status -->
 - **Active File**: `journal-3.md`
-- **Total Sessions**: 130
+- **Total Sessions**: 131
 - **Last Active**: 2026-11-20
 <!-- @@@/auto:current-status -->
 
@@ -19,7 +19,7 @@
 <!-- @@@auto:active-documents -->
 | File | Lines | Status |
 |------|-------|--------|
-| `journal-3.md` | ~197 | Active |
+| `journal-3.md` | ~221 | Active |
 | `journal-2.md` | ~2000 | Archived |
 | `journal-1.md` | ~1994 | Archived |
 <!-- @@@/auto:active-documents -->
@@ -31,6 +31,7 @@
 <!-- @@@auto:session-history -->
 | # | Date | Title | Commits | Branch |
 |---|------|-------|---------|--------|
+| 131 | 2026-11-20 | C3 SkillPort guide skill and parent integration | `99a9b675`, `4a0fbad6`, `7d59e599`, `01a76784` | `dev` |
 | 130 | 2026-11-20 | Unify Antigravity platform to ~/.gemini/config/skills | `93a3a6b1`, `79749d59` | `dev` |
 | 129 | 2026-11-19 | 中央技能库仓库全选与 Windows 安装构建优化 | `d2324d36`, `d347dbe2` | `dev` |
 | 128 | 2026-11-05 | 优化 SSH 技能导入并归档任务 | `f2508b5f` | `dev` |
