@@ -17,8 +17,7 @@ A platform is any AI coding agent or runtime that reads a `skills/` directory. S
 | Coding | Claude Code | `~/.claude/skills/` |
 | Coding | Codex CLI | `~/.agents/skills/` |
 | Coding | Cursor | `~/.agents/skills/` |
-| Coding | Antigravity | `~/.gemini/antigravity/skills/` |
-| Coding | Antigravity CLI | `~/.gemini/antigravity-cli/skills/` |
+| Coding | Antigravity | `~/.gemini/config/skills/` |
 | Coding | Gemini CLI (legacy) | `~/.gemini/skills/` |
 | Coding | Trae | `~/.trae/skills/` |
 | Coding | Factory Droid | `~/.factory/skills/` |
@@ -45,7 +44,7 @@ A platform is any AI coding agent or runtime that reads a `skills/` directory. S
 | Lobster | WorkBuddy | `~/.workbuddy/skills-marketplace/skills/` |
 | Central | Central Skills | `~/.skillsmanage/skills/` |
 
-Several coding platforms (Codex, Cursor, OpenCode, Amp, Copilot, and other universal agents) read from the shared Universal Agents global path. SkillPort keeps Google's Antigravity app and Antigravity CLI as distinct global targets: `~/.gemini/antigravity/skills/` and `~/.gemini/antigravity-cli/skills/`. Both use the shared `.agents/skills/` directory for project/workspace installs, while Gemini CLI remains a legacy/shared Google target at `~/.gemini/skills/`. SkillPort does not manage Antigravity plugin bundles in this workflow.
+Several coding platforms (Codex, Cursor, OpenCode, Amp, Copilot, and other universal agents) read from the shared Universal Agents global path. SkillPort unifies Google's Antigravity clients (App, IDE, and CLI `agy`) onto the shared `~/.gemini/config/skills/` global directory. Project/workspace installs use the shared `.agents/skills/` directory, while Gemini CLI remains a legacy/shared Google target at `~/.gemini/skills/`. SkillPort does not manage Antigravity plugin bundles in this workflow.
 
 ## Platform view
 
@@ -78,4 +77,4 @@ You can hide platforms you do not use from Settings → Platform Visibility. Hid
 
 ---
 
-Last reviewed: 2026-05-25
+Last reviewed: 2026-11-20

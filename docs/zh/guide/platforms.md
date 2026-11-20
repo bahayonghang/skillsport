@@ -17,8 +17,7 @@
 | Coding | Claude Code | `~/.claude/skills/` |
 | Coding | Codex CLI | `~/.agents/skills/` |
 | Coding | Cursor | `~/.agents/skills/` |
-| Coding | Antigravity | `~/.gemini/antigravity/skills/` |
-| Coding | Antigravity CLI | `~/.gemini/antigravity-cli/skills/` |
+| Coding | Antigravity | `~/.gemini/config/skills/` |
 | Coding | Gemini CLI（legacy） | `~/.gemini/skills/` |
 | Coding | Trae | `~/.trae/skills/` |
 | Coding | Factory Droid | `~/.factory/skills/` |
@@ -45,7 +44,7 @@
 | Lobster | WorkBuddy（打工搭子） | `~/.workbuddy/skills-marketplace/skills/` |
 | Central | 中央技能库 | `~/.skillsmanage/skills/` |
 
-Codex、Cursor、OpenCode、Amp、Copilot 等 universal agents 读取共享的 Universal Agents 全局路径。SkillPort 将 Google 的 Antigravity 应用和 Antigravity CLI 保持为独立全局目标：`~/.gemini/antigravity/skills/` 与 `~/.gemini/antigravity-cli/skills/`。两者的项目 / workspace 安装都使用共享 `.agents/skills/` 目录；Gemini CLI 仍作为 legacy/shared Google 目标使用 `~/.gemini/skills/`。SkillPort 本轮不管理 Antigravity plugin bundle。
+Codex、Cursor、OpenCode、Amp、Copilot 等 universal agents 读取共享的 Universal Agents 全局路径。SkillPort 将 Google 的 Antigravity 三端（App、IDE 与 CLI `agy`）统一到共读的 `~/.gemini/config/skills/` 全局目录；项目 / workspace 安装仍使用共享 `.agents/skills/` 目录；Gemini CLI 仍作为 legacy/shared Google 目标使用 `~/.gemini/skills/`。SkillPort 本轮不管理 Antigravity plugin bundle。
 
 ## 平台视图
 
@@ -78,4 +77,4 @@ Codex、Cursor、OpenCode、Amp、Copilot 等 universal agents 读取共享的 U
 
 ---
 
-Last reviewed: 2026-05-25
+Last reviewed: 2026-11-20

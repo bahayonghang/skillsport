@@ -10,7 +10,7 @@
 
 ## Overview
 
-`SkillPort` follows the [Agent Skills](https://github.com/anthropics/agent-skills) open pattern, but keeps its private Central library in `~/.skillsmanage/skills/` by default. On the Local target, the Central page can change this location with a previewed migrate-and-switch flow: current Central skills overwrite same-name target skills, target-only skills are kept and scanned in, and the old directory is not deleted. The shared Universal Agents target remains `~/.agents/skills/`, so only skills explicitly installed there are exposed to Codex CLI, Cursor, OpenCode, Amp, Copilot, and other tools that read that location. Grok is managed as its own upstream-compatible target at `~/.grok/skills/`, with project installs under `.grok/skills/`. SkillPort distinguishes Google's Antigravity app target from Antigravity CLI: Antigravity global skills stay in `~/.gemini/antigravity/skills/`, Antigravity CLI global skills use `~/.gemini/antigravity-cli/skills/`, and both use `.agents/skills/` for workspace/project installs. Gemini CLI remains available as a legacy/shared Google target at `~/.gemini/skills/`.
+`SkillPort` follows the [Agent Skills](https://github.com/anthropics/agent-skills) open pattern, but keeps its private Central library in `~/.skillsmanage/skills/` by default. On the Local target, the Central page can change this location with a previewed migrate-and-switch flow: current Central skills overwrite same-name target skills, target-only skills are kept and scanned in, and the old directory is not deleted. The shared Universal Agents target remains `~/.agents/skills/`, so only skills explicitly installed there are exposed to Codex CLI, Cursor, OpenCode, Amp, Copilot, and other tools that read that location. Grok is managed as its own upstream-compatible target at `~/.grok/skills/`, with project installs under `.grok/skills/`. SkillPort manages Google's unified Antigravity target (shared by Antigravity App, Antigravity IDE, and Antigravity CLI `agy`) at `~/.gemini/config/skills/`, while using `.agents/skills/` for workspace/project installs. Gemini CLI remains available as a legacy/shared Google target at `~/.gemini/skills/`.
 
 ## Relationship to upstream
 
@@ -135,8 +135,7 @@ Then launch the app again from Finder. If your app is stored somewhere else, rep
 | Coding | Codex CLI | `~/.agents/skills/` |
 | Coding | Grok | `~/.grok/skills/` |
 | Coding | Cursor | `~/.agents/skills/` |
-| Coding | Antigravity | `~/.gemini/antigravity/skills/` |
-| Coding | Antigravity CLI | `~/.gemini/antigravity-cli/skills/` |
+| Coding | Antigravity | `~/.gemini/config/skills/` |
 | Coding | Zed (community-compatible) | `~/.config/zed/skills/` |
 | Coding | Gemini CLI (legacy) | `~/.gemini/skills/` |
 | Coding | Trae | `~/.trae/skills/` |

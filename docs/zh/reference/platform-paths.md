@@ -9,8 +9,7 @@ SkillPort 管理的所有平台及其磁盘上的技能目录。Lobster 平台�
 | Claude Code | `~/.claude/skills/` |
 | Codex CLI | `~/.agents/skills/` |
 | Cursor | `~/.agents/skills/` |
-| Antigravity | `~/.gemini/antigravity/skills/` |
-| Antigravity CLI | `~/.gemini/antigravity-cli/skills/` |
+| Antigravity | `~/.gemini/config/skills/` |
 | Gemini CLI（legacy） | `~/.gemini/skills/` |
 | Trae | `~/.trae/skills/` |
 | Factory Droid | `~/.factory/skills/` |
@@ -53,7 +52,7 @@ SkillPort 管理的所有平台及其磁盘上的技能目录。Lobster 平台�
 
 ## 共享根
 
-多个全局 agent 都解析到 `~/.agents/skills/`。Antigravity 与 Antigravity CLI 的全局目录分别独立为 `~/.gemini/antigravity/skills/` 和 `~/.gemini/antigravity-cli/skills/`，但项目 / workspace 范围都共享 `.agents/skills/`。Gemini CLI 承载 legacy/shared Google 路径 `~/.gemini/skills/`。项目扫描会折叠这些 workspace 兼容成员，避免同一项目技能在 UI 重复出现。
+多个全局 agent 都解析到 `~/.agents/skills/`。Antigravity（App / IDE / CLI `agy` 三端统一）的全局目录收敛为 `~/.gemini/config/skills/`，项目 / workspace 范围仍共享 `.agents/skills/`。Gemini CLI 承载 legacy/shared Google 路径 `~/.gemini/skills/`。项目扫描会折叠这些 workspace 兼容成员，避免同一项目技能在 UI 重复出现。
 
 ## 只读来源
 
@@ -68,4 +67,4 @@ Claude Code 把 `~/.claude/plugins/marketplaces/*` 下的市场插件目录作�
 
 目录在首次安装时按需创建。
 
-Last reviewed: 2026-05-25
+Last reviewed: 2026-11-20

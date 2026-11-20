@@ -80,6 +80,14 @@ foreign_key_check -> seed -> publish pool`.
   them with one immutable repository identity. Migration 1's live table builder
   remains unchanged so the released migration-1 checksum and the v6 `ALTER`
   history do not collide.
+- Migration 9 unifies retired `antigravity-cli` into `antigravity`
+  (`~/.gemini/config/skills`): it preserves enabled state if either legacy entry
+  was enabled, removes retired `antigravity-cli` and legacy
+  `~/.gemini/antigravity/skills` rows from `skill_installations` /
+  `agent_skill_observations`, deduplicates conflicting `(project_id, skill_id)`
+  pairs before remapping `project_skill_installations` to `antigravity`, cleans
+  `skill_update_inventory_entries`, and removes the retired builtin `agents` row
+  on both local and remote target-cache DBs.
 
 ## 4. Validation & Error Matrix
 
@@ -147,6 +155,11 @@ repair audit, restore, and FK validation are never best effort.
 - Pending-addition provenance coverage: pre-v6 rows survive with `(None, None)`,
   new upserts replace both identity fields together, current/new databases open
   at v6, and the future-version fixture remains exactly one version ahead.
+- Antigravity unification coverage (Migration 9): pre-v9 enablement transfer
+  from `antigravity-cli` -> `antigravity`, legacy path cleanup in
+  `skill_installations` / `agent_skill_observations`, `project_skill_installations`
+  conflict deduplication & remap, `skill_update_inventory_entries` cleanup, and
+  `open_database_for_remote_home` upgrade.
 - Multiple simultaneous pool connections each report `foreign_keys=1`.
 - Checksum drift, applied gap, and future version reject without backup/write.
 - The exact migration-1 Windows alias opens without rewrite or backup; a random
