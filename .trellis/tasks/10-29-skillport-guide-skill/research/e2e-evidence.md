@@ -34,10 +34,11 @@ global `skillport/SKILL.md` exists; project `.claude/skills/skillport/SKILL.md` 
 Help consistency: every command and flag used in `skills/skillport/SKILL.md` and
 `references/commands.md` appears in [`cli-help.md`](cli-help.md).
 
-## 2. Real Claude Code session (PENDING)
+## 2. Real Claude Code session (NOT RUN, UNVERIFIED)
 
-Not yet run. It writes to the real Local SkillPort profile (`~/.skillsmanage`) and the real
-`~/.claude/skills`, and needs `skillport-cli` on `PATH`, so it waits for user authorization.
+Not run. On 2026-11-20 the user decided to archive the task without this session. It would write to
+the real Local SkillPort profile (`~/.skillsmanage`) and the real `~/.claude/skills`, and needs
+`skillport-cli` on `PATH`. The runbook below is kept for a later run.
 
 Runbook:
 

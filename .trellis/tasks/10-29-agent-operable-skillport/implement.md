@@ -85,7 +85,12 @@ pnpm docs:gen:check
 
 ## 5. 集成验收（父任务）
 
-- [ ] 逐条核对 prd.md 中的 Acceptance Criteria。
-- [ ] `just ci` 通过。
+回写：2026-11-20。
+
+- [x] 逐条核对 prd.md 中的 Acceptance Criteria（见 prd.md 回写结果）。
+- [x] `just ci` 通过（两条 lane 串行运行）。
 - [ ] 用 `npm run install:cli` 在干净的 PATH 下安装，确认 `skillport-cli --version` 可用，指导 skill 的前置检查能通过。
-- [ ] 在报告中明确列出未验证的部分（例如其他 Agent 工具中的 live skill 加载）。
+      **UNVERIFIED**：未安装到用户环境，只用 release 构建产物验证过 `--version`。
+- [x] 在报告中明确列出未验证的部分：真实 Agent 会话、`install:cli` 安装、桌面端手工刷新，
+      以及 Codex、Grok 等其他 Agent 工具中的 live skill 加载。
+- 子任务 PR：C1 #54、C4 #55、C2 #56（均已合并）；C3 直接提交到 `dev`（`99a9b675`、`4a0fbad6`、`7d59e599`），尚未推送。

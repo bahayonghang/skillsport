@@ -30,11 +30,18 @@
 
 ## Acceptance Criteria
 
-- [ ] `skillport-cli skills import --from-dir skills/skillport` 能把它导入 Central，
+状态回写：2026-11-20。证据见 `research/e2e-evidence.md`。
+
+- [x] `skillport-cli skills import --from-dir skills/skillport` 能把它导入 Central，
       `skills sync <uid> --agent claude-code` 能同步到 Claude Code 的全局目录。
+      （在隔离的临时 HOME 中验证；没有写入用户真实的 profile。）
 - [ ] 在一个示例项目中开启新的 Claude Code 会话，Agent 根据这份 skill 完成
       "注册当前项目 → 安装一个 skill 到项目 → 打标签 → 写说明"，并且每个写操作之前都有 dry-run 和用户确认。
       把命令与 JSON 输出记录到本任务的 `research/e2e-evidence.md`。
-- [ ] skill 中引用的每条命令都与 `skillport-cli --help` 的实际输出一致。
-- [ ] 中英文文档结构一致；`pnpm docs:build` 通过；`just ci` 通过。
-- [ ] 其他 Agent 工具（Codex、Grok 等）中的加载情况如果没有实测，必须在报告中标注为未验证。
+      **UNVERIFIED**：2026-11-20 用户决定不跑真实会话，直接归档。同样四步已在隔离环境中用 CLI 跑通，
+      runbook 保留在 `research/e2e-evidence.md` §2。
+- [x] skill 中引用的每条命令都与 `skillport-cli --help` 的实际输出一致（`research/cli-help.md`）。
+- [x] 中英文文档结构一致；`pnpm docs:build` 通过；`just ci` 的 common 与 rust-platform 两条 lane
+      串行运行全部通过。并行的 `just ci` 跑了 3 次，每次都有一个不同的计时或文件句柄类测试偶发失败，
+      失败的测试单独重跑均通过。
+- [x] 其他 Agent 工具（Codex、Grok 等）中的加载情况没有实测，已标注为未验证。

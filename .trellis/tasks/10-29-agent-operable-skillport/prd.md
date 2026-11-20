@@ -84,18 +84,24 @@
 
 ## Acceptance Criteria
 
-- [ ] 在临时 HOME 和空 Local DB 下，下面每个能力至少有一条 `--json` 冒烟路径，并有 Rust 测试：
+集成验收回写：2026-11-20。子任务证据在 `archive/` 下对应子任务目录中。
+
+- [x] 在临时 HOME 和空 Local DB 下，下面每个能力至少有一条 `--json` 冒烟路径，并有 Rust 测试：
       查询（R1）、ZIP / 目录导入（R2.2–R2.3）、Agent 卸载（R3.2）、项目注册与安装（R4）、
-      标签增删（R5.1–R5.2）、说明读写（R6）。
-- [ ] 每个新写命令都有 `--dry-run` 测试，证明数据库和文件系统都没有变化。
-- [ ] 桌面应用持锁时，任一 CLI 写命令返回 `mutation.busy` / 退出码 4。
-- [ ] 现有 `skills list|show|search|install|sync` 的 JSON 输出与退出码回归测试全部通过。
+      标签增删（R5.1–R5.2）、说明读写（R6）。（Rust 测试来自 C1/C2；隔离冒烟见 C3 `research/smoke-raw.md`。）
+- [x] 每个新写命令都有 `--dry-run` 测试，证明数据库和文件系统都没有变化。（C2）
+- [x] 桌面应用持锁时，任一 CLI 写命令返回 `mutation.busy` / 退出码 4。（C2 `tests/cli_api_e2e.rs`）
+- [x] 现有 `skills list|show|search|install|sync` 的 JSON 输出与退出码回归测试全部通过。
 - [ ] 指导 skill 存在于仓库，能通过 `skillport-cli` 导入 Central 并同步到至少一个 Agent；
       用一个真实 Agent 会话完成"注册当前项目 → 安装 skill 到项目 → 打标签 → 写说明"的端到端演练，并记录证据。
-- [ ] CLI 写入后，桌面窗口重新获得焦点时会刷新受影响的视图（Central 列表、标签、项目）。
-- [ ] `docs/reference/skillport-cli.md`、`docs/zh/reference/skillport-cli.md` 与
+      **部分完成**：skill 已入库，导入、同步和四步流程已在隔离环境中用 CLI 跑通；
+      真实 Agent 会话 **UNVERIFIED**（2026-11-20 用户决定直接归档）。
+- [x] CLI 写入后，桌面窗口重新获得焦点时会刷新受影响的视图（Central 列表、标签、项目）。
+      （C4 有 Vitest 和 Rust 测试覆盖；桌面端手工验证 **UNVERIFIED**。）
+- [x] `docs/reference/skillport-cli.md`、`docs/zh/reference/skillport-cli.md` 与
       `.trellis/spec/backend/shared-local-cli.md` 已更新。
-- [ ] `just ci` 通过。MVP 不改动安装包内容，因此不要求 Windows `pnpm tauri build` 证据；
+- [x] `just ci` 通过（2026-11-20，common 与 rust-platform 两条 lane 串行运行；并行运行时有偶发的计时类测试失败，见 C3 prd）。
+      MVP 不改动安装包内容，因此不要求 Windows `pnpm tauri build` 证据；
       如果之后做 C5，C5 自己提供这份证据。
 
 ## Out of Scope
