@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/frontend/window-material.md", "reason": "Verify window material and native theme sync contract compliance"}
+{"file": ".trellis/spec/quality/ci-quality-gate.md", "reason": "Repository CI quality gate requirements"}
