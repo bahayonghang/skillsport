@@ -125,8 +125,6 @@ export const useWindowMaterialStore = create<WindowMaterialStoreState>(
       },
 
       syncTheme: async (dark) => {
-        // Nothing native to sync off Windows.
-        if (get().state?.reason === "unsupportedPlatform") return;
         await apply(dark);
       },
 

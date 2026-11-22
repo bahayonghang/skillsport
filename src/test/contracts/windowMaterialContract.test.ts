@@ -22,8 +22,18 @@ const CSS_WITHOUT_COMMENTS = INDEX_CSS.replace(/\/\*[\s\S]*?\*\//g, "");
 const TAURI_CONF = JSON.parse(
   readFileSync(resolve(ROOT, "src-tauri/tauri.conf.json"), "utf8"),
 ) as {
-  app: { windows: Array<{ transparent?: boolean; backgroundColor?: string }> };
+  app: {
+    windows: Array<{
+      transparent?: boolean;
+      backgroundColor?: string;
+      titleBarStyle?: string;
+    }>;
+  };
 };
+const WINDOW_MATERIAL_RS = readFileSync(
+  resolve(ROOT, "src-tauri/src/services/window_material.rs"),
+  "utf8",
+);
 
 const MICA = 'html[data-window-material="mica"]';
 const MIN_MICA_CANVAS_ALPHA = 0.8;
@@ -225,9 +235,34 @@ describe("window material contract", () => {
     }
   });
 
-  it("creates a transparent native window that keeps the glass fallback colour", () => {
+  it("creates a transparent native window that keeps the glass fallback colour and macOS transparent titlebar", () => {
     const window = TAURI_CONF.app.windows[0];
     expect(window?.transparent).toBe(true);
     expect(window?.backgroundColor).toMatch(/^#[0-9a-f]{6}$/i);
+    expect(window?.titleBarStyle).toBe("Transparent");
+  });
+
+  it("keeps Rust native window background constants aligned with CSS theme backgrounds", () => {
+    const rustColor = (constName: string): Rgb => {
+      const match = WINDOW_MATERIAL_RS.match(
+        new RegExp(
+          `pub const ${constName}:[^=]+=\\s*tauri::window::Color\\(\\s*0x([0-9a-f]{2}),\\s*0x([0-9a-f]{2}),\\s*0x([0-9a-f]{2}),\\s*0xff\\s*\\)`,
+          "i",
+        ),
+      );
+      if (!match) throw new Error(`Missing ${constName} in window_material.rs`);
+      return [
+        Number.parseInt(match[1]!, 16),
+        Number.parseInt(match[2]!, 16),
+        Number.parseInt(match[3]!, 16),
+      ];
+    };
+
+    expect(rustColor("LIGHT_WINDOW_BG")).toEqual(
+      themeColor(onlyBlock('[data-theme="glass-light"]'), "--background").rgb,
+    );
+    expect(rustColor("DARK_WINDOW_BG")).toEqual(
+      themeColor(onlyBlock('[data-theme="glass-dark"]'), "--background").rgb,
+    );
   });
 });

@@ -139,7 +139,7 @@ describe("windowMaterialStore", () => {
     expect(calls).toHaveLength(4);
   });
 
-  it("does not call native sync off Windows", async () => {
+  it("still syncs the native window theme off Windows while keeping the canvas opaque", async () => {
     mockIpcCommands({
       get_setting: null,
       set_window_material: {
@@ -151,7 +151,11 @@ describe("windowMaterialStore", () => {
     await useWindowMaterialStore.getState().init();
     useThemeStore.getState().setFlavor("glass-dark");
     await flush();
-    expect(ipcInvokeCalls("set_window_material")).toHaveLength(1);
+    expect(ipcInvokeCalls("set_window_material").map((call) => call.args)).toEqual([
+      { enabled: true, dark: false },
+      { enabled: true, dark: true },
+    ]);
+    expect(materialDom()).toBe("none");
   });
 
   it("lets a newer request win over a slower older one", async () => {

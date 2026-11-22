@@ -17,6 +17,30 @@ use serde::{Deserialize, Serialize};
 /// 22000-22522; anything lower returns `UnsupportedPlatformVersion`.
 pub const MICA_MIN_BUILD: u32 = 22_000;
 
+/// Native window fallback colour for `glass-light` (`--background: #eef3f4`).
+pub const LIGHT_WINDOW_BG: tauri::window::Color = tauri::window::Color(0xee, 0xf3, 0xf4, 0xff);
+
+/// Native window fallback colour for `glass-dark` (`--background: #121a20`).
+pub const DARK_WINDOW_BG: tauri::window::Color = tauri::window::Color(0x12, 0x1a, 0x20, 0xff);
+
+/// Select the native window theme matching the renderer's light / dark mode.
+pub const fn native_window_theme(dark: bool) -> tauri::Theme {
+    if dark {
+        tauri::Theme::Dark
+    } else {
+        tauri::Theme::Light
+    }
+}
+
+/// Select the native window background colour matching the renderer's theme.
+pub const fn native_window_background(dark: bool) -> tauri::window::Color {
+    if dark {
+        DARK_WINDOW_BG
+    } else {
+        LIGHT_WINDOW_BG
+    }
+}
+
 #[cfg_attr(feature = "ipc-codegen", derive(specta::Type))]
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
@@ -99,21 +123,32 @@ pub fn apply<R: tauri::Runtime>(
     enabled: bool,
     dark: bool,
 ) -> WindowMaterialState {
-    let state = decide(enabled, current_os_build());
-    if state.reason == Some(WindowMaterialReason::UnsupportedPlatform) {
-        return state;
-    }
-
-    let theme = if dark {
-        tauri::Theme::Dark
-    } else {
-        tauri::Theme::Light
-    };
-    if window.set_theme(Some(theme)).is_err() {
+    if window.set_theme(Some(native_window_theme(dark))).is_err() {
         tracing::warn!(
             code = "window_theme_sync_failed",
             "Could not sync the native window theme"
         );
+    }
+
+    // Off Windows (e.g. macOS NSWindow with transparent titlebar), sync the
+    // native window and under-page background colour with the active theme so
+    // Dark Mode does not bleed the static #eef3f4 startup background through
+    // the titlebar. Skip on Windows because wry's WebView2 implementation
+    // forces alpha=255 for non-zero colours, which would block Mica.
+    #[cfg(not(windows))]
+    if window
+        .set_background_color(Some(native_window_background(dark)))
+        .is_err()
+    {
+        tracing::warn!(
+            code = "window_background_sync_failed",
+            "Could not sync the native window background color"
+        );
+    }
+
+    let state = decide(enabled, current_os_build());
+    if state.reason == Some(WindowMaterialReason::UnsupportedPlatform) {
+        return state;
     }
 
     match state.applied {
@@ -233,5 +268,19 @@ mod tests {
     #[test]
     fn current_os_build_matches_platform() {
         assert_eq!(current_os_build().is_some(), cfg!(windows));
+    }
+
+    #[test]
+    fn native_window_theme_and_background_follow_dark_flag() {
+        assert_eq!(native_window_theme(false), tauri::Theme::Light);
+        assert_eq!(native_window_theme(true), tauri::Theme::Dark);
+        assert_eq!(
+            native_window_background(false),
+            tauri::window::Color(0xee, 0xf3, 0xf4, 0xff)
+        );
+        assert_eq!(
+            native_window_background(true),
+            tauri::window::Color(0x12, 0x1a, 0x20, 0xff)
+        );
     }
 }

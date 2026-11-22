@@ -39,12 +39,12 @@ DOM 标记：`document.documentElement.dataset.windowMaterial = "none" | "mica"`
 - **支持性由 OS build 决定**：Tauri 2 的 `set_effects` 在主线程异步执行并吞掉 `window_vibrancy` 的结果，无法事后观测。`decide` 规则：非 Windows → `none / unsupportedPlatform / supported=false`；build < 22000 → `none / unsupportedOs / supported=false`；Windows 11 且偏好 off → `none / disabled / supported=true`；Windows 11 且偏好 mica → `mica / null / supported=true`。`set_effects` 派发失败 → `none / applyFailed / supported=true`。
 - **先不透明、后通透**：默认（无属性或 `none`）时 `body` 与 `.glass-canvas` 完全不透明；只有 store 收到 `applied: "mica"` 才写 `mica`。命令 reject、结果未到、较旧请求晚到都保持或回到 `none`。原生窗口是 `transparent: true`，所以不透明页面是 Win10 / 失败路径上防止透明穿透的唯一屏障。
 - **CSS**：只有 `html[data-window-material="mica"]` 规则放宽不透明度：`html` / `body` 背景透明，`.glass-canvas` 背景色透明、渐变两端为 `color-mix(... 80%, transparent)`。Mica 下 canvas alpha **不得低于 0.80**（DESIGN.md Known Gaps；任务 design 草案的 0.72 已被 DESIGN.md 否决）。不得写 `data-window-material="none"` 的覆盖规则，不得在别处让全窗表面变透明。
-- **主题联动**：Mica 开启时 Rust 用 `MicaLight` / `MicaDark`（同时修正标题栏明暗）；关闭或 Win10 时 `set_effects(None)`（仅 Win11）并仍 `set_theme(Light|Dark)`。store 订阅 `themeStore.flavor`，在 `setFlavor` / `toggleFlavor` 提交之后调用 `syncTheme`；不在组件里实现。`unsupportedPlatform` 时不再发起同步。
+- **主题联动**：Mica 开启时 Rust 用 `MicaLight` / `MicaDark`（同时修正标题栏明暗）；关闭或 Win10 时 `set_effects(None)`（仅 Win11）并仍 `set_theme(Light|Dark)`；非 Windows 平台跳过 `set_effects`，但仍调用 `set_theme(Light|Dark)` 与 `set_background_color(#eef3f4 | #121a20)` 同步原生窗口外观与标题栏底色（macOS 配合 `tauri.conf.json` 的 `titleBarStyle: "Transparent"` 消除标题栏亮白与底部分割线）。store 订阅 `themeStore.flavor`，在 `setFlavor` / `toggleFlavor` 提交之后调用 `syncTheme`；不在组件里实现。
 - **请求序号**：每次 apply 自增序号，只有最新一次的结果写入 DOM 与 state。
 - **偏好持久化**：`window_material_v1` 走通用 `get_setting` / `set_setting`；`settings_policy.rs` 只接受 `mica` | `off`，审计类别为 `appearance`，不记录 key 与值。读取失败（如启动恢复态）回落 `mica`。
 - **组件边界**：组件不得 `invoke()`；设置页开关 `WindowMaterialSetting` 只读 store，写入失败 toast `formatBackendError`。`supported=false` 时开关禁用并显示原因（`settings.appearance.windowMaterialUnavailable.*`）。
 - **浏览器演示态**：fixture `set_window_material` 返回 `{ applied: "none", reason: "unsupportedPlatform", supported: false }`；store 不写 `isTauriRuntime()` 分支。
-- **日志**：Rust 只写固定 code（`window_theme_sync_failed`、`window_material_apply_failed`、`window_material_clear_failed`、`window_material_unsupported_os`），不含参数、路径或标题。命令不写 Operation Log。
+- **日志**：Rust 只写固定 code（`window_theme_sync_failed`、`window_background_sync_failed`、`window_material_apply_failed`、`window_material_clear_failed`、`window_material_unsupported_os`），不含参数、路径或标题。命令不写 Operation Log。
 - 不使用 Acrylic 作 Win10 降级；不实现 macOS vibrancy。
 
 ## 4. Validation & Error Matrix
@@ -54,7 +54,7 @@ DOM 标记：`document.documentElement.dataset.windowMaterial = "none" | "mica"`
 | Windows 11（≥ 22000）+ 偏好 mica | `mica`；canvas 80% alpha 透出 Mica |
 | Windows 11 + 偏好 off | `none / disabled`；开关可用，canvas 不透明 |
 | Windows 10（< 22000） | `none / unsupportedOs`；开关禁用并说明 |
-| 非 Windows / 浏览器 | `none / unsupportedPlatform`；主题切换不再调用命令 |
+| 非 Windows / 浏览器 | `none / unsupportedPlatform`；Mica 开关禁用，主题切换仍调用命令同步原生窗口明暗与底色 |
 | 命令 reject | DOM 回到 `none`，state 不变 |
 | `set_setting` 失败 | `setPreference` rethrow，偏好与 DOM 不变，UI toast |
 | 主题切换期间较旧请求晚到 | 被序号丢弃 |
@@ -70,8 +70,8 @@ DOM 标记：`document.documentElement.dataset.windowMaterial = "none" | "mica"`
 
 - Rust `services::window_material::tests`：非 Windows、build 10240 / 19045 / 21999、22000 / 22523 / 22631 / 26100、disabled、serde 字段名。
 - Rust `commands::settings_policy::tests`：`window_material_v1` 接受 `mica` / `off`，拒绝其他值，审计类别 `appearance`。
-- `src/test/stores/windowMaterialStore.test.ts`：init 读 key、结果前保持 `none`、off、Win10、命令失败保持 `none`、读取失败回落默认、主题切换触发同步且不重复订阅、非 Windows 不同步、最新请求胜出、`setPreference` 持久化与失败 rethrow。
-- `src/test/contracts/windowMaterialContract.test.ts`：默认 canvas / body 不透明；只有 `mica` 标记放宽；Mica 下 alpha ≥ 0.80 且光斑几何与默认 canvas 一致；两主题文字在代表性 Mica 底色上的面板合成色 ≥ 4.5:1；`tauri.conf.json` `transparent: true` 且保留 `backgroundColor`。
+- `src/test/stores/windowMaterialStore.test.ts`：init 读 key、结果前保持 `none`、off、Win10、命令失败保持 `none`、读取失败回落默认、主题切换触发同步且不重复订阅、非 Windows 同步原生主题但保持 `none`、最新请求胜出、`setPreference` 持久化与失败 rethrow。
+- `src/test/contracts/windowMaterialContract.test.ts`：默认 canvas / body 不透明；只有 `mica` 标记放宽；Mica 下 alpha ≥ 0.80 且光斑几何与默认 canvas 一致；两主题文字在代表性 Mica 底色上的面板合成色 ≥ 4.5:1；`tauri.conf.json` `transparent: true`、保留 `backgroundColor` 并启用 `titleBarStyle: "Transparent"`；Rust 侧亮/暗窗口底色常量与 CSS `--background` 一致。
 - `src/test/components/settings/WindowMaterialSetting.test.tsx`、`src/test/fixtures/browserFixtures.test.ts`。
 - 真机证据（Win11 亮 / 暗 / 关闭 / 失焦、Win10、缩放 / 最大化 / 跨 DPI、冷启动录屏、Central 滚动帧率）不能由上述测试替代，未取得时在任务报告中列为 UNVERIFIED。
 
