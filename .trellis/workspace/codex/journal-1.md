@@ -148,3 +148,24 @@ Update Center Refresh 持久化固定 commit SHA 与仓库摘要，Apply 在 Loc
 ### Status
 
 [OK] **Completed**
+
+
+## Session 5: 修复 macOS 暗黑模式顶部原生标题栏亮白问题
+
+**Date**: 2026-11-22
+**Task**: 修复 macOS 暗黑模式顶部原生标题栏亮白问题
+**Branch**: `dev`
+
+### Summary
+
+修复 macOS 在 Glass Dark 下顶部原生标题栏仍显示为亮白色 (#eef3f4) 的问题：在 tauri.conf.json 启用 titleBarStyle: Transparent，跨平台同步 window.set_theme 与非 Windows 平台的 window.set_background_color (#eef3f4 / #121a20)，移除 windowMaterialStore.syncTheme 的非 Windows 短路，并补充契约与单元测试。
+
+### Git Commits
+
+| Hash | Message |
+|------|---------|
+| `8bf000dc` | (see git log) |
+
+### Status
+
+[OK] **Completed**
