@@ -10,11 +10,7 @@ src-tauri/target/
 
 .agents/
 .claude/**
-!.claude/hooks/
-!.claude/hooks/inject-subagent-context.py
 .codex/**
-!.codex/hooks/
-!.codex/hooks/inject-subagent-context.py
 .opencode/
 .cursor/
 
@@ -58,6 +54,7 @@ progress.md
 
 # trellis review reports are local scratch, superseded as the code evolves
 .trellis/reviews/
+.trellis/research/**/*.png
 
 ref/
 
