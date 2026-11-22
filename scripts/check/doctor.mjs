@@ -41,20 +41,34 @@ export function redactSecrets(value, env = process.env) {
 }
 
 /**
- * pnpm 12+ defaults `pmOnFail` to download. Inject ignore only into the
- * version probe so diagnostics cannot fetch, self-update, or rewrite global
- * config. Doctor reports the installed version without selecting a version.
+ * pnpm 12+ defaults `pmOnFail` to download, and Corepack shims resolve
+ * `packageManager` by fetching versions on demand. Inject read-only probe
+ * settings only into the version probe so diagnostics cannot fetch,
+ * self-update, or rewrite global config. Doctor reports the installed version
+ * without selecting a version.
  */
 const PNPM_PM_ON_FAIL_KEY = "pnpm_config_pm_on_fail";
+const COREPACK_READONLY_PROBE_ENV = Object.freeze({
+  COREPACK_ENABLE_PROJECT_SPEC: "0",
+  COREPACK_ENABLE_NETWORK: "0",
+  COREPACK_ENABLE_AUTO_PIN: "0",
+  COREPACK_ENABLE_DOWNLOAD_PROMPT: "0",
+  COREPACK_DEFAULT_TO_LATEST: "0",
+});
 
 export function withPnpmReadonlyProbeEnv(env = process.env) {
   const next = { ...env };
+  const managedLowerKeys = new Set([
+    PNPM_PM_ON_FAIL_KEY,
+    ...Object.keys(COREPACK_READONLY_PROBE_ENV).map((key) => key.toLowerCase()),
+  ]);
   for (const key of Object.keys(next)) {
-    if (key.toLowerCase() === PNPM_PM_ON_FAIL_KEY) {
+    if (managedLowerKeys.has(key.toLowerCase())) {
       delete next[key];
     }
   }
   next[PNPM_PM_ON_FAIL_KEY] = "ignore";
+  Object.assign(next, COREPACK_READONLY_PROBE_ENV);
   return next;
 }
 

@@ -118,11 +118,20 @@ function userHome() {
   return process.env.USERPROFILE ?? homedir();
 }
 
+function defaultCorepackHome(env: NodeJS.ProcessEnv = process.env) {
+  if (env.COREPACK_HOME) return env.COREPACK_HOME;
+  const baseCacheDir = env.XDG_CACHE_HOME
+    ?? env.LOCALAPPDATA
+    ?? join(userHome(), process.platform === "win32" ? "AppData/Local" : ".cache");
+  return join(baseCacheDir, "node", "corepack");
+}
+
 function isolatedProbeEnv(root: string) {
   const cacheRoot = join(root, "cache");
   const pnpmHome = join(root, "pnpm-home");
   mkdirSync(cacheRoot, { recursive: true });
   mkdirSync(pnpmHome, { recursive: true });
+  const corepackHome = defaultCorepackHome(process.env);
   const env: NodeJS.ProcessEnv = {
     ...process.env,
     PNPM_HOME: pnpmHome,
@@ -132,9 +141,12 @@ function isolatedProbeEnv(root: string) {
     pnpm_config_store_dir: join(cacheRoot, "pnpm-store"),
     pnpm_config_state_dir: join(cacheRoot, "pnpm-state"),
   };
+  if (existsSync(corepackHome)) {
+    env.COREPACK_HOME = corepackHome;
+  }
   delete env.pnpm_config_pm_on_fail;
   delete env.PNPM_CONFIG_PM_ON_FAIL;
-  return { cacheRoot, env, pnpmHome };
+  return { cacheRoot, corepackHome, env, pnpmHome };
 }
 
 function writeManifest(cwd: string, packageManager?: string) {
@@ -266,6 +278,8 @@ describe("doctor", () => {
       GH_TOKEN: "not-a-secret-for-this-test",
       pnpm_config_pm_on_fail: "download",
       PNPM_CONFIG_PM_ON_FAIL: "download",
+      COREPACK_ENABLE_PROJECT_SPEC: "1",
+      COREPACK_ENABLE_NETWORK: "1",
     };
     const parentBefore = process.env.pnpm_config_pm_on_fail;
     const { calls, commandRunner } = capturingRunner(commandResults());
@@ -284,13 +298,24 @@ describe("doctor", () => {
     expect(pnpmCall?.options?.env?.pnpm_config_pm_on_fail).toBe("ignore");
     expect(pnpmCall?.options?.env?.PNPM_CONFIG_PM_ON_FAIL).toBeUndefined();
     expect(pnpmEnvKeys).toEqual(["pnpm_config_pm_on_fail"]);
+    expect(pnpmCall?.options?.env?.COREPACK_ENABLE_PROJECT_SPEC).toBe("0");
+    expect(pnpmCall?.options?.env?.COREPACK_ENABLE_NETWORK).toBe("0");
+    expect(pnpmCall?.options?.env?.COREPACK_ENABLE_AUTO_PIN).toBe("0");
+    expect(pnpmCall?.options?.env?.COREPACK_ENABLE_DOWNLOAD_PROMPT).toBe("0");
+    expect(pnpmCall?.options?.env?.COREPACK_DEFAULT_TO_LATEST).toBe("0");
     expect(nodeCall?.options?.env?.pnpm_config_pm_on_fail).toBe("download");
     expect(nodeCall?.options?.env?.PNPM_CONFIG_PM_ON_FAIL).toBe("download");
+    expect(nodeCall?.options?.env?.COREPACK_ENABLE_PROJECT_SPEC).toBe("1");
+    expect(nodeCall?.options?.env?.COREPACK_ENABLE_NETWORK).toBe("1");
     expect(env.pnpm_config_pm_on_fail).toBe("download");
     expect(env.PNPM_CONFIG_PM_ON_FAIL).toBe("download");
+    expect(env.COREPACK_ENABLE_PROJECT_SPEC).toBe("1");
+    expect(env.COREPACK_ENABLE_NETWORK).toBe("1");
     expect(process.env.pnpm_config_pm_on_fail).toBe(parentBefore);
     expect(withPnpmReadonlyProbeEnv(env).PNPM_CONFIG_PM_ON_FAIL).toBeUndefined();
     expect(withPnpmReadonlyProbeEnv(env).pnpm_config_pm_on_fail).toBe("ignore");
+    expect(withPnpmReadonlyProbeEnv(env).COREPACK_ENABLE_PROJECT_SPEC).toBe("0");
+    expect(withPnpmReadonlyProbeEnv(env).COREPACK_ENABLE_NETWORK).toBe("0");
   });
 
   it("classifies an owned subprocess timeout as a mismatch without raising the probe deadline", { timeout: 15_000 }, () => {
@@ -371,12 +396,13 @@ describe("doctor", () => {
     const root = makeTempDir("doctor-pnpm-readonly-");
     const cwd = join(root, "cwd");
     writeManifest(cwd, packageManager);
-    const { cacheRoot, env, pnpmHome } = isolatedProbeEnv(root);
+    const { cacheRoot, corepackHome, env, pnpmHome } = isolatedProbeEnv(root);
     const repoBytesBefore = readFileSync(repoPackageJsonPath);
     const parentPmOnFail = process.env.pnpm_config_pm_on_fail;
     const parentPnpmHome = process.env.PNPM_HOME;
     const cacheBefore = listRelativePaths(cacheRoot);
     const homeBefore = listRelativePaths(pnpmHome);
+    const corepackBefore = listRelativePaths(corepackHome);
     const engineVersionsBefore = scoopPnpmEngineVersions();
     const storeMarkersBefore = scoopPnpmEngineStoreMarkerNames();
     const { calls, commandRunner } = capturingPnpmProbeRunner();
@@ -394,6 +420,8 @@ describe("doctor", () => {
     expect(pnpmCall?.args).toEqual(["--version"]);
     expect(pnpmCall?.options?.cwd).toBe(cwd);
     expect(pnpmCall?.options?.env?.pnpm_config_pm_on_fail).toBe("ignore");
+    expect(pnpmCall?.options?.env?.COREPACK_ENABLE_PROJECT_SPEC).toBe("0");
+    expect(pnpmCall?.options?.env?.COREPACK_ENABLE_NETWORK).toBe("0");
     expect(pnpmCall?.options?.env).not.toBe(process.env);
 
     const pnpm = checks.find((check) => check.id === "pnpm");
@@ -410,6 +438,7 @@ describe("doctor", () => {
     expect(packageFetchArtifacts(homeNew)).toEqual([]);
     expect(cacheNew).toEqual([]);
     expect(homeNew).toEqual([]);
+    expect(listRelativePaths(corepackHome)).toEqual(corepackBefore);
     expect(scoopPnpmEngineVersions()).toEqual(engineVersionsBefore);
     expect(scoopPnpmEngineStoreMarkerNames()).toEqual(storeMarkersBefore);
     expect(readFileSync(repoPackageJsonPath)).toEqual(repoBytesBefore);
