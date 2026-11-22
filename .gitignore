@@ -67,3 +67,6 @@ ref/
 # spark visual-companion brainstorm sessions
 .superpowers/
 .worktrees/
+
+# local skills CLI lockfile
+skills-lock.json
