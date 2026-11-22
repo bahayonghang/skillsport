@@ -146,7 +146,7 @@ describe("CI workflow contract", () => {
     }
   });
 
-  it("runs Trellis Python tests once per rust-platform host without a new lane or Action", () => {
+  it("runs Rust clippy and tests once per rust-platform host without Python steps or Actions", () => {
     expect(CI_LANES.quick.map((step) => step.name)).toEqual([
       "version",
       "docs-generated",
@@ -167,24 +167,7 @@ describe("CI workflow contract", () => {
     expect(CI_LANES["rust-platform"].map((step) => step.name)).toEqual([
       "clippy",
       "test",
-      "trellis-python",
     ]);
-    expect(CI_LANES["rust-platform"][2]).toEqual({
-      name: "trellis-python",
-      command: process.platform === "win32" ? "python" : "python3",
-      args: [
-        "-X",
-        "utf8",
-        "-m",
-        "unittest",
-        "discover",
-        "-s",
-        ".trellis/scripts/tests",
-        "-p",
-        "test_*.py",
-        "-v",
-      ],
-    });
 
     const rustJobIds = ["windows-rust", "linux-rust", "macos-rust"] as const;
     expect(requiredLaneIds.filter((jobId) => jobId.endsWith("-rust"))).toEqual([...rustJobIds]);

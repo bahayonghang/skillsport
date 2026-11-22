@@ -9,7 +9,6 @@ session key there is no active task.
 from __future__ import annotations
 
 import hashlib
-import json
 import os
 import re
 import sys
@@ -19,12 +18,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from .io import read_json as _io_read_json, write_json as _io_write_json
+
 DIR_WORKFLOW = ".trellis"
 DIR_TASKS = "tasks"
-DIR_ARCHIVE = "archive"
 DIR_RUNTIME = ".runtime"
 DIR_SESSIONS = "sessions"
-FILE_TASK_JSON = "task.json"
 DIR_SHELL_TICKETS = "shell-tickets"
 # Pre-0.6.13 name, when the bridge was Cursor-only. Still read so a session that
 # was mid-command across an upgrade does not silently degrade; never written.
@@ -57,6 +56,7 @@ _KNOWN_PLATFORMS = {
     "kimi",
     "zcode",
     "snow",
+    "dsh",
 }
 
 # Every name below records how it was checked. Do NOT add a name by analogy
@@ -66,6 +66,19 @@ _KNOWN_PLATFORMS = {
 # only "evidence" behind them. A platform with no verified name belongs in no
 # table; it resolves through TRELLIS_CONTEXT_ID or its hook/plugin bridge.
 _ENV_SESSION_KEYS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    # REAL (reported 2026-08-13 against DSH 0.1.0-rc.6 by @SajoLuo, from a live
+    # run: DSH exports DSH_SESSION_ID plus DSH_SHELL=1 into its managed shell).
+    # MUST STAY FIRST. A DSH session can inherit an outer host's identity — a
+    # DSH launched from Codex still carries CODEX_THREAD_ID — and the untargeted
+    # lookup below walks this table in order, so any earlier entry would claim
+    # the session and write a foreign `codex_<thread>` pointer for DSH work.
+    # DSH_SESSION_ID is vendor-specific, so first place
+    # is safe: it cannot mis-claim a non-DSH session.
+    ("dsh", ("DSH_SESSION_ID",)),
+    # ZCode 3.17.2 bundles core 0.17.1, whose hook and Bash runners export
+    # ZCODE_SESSION_ID as well as Claude compatibility aliases. Prefer the
+    # native identity so hook stdin and later shell commands share one key.
+    ("zcode", ("ZCODE_SESSION_ID",)),
     # REAL, undocumented (verified 2026-08-05 in a live Claude Code 2.1.221 bash
     # child; absent from code.claude.com/docs/en/env-vars). CLAUDE_SESSION_ID
     # was removed here — verified absent from that same live environment.
@@ -94,16 +107,6 @@ _ENV_SESSION_KEYS: tuple[tuple[str, tuple[str, ...]], ...] = (
     # `copilot help environment` (the authoritative list per those docs) — not
     # runnable here, the CLI is not installed and copilot-cli ships no source.
     ("copilot", ("COPILOT_SESSION_ID", "COPILOT_SESSIONID")),
-    # REASONED, UNVERIFIED (2026-08-05): ZCode is closed-source and not
-    # installable here. It mirrors Claude's naming elsewhere (CLAUDE_PLUGIN_ROOT
-    # / CLAUDE_PLUGIN_DATA compat aliases are in its docs), and the previously
-    # declared CLAUDE_SESSION_ID does not exist on Claude Code either — so the
-    # name ZCode would actually reuse is CLAUDE_CODE_SESSION_ID. Try that first,
-    # keep the historical name as a fallback: if neither exists nothing changes.
-    # Platform-scoped lookup (_iter_env_keys filters by platform name), so the
-    # entry only fires once the resolver detected "zcode" — no collision with
-    # the claude entry above.
-    ("zcode", ("CLAUDE_CODE_SESSION_ID", "CLAUDE_SESSION_ID")),
     # REAL by vendor design (verified 2026-08-05): Snow's sessionIdentityEnv.ts
     # exports SNOW_SESSION_ID into hook/terminal/sub-agent children and names
     # Trellis in its source header. TRELLIS_CONTEXT_ID stays the preferred
@@ -139,11 +142,7 @@ _ENV_PLATFORM_ALIASES = {
     "factory-ai": "droid",
     "github-copilot": "copilot",
 }
-# ZCode intentionally reuses Claude's session env var name. Hooks know the host
-# is ZCode, while later shell commands see only the shared env name and resolve
-# it through the claude entry. Canonicalize both paths to one runtime filename.
 _CONTEXT_KEY_PLATFORM_ALIASES = {
-    "zcode": "claude",
     # Factory Droid's config directory is `.factory/`, so a hook that names its
     # platform after the directory it was installed in reports "factory". Its
     # sibling hooks report "droid". One runtime filename either way.
@@ -153,20 +152,12 @@ _CONTEXT_KEY_PLATFORM_ALIASES = {
 
 @dataclass(frozen=True)
 class ActiveTask:
-    """Resolved active task state.
-
-    ``task_path`` is set only for an executable current task. Invalid pointers
-    keep ``stale=True`` plus ``pointer`` / ``invalid_reason`` diagnostics and
-    never populate ``task_path``.
-    """
+    """Resolved active task state."""
 
     task_path: str | None
     source_type: str
     context_key: str | None = None
     stale: bool = False
-    pointer: str | None = None
-    invalid_reason: str | None = None
-    archive_path: str | None = None
 
     @property
     def source(self) -> str:
@@ -176,10 +167,6 @@ class ActiveTask:
         if self.source_type == "session-fallback" and self.context_key:
             return f"session-fallback:{self.context_key}"
         return self.source_type
-
-    @property
-    def is_executable(self) -> bool:
-        return bool(self.task_path) and not self.stale and self.invalid_reason is None
 
 
 def normalize_task_ref(task_ref: str) -> str:
@@ -203,19 +190,54 @@ def normalize_task_ref(task_ref: str) -> str:
 
 
 def resolve_task_ref(task_ref: str, repo_root: Path) -> Path | None:
-    """Resolve a task ref to an absolute task directory."""
+    """Resolve a task ref to an absolute task directory inside the repo.
+
+    Mirrors `paths.resolve_task_ref` (same containment check). Duplicated
+    rather than imported because this module is loaded standalone — hooks add
+    it to `sys.path` directly — so it stays zero-relative-import on purpose.
+    """
     normalized = normalize_task_ref(task_ref)
     if not normalized:
         return None
 
+    try:
+        root = repo_root.resolve()
+    except OSError:
+        return None
+
     path_obj = Path(normalized)
     if path_obj.is_absolute():
-        return path_obj
+        candidate = path_obj
+    elif normalized.startswith(f"{DIR_WORKFLOW}/"):
+        candidate = root / path_obj
+    else:
+        candidate = root / DIR_WORKFLOW / DIR_TASKS / path_obj
 
-    if normalized.startswith(f"{DIR_WORKFLOW}/"):
-        return repo_root / path_obj
+    # Both sides are resolved because repo_root itself may sit behind a
+    # symlink (/tmp on macOS does), and resolve() is what collapses `..`
+    # instead of leaving it for a lexical relative_to() to wave through.
+    try:
+        resolved = candidate.resolve()
+        workflow_real = (root / DIR_WORKFLOW).resolve()
+    except OSError:
+        return None
 
-    return repo_root / DIR_WORKFLOW / DIR_TASKS / path_obj
+    try:
+        resolved.relative_to(root)
+        return resolved
+    except ValueError:
+        pass
+
+    # `.trellis` may itself be a symlink into a store outside the repo (#567).
+    # The workflow dir's own real location is then a second legitimate
+    # containment base; a ref that escapes BOTH bases is still refused. Map
+    # back to the in-repo (lexical) form so callers store a repo-relative ref.
+    try:
+        rel = resolved.relative_to(workflow_real)
+    except ValueError:
+        return None
+
+    return root / DIR_WORKFLOW / rel
 
 
 def _runtime_sessions_dir(repo_root: Path) -> Path:
@@ -524,105 +546,24 @@ def resolve_context_key(
 
 
 def _read_json(path: Path) -> dict[str, Any] | None:
-    try:
-        data = json.loads(path.read_text(encoding="utf-8"))
-    except (FileNotFoundError, json.JSONDecodeError, OSError):
-        return None
+    """Tolerant read of a session runtime file, non-objects included."""
+    data = _io_read_json(path)
     return data if isinstance(data, dict) else None
 
 
 def _write_json(path: Path, data: dict[str, Any]) -> bool:
+    """Write a session runtime file atomically, creating the runtime dir.
+
+    Routes through io.write_json so session pointers get the same
+    temp-file-then-rename treatment as task.json (#429). A plain write_text
+    truncates the target first, so a crash mid-write would leave a session
+    file that reads back as no active task.
+    """
     try:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(
-            json.dumps(data, indent=2, ensure_ascii=False) + "\n",
-            encoding="utf-8",
-        )
-        return True
     except OSError:
         return False
-
-
-def _posix_relative(path: Path, repo_root: Path) -> str:
-    try:
-        return path.relative_to(repo_root).as_posix()
-    except ValueError:
-        return str(path)
-
-
-def _archive_root(repo_root: Path) -> Path:
-    return repo_root / DIR_WORKFLOW / DIR_TASKS / DIR_ARCHIVE
-
-
-def _is_under_archive(resolved: Path, repo_root: Path) -> bool:
-    archive_root = _archive_root(repo_root)
-    try:
-        resolved.resolve().relative_to(archive_root.resolve())
-        return True
-    except (ValueError, OSError):
-        return False
-
-
-def _task_dir_name(task_ref: str, repo_root: Path) -> str:
-    resolved = resolve_task_ref(task_ref, repo_root)
-    if resolved is not None:
-        return resolved.name
-    normalized = normalize_task_ref(task_ref)
-    return Path(normalized).name if normalized else ""
-
-
-def _find_archived_location(task_ref: str, repo_root: Path) -> Path | None:
-    archive_root = _archive_root(repo_root)
-    if not archive_root.is_dir():
-        return None
-    name = _task_dir_name(task_ref, repo_root)
-    if not name:
-        return None
-    try:
-        month_dirs = sorted(archive_root.iterdir())
-    except OSError:
-        return None
-    for month_dir in month_dirs:
-        if not month_dir.is_dir():
-            continue
-        candidate = month_dir / name
-        if candidate.is_dir():
-            return candidate
-    return None
-
-
-def _classify_pointer(
-    task_ref: str,
-    repo_root: Path,
-) -> tuple[str | None, bool, str | None, str | None]:
-    """Return ``(executable_path, stale, invalid_reason, archive_path)``."""
-    resolved = resolve_task_ref(task_ref, repo_root)
-    if resolved is not None and resolved.is_dir():
-        if _is_under_archive(resolved, repo_root):
-            return None, True, "archived", _posix_relative(resolved, repo_root)
-        task_json = resolved / FILE_TASK_JSON
-        if not task_json.is_file():
-            return None, True, "missing_task_json", None
-        data = _read_json(task_json)
-        if data is None:
-            return None, True, "missing_task_json", None
-        return _posix_relative(resolved, repo_root), False, None, None
-
-    archived = _find_archived_location(task_ref, repo_root)
-    if archived is not None:
-        return None, True, "archived", _posix_relative(archived, repo_root)
-    return None, True, "missing_directory", None
-
-
-def invalid_pointer_payload(active: ActiveTask) -> dict[str, Any] | None:
-    """Structured invalid-pointer diagnostic, or None when there is none."""
-    if not active.stale or not active.pointer:
-        return None
-    return {
-        "path": active.pointer,
-        "reason": active.invalid_reason,
-        "archive_path": active.archive_path,
-    }
+    return _io_write_json(path, data)
 
 
 def _canonical_task_ref(task_path: str, repo_root: Path) -> str | None:
@@ -633,9 +574,46 @@ def _canonical_task_ref(task_path: str, repo_root: Path) -> str | None:
     if full_path is None or not full_path.is_dir():
         return None
     try:
-        return full_path.relative_to(repo_root).as_posix()
+        return full_path.relative_to(repo_root.resolve()).as_posix()
     except ValueError:
-        return str(full_path)
+        # resolve_task_ref already refused everything outside the repo, so this
+        # is unreachable. Refuse rather than fall back to an absolute path —
+        # that fallback is how an out-of-repo ref used to reach the session
+        # pointer and get replayed on every later turn.
+        return None
+
+
+def _relative_task_ref(task_path: str, repo_root: Path) -> str:
+    """Repo-relative posix ref for a task path that need not exist.
+
+    `_canonical_task_ref` resolves through the filesystem and so refuses a task
+    directory that has been moved away. Rename needs to name both sides of the
+    move, one of which is always absent.
+    """
+    normalized = normalize_task_ref(task_path)
+    if not normalized:
+        return ""
+    candidate = Path(normalized)
+    if not candidate.is_absolute():
+        return normalized
+    try:
+        resolved = candidate.resolve()
+        root = repo_root.resolve()
+        workflow_real = (root / DIR_WORKFLOW).resolve()
+    except OSError:
+        return ""
+    try:
+        return resolved.relative_to(root).as_posix()
+    except ValueError:
+        pass
+    # Same dual-base containment as resolve_task_ref: a path through a
+    # symlinked `.trellis` (#567) maps back to its in-repo form; anything
+    # outside both bases is refused rather than stored as an absolute pointer.
+    try:
+        rel = resolved.relative_to(workflow_real)
+    except ValueError:
+        return ""
+    return (Path(DIR_WORKFLOW) / rel).as_posix()
 
 
 def _active_from_ref(
@@ -646,17 +624,9 @@ def _active_from_ref(
 ) -> ActiveTask | None:
     if not task_ref:
         return None
-    pointer = normalize_task_ref(task_ref) or task_ref
-    executable, stale, reason, archive = _classify_pointer(pointer, repo_root)
-    return ActiveTask(
-        executable,
-        source_type,
-        context_key,
-        stale,
-        pointer=pointer,
-        invalid_reason=reason,
-        archive_path=archive,
-    )
+    resolved = resolve_task_ref(task_ref, repo_root)
+    stale = resolved is None or not resolved.is_dir()
+    return ActiveTask(task_ref, source_type, context_key, stale)
 
 
 def _context_path(repo_root: Path, context_key: str) -> Path:
@@ -671,13 +641,12 @@ def resolve_active_task(
     allow_single_session_fallback: bool = False,
     allow_environment_context: bool = True,
 ) -> ActiveTask:
-    """Resolve the active task from this session's runtime pointer only.
+    """Resolve the active task from session runtime state only.
 
-    A determined ``context_key`` never borrows another session: missing own
-    pointer means this session has no task. Identity-less callers do not guess
-    a unique sibling session unless they explicitly opt into
-    ``allow_single_session_fallback``. Invalid pointers remain diagnostic
-    (stale) and are never an executable current task.
+    A stale session task is returned as stale. Missing context identity or a
+    Missing or unmatched session identity does not infer ownership from the
+    number of session files. Pull-based child-agent callers that cannot inherit
+    a parent identity must opt into the compatibility fallback explicitly.
     """
     context_key = resolve_context_key(
         platform_input,
@@ -690,7 +659,6 @@ def resolve_active_task(
         active = _active_from_ref(task_ref, repo_root, "session", context_key)
         if active:
             return active
-        return ActiveTask(None, "none", context_key)
 
     if allow_single_session_fallback:
         fallback = _resolve_single_session_fallback(repo_root)
@@ -703,9 +671,9 @@ def resolve_active_task(
 def _resolve_single_session_fallback(repo_root: Path) -> ActiveTask | None:
     """Return the task pointed at by the sole session file, if exactly one exists.
 
-    Opt-in only via ``allow_single_session_fallback``. Never used when a
-    context key is already determined. Returns None if 0 or ≥2 session files
-    are present.
+    Used when context-key resolution fails (typical for class-2 platform
+    sub-agents). Returns None if 0 or ≥2 session files are present — refuses
+    to pick across windows so 04-21's multi-session isolation contract holds.
     """
     sessions_dir = _runtime_sessions_dir(repo_root)
     if not sessions_dir.is_dir():
@@ -777,7 +745,7 @@ def set_active_task(
     context.setdefault("current_run", None)
     if not _write_json(context_path, context):
         return None
-    return ActiveTask(canonical, "session", context_key, pointer=canonical)
+    return ActiveTask(canonical, "session", context_key)
 
 
 def clear_active_task(
@@ -785,26 +753,18 @@ def clear_active_task(
     platform_input: dict[str, Any] | None = None,
     platform: str | None = None,
 ) -> ActiveTask:
-    """Clear this call's session file only.
-
-    Uses the determined context key for this call. No identity, or no own
-    session file, is a no-op and never deletes another session's pointer.
-    """
+    """Clear the active task by deleting its resolved session context file."""
     context_key = resolve_context_key(platform_input, platform)
     if not context_key:
         return ActiveTask(None, "none")
 
-    context_path = _context_path(repo_root, context_key)
-    context = _read_json(context_path) or {}
-    task_ref = _string_value(context.get("current_task"))
-    previous = _active_from_ref(task_ref, repo_root, "session", context_key)
-    if previous is None:
-        previous = ActiveTask(None, "none", context_key)
-
-    if not context_path.is_file():
+    previous = resolve_active_task(repo_root, platform_input, platform)
+    if not previous.task_path or not previous.context_key:
         return previous
 
-    _remove_file(context_path)
+    context_path = _context_path(repo_root, previous.context_key)
+    if context_path.is_file():
+        _remove_file(context_path)
     return previous
 
 
@@ -831,6 +791,48 @@ def clear_task_from_sessions(task_path: str, repo_root: Path) -> int:
             cleared += 1
 
     return cleared
+
+
+def repoint_task_in_sessions(old_path: str, new_path: str, repo_root: Path) -> int:
+    """Move every session pointer from `old_path` to `new_path`.
+
+    Rename is the one lifecycle step where the task survives under a different
+    name, so clearing the pointers (what archive does) would be wrong: the user
+    would silently lose their active task and have to run `task.py start`
+    again to get context injection back. Repointing keeps the session valid
+    across the rename.
+    """
+    # Not `_canonical_task_ref`: the caller repoints *after* moving the
+    # directory, so `old_path` no longer exists and canonicalization — which
+    # requires an existing directory — would return None for exactly the ref we
+    # need to match.
+    target = _relative_task_ref(old_path, repo_root)
+    replacement = _relative_task_ref(new_path, repo_root)
+    if not target or not replacement:
+        return 0
+
+    moved = 0
+    sessions_dir = _runtime_sessions_dir(repo_root)
+    if not sessions_dir.is_dir():
+        return moved
+
+    for session_path in sorted(sessions_dir.glob("*.json")):
+        context = _read_json(session_path)
+        if not context:
+            continue
+        current = _string_value(context.get("current_task"))
+        if not current:
+            continue
+        current_ref = _canonical_task_ref(current, repo_root) or _relative_task_ref(
+            current, repo_root
+        )
+        if current_ref != target:
+            continue
+        context["current_task"] = replacement
+        if _write_json(session_path, context):
+            moved += 1
+
+    return moved
 
 
 def get_current_task_source(

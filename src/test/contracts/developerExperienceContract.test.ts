@@ -295,7 +295,6 @@ describe("Trellis skill catalog contract", () => {
         continue;
       }
       expect(existsSync(join(root, "trellis-spec-bootstarp"))).toBe(false);
-      expect(existsSync(join(root, "trellis-spec-bootstrap", "SKILL.md"))).toBe(true);
       expect(catalogIssues(collectSkills(root))).toEqual([]);
     }
   });

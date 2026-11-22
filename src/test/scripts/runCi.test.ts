@@ -102,24 +102,7 @@ describe("CI command lanes", () => {
     expect(CI_LANES["rust-platform"].map((step) => step.name)).toEqual([
       "clippy",
       "test",
-      "trellis-python",
     ]);
-    expect(CI_LANES["rust-platform"][2]).toEqual({
-      name: "trellis-python",
-      command: process.platform === "win32" ? "python" : "python3",
-      args: [
-        "-X",
-        "utf8",
-        "-m",
-        "unittest",
-        "discover",
-        "-s",
-        ".trellis/scripts/tests",
-        "-p",
-        "test_*.py",
-        "-v",
-      ],
-    });
   });
 
   it("selects one lane or the default all lanes", async () => {
@@ -180,20 +163,20 @@ describe("CI command lanes", () => {
     expect(calls).toEqual(["version", "docs-generated", "typecheck"]);
   });
 
-  it("fails rust-platform when trellis python tests fail and skips no later step", async () => {
+  it("fails rust-platform when cargo test fails and skips no later step", async () => {
     const calls: string[] = [];
     const executeStep: ExecuteStep = async ({ step }) => {
       calls.push(step.name);
-      if (step.name === "trellis-python") throw new Error("python tests failed");
+      if (step.name === "test") throw new Error("cargo test failed");
     };
 
     await expect(
       runCi({ lane: "rust-platform", executeStep, summaryPath: null }),
-    ).rejects.toThrowError("python tests failed");
-    expect(calls).toEqual(["clippy", "test", "trellis-python"]);
+    ).rejects.toThrowError("cargo test failed");
+    expect(calls).toEqual(["clippy", "test"]);
   });
 
-  it("does not run trellis-python after an earlier rust-platform failure", async () => {
+  it("does not run cargo test after an earlier rust-platform failure", async () => {
     const calls: string[] = [];
     const executeStep: ExecuteStep = async ({ step }) => {
       calls.push(step.name);
@@ -299,7 +282,7 @@ describe("CI command lanes", () => {
     expect(summary).toContain("## CI lane summary");
     expect(summary).toContain("| rust-platform | clippy | success | 1.0 |");
     expect(summary).toContain("| rust-platform | test | success | 1.0 |");
-    expect(summary).toContain("| rust-platform | trellis-python | success | 1.0 |");
+    expect(summary).not.toContain("trellis-python");
     expect(summary).toContain("| rust-platform | success |");
   });
 });

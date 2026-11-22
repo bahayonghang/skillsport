@@ -9,19 +9,14 @@ Provides:
     get_context_text_record   - Text for record mode
     output_json               - Print JSON
     output_text               - Print text
-    get_update_hint           - Once-per-session "update available" line
 """
 
 from __future__ import annotations
 
 import json
-import os
-import re
-import subprocess
 import sys
 from pathlib import Path
 
-from .active_task import invalid_pointer_payload, resolve_active_task, resolve_context_key
 from .config import get_git_packages
 from .git import run_git
 from .packages_context import get_packages_section
@@ -34,6 +29,8 @@ from .paths import (
     DIR_WORKSPACE,
     count_lines,
     get_active_journal_file,
+    get_current_task,
+    get_current_task_source,
     get_developer,
     get_repo_root,
     get_tasks_dir,
@@ -44,12 +41,6 @@ from .paths import (
 # Helpers
 # =============================================================================
 
-_PACKAGE_NAME = "@mindfoldhq/trellis"
-_UPDATE_CHECK_TIMEOUT_SECONDS = 1.0
-_VERSION_RE = re.compile(
-    r"^\s*(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:-([0-9A-Za-z.-]+))?\s*$"
-)
-_VERSION_TOKEN_RE = re.compile(r"\b\d+(?:\.\d+){1,2}(?:-[0-9A-Za-z.-]+)?\b")
 _POLYREPO_IGNORED_DIRS = {
     "node_modules",
     "target",
@@ -316,243 +307,6 @@ def _append_package_git_context(lines: list[str], package_git_info: list[dict]) 
         lines.append("")
 
 
-def _read_project_version(repo_root: Path) -> str | None:
-    try:
-        version = (repo_root / DIR_WORKFLOW / ".version").read_text(
-            encoding="utf-8"
-        ).strip()
-    except OSError:
-        return None
-    return version or None
-
-
-def _fetch_trellis_version_output() -> str | None:
-    try:
-        result = subprocess.run(
-            ["trellis", "--version"],
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            timeout=_UPDATE_CHECK_TIMEOUT_SECONDS,
-        )
-    except (OSError, subprocess.SubprocessError, TimeoutError):
-        return None
-
-    if result.returncode != 0:
-        return None
-    output = f"{result.stdout}\n{result.stderr}".strip()
-    return output or None
-
-
-def _extract_available_update_version(output: str) -> str | None:
-    update_match = re.search(
-        r"Trellis update available:\s*"
-        r"(?P<current>\S+)\s*(?:→|->)\s*(?P<latest>\S+)",
-        output,
-    )
-    if update_match:
-        return update_match.group("latest").strip()
-    candidates = _VERSION_TOKEN_RE.findall(output)
-    return candidates[-1] if candidates else None
-
-
-def _resolve_available_update_version() -> str | None:
-    output = _fetch_trellis_version_output()
-    if not output:
-        return None
-    return _extract_available_update_version(output)
-
-
-def _parse_version(version: str) -> tuple[tuple[int, int, int], tuple[str, ...] | None] | None:
-    match = _VERSION_RE.match(version)
-    if not match:
-        return None
-    major, minor, patch, prerelease = match.groups()
-    numbers = (int(major), int(minor or "0"), int(patch or "0"))
-    prerelease_parts = tuple(prerelease.split(".")) if prerelease else None
-    return numbers, prerelease_parts
-
-
-def _compare_prerelease(
-    left: tuple[str, ...] | None,
-    right: tuple[str, ...] | None,
-) -> int:
-    if left is None and right is None:
-        return 0
-    if left is None:
-        return 1
-    if right is None:
-        return -1
-
-    for left_part, right_part in zip(left, right):
-        if left_part == right_part:
-            continue
-        left_numeric = left_part.isdigit()
-        right_numeric = right_part.isdigit()
-        if left_numeric and right_numeric:
-            left_int = int(left_part)
-            right_int = int(right_part)
-            return (left_int > right_int) - (left_int < right_int)
-        if left_numeric:
-            return -1
-        if right_numeric:
-            return 1
-        return (left_part > right_part) - (left_part < right_part)
-
-    return (len(left) > len(right)) - (len(left) < len(right))
-
-
-def _compare_versions(left: str, right: str) -> int | None:
-    parsed_left = _parse_version(left)
-    parsed_right = _parse_version(right)
-    if parsed_left is None or parsed_right is None:
-        return None
-
-    left_numbers, left_prerelease = parsed_left
-    right_numbers, right_prerelease = parsed_right
-    if left_numbers != right_numbers:
-        return (left_numbers > right_numbers) - (left_numbers < right_numbers)
-    return _compare_prerelease(left_prerelease, right_prerelease)
-
-
-def _update_marker_path(repo_root: Path, context_key: str | None = None) -> Path:
-    """Path of the once-per-session marker that throttles the update check.
-
-    `context_key` lets a caller that already resolved session identity pass it
-    in — the SessionStart hook reads the session id from hook stdin, which is
-    more reliable than this function's environment-only fallback chain. Shell
-    entry points leave it None and keep the previous behavior.
-    """
-    if not context_key:
-        context_key = resolve_context_key()
-    if not context_key:
-        terminal_key = os.environ.get("TERM_SESSION_ID", "").strip()
-        context_key = terminal_key or f"ppid-{os.getppid()}"
-    safe_key = re.sub(r"[^A-Za-z0-9._-]+", "_", context_key).strip("._-")
-    if not safe_key:
-        safe_key = "session"
-    return (
-        repo_root
-        / DIR_WORKFLOW
-        / ".runtime"
-        / f"update-check-{safe_key[:160]}.marker"
-    )
-
-
-def _mark_update_check_attempted(
-    repo_root: Path,
-    context_key: str | None = None,
-) -> bool:
-    marker_path = _update_marker_path(repo_root, context_key)
-    if marker_path.exists():
-        return False
-    try:
-        marker_path.parent.mkdir(parents=True, exist_ok=True)
-        marker_path.write_text("checked\n", encoding="utf-8")
-    except OSError:
-        pass
-    return True
-
-
-def get_update_hint(repo_root: Path, context_key: str | None = None) -> str | None:
-    """Return the "update available" line for this session, at most once.
-
-    Public because the SessionStart hook imports it: the text-mode CLI path
-    (`get_context.py`) used to be the only caller, so hook-driven platforms —
-    Claude Code included — never saw the reminder at all.
-    """
-    marker_path = _update_marker_path(repo_root, context_key)
-    if marker_path.exists():
-        return None
-
-    current_version = _read_project_version(repo_root)
-    if not current_version:
-        return None
-
-    latest_version = _resolve_available_update_version()
-    if not latest_version:
-        return None
-
-    _mark_update_check_attempted(repo_root, context_key)
-    comparison = _compare_versions(current_version, latest_version)
-    if comparison is None or comparison >= 0:
-        return None
-
-    return (
-        f"Trellis update available: {current_version} -> {latest_version}, "
-        "run trellis update"
-    )
-
-
-def _resolve_current_task_view(repo_root: Path) -> tuple[dict | None, dict | None]:
-    """Consume one ActiveTask parse: executable current task vs invalid pointer."""
-    active = resolve_active_task(repo_root)
-    current_info = None
-    invalid_info = None
-    if active.task_path and not active.stale:
-        current_dir = repo_root / active.task_path
-        ct = load_task(current_dir)
-        current_info = {
-            "path": active.task_path,
-            "name": ct.name if ct else "",
-            "status": ct.status if ct else "",
-            "source": active.source_type,
-            "contextKey": active.context_key,
-            "description": ct.description if ct else "",
-            "created": ct.raw.get("createdAt", "unknown") if ct else "unknown",
-            "hasPrd": (current_dir / "prd.md").is_file(),
-        }
-    payload = invalid_pointer_payload(active)
-    if payload is not None:
-        invalid_info = {
-            "path": payload["path"],
-            "reason": payload["reason"],
-            "archivePath": payload["archive_path"],
-        }
-    return current_info, invalid_info
-
-
-def _append_current_task_sections(
-    lines: list[str],
-    repo_root: Path,
-    *,
-    include_details: bool,
-) -> None:
-    current_info, invalid_info = _resolve_current_task_view(repo_root)
-    lines.append("## CURRENT TASK")
-    if current_info:
-        lines.append(f"Path: {current_info['path']}")
-        source = current_info["source"]
-        key = current_info["contextKey"]
-        lines.append(f"Source: {source}" + (f":{key}" if key else ""))
-        if current_info.get("name"):
-            lines.append(f"Name: {current_info['name']}")
-        if current_info.get("status"):
-            lines.append(f"Status: {current_info['status']}")
-        if include_details:
-            created = current_info.get("created")
-            if created:
-                lines.append(f"Created: {created}")
-            description = current_info.get("description")
-            if description:
-                lines.append(f"Description: {description}")
-            if current_info.get("hasPrd"):
-                lines.append("")
-                lines.append("[!] This task has prd.md - read it for task details")
-    else:
-        lines.append("(none)")
-    lines.append("")
-    if invalid_info:
-        lines.append("## INVALID POINTER")
-        lines.append(f"Path: {invalid_info['path']}")
-        lines.append(f"Reason: {invalid_info['reason']}")
-        archive_path = invalid_info.get("archivePath")
-        if archive_path:
-            lines.append(f"Archived at: {archive_path}")
-        lines.append("")
-
-
 # =============================================================================
 # JSON Output
 # =============================================================================
@@ -621,10 +375,6 @@ def get_context_json(repo_root: Path | None = None) -> dict:
         },
     }
 
-    current_info, invalid_info = _resolve_current_task_view(repo_root)
-    result["currentTask"] = current_info
-    result["invalidPointer"] = invalid_info
-
     if pkg_git_info:
         result["packageGit"] = pkg_git_info
 
@@ -669,7 +419,7 @@ def get_context_text(repo_root: Path | None = None) -> str:
     lines.append("## DEVELOPER")
     if not developer:
         lines.append(
-            f"ERROR: Not initialized. Run: python ./{DIR_WORKFLOW}/{DIR_SCRIPTS}/init_developer.py <name>"
+            f"ERROR: Not initialized. Run: python3 ./{DIR_WORKFLOW}/{DIR_SCRIPTS}/init_developer.py <name>"
         )
         return "\n".join(lines)
 
@@ -688,8 +438,33 @@ def get_context_text(repo_root: Path | None = None) -> str:
         ),
     )
 
-    # Current task (executable only) plus invalid-pointer diagnostics
-    _append_current_task_sections(lines, repo_root, include_details=True)
+    # Current task
+    lines.append("## CURRENT TASK")
+    current_task = get_current_task(repo_root)
+    if current_task:
+        current_task_dir = repo_root / current_task
+        source_type, context_key, _ = get_current_task_source(repo_root)
+        lines.append(f"Path: {current_task}")
+        lines.append(
+            f"Source: {source_type}" + (f":{context_key}" if context_key else "")
+        )
+
+        ct = load_task(current_task_dir)
+        if ct:
+            lines.append(f"Name: {ct.name}")
+            lines.append(f"Status: {ct.status}")
+            lines.append(f"Created: {ct.raw.get('createdAt', 'unknown')}")
+            if ct.description:
+                lines.append(f"Description: {ct.description}")
+
+        # Check for prd.md
+        prd_file = current_task_dir / "prd.md"
+        if prd_file.is_file():
+            lines.append("")
+            lines.append("[!] This task has prd.md - read it for task details")
+    else:
+        lines.append("(none)")
+    lines.append("")
 
     # Active tasks
     lines.append("## ACTIVE TASKS")
@@ -805,16 +580,20 @@ def get_context_record_json(repo_root: Path | None = None) -> dict:
                 "meta": t.meta,
             })
 
-    current_info, invalid_info = _resolve_current_task_view(repo_root)
+    # Current task
     current_task_info = None
-    if current_info:
-        current_task_info = {
-            "path": current_info["path"],
-            "name": current_info["name"],
-            "status": current_info["status"],
-            "source": current_info["source"],
-            "contextKey": current_info["contextKey"],
-        }
+    current_task = get_current_task(repo_root)
+    if current_task:
+        source_type, context_key, _ = get_current_task_source(repo_root)
+        ct = load_task(repo_root / current_task)
+        if ct:
+            current_task_info = {
+                "path": current_task,
+                "name": ct.name,
+                "status": ct.status,
+                "source": source_type,
+                "contextKey": context_key,
+            }
 
     # Package git repos
     pkg_git_info = _collect_package_git_info(
@@ -833,7 +612,6 @@ def get_context_record_json(repo_root: Path | None = None) -> dict:
         },
         "myTasks": my_tasks,
         "currentTask": current_task_info,
-        "invalidPointer": invalid_info,
     }
 
     if pkg_git_info:
@@ -860,7 +638,7 @@ def get_context_text_record(repo_root: Path | None = None) -> str:
     developer = get_developer(repo_root)
     if not developer:
         lines.append(
-            f"ERROR: Not initialized. Run: python ./{DIR_WORKFLOW}/{DIR_SCRIPTS}/init_developer.py <name>"
+            f"ERROR: Not initialized. Run: python3 ./{DIR_WORKFLOW}/{DIR_SCRIPTS}/init_developer.py <name>"
         )
         return "\n".join(lines)
 
@@ -897,8 +675,22 @@ def get_context_text_record(repo_root: Path | None = None) -> str:
         ),
     )
 
-    # CURRENT TASK (executable only) plus invalid-pointer diagnostics
-    _append_current_task_sections(lines, repo_root, include_details=False)
+    # CURRENT TASK
+    lines.append("## CURRENT TASK")
+    current_task = get_current_task(repo_root)
+    if current_task:
+        source_type, context_key, _ = get_current_task_source(repo_root)
+        lines.append(f"Path: {current_task}")
+        lines.append(
+            f"Source: {source_type}" + (f":{context_key}" if context_key else "")
+        )
+        ct = load_task(repo_root / current_task)
+        if ct:
+            lines.append(f"Name: {ct.name}")
+            lines.append(f"Status: {ct.status}")
+    else:
+        lines.append("(none)")
+    lines.append("")
 
     lines.append("========================================")
 
@@ -913,8 +705,4 @@ def output_text(repo_root: Path | None = None) -> None:
     """
     if repo_root is None:
         repo_root = get_repo_root()
-    update_hint = get_update_hint(repo_root)
-    if update_hint:
-        print(update_hint)
-        print("")
     print(get_context_text(repo_root))

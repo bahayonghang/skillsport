@@ -17,6 +17,8 @@ import re
 from datetime import datetime
 from pathlib import Path
 
+from .git import main_worktree_root
+
 
 # =============================================================================
 # Path Constants (change here to rename directories)
@@ -36,13 +38,24 @@ FILE_CURRENT_TASK = ".current-task"
 FILE_TASK_JSON = "task.json"
 FILE_JOURNAL_PREFIX = "journal-"
 
+# Environment override for the developer identity, ahead of the .developer file.
+ENV_DEVELOPER = "TRELLIS_DEVELOPER"
+
+# Appended to every "no developer set" error so the two non-obvious sources are
+# discoverable from the failure itself.
+DEVELOPER_HINT = (
+    f"  Or set {ENV_DEVELOPER}=<your-name> in the environment.\n"
+    f"  A linked git worktree inherits {DIR_WORKFLOW}/{FILE_DEVELOPER} from its "
+    f"main checkout — run init_developer.py there to cover every worktree."
+)
+
 
 # =============================================================================
 # Repository Root
 # =============================================================================
 
 def get_repo_root(start_path: Path | None = None) -> Path:
-    """Find the nearest directory containing .trellis/ folder.
+    """Find the nearest initialized project, bounded by an independent Git root.
 
     This handles nested git repos correctly (e.g., test project inside another repo).
 
@@ -50,25 +63,64 @@ def get_repo_root(start_path: Path | None = None) -> Path:
         start_path: Starting directory to search from. Defaults to current directory.
 
     Returns:
-        Path to repository root, or current directory if no .trellis/ found.
+        Nearest initialized project or independent Git root; otherwise the
+        original starting directory.
     """
     current = (start_path or Path.cwd()).resolve()
 
-    while current != current.parent:
-        if (current / DIR_WORKFLOW).is_dir():
+    start = current
+    while True:
+        trellis = current / DIR_WORKFLOW
+        if trellis.is_dir() and not trellis.is_symlink():
             return current
+        if (current / ".git").exists():
+            return current
+        if current == current.parent:
+            break
         current = current.parent
 
     # Fallback to current directory if no .trellis/ found
-    return Path.cwd().resolve()
+    return start
 
 
 # =============================================================================
 # Developer
 # =============================================================================
 
+def _read_developer_file(dev_file: Path) -> str | None:
+    """Read the `name=` field out of a .developer file, or None."""
+    if not dev_file.is_file():
+        return None
+
+    try:
+        content = dev_file.read_text(encoding="utf-8")
+    except (OSError, IOError):
+        return None
+
+    for line in content.splitlines():
+        if line.startswith("name="):
+            return line.split("=", 1)[1].strip() or None
+
+    return None
+
+
 def get_developer(repo_root: Path | None = None) -> str | None:
-    """Get developer name from .developer file.
+    """Get the developer name for this checkout.
+
+    Resolution order, first hit wins (a CLI `--assignee` flag overrides all of
+    it, before this function is ever called):
+
+        1. The ``TRELLIS_DEVELOPER`` environment variable.
+        2. ``.trellis/.developer`` in this checkout.
+        3. ``.trellis/.developer`` in the main checkout, when this checkout is a
+           linked git worktree.
+
+    Step 3 exists because `.developer` is gitignored on purpose — it carries a
+    personal identity and no tracked file should. A fresh `git worktree add`
+    therefore starts with no identity file of its own, which used to make every
+    task.py command fail until init_developer.py was re-run per worktree. The
+    main checkout's file is read, never copied: a copy would go stale and shadow
+    later changes made in the main checkout.
 
     Args:
         repo_root: Repository root path. Defaults to auto-detected.
@@ -76,51 +128,22 @@ def get_developer(repo_root: Path | None = None) -> str | None:
     Returns:
         Developer name or None if not initialized.
     """
+    env_name = os.environ.get(ENV_DEVELOPER, "").strip()
+    if env_name:
+        return env_name
+
     if repo_root is None:
         repo_root = get_repo_root()
 
-    dev_file = repo_root / DIR_WORKFLOW / FILE_DEVELOPER
+    local = _read_developer_file(repo_root / DIR_WORKFLOW / FILE_DEVELOPER)
+    if local:
+        return local
 
-    if not dev_file.is_file():
+    main_root = main_worktree_root(repo_root)
+    if main_root is None:
         return None
 
-    try:
-        content = dev_file.read_text(encoding="utf-8")
-        for line in content.splitlines():
-            if line.startswith("name="):
-                return line.split("=", 1)[1].strip()
-    except (OSError, IOError):
-        pass
-
-    return None
-
-
-def get_developer_workflow(repo_root: Path | None = None) -> str | None:
-    """Get the personal workflow override from the .developer file.
-
-    Reads an optional ``workflow=<id>`` line from the gitignored ``.developer``
-    file — the per-developer, git-excluded override that outranks the
-    team-shared ``default_workflow`` in config.yaml. Returns None when the file
-    or the line is absent/blank. Never raises. Additive to ``get_developer``:
-    the ``name=`` reader ignores this line and vice versa.
-    """
-    if repo_root is None:
-        repo_root = get_repo_root()
-
-    dev_file = repo_root / DIR_WORKFLOW / FILE_DEVELOPER
-
-    if not dev_file.is_file():
-        return None
-
-    try:
-        content = dev_file.read_text(encoding="utf-8")
-        for line in content.splitlines():
-            if line.startswith("workflow="):
-                return line.split("=", 1)[1].strip() or None
-    except (OSError, IOError):
-        pass
-
-    return None
+    return _read_developer_file(main_root / DIR_WORKFLOW / FILE_DEVELOPER)
 
 
 def check_developer(repo_root: Path | None = None) -> bool:
@@ -262,7 +285,25 @@ def normalize_task_ref(task_ref: str) -> str:
 
 
 def resolve_task_ref(task_ref: str, repo_root: Path | None = None) -> Path | None:
-    """Resolve a task ref to an absolute task directory path."""
+    """Resolve a task ref to an absolute task directory path inside the repo.
+
+    Returns None when the ref resolves outside `repo_root`. Every reader of the
+    active task — `task.py`, the shared hooks, the platform extensions — comes
+    through here, so containment is enforced at this one point rather than at
+    each call site.
+
+    It matters because a ref is not always something the user typed. It round
+    trips through the session pointer under `.trellis/.runtime/sessions/`, and
+    `..` segments used to survive that trip intact: `_canonical_task_ref`
+    compares lexically, and a lexical `relative_to` accepts
+    `<root>/.trellis/tasks/../../../elsewhere` because the string does start
+    with the root. The ref was then stored verbatim and replayed on every later
+    turn, so `task.py start .trellis/tasks/../../../elsewhere` both rewrote that
+    directory's `task.json` and fed its files to the model.
+
+    Resolving here also normalises the path, so callers get a ref without `..`
+    to store.
+    """
     if repo_root is None:
         repo_root = get_repo_root()
 
@@ -270,14 +311,47 @@ def resolve_task_ref(task_ref: str, repo_root: Path | None = None) -> Path | Non
     if not normalized:
         return None
 
+    try:
+        root = repo_root.resolve()
+    except OSError:
+        return None
+
     path_obj = Path(normalized)
     if path_obj.is_absolute():
-        return path_obj
+        candidate = path_obj
+    elif normalized.startswith(f"{DIR_WORKFLOW}/"):
+        candidate = root / path_obj
+    else:
+        candidate = root / DIR_WORKFLOW / DIR_TASKS / path_obj
 
-    if normalized.startswith(f"{DIR_WORKFLOW}/"):
-        return repo_root / path_obj
+    # resolve() collapses `..` and follows symlinks, so a task directory that
+    # links outside the repo is refused too. Both sides are resolved because
+    # repo_root itself may sit behind a symlink (/tmp on macOS does).
+    try:
+        resolved = candidate.resolve()
+        workflow_real = (root / DIR_WORKFLOW).resolve()
+    except OSError:
+        return None
 
-    return repo_root / DIR_WORKFLOW / DIR_TASKS / path_obj
+    try:
+        resolved.relative_to(root)
+        return resolved
+    except ValueError:
+        pass
+
+    # `.trellis` may itself be a symlink into a store outside the repo (#567).
+    # The workflow dir's own real location is then a second legitimate
+    # containment base: a ref through that link never left the workflow tree.
+    # A ref that escapes BOTH bases (traversal, absolute path elsewhere, a
+    # task dir symlinked out of the tree) is still refused.
+    try:
+        rel = resolved.relative_to(workflow_real)
+    except ValueError:
+        return None
+
+    # Map back to the in-repo (lexical) form so callers store the same
+    # repo-relative ref as in the non-symlinked layout.
+    return root / DIR_WORKFLOW / rel
 
 
 def get_current_task(
@@ -298,10 +372,7 @@ def get_current_task(
 
     from .active_task import resolve_active_task
 
-    active = resolve_active_task(repo_root, platform_input, platform)
-    if not active.task_path or active.stale:
-        return None
-    return active.task_path
+    return resolve_active_task(repo_root, platform_input, platform).task_path
 
 
 def get_current_task_abs(
@@ -463,134 +534,6 @@ def get_package_path(package: str, repo_root: Path | None = None) -> Path | None
         rel_path = str(info)
 
     return repo_root / rel_path
-
-
-# =============================================================================
-# Repo containment (untrusted path -> canonical in-root path)
-# =============================================================================
-
-_DRIVE_PREFIX_RE = re.compile(r"^[A-Za-z]:")
-_EXTENDED_UNC_PREFIX = "\\\\?\\UNC\\"
-_EXTENDED_PATH_PREFIX = "\\\\?\\"
-_MANIFEST_DIAG_LIMIT = 80
-
-
-class PathContainmentError(ValueError):
-    """Untrusted path is not contained in the allowed root.
-
-    ``kind`` is a stable error category. ``manifest`` is the original untrusted
-    value (truncated in ``str(self)``). The resolved outside absolute path is
-    never included.
-    """
-
-    def __init__(self, kind: str, manifest: str = "") -> None:
-        self.kind = kind
-        self.manifest = manifest
-        shown = truncate_manifest_for_diag(manifest)
-        if shown:
-            super().__init__(f"{kind}: {shown}")
-        else:
-            super().__init__(kind)
-
-
-def truncate_manifest_for_diag(manifest: str, limit: int = _MANIFEST_DIAG_LIMIT) -> str:
-    """Truncate an untrusted manifest path for diagnostics (no resolving)."""
-    text = manifest.replace("\x00", "")
-    if len(text) <= limit:
-        return text
-    return text[: limit - 3] + "..."
-
-
-def _strip_extended_prefix(path: Path) -> Path:
-    text = str(path)
-    if text.startswith(_EXTENDED_UNC_PREFIX):
-        return Path("\\\\" + text[len(_EXTENDED_UNC_PREFIX) :])
-    if text.startswith(_EXTENDED_PATH_PREFIX):
-        return Path(text[len(_EXTENDED_PATH_PREFIX) :])
-    return path
-
-
-def canonical_path(path: Path) -> Path:
-    """Resolve ``path`` and strip Windows ``\\\\?\\`` extended prefixes."""
-    return _strip_extended_prefix(path.resolve())
-
-
-def _norm_parts(path: Path) -> tuple[str, ...]:
-    if os.name == "nt":
-        return tuple(os.path.normcase(part) for part in path.parts)
-    return path.parts
-
-
-def _is_parts_contained(path: Path, root: Path) -> bool:
-    """True when ``path`` is ``root`` or a descendant, using path components."""
-    path_parts = _norm_parts(path)
-    root_parts = _norm_parts(root)
-    if len(path_parts) < len(root_parts):
-        return False
-    return path_parts[: len(root_parts)] == root_parts
-
-
-def posix_relative_to(path: Path, root: Path) -> str:
-    """Return a POSIX relative path using components, not string prefixes."""
-    extra = path.parts[len(root.parts) :]
-    if not extra:
-        return "."
-    return Path(*extra).as_posix()
-
-
-def resolve_contained_path(untrusted: str, allowed_root: Path) -> Path:
-    """Resolve an untrusted relative path and require it stay in ``allowed_root``.
-
-    Performs lexical rejection (absolute, drive, UNC, ``..``) and a final
-    resolved containment check via path components / ``relative_to`` semantics.
-    Does not use string ``startswith``. Raises ``PathContainmentError``.
-    """
-    if not isinstance(untrusted, str):
-        raise PathContainmentError("lexical", "")
-    if "\x00" in untrusted:
-        raise PathContainmentError("lexical", untrusted)
-    if untrusted.strip() == "":
-        raise PathContainmentError("empty", untrusted)
-
-    raw = untrusted.replace("\\", "/")
-    if untrusted.startswith("\\\\") or raw.startswith("//"):
-        raise PathContainmentError("unc", untrusted)
-    if _DRIVE_PREFIX_RE.match(untrusted) or _DRIVE_PREFIX_RE.match(raw.lstrip("/")):
-        raise PathContainmentError("drive", untrusted)
-
-    if raw.startswith("/") or Path(untrusted).is_absolute():
-        raise PathContainmentError("absolute", untrusted)
-
-    parts: list[str] = []
-    for part in Path(raw).parts:
-        if part in ("/", "\\"):
-            continue
-        if part == "..":
-            raise PathContainmentError("dotdot", untrusted)
-        if part in ("", "."):
-            continue
-        parts.append(part)
-
-    allowed = canonical_path(allowed_root)
-    lexical = allowed.joinpath(*parts) if parts else allowed
-    if not _is_parts_contained(lexical, allowed):
-        raise PathContainmentError("lexical", untrusted)
-
-    try:
-        resolved = canonical_path(lexical)
-    except (OSError, RuntimeError) as exc:
-        raise PathContainmentError("unresolved", untrusted) from exc
-
-    if not _is_parts_contained(resolved, allowed):
-        raise PathContainmentError("escape", untrusted)
-
-    return resolved
-
-
-def contained_posix_relative(untrusted: str, allowed_root: Path) -> str:
-    """Return the canonical repo-relative POSIX path after containment."""
-    resolved = resolve_contained_path(untrusted, allowed_root)
-    return posix_relative_to(resolved, canonical_path(allowed_root))
 
 
 # =============================================================================

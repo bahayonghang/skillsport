@@ -4,16 +4,37 @@
 Add a new session to journal file and update index.md.
 
 Usage:
-    python add_session.py --title "Title" --commit "hash" --summary "Summary" [--package cli]
-    python add_session.py --title "Title" --branch "feat/my-branch"
+    python3 add_session.py --title "Title" --commit "hash" --summary "Summary" [--topic .trellis/research/topic.md]
+    python3 add_session.py --title "Title" --branch "feat/my-branch"
 
     # Pipe detailed content via stdin (use --stdin to opt in):
-    cat << 'EOF' | python add_session.py --stdin --title "Title" --summary "Summary"
+    cat << 'EOF' | python3 add_session.py --stdin --title "Title" --summary "Summary"
     <session content here>
     EOF
 
     # Structured content (repeatable; a section with no bullets is omitted):
-    python add_session.py --title "Title" --change "Did X" --test "Ran Y" --next-step "Do Z"
+    python3 add_session.py --title "Title" --change "Did X" --test "Ran Y" --next-step "Do Z"
+
+    # Commit evidence that cannot be resolved from the local object database
+    # (amended, not yet fetched) needs an explicit subject, one per OID:
+    python3 add_session.py --title "Title" --commit "abc1234" \
+        --commit-subject "abc1234=fix(cli): stop truncating the manifest"
+
+Commit evidence:
+    Every --commit token is a bounded hex OID (7-40 chars). Each one is
+    resolved to its real subject from the local object database BEFORE
+    anything is written. An OID that cannot be resolved fails the command
+    before the journal or index is touched — no placeholder prose is ever
+    recorded. Pass "-" (the default) when there are no associated commits.
+
+Retry convergence:
+    The journal append, the index row and the optional auto-commit are one
+    resumable operation. Every entry carries a fingerprint marker derived from
+    its own inputs, so re-running an interrupted command repairs the pending
+    record instead of appending a second one, and a failed auto-commit exits
+    non-zero with the checkpoint to resume from. A record that is already
+    committed is never reused: an identical later request is a new session
+    unless an explicit --idempotency-key says otherwise.
 
 Branch resolution order:
     1. --branch CLI arg (explicit)
@@ -25,10 +46,14 @@ Branch resolution order:
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
+import os
 import re
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
+from urllib.parse import quote
 
 from common.paths import (
     DIR_TASKS,
@@ -40,7 +65,9 @@ from common.paths import (
     get_workspace_dir,
 )
 from common.developer import ensure_developer
-from common.git import run_git
+from common.git import branch_exists_locally, run_git
+from common.io import write_text_atomic
+from common.recording_lock import recording_lock
 from common.log import Colors, colored
 from common.safe_commit import (
     print_gitignore_warning,
@@ -58,6 +85,42 @@ from common.config import (
     resolve_package,
     validate_package,
 )
+
+
+# Bounded, argv-safe input shapes. Anything outside them is rejected during
+# preflight, before a single byte is written.
+COMMIT_TOKEN_RE = re.compile(r"^[0-9a-fA-F]{7,40}$")
+IDEMPOTENCY_KEY_RE = re.compile(r"^[A-Za-z0-9._-]{1,64}$")
+MAX_SUBJECT_LEN = 500
+
+# Machine-readable record identity. An HTML comment renders as nothing, so the
+# human evidence in the entry is unchanged by its presence.
+MARKER_PREFIX = "<!-- trellis-session:"
+# Bumped when the fingerprint inputs change. Untagged markers are v1, whose
+# fingerprint mixed in the calendar date; see compute_record_fingerprint.
+MARKER_VERSION = 2
+TOPIC_MARKER_VERSION = 3
+LEGACY_MARKER_RE = re.compile(r"^<!-- trellis-session: fp=([0-9a-f]{16}) -->$")
+ENTRY_DATE_RE = re.compile(r"^\*\*Date\*\*: (\d{4}-\d{2}-\d{2})\s*$")
+SESSION_HEADING_RE = re.compile(r"^## Session (\d+):", re.MULTILINE)
+
+# Recording states, in the order the operation walks them.
+STATE_ABSENT = "absent"
+STATE_JOURNAL_RECORDED = "journal-recorded"
+STATE_INDEX_RECORDED = "index-recorded"
+STATE_COMMITTED = "committed"
+
+# Auto-commit outcomes.
+COMMIT_DONE = "committed"
+COMMIT_SKIPPED = "skipped"
+COMMIT_BLOCKED = "blocked"
+COMMIT_FAILED = "failed"
+
+# Git probes against other refs are best-effort; never let one hang a session.
+GIT_PROBE_TIMEOUT = 15.0
+# Upper bound on the refs folded into session numbering. A repo with hundreds
+# of stale branches must not turn session recording into a tree walk.
+MAX_CONVERGENCE_REFS = 100
 
 
 # =============================================================================
@@ -97,12 +160,23 @@ def get_current_session(index_file: Path) -> int:
         return 0
 
     content = index_file.read_text(encoding="utf-8")
+    return _max_session_in_index(content)
+
+
+def _max_session_in_index(content: str) -> int:
+    """Read the `Total Sessions` counter out of an index.md body."""
     for line in content.splitlines():
         if "Total Sessions" in line:
             match = re.search(r":\s*(\d+)", line)
             if match:
                 return int(match.group(1))
     return 0
+
+
+def _max_session_in_journal(content: str) -> int:
+    """Highest `## Session N:` heading in a journal body (0 when none)."""
+    numbers = [int(m.group(1)) for m in SESSION_HEADING_RE.finditer(content)]
+    return max(numbers) if numbers else 0
 
 
 def _extract_journal_num(filename: str) -> int:
@@ -202,22 +276,15 @@ def is_git_worktree(repo_root: Path) -> bool:
 
 
 def warn_if_parallel_worktree(repo_root: Path) -> None:
-    """Non-blocking note: index.md conflicts across parallel worktrees/branches
-    are expected and safe. Only fires when running in a linked git worktree
-    (not the main tree) with `session_auto_commit` enabled (#415 quick-fix tier).
-    """
-    if not get_session_auto_commit(repo_root):
-        return
+    """A checkout lock cannot coordinate uncommitted writes in other worktrees."""
     if not is_git_worktree(repo_root):
         return
     print(
         colored(
-            "[NOTE] Running in a git worktree with session_auto_commit enabled: "
-            "journal-*.md files auto-merge via .gitattributes, but index.md "
-            "conflicts across parallel worktrees/branches are expected and safe "
-            "to resolve by picking either side (task state lives in task.json, "
-            "not index.md). See .trellis/spec/cli/backend/directory-structure.md "
-            '("Workspace Journal Merge Behavior").',
+            "[NOTE] Parallel worktrees may assign the same session number "
+            "before either record is committed. After merging, check complete "
+            "journal entries and both index rows; union merge and picking one "
+            "index side do not guarantee complete records.",
             Colors.YELLOW,
         ),
         file=sys.stderr,
@@ -226,8 +293,8 @@ def warn_if_parallel_worktree(repo_root: Path) -> None:
 
 def create_new_journal_file(
     dev_dir: Path, num: int, developer: str, today: str, max_lines: int = 2000,
-) -> Path:
-    """Create a new journal file."""
+) -> Path | None:
+    """Create a new journal file. Returns None when the write fails."""
     prev_num = num - 1
     new_file = dev_dir / f"{FILE_JOURNAL_PREFIX}{num}.md"
 
@@ -239,9 +306,639 @@ def create_new_journal_file(
 ---
 
 """
-    new_file.write_text(content, encoding="utf-8")
+    if not write_text_atomic(new_file, content):
+        return None
     return new_file
 
+
+# =============================================================================
+# Commit evidence (R1) — accurate subjects or nothing
+# =============================================================================
+
+def parse_commit_tokens(commit: str) -> tuple[list[str], str | None]:
+    """Split --commit into bounded hex OIDs. Returns (tokens, error)."""
+    raw = (commit or "").strip()
+    if not raw or raw == "-":
+        return [], None
+
+    tokens: list[str] = []
+    for part in raw.split(","):
+        token = part.strip()
+        if not token:
+            continue
+        if not COMMIT_TOKEN_RE.match(token):
+            return [], (
+                f"invalid --commit token '{token}': expected a 7-40 character hex "
+                "commit OID, or '-' for a planning session with no commits"
+            )
+        token = token.lower()
+        if token not in tokens:
+            tokens.append(token)
+    return tokens, None
+
+
+def parse_subject_overrides(values: list[str] | None) -> tuple[dict[str, str], str | None]:
+    """Parse `--commit-subject <oid>=<subject>` into a one-to-one mapping."""
+    overrides: dict[str, str] = {}
+    for raw in values or []:
+        if "=" not in raw:
+            return {}, (
+                f"invalid --commit-subject '{raw}': expected <oid>=<subject>"
+            )
+        oid_part, subject = raw.split("=", 1)
+        oid = oid_part.strip().lower()
+        subject = subject.strip()
+        if not COMMIT_TOKEN_RE.match(oid):
+            return {}, (
+                f"invalid --commit-subject key '{oid_part.strip()}': expected a "
+                "7-40 character hex commit OID"
+            )
+        if not subject:
+            return {}, f"invalid --commit-subject for '{oid}': subject is empty"
+        if len(subject) > MAX_SUBJECT_LEN:
+            return {}, (
+                f"invalid --commit-subject for '{oid}': subject exceeds "
+                f"{MAX_SUBJECT_LEN} characters"
+            )
+        if oid in overrides:
+            return {}, f"duplicate --commit-subject mapping for '{oid}'"
+        overrides[oid] = subject
+    return overrides, None
+
+
+def resolve_commit_subject(repo_root: Path, oid: str) -> str | None:
+    """Resolve one OID to its subject from the local object database.
+
+    Passed as argv (never interpolated into a shell) and peeled with
+    ``^{commit}`` so a hex-looking ref name cannot resolve to a tree or tag.
+    Returns None when the object is missing, ambiguous, or has no subject.
+    """
+    rc, out, _ = run_git(
+        ["show", "-s", "--format=%s", f"{oid}^{{commit}}", "--"], cwd=repo_root
+    )
+    if rc != 0:
+        return None
+    for line in out.splitlines():
+        subject = line.strip()
+        if subject:
+            return subject[:MAX_SUBJECT_LEN]
+    return None
+
+
+def build_commit_evidence(
+    repo_root: Path,
+    tokens: list[str],
+    overrides: dict[str, str],
+) -> tuple[list[tuple[str, str]], str | None]:
+    """Pair every commit OID with an accurate subject, or fail.
+
+    There is no placeholder path: an OID that neither resolves locally nor
+    carries an explicit mapping stops the command before any mutation.
+    """
+    evidence: list[tuple[str, str]] = []
+    unresolved: list[str] = []
+
+    for oid in tokens:
+        if oid in overrides:
+            evidence.append((oid, overrides[oid]))
+            continue
+        subject = resolve_commit_subject(repo_root, oid)
+        if subject is None:
+            unresolved.append(oid)
+            continue
+        evidence.append((oid, subject))
+
+    if unresolved:
+        return [], (
+            "cannot resolve commit evidence for: "
+            + ", ".join(unresolved)
+            + ". Fetch the objects, correct the OID, or pass the exact subject "
+            "with --commit-subject <oid>=<subject>. Nothing was written."
+        )
+
+    unused = sorted(oid for oid in overrides if oid not in tokens)
+    if unused:
+        return [], (
+            "--commit-subject supplied for OIDs that are not in --commit: "
+            + ", ".join(unused)
+            + ". The mapping must be one-to-one. Nothing was written."
+        )
+
+    return evidence, None
+
+
+def escape_markdown_cell(text: str) -> str:
+    """Make a commit subject safe inside a Markdown table cell."""
+    collapsed = " ".join(text.split())
+    return collapsed.replace("\\", "\\\\").replace("|", "\\|")
+
+
+# =============================================================================
+# Record identity (R2)
+# =============================================================================
+
+def _normalize_text(value: str | None) -> str:
+    return " ".join((value or "").split())
+
+
+def _fingerprint_payload(
+    developer: str,
+    title: str,
+    summary: str,
+    package: str | None,
+    branch: str | None,
+    evidence: list[tuple[str, str]],
+    changes: list[str] | None,
+    extra_content: str | None,
+    tests: list[str] | None,
+    next_steps: list[str] | None,
+    idempotency_key: str | None,
+) -> dict:
+    """Normalized semantic inputs of one record, shared by both schemes."""
+    return {
+        "developer": developer,
+        "title": _normalize_text(title),
+        "summary": _normalize_text(summary),
+        "package": package or "",
+        "branch": branch or "",
+        "commits": [[oid, _normalize_text(subject)] for oid, subject in evidence],
+        "changes": [_normalize_text(c) for c in changes or []],
+        "extra": _normalize_text(extra_content),
+        "tests": [_normalize_text(t) for t in tests or []],
+        "next_steps": [_normalize_text(n) for n in next_steps or []],
+        "idempotency_key": idempotency_key or "",
+    }
+
+
+def _hash_payload(payload: dict) -> str:
+    encoded = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")
+    return hashlib.sha256(encoded).hexdigest()[:16]
+
+
+def compute_record_fingerprint(payload: dict) -> str:
+    """Bounded fingerprint over the normalized semantic inputs of one record.
+
+    This is the retry key while the record is still pending in the worktree —
+    not a global dedupe key. Two genuinely separate sessions with identical
+    prose differ only if the caller says so, which is why an already-committed
+    match is never adopted (see classify_record).
+
+    Deliberately date-free (v2). v1 mixed in the calendar date, which made a
+    record unfindable by its own retry across a midnight rollover: the journal
+    and index were already written, the commit had failed, and the recomputed
+    fingerprint no longer matched the marker sitting in the journal, so the
+    retry appended a second entry for one session.
+
+    Dropping the date cannot over-collapse two same-day sessions, because the
+    date was equal for both of them anyway. Across days it only ever separated
+    records with byte-identical prose, commits, branch and package — and a
+    *committed* record of that shape is already refused for reuse by
+    cmd_add_session, which steps to the next `generation` of the payload
+    rather than reusing the committed marker. What is left
+    is exactly the question this key should answer: is there an uncommitted
+    record in this worktree matching these inputs?
+    """
+    return _hash_payload(payload)
+
+
+def compute_legacy_fingerprint(payload: dict, date: str) -> str:
+    """The v1 fingerprint, for resolving markers written before the change.
+
+    Lookup only — nothing writes this scheme any more.
+    """
+    return _hash_payload({**payload, "date": date})
+
+
+def render_marker(fingerprint: str, version: int = MARKER_VERSION) -> str:
+    """Machine-readable record marker; renders as nothing in Markdown."""
+    return f"{MARKER_PREFIX} v={version} fp={fingerprint} -->"
+
+
+def _append_topic_links(
+    summary: str,
+    topic_paths: list[str] | None,
+    link_base: Path | None = None,
+    repo_root: Path | None = None,
+) -> str:
+    """Append topic links, resolving them relative to the journal file.
+
+    The record fingerprint keeps project-relative paths stable, while the
+    rendered Markdown link must resolve from the journal's directory.
+    """
+    if not topic_paths:
+        return summary
+
+    links: list[str] = []
+    for topic in topic_paths:
+        href = topic
+        if link_base is not None and repo_root is not None:
+            href = quote(Path(os.path.relpath(repo_root / topic, start=link_base)).as_posix())
+        links.append(f"[{topic}]({href})")
+    return summary + "\nTopics: " + ", ".join(links)
+
+
+def render_legacy_marker(fingerprint: str) -> str:
+    """The v1 marker form: no version tag. Read, never written."""
+    return f"{MARKER_PREFIX} fp={fingerprint} -->"
+
+
+# =============================================================================
+# Session numbering (collision-proof across concurrent branches)
+# =============================================================================
+
+def _repo_relative(repo_root: Path, path: Path) -> str | None:
+    try:
+        return path.resolve().relative_to(repo_root.resolve()).as_posix()
+    except (OSError, ValueError):
+        return None
+
+
+def _default_branch_local(repo_root: Path) -> str | None:
+    """Resolve the default branch without ever touching the network.
+
+    `resolve_default_branch()` falls back to `git remote show origin`, which
+    can block on a fetch. Session recording is a hot path, so it stops at the
+    local symbolic ref and the two conventional names.
+    """
+    rc, out, _ = run_git(
+        ["symbolic-ref", "--quiet", "refs/remotes/origin/HEAD"],
+        cwd=repo_root,
+        timeout=GIT_PROBE_TIMEOUT,
+    )
+    if rc == 0 and out.strip():
+        return out.strip().rsplit("/", 1)[-1]
+    for candidate in ("main", "master"):
+        if branch_exists_locally(candidate, repo_root):
+            return candidate
+    return None
+
+
+def _convergence_refs(repo_root: Path) -> list[str]:
+    """Refs whose recorded workspace state must be folded into the counter.
+
+    Ordered by how much they matter, then capped: HEAD and the default branch
+    first (the merge target every branch eventually meets), then every other
+    local head — a parallel worktree's branch lives there and is the case that
+    actually collided — then remote-tracking refs.
+    """
+    refs: list[str] = []
+
+    def add(ref: str) -> None:
+        if ref not in refs:
+            refs.append(ref)
+
+    rc, _, _ = run_git(["rev-parse", "--verify", "--quiet", "HEAD"], cwd=repo_root)
+    if rc == 0:
+        add("HEAD")
+
+    default = _default_branch_local(repo_root)
+    if default:
+        for ref in (f"refs/heads/{default}", f"refs/remotes/origin/{default}"):
+            rc, _, _ = run_git(
+                ["show-ref", "--verify", "--quiet", ref], cwd=repo_root
+            )
+            if rc == 0:
+                add(ref)
+
+    for pattern in ("refs/heads/", "refs/remotes/"):
+        rc, out, _ = run_git(
+            ["for-each-ref", "--format=%(refname)", pattern],
+            cwd=repo_root,
+            timeout=GIT_PROBE_TIMEOUT,
+        )
+        if rc != 0:
+            continue
+        for line in out.splitlines():
+            ref = line.strip()
+            # A symbolic ref like refs/remotes/origin/HEAD is a duplicate of
+            # the branch it points at and git grep rejects some of them.
+            if ref and not ref.endswith("/HEAD"):
+                add(ref)
+
+    return refs[:MAX_CONVERGENCE_REFS]
+
+
+def _max_session_across_refs(repo_root: Path, refs: list[str], dev_rel: str) -> int:
+    """Highest session number recorded under `dev_rel` in any of `refs`.
+
+    One `git grep` over every ref rather than an ls-tree + show per ref: the
+    number of branches in a real repo is unbounded, the per-ref cost is not.
+    Exit status 1 (no match) is a normal outcome, not an error.
+    """
+    if not refs:
+        return 0
+
+    rc, out, _ = run_git(
+        [
+            "grep",
+            "--no-color",
+            "-h",
+            "-E",
+            "-e",
+            r"^## Session [0-9]+:",
+            "-e",
+            r"Total Sessions",
+        ]
+        + refs
+        + ["--", dev_rel],
+        cwd=repo_root,
+        timeout=GIT_PROBE_TIMEOUT,
+    )
+    if rc > 1 or not out:
+        return 0
+
+    # `git grep` prefixes each hit with `<rev>:<path>:`, so the numbers are
+    # matched anywhere in the line rather than anchored.
+    numbers = [int(m.group(1)) for m in re.finditer(r"## Session (\d+):", out)]
+    numbers += [
+        int(m.group(1)) for m in re.finditer(r"Total Sessions[^\d]{0,8}(\d+)", out)
+    ]
+    return max(numbers) if numbers else 0
+
+
+def max_local_session(dev_dir: Path, index_file: Path) -> int:
+    """Highest session number visible in the working tree."""
+    highest = get_current_session(index_file)
+    for f in dev_dir.glob(f"{FILE_JOURNAL_PREFIX}*.md"):
+        if not f.is_file():
+            continue
+        try:
+            content = f.read_text(encoding="utf-8")
+        except OSError:
+            continue
+        highest = max(highest, _max_session_in_journal(content))
+    return highest
+
+
+def resolve_next_session(repo_root: Path, dev_dir: Path, index_file: Path) -> int:
+    """Next session number, converged across the local tree and other branches.
+
+    Deriving the number from the working tree alone lets two branches that
+    each record before merging claim the same number (observed twice on
+    2026-08-06). Taking the union with every recorded ref — the default
+    branch, and the other local heads a parallel worktree records on — avoids
+    reuse of committed numbers. Other worktrees' uncommitted records are not
+    visible here; union merge does not resolve duplicate numbers or semantics.
+    """
+    highest = max_local_session(dev_dir, index_file)
+
+    dev_rel = _repo_relative(repo_root, dev_dir)
+    if dev_rel:
+        highest = max(
+            highest,
+            _max_session_across_refs(
+                repo_root, _convergence_refs(repo_root), dev_rel
+            ),
+        )
+
+    return highest + 1
+
+
+# =============================================================================
+# Pending-record classifier (R3/R4)
+# =============================================================================
+
+def find_marker_entries(dev_dir: Path, marker: str) -> list[tuple[Path, int | None]]:
+    """Locate every journal entry carrying `marker`.
+
+    Returns (journal_file, session_number); the number is None when the marker
+    is not directly under a `## Session N:` heading, which is malformed
+    pending evidence and must never be guessed into completion.
+    """
+    hits: list[tuple[Path, int | None]] = []
+    for f in sorted(dev_dir.glob(f"{FILE_JOURNAL_PREFIX}*.md")):
+        if not f.is_file():
+            continue
+        lines = f.read_text(encoding="utf-8").splitlines()
+        for i, line in enumerate(lines):
+            if line.strip() != marker:
+                continue
+            session_num: int | None = None
+            for j in range(i - 1, max(-1, i - 4), -1):
+                match = SESSION_HEADING_RE.match(lines[j])
+                if match:
+                    session_num = int(match.group(1))
+                    break
+            hits.append((f, session_num))
+    return hits
+
+
+def content_at_head(repo_root: Path, path: Path) -> str | None:
+    """File content as committed at HEAD, or None when it isn't there.
+
+    The `./` prefix makes the path cwd-relative. `HEAD:<path>` alone is
+    relative to the *git* toplevel, which is not always `repo_root` — the
+    Trellis root is the nearest directory holding `.trellis/`, which can sit
+    below the git root. Without it, every lookup in that layout fails and a
+    committed record looks pending.
+    """
+    rel = _repo_relative(repo_root, path)
+    if not rel:
+        return None
+    rc, out, _ = run_git(["show", f"HEAD:./{rel}"], cwd=repo_root)
+    return out if rc == 0 else None
+
+
+def index_blocks(content: str) -> dict[str, tuple[int, int]]:
+    """Validate every managed block before replacing any index content."""
+    lines = content.splitlines()
+    blocks: dict[str, tuple[int, int]] = {}
+    previous_end = -1
+    for name in ("current-status", "active-documents", "session-history"):
+        starts = [i for i, line in enumerate(lines) if line.strip() == f"<!-- @@@auto:{name} -->"]
+        ends = [i for i, line in enumerate(lines) if line.strip() == f"<!-- @@@/auto:{name} -->"]
+        if len(starts) != 1 or len(ends) != 1 or not previous_end < starts[0] < ends[0]:
+            raise ValueError(f"Markers not found in index.md or malformed: {name} must have one ordered, non-nested pair")
+        blocks[name] = (starts[0], ends[0])
+        previous_end = ends[0]
+    start, end = blocks["session-history"]
+    history = lines[start + 1:end]
+    headers = [i for i, line in enumerate(history) if re.match(r"^\|\s*#\s*\|", line)]
+    separators = [i for i, line in enumerate(history) if re.match(r"^\|[-| ]+\|\s*$", line)]
+    if len(headers) != 1 or len(separators) != 1 or headers[0] + 1 != separators[0]:
+        raise ValueError("index.md session-history needs one table header and separator")
+    numbers = [int(m.group(1)) for line in history if (m := re.match(r"^\|\s*(\d+)\s*\|", line))]
+    if len(numbers) != len(set(numbers)):
+        raise ValueError("index.md has conflicting duplicate session-history rows")
+    return blocks
+
+
+def session_index_row(
+    session_num: int, today: str, title: str,
+    evidence: list[tuple[str, str]], branch: str | None,
+) -> str:
+    return f"| {session_num} | {today} | {escape_markdown_cell(title)} | {format_commit_display(evidence)} | `{escape_markdown_cell(branch or '-')}` |"
+
+
+def _row_cells(row: str) -> list[str]:
+    return [cell.strip() for cell in re.split(r"(?<!\\)\|", row.strip())[1:-1]]
+
+
+def index_has_session_row(index_file: Path, session_num: int, expected_row: str) -> bool:
+    """Verify this exact record, not just a row with the same number."""
+    content = index_file.read_text(encoding="utf-8")
+    start, end = index_blocks(content)["session-history"]
+    rows = [line for line in content.splitlines()[start + 1:end]
+            if re.match(r"^\|\s*%d\s*\|" % session_num, line)]
+    if rows and _row_cells(rows[0]) != _row_cells(expected_row):
+        raise ValueError(f"index.md session {session_num} conflicts with a different record; repair that row before retrying")
+    status_start, status_end = index_blocks(content)["current-status"]
+    status = "\n".join(content.splitlines()[status_start + 1:status_end])
+    totals = re.findall(r"^- \*\*Total Sessions\*\*: (\d+)\s*$", status, re.MULTILINE)
+    return len(rows) == 1 and len(totals) == 1 and int(totals[0]) >= session_num
+
+
+def record_date(journal_file: Path, marker: str) -> str:
+    lines = journal_file.read_text(encoding="utf-8").splitlines()
+    position = next(i for i, line in enumerate(lines) if line.strip() == marker)
+    date = _entry_date_at(lines, position)
+    if date is None:
+        raise ValueError(f"{journal_file.name}: record has no date; repair it before retrying")
+    return date
+
+
+def _entry_date_at(lines: list[str], marker_index: int) -> str | None:
+    """The `**Date**:` value belonging to the entry whose marker is at `marker_index`.
+
+    `generate_session_content` renders it two lines below the marker. Scanning
+    a short window rather than a fixed offset keeps this working if blank-line
+    spacing around the header ever changes, and stops well before it could
+    reach the next entry.
+    """
+    for line in lines[marker_index + 1:marker_index + 6]:
+        match = ENTRY_DATE_RE.match(line.strip())
+        if match:
+            return match.group(1)
+    return None
+
+
+def resolve_effective_marker(
+    dev_dir: Path,
+    payload: dict,
+    marker: str,
+) -> tuple[str, str | None]:
+    """The marker this record actually carries, across both schemes.
+
+    Returns (marker, error). The v2 marker wins whenever an entry carries it,
+    which is every record written since the change and costs one scan.
+
+    Otherwise this looks for a pending record written under v1. Those markers
+    are only a hash, but the entry renders its own `**Date**:` line right
+    below, so the date that produced the v1 fingerprint is recoverable from
+    the entry itself: recompute with that date and compare against what is
+    actually written there. That is exact, and unlike a +/-1 day window it does
+    not quietly fail a retry resumed after a weekend.
+
+    Returning the v1 marker leaves the entry untouched — it is an in-flight
+    record about to be committed, and rewriting its marker mid-repair would
+    move it to a state the machine does not model.
+    """
+    if find_marker_entries(dev_dir, marker):
+        return marker, None
+
+    matches: set[str] = set()
+    for journal in sorted(dev_dir.glob(f"{FILE_JOURNAL_PREFIX}*.md")):
+        if not journal.is_file():
+            continue
+        try:
+            lines = journal.read_text(encoding="utf-8").splitlines()
+        except OSError:
+            continue
+        for i, line in enumerate(lines):
+            legacy = LEGACY_MARKER_RE.match(line.strip())
+            if not legacy:
+                continue
+            date = _entry_date_at(lines, i)
+            if date is None:
+                continue
+            if compute_legacy_fingerprint(payload, date) == legacy.group(1):
+                matches.add(line.strip())
+
+    if len(matches) > 1:
+        return "", (
+            f"found {len(matches)} pending journal entries matching this record "
+            "under the pre-versioning marker scheme. Refusing to guess which one "
+            "to resume — remove the duplicate entry or pass --idempotency-key to "
+            "record a new session."
+        )
+    if matches:
+        return matches.pop(), None
+    return marker, None
+
+
+def classify_record(
+    repo_root: Path,
+    dev_dir: Path,
+    index_file: Path,
+    marker: str,
+    title: str,
+    evidence: list[tuple[str, str]],
+    branch: str | None,
+    expected_summary: str,
+) -> tuple[str, Path | None, int | None, str | None]:
+    """Classify the current state of this exact record.
+
+    Returns (state, journal_file, session_num, error). Only a unique, exact,
+    still-uncommitted match is ever adopted; anything ambiguous, malformed or
+    partially written comes back as an error so the caller fails safely.
+    """
+    hits = find_marker_entries(dev_dir, marker)
+
+    if not hits:
+        return STATE_ABSENT, None, None, None
+
+    if len(hits) > 1:
+        files = ", ".join(sorted({p.name for p, _ in hits}))
+        return "", None, None, (
+            f"found {len(hits)} journal entries carrying this record's marker "
+            f"({files}). Refusing to guess which one to resume — remove the "
+            "duplicate entry or pass --idempotency-key to record a new session."
+        )
+
+    journal_file, session_num = hits[0]
+    if session_num is None:
+        return "", None, None, (
+            f"{journal_file.name} carries this record's marker without a "
+            "'## Session N:' heading above it. The pending record is malformed; "
+            "repair it by hand before retrying."
+        )
+
+    content = journal_file.read_text(encoding="utf-8")
+    marker_position = content.index(marker)
+    headings = list(SESSION_HEADING_RE.finditer(content))
+    start = next(heading.start() for heading in reversed(headings) if heading.start() < marker_position)
+    end = next((heading.start() for heading in headings if heading.start() > marker_position), len(content))
+    entry = content[start:end]
+    heading = entry.splitlines()[0].split(":", 1)[1]
+    if (_normalize_text(heading) != _normalize_text(title)
+            or _normalize_text(expected_summary) not in _normalize_text(entry)):
+        return "", None, None, (
+            f"{journal_file.name}: journal title, summary or topic links no longer "
+            "match this record's inputs. Inspect the changed entry before retrying."
+        )
+
+    head_content = content_at_head(repo_root, journal_file)
+    if head_content is not None and marker in head_content:
+        return STATE_COMMITTED, journal_file, session_num, None
+
+    expected_row = session_index_row(session_num, record_date(journal_file, marker), title, evidence, branch)
+    try:
+        indexed = index_has_session_row(index_file, session_num, expected_row)
+    except ValueError as exc:
+        if "different record" in str(exc):
+            return "", None, None, str(exc)
+        indexed = False
+    except OSError:
+        indexed = False
+    if indexed:
+        return STATE_INDEX_RECORDED, journal_file, session_num, None
+
+    return STATE_JOURNAL_RECORDED, journal_file, session_num, None
+
+
+# =============================================================================
+# Rendering
+# =============================================================================
 
 def _render_bullet_section(header: str, items: list[str], bullet_prefix: str = "- ") -> str:
     """Render a Markdown section as bullets, or "" when there is no content.
@@ -267,9 +964,10 @@ def _render_main_changes(changes: list[str], extra_content: str | None) -> str:
 def generate_session_content(
     session_num: int,
     title: str,
-    commit: str,
+    evidence: list[tuple[str, str]],
     summary: str,
     today: str,
+    marker: str,
     package: str | None = None,
     branch: str | None = None,
     changes: list[str] | None = None,
@@ -278,25 +976,25 @@ def generate_session_content(
     next_steps: list[str] | None = None,
 ) -> str:
     """Generate session content."""
-    if commit and commit != "-":
+    if evidence:
         commit_table = """| Hash | Message |
 |------|---------|"""
-        for c in commit.split(","):
-            c = c.strip()
-            commit_table += f"\n| `{c}` | (see git log) |"
+        for oid, subject in evidence:
+            commit_table += f"\n| `{oid}` | {escape_markdown_cell(subject)} |"
     else:
-        commit_table = "(No commits - planning session)"
+        commit_table = "(No associated commits)"
 
     package_line = f"\n**Package**: {package}" if package else ""
     branch_line = f"\n**Branch**: `{branch}`" if branch else ""
 
     main_changes_section = _render_main_changes(changes or [], extra_content)
-    testing_section = _render_bullet_section("Testing", tests or [], bullet_prefix="- [OK] ")
+    testing_section = _render_bullet_section("Testing", tests or [])
     next_steps_section = _render_bullet_section("Next Steps", next_steps or [])
 
     return f"""
 
 ## Session {session_num}: {title}
+{marker}
 
 **Date**: {today}
 **Task**: {title}{package_line}{branch_line}
@@ -307,126 +1005,75 @@ def generate_session_content(
 
 ### Git Commits
 
-{commit_table}{testing_section}
-
-### Status
-
-[OK] **Completed**{next_steps_section}
+{commit_table}{testing_section}{next_steps_section}
 """
+
+
+def format_commit_display(evidence: list[tuple[str, str]]) -> str:
+    """Index-table rendering of the commit OIDs."""
+    if not evidence:
+        return "-"
+    return ", ".join(f"`{oid}`" for oid, _ in evidence)
 
 
 def update_index(
     index_file: Path,
     dev_dir: Path,
     title: str,
-    commit: str,
+    evidence: list[tuple[str, str]],
     new_session: int,
     active_file: str,
     today: str,
     branch: str | None = None,
 ) -> bool:
     """Update index.md with new session info."""
-    # Format commit for display
-    commit_display = "-"
-    if commit and commit != "-":
-        commit_display = re.sub(r"([a-f0-9]{7,})", r"`\1`", commit.replace(",", ", "))
-
-    # Get file number from active_file name
-    match = re.search(r"(\d+)", active_file)
-    active_num = int(match.group(1)) if match else 0
-    files_table = count_journal_files(dev_dir, active_num)
-
-    print(f"Updating index.md for session {new_session}...")
-    print(f"  Title: {title}")
-    print(f"  Commit: {commit_display}")
-    print(f"  Active File: {active_file}")
-    print()
-
-    content = index_file.read_text(encoding="utf-8")
-
-    if "@@@auto:current-status" not in content:
-        print("Error: Markers not found in index.md. Please ensure markers exist.", file=sys.stderr)
+    try:
+        content = index_file.read_text(encoding="utf-8")
+        blocks = index_blocks(content)
+        expected_row = session_index_row(new_session, today, title, evidence, branch)
+        index_has_session_row(index_file, new_session, expected_row)
+        latest_file, latest_num, _ = get_latest_journal_info(dev_dir)
+        active_file = latest_file.name if latest_file else active_file
+        total = max(get_current_session(index_file), max_local_session(dev_dir, index_file))
+        lines = content.splitlines()
+        replacements: dict[str, list[str]] = {
+            "current-status": [
+                f"- **Active File**: `{active_file}`",
+                f"- **Total Sessions**: {total}",
+                f"- **Last Active**: {max(today, datetime.now().strftime('%Y-%m-%d'))}",
+            ],
+            "active-documents": [
+                "| File | Lines | Status |", "|------|-------|--------|",
+                count_journal_files(dev_dir, latest_num),
+            ],
+        }
+        start, end = blocks["session-history"]
+        history = lines[start + 1:end]
+        if not any(_row_cells(line) == _row_cells(expected_row) for line in history):
+            separator = next(i for i, line in enumerate(history) if re.match(r"^\|[-| ]+\|\s*$", line))
+            # Keep historical rows and user text. Only the managed header is
+            # upgraded, as in the previous four/six-column compatibility path.
+            history[separator - 1] = "| # | Date | Title | Commits | Branch |"
+            history[separator] = "|---|------|-------|---------|--------|"
+            record_rows = [(i, int(m.group(1))) for i, line in enumerate(history)
+                           if (m := re.match(r"^\|\s*(\d+)\s*\|", line))]
+            position = next((i for i, number in record_rows if number < new_session),
+                            record_rows[-1][0] + 1 if record_rows else separator + 1)
+            history.insert(position, expected_row)
+        replacements["session-history"] = history
+        for name, (start, end) in sorted(blocks.items(), key=lambda item: item[1][0], reverse=True):
+            lines[start + 1:end] = replacements[name]
+        updated = "\n".join(lines) + ("\n" if content.endswith("\n") else "")
+        # Validate the proposed structure before replacing the user's index.
+        index_blocks(updated)
+        if not write_text_atomic(index_file, updated):
+            raise OSError(f"failed to write {index_file}")
+        if not index_has_session_row(index_file, new_session, expected_row):
+            raise ValueError("index.md post-write verification did not find this record")
+    except (OSError, ValueError) as exc:
+        print(f"Error: {exc}", file=sys.stderr)
         return False
-
-    # Process sections
-    lines = content.splitlines()
-    new_lines = []
-
-    in_current_status = False
-    in_active_documents = False
-    in_session_history = False
-    header_written = False
-
-    for line in lines:
-        if "@@@auto:current-status" in line:
-            new_lines.append(line)
-            in_current_status = True
-            new_lines.append(f"- **Active File**: `{active_file}`")
-            new_lines.append(f"- **Total Sessions**: {new_session}")
-            new_lines.append(f"- **Last Active**: {today}")
-            continue
-
-        if "@@@/auto:current-status" in line:
-            in_current_status = False
-            new_lines.append(line)
-            continue
-
-        if "@@@auto:active-documents" in line:
-            new_lines.append(line)
-            in_active_documents = True
-            new_lines.append("| File | Lines | Status |")
-            new_lines.append("|------|-------|--------|")
-            new_lines.append(files_table)
-            continue
-
-        if "@@@/auto:active-documents" in line:
-            in_active_documents = False
-            new_lines.append(line)
-            continue
-
-        if "@@@auto:session-history" in line:
-            new_lines.append(line)
-            in_session_history = True
-            header_written = False
-            continue
-
-        if "@@@/auto:session-history" in line:
-            in_session_history = False
-            new_lines.append(line)
-            continue
-
-        if in_current_status:
-            continue
-
-        if in_active_documents:
-            continue
-
-        if in_session_history:
-            # Migrate old 4/6-column headers to 5-column Branch-only history.
-            if re.match(
-                r"^\|\s*#\s*\|\s*Date\s*\|\s*Title\s*\|\s*Commits\s*\|\s*Branch\s*\|\s*Base Branch\s*\|\s*$",
-                line,
-            ):
-                new_lines.append("| # | Date | Title | Commits | Branch |")
-                continue
-            if re.match(r"^\|\s*#\s*\|\s*Date\s*\|\s*Title\s*\|\s*Commits\s*\|\s*Branch\s*\|\s*$", line):
-                new_lines.append("| # | Date | Title | Commits | Branch |")
-                continue
-            if re.match(r"^\|\s*#\s*\|\s*Date\s*\|\s*Title\s*\|\s*Commits\s*\|\s*$", line):
-                new_lines.append("| # | Date | Title | Commits | Branch |")
-                continue
-            if re.match(r"^\|[-| ]+\|\s*$", line) and not header_written:
-                new_lines.append("|---|------|-------|---------|--------|")
-                new_lines.append(f"| {new_session} | {today} | {title} | {commit_display} | `{branch or '-'}` |")
-                header_written = True
-                continue
-            new_lines.append(line)
-            continue
-
-        new_lines.append(line)
-
-    index_file.write_text("\n".join(new_lines), encoding="utf-8")
-    print("[OK] Updated index.md successfully!")
+    print("[OK] Updated and verified index.md.")
     return True
 
 
@@ -434,7 +1081,7 @@ def update_index(
 # Main Function
 # =============================================================================
 
-def _auto_commit_workspace(repo_root: Path) -> None:
+def _auto_commit_workspace(repo_root: Path) -> str:
     """Stage Trellis-owned workspace + current-task paths and commit.
 
     Path scope is restricted to specific products: the current developer's
@@ -447,13 +1094,30 @@ def _auto_commit_workspace(repo_root: Path) -> None:
     Honors ``session_auto_commit`` in ``.trellis/config.yaml``: when set to
     ``false``, this function returns immediately without touching git
     (journal/index files are still written to disk by the caller).
+
+    Returns one of ``COMMIT_DONE`` / ``COMMIT_SKIPPED`` / ``COMMIT_BLOCKED`` /
+    ``COMMIT_FAILED``. ``COMMIT_BLOCKED`` is the gitignored-`.trellis/` case:
+    the user has told git to stay out of this tree, so it is a configured skip
+    like ``session_auto_commit: false``, not a failure to retry.
     """
     if not get_session_auto_commit(repo_root):
         print(
             "[OK] session_auto_commit: false — skipping git stage/commit.",
             file=sys.stderr,
         )
-        return
+        return COMMIT_SKIPPED
+
+    # Not a git repository at all: like the gitignored case, this is an
+    # environment the user configured, not a transient git error — a retry
+    # can never succeed, so it must not be COMMIT_FAILED's exit-1 loop.
+    rc, _, _ = run_git(["rev-parse", "--is-inside-work-tree"], cwd=repo_root)
+    if rc != 0:
+        print(
+            "[WARN] Not a git repository — journal/index written, "
+            "skipping auto-commit.",
+            file=sys.stderr,
+        )
+        return COMMIT_BLOCKED
 
     commit_msg = get_session_commit_message(repo_root)
     # Resolve the current task so staging is scoped to its dir only. The ref
@@ -475,18 +1139,18 @@ def _auto_commit_workspace(repo_root: Path) -> None:
         ]
     if not paths:
         print("[OK] No workspace changes to commit.", file=sys.stderr)
-        return
+        return COMMIT_SKIPPED
 
     success, _, err = safe_git_add(paths, repo_root)
     if not success:
         if err and "ignored by" in err.lower():
             print_gitignore_warning(paths)
-        else:
-            print(
-                f"[WARN] git add failed: {err.strip() if err else 'unknown error'}",
-                file=sys.stderr,
-            )
-        return
+            return COMMIT_BLOCKED
+        print(
+            f"[WARN] git add failed: {err.strip() if err else 'unknown error'}",
+            file=sys.stderr,
+        )
+        return COMMIT_FAILED
 
     # Check if there are staged changes for the paths we just staged.
     rc, _, _ = run_git(
@@ -494,16 +1158,44 @@ def _auto_commit_workspace(repo_root: Path) -> None:
     )
     if rc == 0:
         print("[OK] No workspace changes to commit.", file=sys.stderr)
-        return
+        return COMMIT_SKIPPED
 
-    rc, _, commit_err = run_git(["commit", "-m", commit_msg], cwd=repo_root)
+    # Commit with an explicit pathspec: a bare `git commit` would sweep any
+    # unrelated entries the developer had staged before this script ran into
+    # the chore commit (#579). The pathspec keeps their staged work untouched.
+    rc, _, commit_err = run_git(
+        ["commit", "-m", commit_msg, "--", *paths], cwd=repo_root
+    )
     if rc == 0:
         print(f"[OK] Auto-committed: {commit_msg}", file=sys.stderr)
-    else:
-        print(
-            f"[WARN] Auto-commit failed: {commit_err.strip()}",
-            file=sys.stderr,
-        )
+        return COMMIT_DONE
+
+    print(
+        f"[WARN] Auto-commit failed: {commit_err.strip()}",
+        file=sys.stderr,
+    )
+    return COMMIT_FAILED
+
+
+def _print_commit_checkpoint(session_num: int, journal_name: str) -> None:
+    """Actionable checkpoint for a failed auto-commit (R5)."""
+    print("", file=sys.stderr)
+    print(
+        f"[BLOCKED] Checkpoint: session {session_num} is recorded in "
+        f"{journal_name} and index.md, but the auto-commit did not complete.",
+        file=sys.stderr,
+    )
+    print(
+        "[BLOCKED] The pending record was left exactly as written — nothing was "
+        "rolled back.",
+        file=sys.stderr,
+    )
+    print(
+        "[BLOCKED] Fix the git error above, then re-run the identical "
+        "add_session.py command: it resumes at the commit step and will not add "
+        "a second session.",
+        file=sys.stderr,
+    )
 
 
 def add_session(
@@ -517,8 +1209,39 @@ def add_session(
     auto_commit: bool = True,
     package: str | None = None,
     branch: str | None = None,
+    commit_subjects: list[str] | None = None,
+    idempotency_key: str | None = None,
+    topic_paths: list[str] | None = None,
 ) -> int:
-    """Add a new session."""
+    """Add a new session, resuming an interrupted one instead of duplicating it."""
+    try:
+        with recording_lock(get_repo_root()):
+            return _add_session(
+                title, commit, summary, changes, extra_content, tests, next_steps,
+                auto_commit, package, branch, commit_subjects, idempotency_key,
+                topic_paths,
+            )
+    except (OSError, ValueError) as exc:
+        print(f"Error: session recording failed: {exc}. Retry the identical command; existing records are preserved.", file=sys.stderr)
+        return 1
+
+
+def _add_session(
+    title: str,
+    commit: str,
+    summary: str,
+    changes: list[str] | None,
+    extra_content: str | None,
+    tests: list[str] | None,
+    next_steps: list[str] | None,
+    auto_commit: bool,
+    package: str | None,
+    branch: str | None,
+    commit_subjects: list[str] | None,
+    idempotency_key: str | None,
+    topic_paths: list[str] | None,
+) -> int:
+    """Recording state machine; the caller holds the checkout lock."""
     repo_root = get_repo_root()
     warn_if_parallel_worktree(repo_root)
     ensure_developer(repo_root)
@@ -533,80 +1256,283 @@ def add_session(
         print("Error: Workspace directory not found", file=sys.stderr)
         return 1
 
-    max_lines = get_max_journal_lines(repo_root)
+    # -------------------------------------------------------------------
+    # Preflight — no writes happen until every one of these succeeds.
+    # -------------------------------------------------------------------
+    if idempotency_key is not None and not IDEMPOTENCY_KEY_RE.match(idempotency_key):
+        print(
+            f"Error: invalid --idempotency-key '{idempotency_key}': expected 1-64 "
+            "characters from [A-Za-z0-9._-]",
+            file=sys.stderr,
+        )
+        return 1
 
+    tokens, token_error = parse_commit_tokens(commit)
+    if token_error:
+        print(f"Error: {token_error}", file=sys.stderr)
+        return 1
+
+    overrides, override_error = parse_subject_overrides(commit_subjects)
+    if override_error:
+        print(f"Error: {override_error}", file=sys.stderr)
+        return 1
+
+    evidence, evidence_error = build_commit_evidence(repo_root, tokens, overrides)
+    if evidence_error:
+        print(f"Error: {evidence_error}", file=sys.stderr)
+        return 1
+
+    max_lines = get_max_journal_lines(repo_root)
     index_file = dev_dir / "index.md"
     today = datetime.now().strftime("%Y-%m-%d")
 
-    journal_file, current_num, current_lines = get_latest_journal_info(dev_dir)
-    current_session = get_current_session(index_file)
-    new_session = current_session + 1
+    if not dev_dir.resolve().is_relative_to(repo_root.resolve()):
+        print("Error: workspace escapes the project; no session was written.", file=sys.stderr)
+        return 1
+    for state_file in [index_file, *dev_dir.glob(f"{FILE_JOURNAL_PREFIX}*.md")]:
+        if state_file.is_symlink():
+            print(f"Error: recording state must be a regular project file, not a symlink: {state_file.name}; no session was written.", file=sys.stderr)
+            return 1
 
-    session_content = generate_session_content(
-        new_session, title, commit, summary, today, package, branch,
-        changes=changes, extra_content=extra_content, tests=tests,
-        next_steps=next_steps,
+    record_summary = _append_topic_links(summary, topic_paths)
+    rendered_summary = _append_topic_links(summary, topic_paths, dev_dir, repo_root)
+    payload = _fingerprint_payload(
+        developer, title, record_summary, package, branch, evidence,
+        changes, extra_content, tests, next_steps, idempotency_key,
     )
-    content_lines = len(session_content.splitlines())
+    # A changed topic is a new input even when the caller reuses its short
+    # title/summary. Do not collapse a correction into an uncommitted note.
+    if topic_paths:
+        payload["topic_versions"] = [
+            [topic, hashlib.sha256((repo_root / topic).read_bytes()).hexdigest()]
+            for topic in topic_paths
+        ]
+    marker_version = TOPIC_MARKER_VERSION if topic_paths else MARKER_VERSION
+    marker = render_marker(compute_record_fingerprint(payload), marker_version)
+
+    # Legacy records did not capture topic versions. Keep their existing
+    # retry identity; only new v3 records can distinguish changed content.
+    legacy_payload = {key: value for key, value in payload.items() if key != "topic_versions"}
+    old_marker = render_marker(compute_record_fingerprint(legacy_payload))
+    if topic_paths and not find_marker_entries(dev_dir, marker) and find_marker_entries(dev_dir, old_marker):
+        print("[WARN] Resuming a legacy topic-linked record without a saved topic version. Verify the topic separately; for a new correction use changed summary text or a new --idempotency-key.", file=sys.stderr)
+        marker = old_marker
+
+    # `today` is no longer a fingerprint input; a record has to be findable by
+    # its own retry after a date rollover. It still dates the rendered entry.
+    marker, resolve_error = resolve_effective_marker(dev_dir, legacy_payload, marker)
+    if resolve_error:
+        print(f"Error: {resolve_error}", file=sys.stderr)
+        return 1
+
+    state, matched_file, matched_num, classify_error = classify_record(
+        repo_root, dev_dir, index_file, marker, title, evidence, branch, rendered_summary
+    )
+    if classify_error:
+        print(f"Error: {classify_error}", file=sys.stderr)
+        return 1
+
+    seen_numbers: set[int] = set()
+    for journal in sorted(dev_dir.glob(f"{FILE_JOURNAL_PREFIX}*.md")):
+        for heading in SESSION_HEADING_RE.finditer(journal.read_text(encoding="utf-8")):
+            number = int(heading.group(1))
+            if number in seen_numbers:
+                print(f"Error: duplicate journal session number {number}; resolve the merged records and index before recording. No new session was written.", file=sys.stderr)
+                return 1
+            seen_numbers.add(number)
+
+    if state == STATE_COMMITTED and idempotency_key and matched_file and matched_num:
+        expected = session_index_row(matched_num, record_date(matched_file, marker), title, evidence, branch)
+        try:
+            indexed = index_has_session_row(index_file, matched_num, expected)
+        except (OSError, ValueError):
+            indexed = False
+        if indexed:
+            print(f"[OK] Session {matched_num} with idempotency key '{idempotency_key}' is already recorded and committed in {matched_file.name}; nothing to do.", file=sys.stderr)
+            return 0
+        state = STATE_JOURNAL_RECORDED
+
+    # A committed record is finished, so an identical later request is a
+    # legitimately new session. It must not reuse the committed marker: two
+    # entries carrying one marker make every later run ambiguous, and
+    # classify_record refuses to guess between them. Step to the next
+    # generation of this record instead. The marker stays a pure function of
+    # (payload, generation), so a retry of the new entry recomputes the same
+    # marker and still resumes; generation 0 omits the field entirely, leaving
+    # first-time markers byte-identical to what this scheme already writes.
+    generation = 0
+    while state == STATE_COMMITTED:
+        generation += 1
+        marker = render_marker(
+            compute_record_fingerprint({**payload, "generation": generation}), marker_version
+        )
+        state, matched_file, matched_num, classify_error = classify_record(
+            repo_root, dev_dir, index_file, marker, title, evidence, branch, rendered_summary
+        )
+        if classify_error:
+            print(f"Error: {classify_error}", file=sys.stderr)
+            return 1
 
     print("========================================", file=sys.stderr)
     print("ADD SESSION", file=sys.stderr)
     print("========================================", file=sys.stderr)
     print("", file=sys.stderr)
-    print(f"Session: {new_session}", file=sys.stderr)
-    print(f"Title: {title}", file=sys.stderr)
-    print(f"Commit: {commit}", file=sys.stderr)
-    print("", file=sys.stderr)
-    print(f"Current journal file: {FILE_JOURNAL_PREFIX}{current_num}.md", file=sys.stderr)
-    print(f"Current lines: {current_lines}", file=sys.stderr)
-    print(f"New content lines: {content_lines}", file=sys.stderr)
-    print(f"Total after append: {current_lines + content_lines}", file=sys.stderr)
-    print("", file=sys.stderr)
 
-    target_file = journal_file
-    target_num = current_num
+    # -------------------------------------------------------------------
+    # Absent → journal-recorded
+    # -------------------------------------------------------------------
+    target_file: Path | None
+    target_num: int
+    new_session: int
 
-    if current_lines + content_lines > max_lines:
-        target_num = current_num + 1
-        print(f"[!] Exceeds {max_lines} lines, creating {FILE_JOURNAL_PREFIX}{target_num}.md", file=sys.stderr)
-        target_file = create_new_journal_file(dev_dir, target_num, developer, today, max_lines)
-        print(f"Created: {target_file}", file=sys.stderr)
+    if state == STATE_ABSENT:
+        journal_file, current_num, current_lines = get_latest_journal_info(dev_dir)
+        new_session = resolve_next_session(repo_root, dev_dir, index_file)
 
-    # Append session content
-    if target_file:
-        with target_file.open("a", encoding="utf-8") as f:
-            f.write(session_content)
+        session_content = generate_session_content(
+            new_session, title, evidence, rendered_summary, today, marker, package, branch,
+            changes=changes, extra_content=extra_content, tests=tests,
+            next_steps=next_steps,
+        )
+        content_lines = len(session_content.splitlines())
+
+        print(f"Session: {new_session}", file=sys.stderr)
+        print(f"Title: {title}", file=sys.stderr)
+        print(f"Commit: {format_commit_display(evidence)}", file=sys.stderr)
+        print("", file=sys.stderr)
+        print(f"Current journal file: {FILE_JOURNAL_PREFIX}{current_num}.md", file=sys.stderr)
+        print(f"Current lines: {current_lines}", file=sys.stderr)
+        print(f"New content lines: {content_lines}", file=sys.stderr)
+        print(f"Total after append: {current_lines + content_lines}", file=sys.stderr)
+        print("", file=sys.stderr)
+
+        target_file = journal_file
+        target_num = current_num
+
+        if current_lines + content_lines > max_lines:
+            target_num = current_num + 1
+            print(f"[!] Exceeds {max_lines} lines, creating {FILE_JOURNAL_PREFIX}{target_num}.md", file=sys.stderr)
+            target_file = create_new_journal_file(dev_dir, target_num, developer, today, max_lines)
+            if target_file is None:
+                print(
+                    f"Error: failed to create {FILE_JOURNAL_PREFIX}{target_num}.md; "
+                    "nothing was recorded.",
+                    file=sys.stderr,
+                )
+                return 1
+            print(f"Created: {target_file}", file=sys.stderr)
+
+        if target_file is None:
+            print(
+                "Error: no journal file to append to. Run init_developer.py first.",
+                file=sys.stderr,
+            )
+            return 1
+
+        try:
+            existing = target_file.read_text(encoding="utf-8") if target_file.is_file() else ""
+        except OSError as exc:
+            print(f"Error: cannot read {target_file}: {exc}", file=sys.stderr)
+            return 1
+
+        if not write_text_atomic(target_file, existing + session_content):
+            print(
+                f"Error: failed to append the session to {target_file.name}; "
+                "the previous journal content is intact and nothing was recorded.",
+                file=sys.stderr,
+            )
+            return 1
         print(f"[OK] Appended session to {target_file.name}", file=sys.stderr)
+        state = STATE_JOURNAL_RECORDED
+    else:
+        if matched_file is None or matched_num is None:
+            print(
+                f"Error: resumed state '{state}' without a matching journal entry.",
+                file=sys.stderr,
+            )
+            return 1
+        target_file = matched_file
+        new_session = matched_num
+        target_num = _extract_journal_num(target_file.stem)
+        print(
+            f"[RESUME] Session {new_session} is already in {target_file.name} and "
+            f"uncommitted; continuing from '{state}' instead of appending again.",
+            file=sys.stderr,
+        )
+        print("", file=sys.stderr)
 
     print("", file=sys.stderr)
 
-    # Update index.md
+    # -------------------------------------------------------------------
+    # Journal-recorded → index-recorded
+    # -------------------------------------------------------------------
     active_file = f"{FILE_JOURNAL_PREFIX}{target_num}.md"
-    if not update_index(
-        index_file,
-        dev_dir,
-        title,
-        commit,
-        new_session,
-        active_file,
-        today,
-        branch,
-    ):
+    if state == STATE_JOURNAL_RECORDED:
+        if not update_index(
+            index_file,
+            dev_dir,
+            title,
+            evidence,
+            new_session,
+            active_file,
+            record_date(target_file, marker),
+            branch,
+        ):
+            print(
+                f"[BLOCKED] Checkpoint: session {new_session} is in "
+                f"{active_file} but index.md was not updated. Fix index.md, then "
+                "re-run the identical command to repair the row without adding a "
+                "second session.",
+                file=sys.stderr,
+            )
+            return 1
+        state = STATE_INDEX_RECORDED
+    else:
+        print(f"[OK] index.md already records session {new_session}.", file=sys.stderr)
+
+    try:
+        expected = session_index_row(new_session, record_date(target_file, marker), title, evidence, branch)
+        if (find_marker_entries(dev_dir, marker) != [(target_file, new_session)]
+                or not index_has_session_row(index_file, new_session, expected)):
+            raise ValueError("journal/index verification did not find this exact record")
+    except (OSError, ValueError) as exc:
+        print(f"[BLOCKED] Checkpoint: {exc}. Preserve the journal and retry after repairing index.md.", file=sys.stderr)
         return 1
 
     print("", file=sys.stderr)
     print("========================================", file=sys.stderr)
-    print(f"[OK] Session {new_session} added successfully!", file=sys.stderr)
+    print(f"[OK] Journal session {new_session} and index recorded (topic content must be verified separately).", file=sys.stderr)
     print("========================================", file=sys.stderr)
     print("", file=sys.stderr)
     print("Files updated:", file=sys.stderr)
-    print(f"  - {target_file.name if target_file else 'journal'}", file=sys.stderr)
-    print("  - index.md", file=sys.stderr)
+    print(f"  - {target_file.relative_to(repo_root).as_posix() if target_file else 'journal'}", file=sys.stderr)
+    print(f"  - {index_file.relative_to(repo_root).as_posix()}", file=sys.stderr)
 
-    # Auto-commit workspace changes
-    if auto_commit:
-        print("", file=sys.stderr)
-        _auto_commit_workspace(repo_root)
+    # -------------------------------------------------------------------
+    # Index-recorded → committed
+    # -------------------------------------------------------------------
+    if not auto_commit:
+        return 0
+
+    print("", file=sys.stderr)
+    outcome = _auto_commit_workspace(repo_root)
+
+    if outcome == COMMIT_FAILED:
+        _print_commit_checkpoint(
+            new_session, target_file.name if target_file else "the journal"
+        )
+        return 1
+
+    if outcome == COMMIT_DONE and target_file is not None:
+        committed = content_at_head(repo_root, target_file)
+        if committed is None or marker not in committed:
+            print(
+                f"[WARN] Auto-commit reported success but {target_file.name} at "
+                "HEAD does not contain this session's record.",
+                file=sys.stderr,
+            )
+            _print_commit_checkpoint(new_session, target_file.name)
+            return 1
 
     return 0
 
@@ -621,14 +1547,42 @@ def main() -> int:
         description="Add a new session to journal file and update index.md"
     )
     parser.add_argument("--title", required=True, help="Session title")
-    parser.add_argument("--commit", default="-", help="Comma-separated commit hashes")
+    parser.add_argument(
+        "--commit",
+        default="-",
+        help=(
+            "Comma-separated commit OIDs (7-40 hex chars each). Each one is "
+            "resolved to its real subject before anything is written; an "
+            "unresolvable OID fails the command. Use '-' for no associated commits."
+        ),
+    )
+    parser.add_argument(
+        "--commit-subject",
+        action="append",
+        metavar="OID=SUBJECT",
+        help=(
+            "Explicit subject for a commit that cannot be resolved locally "
+            "(repeatable). The mapping must be one-to-one with --commit."
+        ),
+    )
     parser.add_argument("--summary", default="Session summary was not supplied.", help="Brief summary")
+    parser.add_argument(
+        "--topic", action="append", default=[], metavar="PATH",
+        help="Existing spec, research, root README, or docs Markdown to validate and link in the journal (repeatable); does not edit or verify its conclusions",
+    )
     parser.add_argument("--content-file", help="Path to file with detailed content")
-    parser.add_argument("--package", help="Package name tag (e.g., cli, docs-site)")
+    parser.add_argument("--package", help="Package name tag (e.g., cli, core)")
     parser.add_argument("--branch", help="Branch name (auto-detected if omitted)")
     parser.add_argument("--change", action="append", help="Main Changes bullet (repeatable)")
     parser.add_argument("--test", action="append", help="Testing bullet (repeatable)")
     parser.add_argument("--next-step", action="append", help="Next Steps bullet (repeatable)")
+    parser.add_argument(
+        "--idempotency-key",
+        help=(
+            "Caller-supplied retry key ([A-Za-z0-9._-], 1-64 chars). Makes an "
+            "already-committed identical record a no-op instead of a new session."
+        ),
+    )
     parser.add_argument("--no-commit", action="store_true",
                         help="Skip auto-commit of workspace changes")
     parser.add_argument("--stdin", action="store_true",
@@ -637,15 +1591,47 @@ def main() -> int:
     args = parser.parse_args()
 
     extra_content: str | None = None
-    if args.content_file:
+    if args.content_file is not None:
         content_path = Path(args.content_file)
-        if content_path.is_file():
+        try:
+            if not content_path.is_file():
+                raise OSError("expected a regular file")
             extra_content = content_path.read_text(encoding="utf-8")
+        except (OSError, UnicodeError) as exc:
+            print(f"Error: cannot read --content-file {content_path}: {exc}. Journal not written.", file=sys.stderr)
+            return 1
     elif args.stdin:
         extra_content = sys.stdin.read()
 
     # Load active task once — shared by package and branch resolution
     repo_root = get_repo_root()
+    trellis = repo_root / DIR_WORKFLOW
+    if not trellis.is_dir() or trellis.is_symlink():
+        print("Error: project is not initialized with a regular .trellis directory; journal not written.", file=sys.stderr)
+        return 1
+    topic_links: list[str] = []
+    for topic in args.topic:
+        try:
+            candidate = (repo_root / topic).resolve(strict=True)
+            relative = candidate.relative_to(repo_root.resolve()).as_posix()
+            lowered = relative.lower()
+            in_notes = lowered.startswith((".trellis/spec/", ".trellis/research/"))
+            root_readme = (
+                "/" not in relative
+                and lowered.startswith("readme")
+                and lowered.endswith(".md")
+            )
+            in_docs = lowered.startswith(("docs/", "doc/"))
+            if (not (in_notes or root_readme or in_docs)
+                    or candidate.suffix.lower() != ".md"
+                    or not candidate.is_file()
+                    or not candidate.read_text(encoding="utf-8").strip()):
+                raise ValueError("expected a project description or note")
+        except (OSError, ValueError, UnicodeError):
+            print("Error: --topic must name a readable, non-empty spec, research, root README, or docs Markdown file inside this project; journal not written.", file=sys.stderr)
+            return 1
+        if relative not in topic_links:
+            topic_links.append(relative)
     current = get_current_task(repo_root)
     task_data = load_task(repo_root / current) if current else None
 
@@ -674,8 +1660,51 @@ def main() -> int:
         auto_commit=not args.no_commit,
         package=package,
         branch=branch,
+        commit_subjects=args.commit_subject,
+        idempotency_key=args.idempotency_key,
+        topic_paths=topic_links,
     )
 
 
+def _write_recording_status(exit_code: int) -> None:
+    """Best-effort last completed attempt, with no note content or user identity.
+
+    Atomic replacement keeps concurrent diagnostics readable. The journal and
+    index remain the source of truth; failure may leave a resumable checkpoint.
+    """
+    try:
+        trellis = get_repo_root() / DIR_WORKFLOW
+        if not trellis.is_dir() or trellis.is_symlink():
+            return
+        target = trellis / ".runtime" / "writes" / "latest.json"
+        if not target.resolve().is_relative_to(trellis.parent.resolve()):
+            raise OSError("recording diagnostics escape the project")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        payload: dict[str, object] = {
+            "schema": 1,
+            "last_write_at": datetime.now(timezone.utc).isoformat(),
+            "last_status": "ok" if exit_code == 0 else "error",
+            "last_exit_code": exit_code,
+        }
+        if exit_code != 0:
+            payload["last_error_category"] = "recording-failed"
+        if write_text_atomic(target, json.dumps(payload) + "\n"):
+            return
+    except OSError:
+        pass
+    print("mini-trellis: recording diagnostic write failed (state-write)", file=sys.stderr)
+
+
+def run_with_status() -> int:
+    try:
+        result = main()
+    except Exception:
+        _write_recording_status(1)
+        raise
+    # argparse's --help / invalid arguments exit before a recording attempt.
+    _write_recording_status(result)
+    return result
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(run_with_status())
