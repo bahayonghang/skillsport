@@ -53,7 +53,8 @@
         "upgradeCode": "28d41c68-f4a4-5134-b959-34babea58f7f"
       },
       "nsis": {
-        "installMode": "currentUser"
+        "installMode": "currentUser",
+        "installerIcon": "icons/icon.ico"
       }
     },
     "linux": {
