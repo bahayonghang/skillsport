@@ -84,7 +84,7 @@ def describe_json_read_failure(path: Path, reason: str | None) -> tuple[str, str
     if reason == JSON_READ_INVALID:
         return (
             f"{path}: not valid JSON",
-            f"Fix the syntax (e.g. `python3 -m json.tool {path}`), then retry.",
+            f"Fix the syntax (e.g. `python -m json.tool {path}`), then retry.",
         )
     if reason == JSON_READ_NOT_OBJECT:
         return (
