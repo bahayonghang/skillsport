@@ -158,6 +158,7 @@ async fn apply_migration(pool: &DbPool, version: i64) -> Result<(), sqlx::Error>
         7 => versions::v7::apply(&mut transaction).await,
         8 => versions::v8::apply(&mut transaction).await,
         9 => versions::v9::apply(&mut transaction).await,
+        10 => versions::v10::apply(&mut transaction).await,
         _ => {
             return Err(sqlx::Error::InvalidArgument(format!(
                 "Unknown migration version {version}"
@@ -235,6 +236,9 @@ async fn migrate_and_seed(pool: &DbPool, agents: &[Agent]) -> Result<(), sqlx::E
     }
     if state.applied_version < 9 {
         apply_migration(pool, 9).await?;
+    }
+    if state.applied_version < 10 {
+        apply_migration(pool, 10).await?;
     }
     validate_foreign_keys(pool).await?;
     super::seed::seed_database_with_agents(pool, agents).await
