@@ -1011,6 +1011,10 @@ async fn antigravity_skills_cli_inventory_aligns_with_universal_canonical_root()
         .await
         .unwrap()
         .expect("antigravity builtin agent");
+    let gemini_cli = crate::db::get_agent_by_id(&pool, "gemini-cli")
+        .await
+        .unwrap()
+        .expect("gemini-cli builtin agent");
     assert!(
         crate::paths::paths_equivalent(
             Path::new(&antigravity.global_skills_dir),
@@ -1018,44 +1022,80 @@ async fn antigravity_skills_cli_inventory_aligns_with_universal_canonical_root()
         ),
         "antigravity must resolve to the same Universal root as codex"
     );
+    assert!(
+        !crate::paths::paths_equivalent(
+            Path::new(&gemini_cli.global_skills_dir),
+            Path::new(&codex.global_skills_dir),
+        ),
+        "gemini-cli must stay separate from the Universal root"
+    );
 
     let temp = TempDir::new().unwrap();
     let canonical_root = temp.path().join("universal");
+    let gemini_dir = temp.path().join("gemini-cli");
     std::fs::create_dir_all(canonical_root.join("demo")).unwrap();
-    let ownership = super::lock::parse_lock_content(r#"{"version":3,"skills":{"demo":{}}}"#);
-    let skills = super::inventory::project_global_inventory(
-        &ownership,
-        &canonical_root,
-        &[
-            super::inventory::InventoryPlatform::for_test(
-                "codex",
-                "Codex CLI",
-                canonical_root.clone(),
-            ),
-            super::inventory::InventoryPlatform::for_test(
-                "antigravity",
-                "Antigravity",
-                canonical_root.clone(),
-            ),
-        ],
+    std::fs::create_dir_all(&gemini_dir).unwrap();
+    set_agent_dir(&pool, "codex", &canonical_root).await;
+    set_agent_dir(&pool, "antigravity", &canonical_root).await;
+    set_agent_dir(&pool, "gemini-cli", &gemini_dir).await;
+    sqlx::query("UPDATE agents SET is_enabled = 1 WHERE id = 'gemini-cli'")
+        .execute(&pool)
+        .await
+        .unwrap();
+
+    let lock_path = temp.path().join(".skill-lock.json");
+    std::fs::write(
+        &lock_path,
+        r#"{"version":3,"skills":{"demo":{"sourceType":"github"}}}"#,
+    )
+    .unwrap();
+
+    let snapshot = list_global_at(&pool, &canonical_root, &lock_path)
+        .await
+        .unwrap();
+    assert_eq!(snapshot.skills.len(), 1);
+    assert_eq!(
+        snapshot.skills[0].install_kind,
+        SkillsCliInstallKind::Canonical
     );
-    assert_eq!(skills.len(), 1);
-    assert_eq!(skills[0].install_kind, SkillsCliInstallKind::Canonical);
-    let codex_placement = skills[0]
+    let expected_slot = canonical_root.join("demo").to_string_lossy().into_owned();
+    let codex_placement = snapshot.skills[0]
         .placements
         .iter()
         .find(|p| p.agent_id == "codex")
-        .unwrap();
-    let antigravity_placement = skills[0]
+        .expect("codex placement");
+    let antigravity_placement = snapshot.skills[0]
         .placements
         .iter()
         .find(|p| p.agent_id == "antigravity")
-        .unwrap();
-    assert_eq!(antigravity_placement.state, codex_placement.state);
+        .expect("antigravity placement");
+    let gemini_placement = snapshot.skills[0]
+        .placements
+        .iter()
+        .find(|p| p.agent_id == "gemini-cli")
+        .expect("gemini-cli placement");
+
     assert_eq!(
-        antigravity_placement.target_path,
-        codex_placement.target_path
+        codex_placement.state,
+        super::SkillsCliPlacementState::DirectCopy
     );
+    assert_eq!(
+        antigravity_placement.state,
+        super::SkillsCliPlacementState::DirectCopy
+    );
+    assert_eq!(antigravity_placement.target_path, expected_slot);
+    assert_eq!(
+        gemini_placement.state,
+        super::SkillsCliPlacementState::Missing
+    );
+    assert!(snapshot.skills[0]
+        .agents
+        .iter()
+        .any(|name| name == "Antigravity"));
+    assert!(snapshot.skills[0]
+        .agents
+        .iter()
+        .any(|name| name == "Codex CLI"));
 }
 
 #[test]
