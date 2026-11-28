@@ -4,7 +4,7 @@
 
 ## Overview
 
-`SkillPort` follows the [Agent Skills](https://github.com/anthropics/agent-skills) open pattern, but keeps its private Central library in `~/.skillsmanage/skills/`. The shared Universal Agents target remains `~/.agents/skills/`, so only skills explicitly installed there are exposed to Codex CLI, Cursor, OpenCode, Amp, Copilot, and other tools that read that location. SkillPort manages Google's unified Antigravity target (shared by Antigravity App, Antigravity IDE, and Antigravity CLI `agy`) at `~/.gemini/config/skills/`, while using `.agents/skills/` for workspace/project installs. Gemini CLI remains available as a legacy/shared Google target at `~/.gemini/skills/`.
+`SkillPort` follows the [Agent Skills](https://github.com/anthropics/agent-skills) open pattern, but keeps its private Central library in `~/.skillsmanage/skills/`. The shared Universal Agents target remains `~/.agents/skills/`, so only skills explicitly installed there are exposed to Antigravity (Desktop 2.36.0+ and CLI `agy`), Codex CLI, Cursor, OpenCode, Amp, Copilot, and other universal tools that read that location (with workspace/project installs continuing to share `.agents/skills/`). Gemini CLI remains available as a legacy/shared Google target at `~/.gemini/skills/`. Upgrading Antigravity users and Antigravity IDE users should also see [Platforms](./platforms) for `~/.gemini/config/skills/` shadowing precedence and Custom Platform notes.
 
 The app combines four roles in a single window:
 
@@ -43,4 +43,4 @@ The app combines four roles in a single window:
 
 ---
 
-Last reviewed: 2026-11-20
+Last reviewed: 2026-11-27

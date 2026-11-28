@@ -17,7 +17,7 @@
 | Coding | Claude Code | `~/.claude/skills/` |
 | Coding | Codex CLI | `~/.agents/skills/` |
 | Coding | Cursor | `~/.agents/skills/` |
-| Coding | Antigravity | `~/.gemini/config/skills/` |
+| Coding | Antigravity | `~/.agents/skills/` |
 | Coding | Gemini CLI（legacy） | `~/.gemini/skills/` |
 | Coding | Trae | `~/.trae/skills/` |
 | Coding | Factory Droid | `~/.factory/skills/` |
@@ -44,7 +44,18 @@
 | Lobster | WorkBuddy（打工搭子） | `~/.workbuddy/skills-marketplace/skills/` |
 | Central | 中央技能库 | `~/.skillsmanage/skills/` |
 
-Codex、Cursor、OpenCode、Amp、Copilot 等 universal agents 读取共享的 Universal Agents 全局路径。SkillPort 将 Google 的 Antigravity 三端（App、IDE 与 CLI `agy`）统一到共读的 `~/.gemini/config/skills/` 全局目录；项目 / workspace 安装仍使用共享 `.agents/skills/` 目录；Gemini CLI 仍作为 legacy/shared Google 目标使用 `~/.gemini/skills/`。SkillPort 本轮不管理 Antigravity plugin bundle。
+Antigravity（Desktop 2.36.0+ 与 CLI `agy`）、Codex CLI、Cursor、OpenCode、Amp、Copilot 等 universal agents 共同读取全局 Universal Agents 路径（`~/.agents/skills/`），项目 / workspace 安装同样共享 `.agents/skills/` 目录；Gemini CLI 仍作为独立的 legacy/shared Google 目标使用 `~/.gemini/skills/`。SkillPort 当前不管理 Antigravity plugin bundle。
+
+### Antigravity 升级与 `~/.gemini/config/skills/` 遮蔽警告
+
+> **警告 — `~/.gemini/config/skills/` 同名遮蔽优先级**：尽管 Antigravity Desktop（2.36.0+）与 CLI（`agy`）已读取全局 `~/.agents/skills/`，但只要 `~/.gemini/config/skills/` 中仍留有同名技能，Antigravity 仍会优先加载 `~/.gemini/config/skills/` 里的旧副本，从而遮蔽 `~/.agents/skills/` 中的技能。
+
+- **不会自动删盘**：SkillPort 升级只会清理数据库中残留的 `~/.gemini/config/skills/` 元数据，**不会**自动删除、移动或修改用户磁盘上 `~/.gemini/config/skills/` 里的任何文件。
+- **手动排查与清理步骤**：
+  1. 检查 `~/.gemini/config/skills/` 中是否存在与 `~/.agents/skills/` 同名的技能目录。
+  2. 确认需要保留的技能已经在中央技能库（`~/.skillsmanage/skills/`）中有备份，或已安装到 `~/.agents/skills/`。
+  3. 确认无误后，手动删除或移走 `~/.gemini/config/skills/` 中的多余同名目录，避免遮蔽 `~/.agents/skills/`。
+- **Antigravity IDE 回退方案**：Antigravity IDE 官方文档尚未宣布支持 `~/.agents/skills/`。如果你仍使用 Antigravity IDE 并需要用 SkillPort 管理 `~/.gemini/config/skills/`，请前往 **Settings → 自定义平台（Custom Platforms）** 添加自定义平台（例如 id 填 `antigravity-ide`、目录填 `~/.gemini/config/skills/`、分类选 `Coding`）。
 
 ## 平台视图
 
@@ -77,4 +88,4 @@ Codex、Cursor、OpenCode、Amp、Copilot 等 universal agents 读取共享的 U
 
 ---
 
-Last reviewed: 2026-11-20
+Last reviewed: 2026-11-27

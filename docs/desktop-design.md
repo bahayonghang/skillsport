@@ -2,7 +2,7 @@
 
 > 版本：v0.1 | 日期：2026-04-09
 
-> Historical design note: this April 2026 draft predates the current Central library and Google-platform semantics. Runtime code and README now treat Central as `~/.skillsmanage/skills/`, Universal Agents global as `~/.agents/skills/`, unified Antigravity (App / IDE / CLI `agy`, merged 2026-11-20) global as `~/.gemini/config/skills/`, and Gemini CLI as the legacy/shared `~/.gemini/skills/` target. Antigravity plugin bundles are outside SkillPort's current skill-folder workflow.
+> Historical design note: this April 2026 draft predates the current Central library and Google-platform semantics. Runtime code and README now treat Central as `~/.skillsmanage/skills/`, Universal Agents global as `~/.agents/skills/` (including Antigravity Desktop 2.36.0+ / CLI `agy` as of 2026-11-27, superseding the 2026-11-20 merge that previously pointed `antigravity` at `~/.gemini/config/skills/`), and Gemini CLI as the legacy/shared `~/.gemini/skills/` target. Leftover same-named skills in `~/.gemini/config/skills/` still shadow `~/.agents/skills/` in Antigravity Desktop/CLI (SkillPort does not auto-delete disk files), Antigravity IDE users can add `~/.gemini/config/skills/` as a Custom Platform if needed, and Antigravity plugin bundles remain outside SkillPort's current skill-folder workflow.
 
 ---
 

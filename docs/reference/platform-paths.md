@@ -9,7 +9,7 @@ The full list of platforms SkillPort manages and where each one stores its skill
 | Claude Code | `~/.claude/skills/` |
 | Codex CLI | `~/.agents/skills/` |
 | Cursor | `~/.agents/skills/` |
-| Antigravity | `~/.gemini/config/skills/` |
+| Antigravity | `~/.agents/skills/` |
 | Gemini CLI (legacy) | `~/.gemini/skills/` |
 | Trae | `~/.trae/skills/` |
 | Factory Droid | `~/.factory/skills/` |
@@ -47,12 +47,14 @@ The full list of platforms SkillPort manages and where each one stores its skill
 | `~/.skillsmanage/skills/` | Canonical Central library (legacy directory name kept for compatibility) |
 | `~/.skillsmanage/db.sqlite` | SQLite database (WAL mode) |
 | `~/.skillsmanage/targets/<id>/db.sqlite` | Per-target SQLite cache for SSH targets |
-| `~/.agents/skills/` | Universal Agents global target shared by Codex CLI / Cursor / OpenCode / Amp / Copilot and other universal agents. |
+| `~/.agents/skills/` | Universal Agents global target shared by Antigravity (Desktop 2.36.0+ / CLI `agy`), Codex CLI, Cursor, OpenCode, Amp, Copilot, and other universal agents. |
 | `~/.gemini/skills/` | Legacy/shared Google target carried by Gemini CLI. |
 
 ## Shared Roots
 
-Multiple global agents resolve to `~/.agents/skills/`. Antigravity (shared by App, IDE, and CLI `agy`) resolves globally to `~/.gemini/config/skills/` and shares `.agents/skills/` at project/workspace scope. The legacy/shared Google path is represented by Gemini CLI at `~/.gemini/skills/`. Project scanning collapses workspace-compatible members so the same project skill is not surfaced N times.
+Multiple global agents—including Antigravity (Desktop 2.36.0+ and CLI `agy`), Codex CLI, Cursor, OpenCode, Amp, Copilot, and other universal agents—resolve globally to `~/.agents/skills/` and share `.agents/skills/` at project/workspace scope. The legacy/shared Google path remains represented by Gemini CLI at `~/.gemini/skills/`. Project scanning collapses workspace-compatible members so the same project skill is not surfaced N times.
+
+> **Antigravity `~/.gemini/config/skills/` precedence & IDE note**: Antigravity Desktop and CLI still prioritize same-named skills in `~/.gemini/config/skills/` over `~/.agents/skills/`. Upgrading SkillPort cleans stale database rows only and never deletes, moves, or modifies files in `~/.gemini/config/skills/` on disk—inspect `~/.gemini/config/skills/` for duplicates, confirm your skills exist in Central (`~/.skillsmanage/skills/`) or `~/.agents/skills/`, and manually remove redundant old copies. Because Antigravity IDE documentation has not yet announced `~/.agents/skills/` support, IDE users who need `~/.gemini/config/skills/` managed by SkillPort can add it as a Custom Platform below.
 
 ## Read-only Sources
 
@@ -67,4 +69,4 @@ Settings → Platforms allows adding custom platforms. SkillPort auto-generates 
 
 The directory is created lazily on first install.
 
-Last reviewed: 2026-11-20
+Last reviewed: 2026-11-27

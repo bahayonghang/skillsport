@@ -88,6 +88,8 @@ description: Review code changes and identify bugs. Use when the user asks for c
 
 **2026-11-20 更新**：上游 Antigravity 三端（App / IDE / CLI `agy`）已统一读取 `~/.gemini/config/skills/`，SkillPort 已将 `antigravity-cli` 合并回单一 `antigravity` 平台并统一全局目录为 `~/.gemini/config/skills/`；项目 / workspace 技能目录仍为 `.agents/skills/`；Gemini CLI 保留为 legacy/shared Google 兼容平台，承载 `~/.gemini/skills/`。
 
+**2026-11-27 更新**：上游 Google Antigravity Desktop 2.36.0 新增对全局 `~/.agents/skills/` 的支持（与 CLI `agy` 一致），SkillPort 已将单一 `antigravity` 平台并入全局 Universal Agents（`~/.agents/skills/`，共 11 个成员）；升级仅清理数据库中的旧 `~/.gemini/config/skills/` 元数据，不触碰磁盘文件。注意 Antigravity Desktop/CLI 仍对 `~/.gemini/config/skills/` 中的同名技能保持更高优先级（存在遮蔽风险需手动排查清理），Antigravity IDE 官方文档尚未宣布支持 `~/.agents/skills/`（如需管理 `~/.gemini/config/skills/` 可在 SkillPort 添加自定义平台）；项目 / workspace 仍共享 `.agents/skills/`，Gemini CLI 保持 `~/.gemini/skills/`。
+
 **关键发现**：Codex、Cursor、Cline、Copilot、OpenCode、Amp、Antigravity、Antigravity CLI 等多个平台都兼容 `.agents/skills/` 作为项目或通用路径，这使得 `~/.agents/skills/` 仍是重要的 Universal Agents 目标。Gemini CLI 的全局 shared / legacy 目标则由 `~/.gemini/skills/` 承载。
 
 ---
