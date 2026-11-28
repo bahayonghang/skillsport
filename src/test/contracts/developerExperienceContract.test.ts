@@ -187,18 +187,6 @@ describe("developer and PR experience contract", () => {
     expect(harness).toContain("frontend-only build");
   });
 
-  it("does not claim Kimi lacks project custom agents", () => {
-    for (const skillPath of [
-      ".kimi-code/skills/trellis-research/SKILL.md",
-      ".kimi-code/skills/trellis-implement/SKILL.md",
-      ".kimi-code/skills/trellis-check/SKILL.md",
-    ]) {
-      const raw = readFileSync(skillPath, "utf8");
-      expect(raw).not.toMatch(/has no project-level custom/i);
-      expect(raw).not.toMatch(/no project-level custom sub-agent/i);
-    }
-  });
-
   it("records REL-001 and REL-002 as contract-wontfix with residual risk", () => {
     const gitAndRelease = readFileSync("docs/agents/git-and-release.md", "utf8");
     expect(gitAndRelease).not.toMatch(/REL-001 and REL-002 stay open/);

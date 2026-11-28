@@ -81,10 +81,10 @@ Official: [Grok Build](https://github.com/xai-org/grok-build), [subagents](https
 
 | Topic | Fact | Kind |
 |---|---|---|
-| Rules / skills | `.gitignore` exceptions for `.kimi-code/skills/trellis-{research,implement,check}/SKILL.md`. Not a live-load proof | Gitignore exceptions. Live skill load **UNVERIFIED** |
+| Rules / skills | Root `AGENTS.md` is the project contract; `.kimi-code/` is gitignored and legacy `.kimi-code/skills/trellis-{research,implement,check}/SKILL.md` files were removed after migrating to `mini-trellis` | Static policy. Live skill load **UNVERIFIED** |
 | Custom agents | Current Kimi Code documents project custom agents. This repo does **not** claim they are absent | Official docs. Live project-agent discovery **UNVERIFIED** |
 | Research | Default dispatch is built-in read-only `explore`; the main session persists returned findings only under the known task `research/` path | `explore` read-only is capability. Persist-by-main is prompt convention |
-| Implement / check | Until live discovery is verified, main session dispatches built-in `coder` with these skills and `Active task:` as the first prompt line; stay in approved scope | Prompt convention |
+| Implement / check | Until live discovery is verified, main session dispatches built-in `coder` with `Active task:` as the first prompt line; stay in approved scope | Prompt convention |
 | Model pool | Official product supports model pool / secondary model | This repo's resolved model **UNVERIFIED** |
 
 Do not use `kimi --agent*` as a read-only check; it starts a session.
