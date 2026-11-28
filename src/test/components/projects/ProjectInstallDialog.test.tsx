@@ -56,7 +56,7 @@ const mockAgents: AgentWithStatus[] = [
     id: "antigravity",
     display_name: "Antigravity",
     category: "coding",
-    global_skills_dir: "~/.gemini/config/skills/",
+    global_skills_dir: "~/.agents/skills/",
     project_skills_dir: ".agents/skills",
     is_detected: true,
     is_builtin: true,

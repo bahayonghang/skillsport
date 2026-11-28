@@ -995,6 +995,69 @@ async fn ac4_list_global_at_reads_lock_copy_without_spawn() {
     assert_eq!(snapshot.lock_path, lock_path.to_string_lossy().into_owned());
 }
 
+#[tokio::test]
+async fn antigravity_skills_cli_inventory_aligns_with_universal_canonical_root() {
+    assert_eq!(
+        super::agent_map::cli_agent_for_skillport_id("antigravity"),
+        Some("antigravity")
+    );
+
+    let pool = mem_pool().await;
+    let codex = crate::db::get_agent_by_id(&pool, "codex")
+        .await
+        .unwrap()
+        .expect("codex builtin agent");
+    let antigravity = crate::db::get_agent_by_id(&pool, "antigravity")
+        .await
+        .unwrap()
+        .expect("antigravity builtin agent");
+    assert!(
+        crate::paths::paths_equivalent(
+            Path::new(&antigravity.global_skills_dir),
+            Path::new(&codex.global_skills_dir),
+        ),
+        "antigravity must resolve to the same Universal root as codex"
+    );
+
+    let temp = TempDir::new().unwrap();
+    let canonical_root = temp.path().join("universal");
+    std::fs::create_dir_all(canonical_root.join("demo")).unwrap();
+    let ownership = super::lock::parse_lock_content(r#"{"version":3,"skills":{"demo":{}}}"#);
+    let skills = super::inventory::project_global_inventory(
+        &ownership,
+        &canonical_root,
+        &[
+            super::inventory::InventoryPlatform::for_test(
+                "codex",
+                "Codex CLI",
+                canonical_root.clone(),
+            ),
+            super::inventory::InventoryPlatform::for_test(
+                "antigravity",
+                "Antigravity",
+                canonical_root.clone(),
+            ),
+        ],
+    );
+    assert_eq!(skills.len(), 1);
+    assert_eq!(skills[0].install_kind, SkillsCliInstallKind::Canonical);
+    let codex_placement = skills[0]
+        .placements
+        .iter()
+        .find(|p| p.agent_id == "codex")
+        .unwrap();
+    let antigravity_placement = skills[0]
+        .placements
+        .iter()
+        .find(|p| p.agent_id == "antigravity")
+        .unwrap();
+    assert_eq!(antigravity_placement.state, codex_placement.state);
+    assert_eq!(
+        antigravity_placement.target_path,
+        codex_placement.target_path
+    );
+}
+
 #[test]
 fn ac15_resolves_npx_js_from_sibling_npm_layout() {
     let temp = TempDir::new().unwrap();

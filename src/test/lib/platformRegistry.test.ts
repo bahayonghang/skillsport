@@ -7,10 +7,12 @@ import {
   UNIVERSAL_PLATFORM_REGISTRY,
   UNIVERSAL_PROJECT_AGENT_ID_ORDER,
 } from "@/lib/platformRegistry";
+import { BROWSER_PLATFORM_PATHS } from "@/lib/platformPathPolicy";
 
 // 迁移前的三份字面量列表（行为基准）：id 与顺序均不能变。
-const LEGACY_UNIVERSAL_AGENT_ID_ORDER = [
+const EXPECTED_UNIVERSAL_AGENT_ID_ORDER = [
   "amp",
+  "antigravity",
   "cline",
   "codex",
   "cursor",
@@ -56,9 +58,9 @@ const LEGACY_DEFAULT_ENABLED_PLATFORM_IDS = [
 ];
 
 describe("platformRegistry", () => {
-  it("derives the global Universal order matching the legacy literal", () => {
+  it("derives the global Universal order including antigravity", () => {
     expect([...UNIVERSAL_AGENT_ID_ORDER]).toEqual(
-      LEGACY_UNIVERSAL_AGENT_ID_ORDER,
+      EXPECTED_UNIVERSAL_AGENT_ID_ORDER,
     );
   });
 
@@ -99,9 +101,20 @@ describe("platformRegistry", () => {
     }
   });
 
-  it("marks exactly 10 registry entries as globalGroup", () => {
+  it("marks exactly 11 registry entries as globalGroup", () => {
     expect(
       UNIVERSAL_PLATFORM_REGISTRY.filter((entry) => entry.globalGroup).length,
-    ).toBe(10);
+    ).toBe(11);
+  });
+
+  it("maps browser fallback paths for antigravity to Universal ~/.agents/skills/ while keeping gemini-cli standalone", () => {
+    expect(BROWSER_PLATFORM_PATHS.antigravity).toEqual({
+      global_skills_dir: "~/.agents/skills/",
+      project_skills_dir: ".agents/skills",
+    });
+    expect(BROWSER_PLATFORM_PATHS["gemini-cli"]).toEqual({
+      global_skills_dir: "~/.gemini/skills/",
+      project_skills_dir: ".agents/skills",
+    });
   });
 });

@@ -448,7 +448,7 @@ async fn migration_nine_unifies_antigravity_and_cleans_legacy_cli_rows() {
     assert!(ag
         .global_skills_dir
         .replace('\\', "/")
-        .ends_with(".gemini/config/skills"));
+        .ends_with(".agents/skills"));
     assert!(db::get_agent_by_id(&reopened, "antigravity-cli")
         .await
         .unwrap()
@@ -520,10 +520,7 @@ async fn migration_nine_unifies_antigravity_and_cleans_legacy_cli_rows() {
         .await
         .unwrap()
         .unwrap();
-    assert_eq!(
-        remote_ag.global_skills_dir,
-        "/home/alice/.gemini/config/skills"
-    );
+    assert_eq!(remote_ag.global_skills_dir, "/home/alice/.agents/skills");
     assert!(db::get_agent_by_id(&remote_reopened, "antigravity-cli")
         .await
         .unwrap()

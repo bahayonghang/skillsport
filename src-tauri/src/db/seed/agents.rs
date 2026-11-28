@@ -348,7 +348,7 @@ fn builtin_agents_for_home(home: &Path) -> Vec<Agent> {
             id: "antigravity".to_string(),
             display_name: "Antigravity".to_string(),
             category: "coding".to_string(),
-            global_skills_dir: skill_dir(&[".gemini", "config", "skills"]),
+            global_skills_dir: agent_skill_dir("antigravity", &[".gemini", "config", "skills"]),
             project_skills_dir: Some(UNIVERSAL_PROJECT_SKILLS_DIR.to_string()),
             icon_name: Some("antigravity".to_string()),
             is_detected: false,

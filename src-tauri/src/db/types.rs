@@ -63,11 +63,11 @@ impl std::str::FromStr for SkillUpdateStatus {
 
 /// Global Universal Agents targets share the user-level `~/.agents/skills` directory.
 ///
-/// Google-branded global targets are intentionally not part of this set:
-/// unified Antigravity (App / IDE / CLI) uses `~/.gemini/config/skills`, and
-/// legacy Gemini CLI carries the shared Google `~/.gemini/skills` target.
-pub const UNIVERSAL_AGENT_IDS: [&str; 10] = [
+/// Unified Antigravity shares `~/.agents/skills` as part of this set, while
+/// legacy Gemini CLI remains separate on the shared Google `~/.gemini/skills` target.
+pub const UNIVERSAL_AGENT_IDS: [&str; 11] = [
     "amp",
+    "antigravity",
     "cline",
     "codex",
     "cursor",

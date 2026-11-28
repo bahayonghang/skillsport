@@ -471,6 +471,54 @@ describe("Sidebar", () => {
     expect(within(universalButton).queryByText("10")).not.toBeInTheDocument();
   });
 
+  it("folds enabled Antigravity into Universal without showing a duplicate standalone platform", () => {
+    vi.mocked(usePlatformStore).mockImplementation((selector?: unknown) => {
+      const state = buildPlatformStoreState({
+        agents: [
+          ...mockAgents,
+          {
+            id: "antigravity",
+            display_name: "Antigravity",
+            category: "coding",
+            global_skills_dir: "~/.agents/skills/",
+            is_detected: true,
+            is_builtin: true,
+            is_enabled: true,
+          },
+          {
+            id: "gemini-cli",
+            display_name: "Gemini CLI (legacy)",
+            category: "coding",
+            global_skills_dir: "~/.gemini/skills/",
+            is_detected: true,
+            is_builtin: true,
+            is_enabled: true,
+          },
+        ],
+        skillsByAgent: {
+          "claude-code": 5,
+          codex: 7,
+          antigravity: 7,
+          cursor: 3,
+          "gemini-cli": 2,
+          central: 10,
+        },
+      });
+      if (typeof selector === "function") return selector(state);
+      return state;
+    });
+
+    render(
+      <MemoryRouter initialEntries={["/central"]}>
+        <Sidebar />
+      </MemoryRouter>
+    );
+
+    expect(screen.getByRole("button", { name: /Universal/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Gemini CLI \(legacy\)/ })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Antigravity/ })).not.toBeInTheDocument();
+  });
+
   it("keeps lobster platforms out of the sidebar when the lobster group is enabled", () => {
     vi.mocked(usePlatformStore).mockImplementation((selector?: unknown) => {
       const state = buildPlatformStoreState({

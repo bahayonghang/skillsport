@@ -19,7 +19,7 @@ export const BROWSER_PLATFORM_PATHS: PlatformPathMap = {
     project_skills_dir: ".agents/skills",
   },
   antigravity: {
-    global_skills_dir: "~/.gemini/config/skills/",
+    global_skills_dir: "~/.agents/skills/",
     project_skills_dir: ".agents/skills",
   },
   opencode: {

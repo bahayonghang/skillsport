@@ -600,6 +600,14 @@ async fn test_scan_all_skills_impl_reuses_shared_directory_for_codex_and_central
         crate::db::UNIVERSAL_AGENT_IDS.len() + 1,
         "shared skill should be mapped to universal agents and central"
     );
+    assert_eq!(result.skills_by_agent.get("antigravity").copied(), Some(1));
+    assert!(
+        installations
+            .iter()
+            .any(|installation| installation.agent_id == "antigravity"
+                && installation.link_type == "native"),
+        "antigravity shared-root installation should be native"
+    );
     assert!(
         installations
             .iter()
