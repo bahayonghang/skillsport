@@ -88,6 +88,17 @@ foreign_key_check -> seed -> publish pool`.
   pairs before remapping `project_skill_installations` to `antigravity`, cleans
   `skill_update_inventory_entries`, and removes the retired builtin `agents` row
   on both local and remote target-cache DBs.
+- Migration 10 cleans stale `antigravity` rows referencing the retired
+  `~/.gemini/config/skills/` global path after Antigravity moves into the global
+  Universal Agents group (`~/.agents/skills/`): it deletes `skill_installations`
+  rows for `antigravity` whose normalized `installed_path` falls under
+  `/.gemini/config/skills/`, deletes `agent_skill_observations` rows for
+  `antigravity` whose normalized `dir_path` or `source_root` matches
+  `/.gemini/config/skills` or falls beneath it, and clears cached
+  `skill_update_inventory_entries` rows for `antigravity` on both local and
+  remote target-cache DBs. It preserves `agents.is_enabled`, all
+  `project_skill_installations`, non-legacy rows, unrelated platforms, and every
+  existing file under `~/.gemini/config/skills/` on disk.
 
 ## 4. Validation & Error Matrix
 
@@ -106,6 +117,7 @@ foreign_key_check -> seed -> publish pool`.
 | Migration 3 active-operation uniqueness or schema check fails | Roll back migration 3 and restore the pre-migration database backup    |
 | Migration 4 `ADD COLUMN` fails                                | Roll back migration 4 and restore the pre-migration database backup    |
 | Migration 6 pending-addition `ADD COLUMN` fails                | Roll back migration 6 and restore the pre-migration database backup    |
+| Migration 10 legacy Antigravity cleanup fails                  | Roll back migration 10 and restore the pre-migration database backup   |
 | A later writer supplies no provenance for an existing row     | `COALESCE` keeps the stored commit/digest; never overwrite with `NULL` |
 
 All errors below command boundaries remain `sqlx::Error`; backup, metadata,
@@ -160,6 +172,17 @@ repair audit, restore, and FK validation are never best effort.
   `skill_installations` / `agent_skill_observations`, `project_skill_installations`
   conflict deduplication & remap, `skill_update_inventory_entries` cleanup, and
   `open_database_for_remote_home` upgrade.
+- Antigravity Universal cleanup coverage (Migration 10): pre-v10 -> v10 upgrades
+  on both local (`open_database`) and remote-home
+  (`open_database_for_remote_home`) DBs delete stale `antigravity` rows pointing
+  to `/.gemini/config/skills` across `skill_installations` (Windows backslash
+  and POSIX paths, case-insensitive), `agent_skill_observations` (`dir_path` and
+  `source_root` exact or subpath matches), and `skill_update_inventory_entries`,
+  while preserving `agents.is_enabled` (both `0` and `1`),
+  `project_skill_installations`, non-legacy `/.agents/skills/` rows, unrelated
+  platforms, and on-disk `~/.gemini/config/skills/` files; lock v1–v10 digests
+  (with v1–v9 unchanged), bump the future-version preflight fixture to v11, and
+  confirm idempotent reopen creates no redundant backup.
 - Multiple simultaneous pool connections each report `foreign_keys=1`.
 - Checksum drift, applied gap, and future version reject without backup/write.
 - The exact migration-1 Windows alias opens without rewrite or backup; a random

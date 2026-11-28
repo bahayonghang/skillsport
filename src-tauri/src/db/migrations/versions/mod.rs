@@ -1,6 +1,7 @@
 use sha2::{Digest, Sha256};
 
 pub(crate) mod v1;
+pub(super) mod v10;
 pub(super) mod v2;
 pub(super) mod v3;
 pub(super) mod v4;
@@ -24,7 +25,7 @@ pub(super) const PUBLISHED_WINDOWS_V1_CHECKSUM: &str =
 pub(super) const PUBLISHED_PRE_FINAL_SCHEMA_V1_CHECKSUM: &str =
     "173296a19419edf197e3baa3b22de1f33184a1d8631141549751fbf1cfc24f7f";
 
-pub(super) const MIGRATIONS: [MigrationDescriptor; 9] = [
+pub(super) const MIGRATIONS: [MigrationDescriptor; 10] = [
     MigrationDescriptor {
         version: 1,
         source: v1::SOURCE,
@@ -71,6 +72,11 @@ pub(super) const MIGRATIONS: [MigrationDescriptor; 9] = [
     MigrationDescriptor {
         version: 9,
         source: v9::SOURCE,
+        legacy_checksums: &[],
+    },
+    MigrationDescriptor {
+        version: 10,
+        source: v10::SOURCE,
         legacy_checksums: &[],
     },
 ];
