@@ -55,7 +55,7 @@ Several coding platforms—including Antigravity (Desktop 2.36.0+ and CLI `agy`)
   1. Check `~/.gemini/config/skills/` for leftover skill directories whose names match skills managed under `~/.agents/skills/`.
   2. Verify each skill you want to keep is already backed up in Central (`~/.skillsmanage/skills/`) or installed in `~/.agents/skills/`.
   3. Manually remove (or archive elsewhere) the duplicate folders from `~/.gemini/config/skills/` so Antigravity loads the `~/.agents/skills/` copy cleanly.
-- **Antigravity IDE fallback**: Official Antigravity IDE documentation has not yet announced `~/.agents/skills/` support. If you use Antigravity IDE and still need SkillPort to manage `~/.gemini/config/skills/`, add `~/.gemini/config/skills/` under **Settings → Custom Platforms** (for example, id `antigravity-ide`, directory `~/.gemini/config/skills/`, category `Coding`).
+- **Antigravity IDE fallback**: Official Antigravity IDE documentation has not yet announced `~/.agents/skills/` support. If you use Antigravity IDE and still need SkillPort to manage `~/.gemini/config/skills/`, add `~/.gemini/config/skills/` under **Settings → Custom Platforms** (for example, display name `Antigravity IDE`, directory `~/.gemini/config/skills/`, category `Coding`).
 
 ## Platform view
 

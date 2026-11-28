@@ -55,7 +55,7 @@ Antigravity（Desktop 2.36.0+ 与 CLI `agy`）、Codex CLI、Cursor、OpenCode�
   1. 检查 `~/.gemini/config/skills/` 中是否存在与 `~/.agents/skills/` 同名的技能目录。
   2. 确认需要保留的技能已经在中央技能库（`~/.skillsmanage/skills/`）中有备份，或已安装到 `~/.agents/skills/`。
   3. 确认无误后，手动删除或移走 `~/.gemini/config/skills/` 中的多余同名目录，避免遮蔽 `~/.agents/skills/`。
-- **Antigravity IDE 回退方案**：Antigravity IDE 官方文档尚未宣布支持 `~/.agents/skills/`。如果你仍使用 Antigravity IDE 并需要用 SkillPort 管理 `~/.gemini/config/skills/`，请前往 **Settings → 自定义平台（Custom Platforms）** 添加自定义平台（例如 id 填 `antigravity-ide`、目录填 `~/.gemini/config/skills/`、分类选 `Coding`）。
+- **Antigravity IDE 回退方案**：Antigravity IDE 官方文档尚未宣布支持 `~/.agents/skills/`。如果你仍使用 Antigravity IDE 并需要用 SkillPort 管理 `~/.gemini/config/skills/`，请前往 **Settings → 自定义平台（Custom Platforms）** 添加自定义平台（例如显示名称填 `Antigravity IDE`、目录填 `~/.gemini/config/skills/`、分类选 `Coding`）。
 
 ## 平台视图
 
