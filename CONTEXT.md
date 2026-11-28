@@ -42,7 +42,7 @@ Rules 不使用 Skill uid 或数据库表；备份与恢复凭据保存在规则
 ~/.agents/skills/
 ```
 
-Codex CLI、Cursor、OpenCode、Amp、Copilot 等 universal agents 读取这个全局位置。Google 平台约定：Antigravity（App / IDE / CLI 三端统一）全局目录是 `~/.gemini/config/skills/`，项目级技能仍共享 `.agents/skills/`；Gemini CLI 作为 legacy/shared 目标承载 `~/.gemini/skills/`。
+Antigravity（Desktop 2.36.0+ / CLI `agy`）、Codex CLI、Cursor、OpenCode、Amp、Copilot 等 11 个全局 universal agents 共同读取这个全局位置，项目级技能同样共享 `.agents/skills/`。Google 平台补充约定：Antigravity Desktop 与 CLI 对 `~/.gemini/config/skills/` 中的同名技能仍保持高于 `~/.agents/skills/` 的遮蔽优先级（SkillPort 升级仅清理旧数据库元数据，不自动删除磁盘文件）；Antigravity IDE 官方文档尚未宣布支持 `~/.agents/skills/`，如需管理 `~/.gemini/config/skills/` 可通过自定义平台添加；Gemini CLI 仍作为 legacy/shared 目标承载 `~/.gemini/skills/`。
 
 ### Skills CLI global
 

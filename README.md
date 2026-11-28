@@ -10,7 +10,7 @@
 
 ## Overview
 
-`SkillPort` follows the [Agent Skills](https://github.com/anthropics/agent-skills) open pattern, but keeps its private Central library in `~/.skillsmanage/skills/` by default. On the Local target, the Central page can change this location with a previewed migrate-and-switch flow: current Central skills overwrite same-name target skills, target-only skills are kept and scanned in, and the old directory is not deleted. The shared Universal Agents target remains `~/.agents/skills/`, so only skills explicitly installed there are exposed to Codex CLI, Cursor, OpenCode, Amp, Copilot, and other tools that read that location. Grok is managed as its own upstream-compatible target at `~/.grok/skills/`, with project installs under `.grok/skills/`. SkillPort manages Google's unified Antigravity target (shared by Antigravity App, Antigravity IDE, and Antigravity CLI `agy`) at `~/.gemini/config/skills/`, while using `.agents/skills/` for workspace/project installs. Gemini CLI remains available as a legacy/shared Google target at `~/.gemini/skills/`.
+`SkillPort` follows the [Agent Skills](https://github.com/anthropics/agent-skills) open pattern, but keeps its private Central library in `~/.skillsmanage/skills/` by default. On the Local target, the Central page can change this location with a previewed migrate-and-switch flow: current Central skills overwrite same-name target skills, target-only skills are kept and scanned in, and the old directory is not deleted. The shared Universal Agents target remains `~/.agents/skills/`, so only skills explicitly installed there are exposed to Antigravity (Desktop 2.36.0+ and CLI `agy`), Codex CLI, Cursor, OpenCode, Amp, Copilot, and other universal tools that read that location (with workspace/project installs continuing to share `.agents/skills/`). Grok is managed as its own upstream-compatible target at `~/.grok/skills/`, with project installs under `.grok/skills/`. Gemini CLI remains available as a legacy/shared Google target at `~/.gemini/skills/`.
 
 ## Relationship to upstream
 
@@ -140,7 +140,7 @@ Then launch the app again from Finder. If your app is stored somewhere else, rep
 | Coding | Codex CLI | `~/.agents/skills/` |
 | Coding | Grok | `~/.grok/skills/` |
 | Coding | Cursor | `~/.agents/skills/` |
-| Coding | Antigravity | `~/.gemini/config/skills/` |
+| Coding | Antigravity | `~/.agents/skills/` |
 | Coding | Zed (community-compatible) | `~/.config/zed/skills/` |
 | Coding | Gemini CLI (legacy) | `~/.gemini/skills/` |
 | Coding | Trae | `~/.trae/skills/` |
@@ -169,6 +169,12 @@ Then launch the app again from Finder. If your app is stored somewhere else, rep
 | Central | Central Skills | `~/.skillsmanage/skills/` |
 
 > Note: Claude Code also surfaces marketplace plugin directories under `~/.claude/plugins/marketplaces/*` as read-only rows in the Claude view. Those entries are display-only and are not managed like native skills in `~/.claude/skills/`. Antigravity plugin bundles are a separate CLI plugin mechanism; SkillPort currently manages Google `SKILL.md` skill folders only, not plugin bundle import/export. Zed is listed with a community-compatible skills path; SkillPort does not claim this is an official Zed-native skills specification.
+
+> **Antigravity upgrade & `~/.gemini/config/skills/` warning**
+>
+> - **Same-name shadowing precedence**: Antigravity Desktop (2.36.0+) and CLI (`agy`) read global skills from `~/.agents/skills/`, but any same-named skill left in `~/.gemini/config/skills/` still takes precedence over `~/.agents/skills/`.
+> - **No automatic disk deletion & manual cleanup**: Upgrading SkillPort cleans stale database metadata only and intentionally does **not** delete, move, or modify files in `~/.gemini/config/skills/` on disk. To avoid shadowing after upgrading: (1) inspect `~/.gemini/config/skills/` for skills sharing names with `~/.agents/skills/`, (2) confirm those skills are already backed up in Central (`~/.skillsmanage/skills/`) or installed in `~/.agents/skills/`, and (3) manually remove the redundant copies from `~/.gemini/config/skills/`.
+> - **Antigravity IDE fallback**: Official Antigravity IDE documentation has not yet announced `~/.agents/skills/` support. If you use Antigravity IDE and still want SkillPort to manage `~/.gemini/config/skills/`, add `~/.gemini/config/skills/` via **Settings → Custom Platforms**.
 
 Custom platforms can be added through Settings.
 

@@ -10,7 +10,7 @@
 
 ## 项目简介
 
-`SkillPort` 遵循 [Agent Skills](https://github.com/anthropics/agent-skills) 的开放模式，但中央技能库默认使用私有目录 `~/.skillsmanage/skills/`。在本机 Local 目标下，可以在中央技能库页面修改这个位置：切换前会先预览，迁移时当前中央库覆盖目标目录同名技能，目标目录独有技能会保留并扫描导入，旧目录不会删除。共享的 Universal Agents 目标仍是 `~/.agents/skills/`，只有显式安装到这里的技能才会暴露给 Codex CLI、Cursor、OpenCode、Amp、Copilot 等读取该目录的工具。Grok 按上游兼容的独立目标管理，全局目录为 `~/.grok/skills/`，项目安装目录为 `.grok/skills/`。SkillPort 将 Google 的 Antigravity 统一为一个目标（由 Antigravity App、Antigravity IDE 与 Antigravity CLI `agy` 三端共读）：全局技能目录为 `~/.gemini/config/skills/`，workspace / project 安装仍使用 `.agents/skills/`。Gemini CLI 仍作为 legacy/shared Google 目标保留在 `~/.gemini/skills/`。
+`SkillPort` 遵循 [Agent Skills](https://github.com/anthropics/agent-skills) 的开放模式，但中央技能库默认使用私有目录 `~/.skillsmanage/skills/`。在本机 Local 目标下，可以在中央技能库页面修改这个位置：切换前会先预览，迁移时当前中央库覆盖目标目录同名技能，目标目录独有技能会保留并扫描导入，旧目录不会删除。共享的 Universal Agents 目标仍是 `~/.agents/skills/`，只有显式安装到这里的技能才会暴露给 Antigravity（Desktop 2.36.0+ 与 CLI `agy`）、Codex CLI、Cursor、OpenCode、Amp、Copilot 等读取该目录的通用工具（workspace / project 安装继续共享 `.agents/skills/`）。Grok 按上游兼容的独立目标管理，全局目录为 `~/.grok/skills/`，项目安装目录为 `.grok/skills/`。Gemini CLI 仍作为 legacy/shared Google 目标保留在 `~/.gemini/skills/`。
 
 ## 与上游关系
 
@@ -139,7 +139,7 @@ xattr -dr com.apple.quarantine "/Applications/SkillPort.app"
 | Coding | Codex CLI | `~/.agents/skills/` |
 | Coding | Grok | `~/.grok/skills/` |
 | Coding | Cursor | `~/.agents/skills/` |
-| Coding | Antigravity | `~/.gemini/config/skills/` |
+| Coding | Antigravity | `~/.agents/skills/` |
 | Coding | Zed（社区兼容） | `~/.config/zed/skills/` |
 | Coding | Gemini CLI（legacy） | `~/.gemini/skills/` |
 | Coding | Trae | `~/.trae/skills/` |
@@ -167,7 +167,13 @@ xattr -dr com.apple.quarantine "/Applications/SkillPort.app"
 | Lobster | WorkBuddy（打工搭子） | `~/.workbuddy/skills-marketplace/skills/` |
 | Central | 中央技能库 | `~/.skillsmanage/skills/` |
 
-> 说明：Claude Code 还会把 `~/.claude/plugins/marketplaces/*` 下的 marketplace plugin 目录显示成只读行。这些条目只做展示，不按 `~/.claude/skills/` 里的原生技能那套方式管理。Antigravity plugin bundle 属于独立 CLI 插件机制；SkillPort 当前只管理 Google 平台的 `SKILL.md` 技能目录，不导入或导出 plugin bundle。 Zed 以社区兼容 skills 路径列出；SkillPort 不宣称该目录是 Zed 官方原生 skills 规范。
+> 说明：Claude Code 还会把 `~/.claude/plugins/marketplaces/*` 下的 marketplace plugin 目录显示成只读行。这些条目只做展示，不按 `~/.claude/skills/` 里的原生技能那套方式管理。Antigravity plugin bundle 属于独立 CLI 插件机制；SkillPort 当前只管理 Google 平台的 `SKILL.md` 技能目录，不导入或导出 plugin bundle。Zed 以社区兼容 skills 路径列出；SkillPort 不宣称该目录是 Zed 官方原生 skills 规范。
+
+> **Antigravity 升级与 `~/.gemini/config/skills/` 遮蔽警告**
+>
+> - **同名技能遮蔽优先级**：Antigravity Desktop（2.36.0+）与 CLI（`agy`）已支持读取全局 `~/.agents/skills/`，但当 `~/.gemini/config/skills/` 中仍存在同名技能时，`~/.gemini/config/skills/` 的加载优先级仍高于 `~/.agents/skills/`。
+> - **不自动删盘与手动清理步骤**：SkillPort 升级仅清理旧数据库元数据，**不会**自动删除、移动或修改磁盘上 `~/.gemini/config/skills/` 里的任何文件。升级后建议按以下步骤手动排查：（1）检查 `~/.gemini/config/skills/` 中是否残留与 `~/.agents/skills/` 同名的技能目录；（2）确认所需技能已备份在中央技能库（`~/.skillsmanage/skills/`）或已安装至 `~/.agents/skills/`；（3）再手动移除 `~/.gemini/config/skills/` 中的多余副本。
+> - **Antigravity IDE 回退方案**：Antigravity IDE 官方文档尚未宣布支持 `~/.agents/skills/`。如果你仍使用 Antigravity IDE 并希望通过 SkillPort 管理 `~/.gemini/config/skills/`，可在 **Settings → 自定义平台（Custom Platforms）** 中手动添加 `~/.gemini/config/skills/`。
 
 也可以在 Settings 中添加自定义平台。
 

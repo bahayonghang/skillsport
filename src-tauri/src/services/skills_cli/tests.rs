@@ -995,6 +995,109 @@ async fn ac4_list_global_at_reads_lock_copy_without_spawn() {
     assert_eq!(snapshot.lock_path, lock_path.to_string_lossy().into_owned());
 }
 
+#[tokio::test]
+async fn antigravity_skills_cli_inventory_aligns_with_universal_canonical_root() {
+    assert_eq!(
+        super::agent_map::cli_agent_for_skillport_id("antigravity"),
+        Some("antigravity")
+    );
+
+    let pool = mem_pool().await;
+    let codex = crate::db::get_agent_by_id(&pool, "codex")
+        .await
+        .unwrap()
+        .expect("codex builtin agent");
+    let antigravity = crate::db::get_agent_by_id(&pool, "antigravity")
+        .await
+        .unwrap()
+        .expect("antigravity builtin agent");
+    let gemini_cli = crate::db::get_agent_by_id(&pool, "gemini-cli")
+        .await
+        .unwrap()
+        .expect("gemini-cli builtin agent");
+    assert!(
+        crate::paths::paths_equivalent(
+            Path::new(&antigravity.global_skills_dir),
+            Path::new(&codex.global_skills_dir),
+        ),
+        "antigravity must resolve to the same Universal root as codex"
+    );
+    assert!(
+        !crate::paths::paths_equivalent(
+            Path::new(&gemini_cli.global_skills_dir),
+            Path::new(&codex.global_skills_dir),
+        ),
+        "gemini-cli must stay separate from the Universal root"
+    );
+
+    let temp = TempDir::new().unwrap();
+    let canonical_root = temp.path().join("universal");
+    let gemini_dir = temp.path().join("gemini-cli");
+    std::fs::create_dir_all(canonical_root.join("demo")).unwrap();
+    std::fs::create_dir_all(&gemini_dir).unwrap();
+    set_agent_dir(&pool, "codex", &canonical_root).await;
+    set_agent_dir(&pool, "antigravity", &canonical_root).await;
+    set_agent_dir(&pool, "gemini-cli", &gemini_dir).await;
+    sqlx::query("UPDATE agents SET is_enabled = 1 WHERE id = 'gemini-cli'")
+        .execute(&pool)
+        .await
+        .unwrap();
+
+    let lock_path = temp.path().join(".skill-lock.json");
+    std::fs::write(
+        &lock_path,
+        r#"{"version":3,"skills":{"demo":{"sourceType":"github"}}}"#,
+    )
+    .unwrap();
+
+    let snapshot = list_global_at(&pool, &canonical_root, &lock_path)
+        .await
+        .unwrap();
+    assert_eq!(snapshot.skills.len(), 1);
+    assert_eq!(
+        snapshot.skills[0].install_kind,
+        SkillsCliInstallKind::Canonical
+    );
+    let expected_slot = canonical_root.join("demo").to_string_lossy().into_owned();
+    let codex_placement = snapshot.skills[0]
+        .placements
+        .iter()
+        .find(|p| p.agent_id == "codex")
+        .expect("codex placement");
+    let antigravity_placement = snapshot.skills[0]
+        .placements
+        .iter()
+        .find(|p| p.agent_id == "antigravity")
+        .expect("antigravity placement");
+    let gemini_placement = snapshot.skills[0]
+        .placements
+        .iter()
+        .find(|p| p.agent_id == "gemini-cli")
+        .expect("gemini-cli placement");
+
+    assert_eq!(
+        codex_placement.state,
+        super::SkillsCliPlacementState::DirectCopy
+    );
+    assert_eq!(
+        antigravity_placement.state,
+        super::SkillsCliPlacementState::DirectCopy
+    );
+    assert_eq!(antigravity_placement.target_path, expected_slot);
+    assert_eq!(
+        gemini_placement.state,
+        super::SkillsCliPlacementState::Missing
+    );
+    assert!(snapshot.skills[0]
+        .agents
+        .iter()
+        .any(|name| name == "Antigravity"));
+    assert!(snapshot.skills[0]
+        .agents
+        .iter()
+        .any(|name| name == "Codex CLI"));
+}
+
 #[test]
 fn ac15_resolves_npx_js_from_sibling_npm_layout() {
     let temp = TempDir::new().unwrap();

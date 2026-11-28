@@ -194,7 +194,8 @@ async fn shared_universal_root_uses_one_runner_call_and_clears_scan() {
     .await;
 
     assert!(result.failures.is_empty(), "{:?}", result.failures);
-    assert_eq!(result.removed_deleted_platform_copy_paths.len(), 10);
+    assert!(UNIVERSAL_AGENT_IDS.contains(&"antigravity"));
+    assert_eq!(result.removed_deleted_platform_copy_paths.len(), 11);
     assert!(result
         .removed_deleted_platform_copy_paths
         .iter()

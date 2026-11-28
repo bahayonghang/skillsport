@@ -36,7 +36,7 @@ const mockAgents: AgentWithStatus[] = [
     id: "antigravity",
     display_name: "Antigravity",
     category: "coding",
-    global_skills_dir: "~/.gemini/config/skills/",
+    global_skills_dir: "~/.agents/skills/",
     project_skills_dir: ".agents/skills",
     is_detected: true,
     is_builtin: true,
@@ -95,7 +95,7 @@ const mockSkill: SkillWithLinks = {
 const mockOnInstall = vi.fn();
 const mockOnOpenChange = vi.fn();
 const successInstallResult = {
-  succeeded: ["claude-code", "codex", "antigravity", "kiro"],
+  succeeded: ["claude-code", "codex", "kiro"],
   skipped: [],
   failed: [],
 };
@@ -162,8 +162,8 @@ describe("InstallDialog", () => {
     renderDialog();
     expect(screen.getByLabelText("Claude Code")).toBeInTheDocument();
     expect(screen.getByLabelText("Universal (.agents/skills)")).toBeInTheDocument();
-    expect(screen.getByLabelText("Antigravity")).toBeInTheDocument();
     expect(screen.getByLabelText("Kiro")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Antigravity")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Cursor")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Gemini CLI (legacy)")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Codex")).not.toBeInTheDocument();
@@ -227,7 +227,7 @@ describe("InstallDialog", () => {
   it("shows confirm button with count of selected platforms", () => {
     renderDialog();
     // By default, all enabled and visible targets are pre-selected.
-    expect(screen.getByRole("button", { name: /安装到 4 个平台/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /安装到 3 个平台/i })).toBeInTheDocument();
   });
 
   it("calls onInstall with selected agent IDs on confirm", async () => {
@@ -263,7 +263,6 @@ describe("InstallDialog", () => {
     });
     const [, agentIds, method] = mockOnInstall.mock.calls[0];
     expect([...agentIds].sort()).toEqual([
-      "antigravity",
       "claude-code",
       "codex",
       "kiro",
@@ -277,11 +276,11 @@ describe("InstallDialog", () => {
     renderDialog({
       skill: {
         ...mockSkill,
-        shared_root_agents: ["codex", "cursor", "gemini-cli"],
+        shared_root_agents: ["codex", "cursor", "antigravity", "gemini-cli"],
       },
     });
     const confirmBtn = screen.getByRole("button", {
-      name: /安装到 3 个平台/i,
+      name: /安装到 2 个平台/i,
     });
     fireEvent.click(confirmBtn);
 
@@ -290,7 +289,6 @@ describe("InstallDialog", () => {
     });
     const [, agentIds] = mockOnInstall.mock.calls[0];
     expect([...agentIds].sort()).toEqual([
-      "antigravity",
       "claude-code",
       "kiro",
     ]);
@@ -613,9 +611,9 @@ describe("InstallDialog", () => {
   it("updates confirm button count when checkbox toggled", async () => {
     renderDialog();
 
-    // Initially 4 selected: Claude Code, Antigravity, Kiro, and Universal via Codex.
+    // Initially 3 selected: Claude Code, Kiro, and Universal (folding Codex, Cursor, Antigravity).
     expect(
-      screen.getByRole("button", { name: /安装到 4 个平台/i })
+      screen.getByRole("button", { name: /安装到 3 个平台/i })
     ).toBeInTheDocument();
 
     // Uncheck Kiro.
@@ -624,7 +622,7 @@ describe("InstallDialog", () => {
 
     await waitFor(() => {
       expect(
-        screen.getByRole("button", { name: /安装到 3 个平台/i })
+        screen.getByRole("button", { name: /安装到 2 个平台/i })
       ).toBeInTheDocument();
     });
   });
@@ -651,7 +649,6 @@ describe("InstallDialog", () => {
 
     fireEvent.click(screen.getByLabelText("Universal (.agents/skills)"));
     fireEvent.click(screen.getByLabelText("Claude Code"));
-    fireEvent.click(screen.getByLabelText("Antigravity"));
     fireEvent.click(screen.getByLabelText("Kiro"));
 
     const confirmBtn = screen.getByRole("button", {

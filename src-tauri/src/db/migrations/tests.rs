@@ -186,6 +186,7 @@ fn migration_sources_are_checksum_locked() {
         descriptor_checksum(7).unwrap(),
         descriptor_checksum(8).unwrap(),
         descriptor_checksum(9).unwrap(),
+        descriptor_checksum(10).unwrap(),
     ];
     assert_eq!(
         checksums,
@@ -199,6 +200,7 @@ fn migration_sources_are_checksum_locked() {
             "739c87f61d50e40dc06a4e2fdc3a7f7bcd3643067ec15e951f0a3fda04e977d2",
             "6c2e9684a9d991e689f40686bbd1bf27d7a26dc33fb9426351db4718b5d714de",
             "5fdc467c6d855f325d1444dab0a55d97c0524ef109f540a6ffe215d5309a0039",
+            "1b48a027b70072e349a8c585e65b7b55e04366f472c28e35b3cfa60d0fa69db7",
         ]
     );
     assert_eq!(checksums.len(), versions::MIGRATIONS.len());
@@ -346,7 +348,7 @@ async fn migration_seven_creates_skills_cli_update_tables_and_reopens() {
         .fetch_all(&reopened)
         .await
         .unwrap();
-    assert_eq!(reopened_versions.len(), 9);
+    assert_eq!(reopened_versions.len(), 10);
     reopened.close().await;
 }
 
@@ -434,6 +436,63 @@ async fn migration_nine_unifies_antigravity_and_cleans_legacy_cli_rows() {
     .execute(&pool)
     .await
     .unwrap();
+    apply_migration(&pool, 9).await.unwrap();
+    let v9_ag_enabled: (i64,) =
+        sqlx::query_as("SELECT is_enabled FROM agents WHERE id = 'antigravity'")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(
+        v9_ag_enabled.0, 1,
+        "v9 should preserve enabled state from retired antigravity-cli"
+    );
+    let v9_cli_count: (i64,) =
+        sqlx::query_as("SELECT COUNT(*) FROM agents WHERE id = 'antigravity-cli'")
+            .fetch_one(&pool)
+            .await
+            .unwrap();
+    assert_eq!(v9_cli_count.0, 0);
+    let v9_installs: Vec<(String, String)> = sqlx::query_as(
+        "SELECT skill_id, agent_id FROM skill_installations ORDER BY skill_id, agent_id",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        v9_installs,
+        vec![
+            ("s1".to_string(), "claude-code".to_string()),
+            ("s2".to_string(), "antigravity".to_string()),
+        ],
+        "v9 alone retains /new/.gemini/config/skills/s2 before v10 cleans it"
+    );
+    let v9_obs_rows: Vec<(String,)> =
+        sqlx::query_as("SELECT row_id FROM agent_skill_observations ORDER BY row_id")
+            .fetch_all(&pool)
+            .await
+            .unwrap();
+    assert_eq!(v9_obs_rows, vec![("r3".to_string(),)]);
+    let v9_psi_rows: Vec<(String, String)> = sqlx::query_as(
+        "SELECT skill_id, agent_id FROM project_skill_installations ORDER BY skill_id, agent_id",
+    )
+    .fetch_all(&pool)
+    .await
+    .unwrap();
+    assert_eq!(
+        v9_psi_rows,
+        vec![
+            ("s1".to_string(), "antigravity".to_string()),
+            ("s2".to_string(), "antigravity".to_string()),
+        ]
+    );
+    let v9_inv_count: (i64,) = sqlx::query_as(
+        "SELECT COUNT(*) FROM skill_update_inventory_entries WHERE agent_id = 'antigravity-cli'",
+    )
+    .fetch_one(&pool)
+    .await
+    .unwrap();
+    assert_eq!(v9_inv_count.0, 0);
+    super::validate_foreign_keys(&pool).await.unwrap();
     pool.close().await;
 
     let reopened = db::open_database(&database_path).await.unwrap();
@@ -448,7 +507,7 @@ async fn migration_nine_unifies_antigravity_and_cleans_legacy_cli_rows() {
     assert!(ag
         .global_skills_dir
         .replace('\\', "/")
-        .ends_with(".gemini/config/skills"));
+        .ends_with(".agents/skills"));
     assert!(db::get_agent_by_id(&reopened, "antigravity-cli")
         .await
         .unwrap()
@@ -462,10 +521,8 @@ async fn migration_nine_unifies_antigravity_and_cleans_legacy_cli_rows() {
     .unwrap();
     assert_eq!(
         installs,
-        vec![
-            ("s1".to_string(), "claude-code".to_string()),
-            ("s2".to_string(), "antigravity".to_string()),
-        ]
+        vec![("s1".to_string(), "claude-code".to_string())],
+        "v10 cleans retired /new/.gemini/config/skills/s2 when opening through latest migration"
     );
 
     let obs_rows: Vec<(String,)> =
@@ -520,15 +577,487 @@ async fn migration_nine_unifies_antigravity_and_cleans_legacy_cli_rows() {
         .await
         .unwrap()
         .unwrap();
-    assert_eq!(
-        remote_ag.global_skills_dir,
-        "/home/alice/.gemini/config/skills"
-    );
+    assert_eq!(remote_ag.global_skills_dir, "/home/alice/.agents/skills");
     assert!(db::get_agent_by_id(&remote_reopened, "antigravity-cli")
         .await
         .unwrap()
         .is_none());
     remote_reopened.close().await;
+}
+
+#[tokio::test]
+async fn migration_ten_cleans_legacy_antigravity_config_skills_rows_for_local_databases() {
+    let _guard = DATABASE_OPEN_TEST_LOCK.lock().await;
+    let directory = TempDir::new().unwrap();
+
+    // Simulate an untouched legacy ~/.gemini/config/skills/<skill>/SKILL.md file on disk.
+    let legacy_disk_root = directory
+        .path()
+        .join("fake-home")
+        .join(".gemini")
+        .join("config")
+        .join("skills");
+    let legacy_disk_dir = legacy_disk_root.join("s-disk");
+    std::fs::create_dir_all(&legacy_disk_dir).unwrap();
+    let legacy_disk_skill_md = legacy_disk_dir.join("SKILL.md");
+    let legacy_disk_bytes = b"---\nname: s-disk\n---\n# Legacy Antigravity skill kept on disk\n";
+    std::fs::write(&legacy_disk_skill_md, legacy_disk_bytes).unwrap();
+
+    let database_path = directory.path().join("migration-ten-disabled.sqlite");
+    let pool = crate::db::pool::create_pool(&database_path).await.unwrap();
+    for version in 1..=9 {
+        apply_migration(&pool, version).await.unwrap();
+    }
+
+    sqlx::query(
+        "INSERT INTO agents (id, display_name, category, global_skills_dir, project_skills_dir, icon_name, is_detected, is_builtin, is_enabled)
+         VALUES
+           ('antigravity', 'Antigravity', 'coding', '/home/fixture/.gemini/config/skills', '.agents/skills', 'antigravity', 1, 1, 0),
+           ('claude-code', 'Claude Code', 'coding', '/home/fixture/.claude/skills', '.claude/skills', 'claude', 1, 1, 1),
+           ('gemini-cli', 'Gemini CLI', 'coding', '/home/fixture/.gemini/skills', '.agents/skills', 'gemini', 1, 1, 1)",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO skills (id, uid, name, file_path, is_central, scanned_at)
+         VALUES
+           ('s-win', 'uid-win', 'S Win', '/central/s-win/SKILL.md', 1, '2026-01-01T00:00:00Z'),
+           ('s-posix', 'uid-posix', 'S Posix', '/central/s-posix/SKILL.md', 1, '2026-01-01T00:00:00Z'),
+           ('s-disk', 'uid-disk', 'S Disk', '/central/s-disk/SKILL.md', 1, '2026-01-01T00:00:00Z'),
+           ('s-universal', 'uid-universal', 'S Universal', '/central/s-universal/SKILL.md', 1, '2026-01-01T00:00:00Z'),
+           ('s-other', 'uid-other', 'S Other', '/central/s-other/SKILL.md', 1, '2026-01-01T00:00:00Z')",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO skill_installations (skill_id, agent_id, installed_path, link_type, created_at)
+         VALUES
+           ('s-win', 'antigravity', 'C:\\Users\\Fixture\\.GEMINI\\Config\\Skills\\s-win', 'symlink', '2026-01-01T00:00:00Z'),
+           ('s-posix', 'antigravity', '/home/fixture/.gemini/config/skills/s-posix', 'symlink', '2026-01-01T00:00:00Z'),
+           ('s-disk', 'antigravity', ?, 'native', '2026-01-01T00:00:00Z'),
+           ('s-universal', 'antigravity', '/home/fixture/.agents/skills/s-universal', 'symlink', '2026-01-01T00:00:00Z'),
+           ('s-win', 'claude-code', '/home/fixture/.claude/skills/s-win', 'symlink', '2026-01-01T00:00:00Z'),
+           ('s-posix', 'gemini-cli', '/home/fixture/.gemini/skills/s-posix', 'symlink', '2026-01-01T00:00:00Z'),
+           ('s-other', 'claude-code', '/home/fixture/.gemini/config/skills/s-other', 'symlink', '2026-01-01T00:00:00Z')",
+    )
+    .bind(legacy_disk_dir.to_string_lossy().as_ref())
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO agent_skill_observations
+         (row_id, agent_id, skill_id, name, file_path, dir_path, source_kind, source_root, link_type, is_read_only, scanned_at)
+         VALUES
+           ('obs-win-dir', 'antigravity', 's-win', 'S Win', 'C:\\Users\\Fixture\\.GEMINI\\Config\\Skills\\s-win\\SKILL.md', 'C:\\Users\\Fixture\\.GEMINI\\Config\\Skills\\s-win', 'global', 'C:\\Users\\Fixture\\other', 'symlink', 0, '2026-01-01T00:00:00Z'),
+           ('obs-exact-dir', 'antigravity', 's-posix', 'S Posix', '/home/fixture/.gemini/config/skills/SKILL.md', '/home/fixture/.gemini/config/skills', 'global', '/home/fixture/other', 'symlink', 0, '2026-01-01T00:00:00Z'),
+           ('obs-exact-root', 'antigravity', 's-posix', 'S Posix', '/home/fixture/other/s-posix/SKILL.md', '/home/fixture/other/s-posix', 'global', '/home/fixture/.gemini/config/skills', 'symlink', 0, '2026-01-01T00:00:00Z'),
+           ('obs-sub-root', 'antigravity', 's-win', 'S Win', '/home/fixture/other/s-win/SKILL.md', '/home/fixture/other/s-win', 'global', 'C:\\Users\\Fixture\\.GEMINI\\Config\\Skills\\nested', 'symlink', 0, '2026-01-01T00:00:00Z'),
+           ('obs-disk', 'antigravity', 's-disk', 'S Disk', ?, ?, 'global', ?, 'native', 0, '2026-01-01T00:00:00Z'),
+           ('obs-universal', 'antigravity', 's-universal', 'S Universal', '/home/fixture/.agents/skills/s-universal/SKILL.md', '/home/fixture/.agents/skills/s-universal', 'global', '/home/fixture/.agents/skills', 'symlink', 0, '2026-01-01T00:00:00Z'),
+           ('obs-project', 'antigravity', 's-win', 'S Win', '/tmp/p1/.agents/skills/s-win/SKILL.md', '/tmp/p1/.agents/skills/s-win', 'project', '/tmp/p1/.agents/skills', 'symlink', 0, '2026-01-01T00:00:00Z'),
+           ('obs-claude', 'claude-code', 's-win', 'S Win', '/home/fixture/.claude/skills/s-win/SKILL.md', '/home/fixture/.claude/skills/s-win', 'global', '/home/fixture/.claude/skills', 'symlink', 0, '2026-01-01T00:00:00Z'),
+           ('obs-gemini-cli', 'gemini-cli', 's-posix', 'S Posix', '/home/fixture/.gemini/skills/s-posix/SKILL.md', '/home/fixture/.gemini/skills/s-posix', 'global', '/home/fixture/.gemini/skills', 'symlink', 0, '2026-01-01T00:00:00Z'),
+           ('obs-other-agent-legacy-path', 'claude-code', 's-other', 'S Other', '/home/fixture/.gemini/config/skills/s-other/SKILL.md', '/home/fixture/.gemini/config/skills/s-other', 'global', '/home/fixture/.gemini/config/skills', 'symlink', 0, '2026-01-01T00:00:00Z')",
+    )
+    .bind(legacy_disk_skill_md.to_string_lossy().as_ref())
+    .bind(legacy_disk_dir.to_string_lossy().as_ref())
+    .bind(legacy_disk_root.to_string_lossy().as_ref())
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO projects (id, path, name, added_at)
+         VALUES ('p1', '/tmp/p1', 'p1', '2026-01-01T00:00:00Z')",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO project_skill_installations
+         (project_id, skill_id, name, file_path, source_origin, agent_id, installed_path, link_type, created_at)
+         VALUES
+           ('p1', 's-win', 'S Win', '/tmp/p1/.agents/skills/s-win/SKILL.md', 'central', 'antigravity', '/tmp/p1/.agents/skills/s-win', 'symlink', '2026-01-01T00:00:00Z'),
+           ('p1', 's-posix', 'S Posix', '/tmp/p1/.agents/skills/s-posix/SKILL.md', 'central', 'antigravity', '/tmp/p1/.agents/skills/s-posix', 'symlink', '2026-01-01T00:00:00Z'),
+           ('p1', 's-win', 'S Win', '/tmp/p1/.claude/skills/s-win/SKILL.md', 'central', 'claude-code', '/tmp/p1/.claude/skills/s-win', 'symlink', '2026-01-01T00:00:00Z')",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO skill_update_inventory_runs
+         (inventory_id, scope_kind, mode, cache_policy, generated_at)
+         VALUES ('inv-1', 'global', 'check', 'default', '2026-01-01T00:00:00Z')",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO skill_update_inventory_entries
+         (inventory_id, bucket, entity_key, agent_id, cache_policy, cache_hit, generated_at, payload_json)
+         VALUES
+           ('inv-1', 'updates', 'k-ag-1', 'antigravity', 'default', 0, '2026-01-01T00:00:00Z', '{}'),
+           ('inv-1', 'updates', 'k-ag-2', 'antigravity', 'default', 0, '2026-01-01T00:00:00Z', '{}'),
+           ('inv-1', 'updates', 'k-claude', 'claude-code', 'default', 0, '2026-01-01T00:00:00Z', '{}'),
+           ('inv-1', 'updates', 'k-gemini', 'gemini-cli', 'default', 0, '2026-01-01T00:00:00Z', '{}')",
+    )
+    .execute(&pool)
+    .await
+    .unwrap();
+    pool.close().await;
+
+    let reopened = db::open_database(&database_path).await.unwrap();
+    let versions: Vec<(i64,)> =
+        sqlx::query_as("SELECT version FROM schema_migrations ORDER BY version")
+            .fetch_all(&reopened)
+            .await
+            .unwrap();
+    assert_eq!(versions.len(), 10);
+    assert_eq!(
+        sibling_files(&database_path, ".pre-migration-v9-").len(),
+        1,
+        "v9 -> v10 upgrade must create exactly one pre-migration backup"
+    );
+
+    let ag = db::get_agent_by_id(&reopened, "antigravity")
+        .await
+        .unwrap()
+        .expect("antigravity agent must exist");
+    assert!(
+        !ag.is_enabled,
+        "v10 must preserve an existing disabled antigravity preference (is_enabled = 0)"
+    );
+    assert!(ag
+        .global_skills_dir
+        .replace('\\', "/")
+        .ends_with(".agents/skills"));
+
+    let installs: Vec<(String, String)> = sqlx::query_as(
+        "SELECT skill_id, agent_id FROM skill_installations ORDER BY skill_id, agent_id",
+    )
+    .fetch_all(&reopened)
+    .await
+    .unwrap();
+    assert_eq!(
+        installs,
+        vec![
+            ("s-other".to_string(), "claude-code".to_string()),
+            ("s-posix".to_string(), "gemini-cli".to_string()),
+            ("s-universal".to_string(), "antigravity".to_string()),
+            ("s-win".to_string(), "claude-code".to_string()),
+        ]
+    );
+
+    let obs_rows: Vec<(String,)> =
+        sqlx::query_as("SELECT row_id FROM agent_skill_observations ORDER BY row_id")
+            .fetch_all(&reopened)
+            .await
+            .unwrap();
+    assert_eq!(
+        obs_rows,
+        vec![
+            ("obs-claude".to_string(),),
+            ("obs-gemini-cli".to_string(),),
+            ("obs-other-agent-legacy-path".to_string(),),
+            ("obs-project".to_string(),),
+            ("obs-universal".to_string(),),
+        ]
+    );
+
+    let inv_rows: Vec<(String, String)> = sqlx::query_as(
+        "SELECT entity_key, agent_id FROM skill_update_inventory_entries ORDER BY entity_key",
+    )
+    .fetch_all(&reopened)
+    .await
+    .unwrap();
+    assert_eq!(
+        inv_rows,
+        vec![
+            ("k-claude".to_string(), "claude-code".to_string()),
+            ("k-gemini".to_string(), "gemini-cli".to_string()),
+        ]
+    );
+
+    let psi_rows: Vec<(String, String)> = sqlx::query_as(
+        "SELECT skill_id, agent_id FROM project_skill_installations ORDER BY skill_id, agent_id",
+    )
+    .fetch_all(&reopened)
+    .await
+    .unwrap();
+    assert_eq!(
+        psi_rows,
+        vec![
+            ("s-posix".to_string(), "antigravity".to_string()),
+            ("s-win".to_string(), "antigravity".to_string()),
+            ("s-win".to_string(), "claude-code".to_string()),
+        ]
+    );
+
+    assert_eq!(
+        std::fs::read(&legacy_disk_skill_md).unwrap(),
+        legacy_disk_bytes,
+        "v10 must never delete or alter files under ~/.gemini/config/skills on disk"
+    );
+    super::validate_foreign_keys(&reopened).await.unwrap();
+    reopened.close().await;
+
+    // Idempotent reopen must not create another backup.
+    let reopened_again = db::open_database(&database_path).await.unwrap();
+    assert_eq!(
+        sibling_files(&database_path, ".pre-migration-").len(),
+        1,
+        "idempotent reopen at v10 must not create redundant backups"
+    );
+    reopened_again.close().await;
+
+    // Verify existing is_enabled = 1 is also preserved unchanged across v9 -> v10.
+    let enabled_path = directory.path().join("migration-ten-enabled.sqlite");
+    let enabled_pool = crate::db::pool::create_pool(&enabled_path).await.unwrap();
+    for version in 1..=9 {
+        apply_migration(&enabled_pool, version).await.unwrap();
+    }
+    sqlx::query(
+        "INSERT INTO agents (id, display_name, category, global_skills_dir, project_skills_dir, icon_name, is_detected, is_builtin, is_enabled)
+         VALUES ('antigravity', 'Antigravity', 'coding', '/home/fixture/.gemini/config/skills', '.agents/skills', 'antigravity', 1, 1, 1)",
+    )
+    .execute(&enabled_pool)
+    .await
+    .unwrap();
+    enabled_pool.close().await;
+
+    let enabled_reopened = db::open_database(&enabled_path).await.unwrap();
+    let enabled_ag = db::get_agent_by_id(&enabled_reopened, "antigravity")
+        .await
+        .unwrap()
+        .expect("antigravity agent must exist");
+    assert!(
+        enabled_ag.is_enabled,
+        "v10 must preserve an existing enabled antigravity preference (is_enabled = 1)"
+    );
+    assert!(enabled_ag
+        .global_skills_dir
+        .replace('\\', "/")
+        .ends_with(".agents/skills"));
+    super::validate_foreign_keys(&enabled_reopened)
+        .await
+        .unwrap();
+    enabled_reopened.close().await;
+}
+
+#[tokio::test]
+async fn migration_ten_cleans_legacy_antigravity_config_skills_rows_for_remote_home() {
+    let _guard = DATABASE_OPEN_TEST_LOCK.lock().await;
+    let directory = TempDir::new().unwrap();
+    let remote_path = directory.path().join("remote-v9-disabled.sqlite");
+    let remote_pool = crate::db::pool::create_pool(&remote_path).await.unwrap();
+    for version in 1..=9 {
+        apply_migration(&remote_pool, version).await.unwrap();
+    }
+
+    sqlx::query(
+        "INSERT INTO agents (id, display_name, category, global_skills_dir, project_skills_dir, icon_name, is_detected, is_builtin, is_enabled)
+         VALUES
+           ('antigravity', 'Antigravity', 'coding', '/home/alice/.gemini/config/skills', '.agents/skills', 'antigravity', 1, 1, 0),
+           ('claude-code', 'Claude Code', 'coding', '/home/alice/.claude/skills', '.claude/skills', 'claude', 1, 1, 1),
+           ('gemini-cli', 'Gemini CLI', 'coding', '/home/alice/.gemini/skills', '.agents/skills', 'gemini', 1, 1, 1)",
+    )
+    .execute(&remote_pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO skills (id, uid, name, file_path, is_central, scanned_at)
+         VALUES
+           ('s-legacy', 'uid-legacy', 'S Legacy', '/home/alice/.skillport/s-legacy/SKILL.md', 1, '2026-01-01T00:00:00Z'),
+           ('s-universal', 'uid-universal', 'S Universal', '/home/alice/.skillport/s-universal/SKILL.md', 1, '2026-01-01T00:00:00Z')",
+    )
+    .execute(&remote_pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO skill_installations (skill_id, agent_id, installed_path, link_type, created_at)
+         VALUES
+           ('s-legacy', 'antigravity', '/home/alice/.gemini/config/skills/s-legacy', 'symlink', '2026-01-01T00:00:00Z'),
+           ('s-universal', 'antigravity', '/home/alice/.agents/skills/s-universal', 'symlink', '2026-01-01T00:00:00Z'),
+           ('s-legacy', 'gemini-cli', '/home/alice/.gemini/skills/s-legacy', 'symlink', '2026-01-01T00:00:00Z'),
+           ('s-legacy', 'claude-code', '/home/alice/.claude/skills/s-legacy', 'symlink', '2026-01-01T00:00:00Z')",
+    )
+    .execute(&remote_pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO agent_skill_observations
+         (row_id, agent_id, skill_id, name, file_path, dir_path, source_kind, source_root, link_type, is_read_only, scanned_at)
+         VALUES
+           ('r-legacy-sub', 'antigravity', 's-legacy', 'S Legacy', '/home/alice/.gemini/config/skills/s-legacy/SKILL.md', '/home/alice/.gemini/config/skills/s-legacy', 'global', '/home/alice/.gemini/config/skills', 'symlink', 0, '2026-01-01T00:00:00Z'),
+           ('r-legacy-exact', 'antigravity', 's-legacy', 'S Legacy', '/home/alice/.gemini/config/skills/SKILL.md', '/home/alice/.gemini/config/skills', 'global', '/home/alice/other', 'symlink', 0, '2026-01-01T00:00:00Z'),
+           ('r-universal', 'antigravity', 's-universal', 'S Universal', '/home/alice/.agents/skills/s-universal/SKILL.md', '/home/alice/.agents/skills/s-universal', 'global', '/home/alice/.agents/skills', 'symlink', 0, '2026-01-01T00:00:00Z'),
+           ('r-gemini', 'gemini-cli', 's-legacy', 'S Legacy', '/home/alice/.gemini/skills/s-legacy/SKILL.md', '/home/alice/.gemini/skills/s-legacy', 'global', '/home/alice/.gemini/skills', 'symlink', 0, '2026-01-01T00:00:00Z')",
+    )
+    .execute(&remote_pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO projects (id, path, name, added_at)
+         VALUES ('p-remote', '/home/alice/repo', 'repo', '2026-01-01T00:00:00Z')",
+    )
+    .execute(&remote_pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO project_skill_installations
+         (project_id, skill_id, name, file_path, source_origin, agent_id, installed_path, link_type, created_at)
+         VALUES
+           ('p-remote', 's-legacy', 'S Legacy', '/home/alice/repo/.agents/skills/s-legacy/SKILL.md', 'central', 'antigravity', '/home/alice/repo/.agents/skills/s-legacy', 'symlink', '2026-01-01T00:00:00Z')",
+    )
+    .execute(&remote_pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO skill_update_inventory_runs
+         (inventory_id, scope_kind, mode, cache_policy, generated_at)
+         VALUES ('inv-remote', 'global', 'check', 'default', '2026-01-01T00:00:00Z')",
+    )
+    .execute(&remote_pool)
+    .await
+    .unwrap();
+    sqlx::query(
+        "INSERT INTO skill_update_inventory_entries
+         (inventory_id, bucket, entity_key, agent_id, cache_policy, cache_hit, generated_at, payload_json)
+         VALUES
+           ('inv-remote', 'updates', 'k-ag', 'antigravity', 'default', 0, '2026-01-01T00:00:00Z', '{}'),
+           ('inv-remote', 'updates', 'k-gemini', 'gemini-cli', 'default', 0, '2026-01-01T00:00:00Z', '{}')",
+    )
+    .execute(&remote_pool)
+    .await
+    .unwrap();
+    remote_pool.close().await;
+
+    let remote_reopened = db::open_database_for_remote_home(&remote_path, "/home/alice")
+        .await
+        .unwrap();
+    let versions: Vec<(i64,)> =
+        sqlx::query_as("SELECT version FROM schema_migrations ORDER BY version")
+            .fetch_all(&remote_reopened)
+            .await
+            .unwrap();
+    assert_eq!(versions.len(), 10);
+    assert_eq!(
+        sibling_files(&remote_path, ".pre-migration-v9-").len(),
+        1,
+        "remote v9 -> v10 upgrade must create one pre-migration backup"
+    );
+
+    let remote_ag = db::get_agent_by_id(&remote_reopened, "antigravity")
+        .await
+        .unwrap()
+        .expect("remote antigravity agent must exist");
+    assert_eq!(remote_ag.global_skills_dir, "/home/alice/.agents/skills");
+    assert!(
+        !remote_ag.is_enabled,
+        "remote v10 upgrade must preserve is_enabled = 0"
+    );
+
+    let installs: Vec<(String, String)> = sqlx::query_as(
+        "SELECT skill_id, agent_id FROM skill_installations ORDER BY skill_id, agent_id",
+    )
+    .fetch_all(&remote_reopened)
+    .await
+    .unwrap();
+    assert_eq!(
+        installs,
+        vec![
+            ("s-legacy".to_string(), "claude-code".to_string()),
+            ("s-legacy".to_string(), "gemini-cli".to_string()),
+            ("s-universal".to_string(), "antigravity".to_string()),
+        ]
+    );
+
+    let obs_rows: Vec<(String,)> =
+        sqlx::query_as("SELECT row_id FROM agent_skill_observations ORDER BY row_id")
+            .fetch_all(&remote_reopened)
+            .await
+            .unwrap();
+    assert_eq!(
+        obs_rows,
+        vec![("r-gemini".to_string(),), ("r-universal".to_string(),)]
+    );
+
+    let inv_rows: Vec<(String, String)> = sqlx::query_as(
+        "SELECT entity_key, agent_id FROM skill_update_inventory_entries ORDER BY entity_key",
+    )
+    .fetch_all(&remote_reopened)
+    .await
+    .unwrap();
+    assert_eq!(
+        inv_rows,
+        vec![("k-gemini".to_string(), "gemini-cli".to_string())]
+    );
+
+    let psi_rows: Vec<(String, String)> = sqlx::query_as(
+        "SELECT skill_id, agent_id FROM project_skill_installations ORDER BY skill_id, agent_id",
+    )
+    .fetch_all(&remote_reopened)
+    .await
+    .unwrap();
+    assert_eq!(
+        psi_rows,
+        vec![("s-legacy".to_string(), "antigravity".to_string())]
+    );
+    super::validate_foreign_keys(&remote_reopened)
+        .await
+        .unwrap();
+    remote_reopened.close().await;
+
+    let remote_again = db::open_database_for_remote_home(&remote_path, "/home/alice")
+        .await
+        .unwrap();
+    assert_eq!(
+        sibling_files(&remote_path, ".pre-migration-").len(),
+        1,
+        "idempotent remote reopen at v10 must not create redundant backups"
+    );
+    remote_again.close().await;
+
+    // Verify remote is_enabled = 1 is preserved unchanged across v9 -> v10.
+    let remote_enabled_path = directory.path().join("remote-v9-enabled.sqlite");
+    let remote_enabled_pool = crate::db::pool::create_pool(&remote_enabled_path)
+        .await
+        .unwrap();
+    for version in 1..=9 {
+        apply_migration(&remote_enabled_pool, version)
+            .await
+            .unwrap();
+    }
+    sqlx::query(
+        "INSERT INTO agents (id, display_name, category, global_skills_dir, project_skills_dir, icon_name, is_detected, is_builtin, is_enabled)
+         VALUES ('antigravity', 'Antigravity', 'coding', '/home/alice/.gemini/config/skills', '.agents/skills', 'antigravity', 1, 1, 1)",
+    )
+    .execute(&remote_enabled_pool)
+    .await
+    .unwrap();
+    remote_enabled_pool.close().await;
+
+    let remote_enabled_reopened =
+        db::open_database_for_remote_home(&remote_enabled_path, "/home/alice")
+            .await
+            .unwrap();
+    let remote_enabled_ag = db::get_agent_by_id(&remote_enabled_reopened, "antigravity")
+        .await
+        .unwrap()
+        .expect("remote antigravity agent must exist");
+    assert_eq!(
+        remote_enabled_ag.global_skills_dir,
+        "/home/alice/.agents/skills"
+    );
+    assert!(
+        remote_enabled_ag.is_enabled,
+        "remote v10 upgrade must preserve is_enabled = 1"
+    );
+    super::validate_foreign_keys(&remote_enabled_reopened)
+        .await
+        .unwrap();
+    remote_enabled_reopened.close().await;
 }
 
 #[tokio::test]
@@ -554,7 +1083,7 @@ async fn selected_release_fixtures_upgrade_with_backup_and_cascades() {
                 .fetch_all(&pool)
                 .await
                 .unwrap();
-        assert_eq!(versions.len(), 9);
+        assert_eq!(versions.len(), 10);
         for (index, row) in versions.iter().enumerate() {
             let version = i64::try_from(index + 1).unwrap();
             assert_eq!(row.try_get::<i64, _>("version").unwrap(), version);
@@ -774,7 +1303,7 @@ async fn preflight_rejects_checksum_gap_and_future_versions_without_backup() {
     )
     .await;
     assert_preflight_rejection(
-        "INSERT INTO schema_migrations (version, checksum, applied_at) VALUES (10, 'future', 'now')",
+        "INSERT INTO schema_migrations (version, checksum, applied_at) VALUES (11, 'future', 'now')",
         "newer than supported",
     )
     .await;

@@ -17,7 +17,7 @@ A platform is any AI coding agent or runtime that reads a `skills/` directory. S
 | Coding | Claude Code | `~/.claude/skills/` |
 | Coding | Codex CLI | `~/.agents/skills/` |
 | Coding | Cursor | `~/.agents/skills/` |
-| Coding | Antigravity | `~/.gemini/config/skills/` |
+| Coding | Antigravity | `~/.agents/skills/` |
 | Coding | Gemini CLI (legacy) | `~/.gemini/skills/` |
 | Coding | Trae | `~/.trae/skills/` |
 | Coding | Factory Droid | `~/.factory/skills/` |
@@ -44,7 +44,18 @@ A platform is any AI coding agent or runtime that reads a `skills/` directory. S
 | Lobster | WorkBuddy | `~/.workbuddy/skills-marketplace/skills/` |
 | Central | Central Skills | `~/.skillsmanage/skills/` |
 
-Several coding platforms (Codex, Cursor, OpenCode, Amp, Copilot, and other universal agents) read from the shared Universal Agents global path. SkillPort unifies Google's Antigravity clients (App, IDE, and CLI `agy`) onto the shared `~/.gemini/config/skills/` global directory. Project/workspace installs use the shared `.agents/skills/` directory, while Gemini CLI remains a legacy/shared Google target at `~/.gemini/skills/`. SkillPort does not manage Antigravity plugin bundles in this workflow.
+Several coding platforms—including Antigravity (Desktop 2.36.0+ and CLI `agy`), Codex CLI, Cursor, OpenCode, Amp, Copilot, and other universal agents—read from the shared global Universal Agents path (`~/.agents/skills/`) and share `.agents/skills/` for project/workspace installs. Gemini CLI remains a standalone legacy/shared Google target at `~/.gemini/skills/`. SkillPort does not manage Antigravity plugin bundles in this workflow.
+
+### Antigravity upgrade & `~/.gemini/config/skills/` warning
+
+> **Warning — `~/.gemini/config/skills/` same-name shadowing**: Even though Antigravity Desktop (2.36.0+) and CLI (`agy`) now read global skills from `~/.agents/skills/`, any skill with the same name remaining in `~/.gemini/config/skills/` still takes precedence over `~/.agents/skills/` and will shadow the Universal copy.
+
+- **No automatic disk deletion**: Upgrading SkillPort cleans stale `~/.gemini/config/skills/` rows from SkillPort's database metadata only. SkillPort intentionally never deletes, moves, or modifies files in `~/.gemini/config/skills/` on disk.
+- **Manual inspection and cleanup steps**:
+  1. Check `~/.gemini/config/skills/` for leftover skill directories whose names match skills managed under `~/.agents/skills/`.
+  2. Verify each skill you want to keep is already backed up in Central (`~/.skillsmanage/skills/`) or installed in `~/.agents/skills/`.
+  3. Manually remove (or archive elsewhere) the duplicate folders from `~/.gemini/config/skills/` so Antigravity loads the `~/.agents/skills/` copy cleanly.
+- **Antigravity IDE fallback**: Official Antigravity IDE documentation has not yet announced `~/.agents/skills/` support. If you use Antigravity IDE and still need SkillPort to manage `~/.gemini/config/skills/`, add `~/.gemini/config/skills/` under **Settings → Custom Platforms** (for example, display name `Antigravity IDE`, directory `~/.gemini/config/skills/`, category `Coding`).
 
 ## Platform view
 
@@ -77,4 +88,4 @@ You can hide platforms you do not use from Settings → Platform Visibility. Hid
 
 ---
 
-Last reviewed: 2026-11-20
+Last reviewed: 2026-11-27

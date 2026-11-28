@@ -2069,6 +2069,85 @@ async fn test_project_install_uses_agents_dir_for_antigravity() {
 }
 
 #[tokio::test]
+async fn test_global_install_and_uninstall_antigravity_shares_universal_root_isolated_from_gemini_cli(
+) {
+    let tmp = TempDir::new().unwrap();
+    let central_dir = tmp.path().join("central");
+    let universal_dir = tmp.path().join("universal");
+    let gemini_cli_dir = tmp.path().join("gemini-cli");
+    fs::create_dir_all(&central_dir).unwrap();
+    fs::create_dir_all(&universal_dir).unwrap();
+    fs::create_dir_all(&gemini_cli_dir).unwrap();
+
+    let pool = crate::test_support::mem_pool().await;
+    let seeded_codex = db::get_agent_by_id(&pool, "codex").await.unwrap().unwrap();
+    let seeded_antigravity = db::get_agent_by_id(&pool, "antigravity")
+        .await
+        .unwrap()
+        .unwrap();
+    let seeded_gemini = db::get_agent_by_id(&pool, "gemini-cli")
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(crate::paths::paths_equivalent(
+        Path::new(&seeded_antigravity.global_skills_dir),
+        Path::new(&seeded_codex.global_skills_dir),
+    ));
+    assert!(!crate::paths::paths_equivalent(
+        Path::new(&seeded_gemini.global_skills_dir),
+        Path::new(&seeded_codex.global_skills_dir),
+    ));
+
+    crate::test_support::set_agent_dir(&pool, "central", &central_dir).await;
+    crate::test_support::set_agent_dir(&pool, "codex", &universal_dir).await;
+    crate::test_support::set_agent_dir(&pool, "antigravity", &universal_dir).await;
+    crate::test_support::set_agent_dir(&pool, "gemini-cli", &gemini_cli_dir).await;
+
+    let central_skill =
+        create_central_skill(&pool, &central_dir, "antigravity-universal-global-skill").await;
+
+    let installed =
+        install_symlink_local(&pool, "antigravity-universal-global-skill", "antigravity")
+            .await
+            .unwrap();
+    let expected_target = universal_dir.join("antigravity-universal-global-skill");
+    assert!(crate::paths::paths_equivalent(
+        Path::new(&installed.symlink_path),
+        &expected_target,
+    ));
+    assert!(expected_target.join("SKILL.md").exists());
+    assert!(
+        !gemini_cli_dir
+            .join("antigravity-universal-global-skill")
+            .exists(),
+        "installing to Antigravity Universal root must not touch standalone gemini-cli dir"
+    );
+
+    let installations = db::get_skill_installations(&pool, "antigravity-universal-global-skill")
+        .await
+        .unwrap();
+    assert!(installations.iter().any(|row| {
+        row.agent_id == "antigravity"
+            && crate::paths::paths_equivalent(Path::new(&row.installed_path), &expected_target)
+    }));
+
+    uninstall_local(&pool, "antigravity-universal-global-skill", "antigravity")
+        .await
+        .unwrap();
+    assert!(!expected_target.exists());
+    assert!(
+        db::get_skill_installations(&pool, "antigravity-universal-global-skill")
+            .await
+            .unwrap()
+            .is_empty()
+    );
+    assert!(
+        central_skill.join("SKILL.md").exists(),
+        "uninstalling from Universal must preserve the Central skill"
+    );
+}
+
+#[tokio::test]
 async fn test_project_install_uses_grok_project_dir() {
     let tmp = TempDir::new().unwrap();
     let central_dir = tmp.path().join("central");

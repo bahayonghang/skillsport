@@ -791,6 +791,9 @@ async fn test_universal_agents_share_universal_skills_dir() {
         "central should not share the Universal Agents directory"
     );
 
+    assert_eq!(UNIVERSAL_AGENT_IDS.len(), 11);
+    assert!(UNIVERSAL_AGENT_IDS.contains(&"antigravity"));
+
     for agent_id in UNIVERSAL_AGENT_IDS {
         let agent = agents
             .iter()
@@ -808,15 +811,8 @@ async fn test_universal_agents_share_universal_skills_dir() {
         .expect("antigravity agent should exist");
     assert_eq!(antigravity.display_name, "Antigravity");
     assert!(
-        !crate::paths::paths_equivalent(Path::new(&antigravity.global_skills_dir), &universal_dir),
-        "antigravity global skills should stay separate from ~/.agents/skills"
-    );
-    assert!(
-        antigravity
-            .global_skills_dir
-            .replace('\\', "/")
-            .ends_with(".gemini/config/skills"),
-        "antigravity should use ~/.gemini/config/skills"
+        crate::paths::paths_equivalent(Path::new(&antigravity.global_skills_dir), &universal_dir),
+        "antigravity global skills should share ~/.agents/skills"
     );
     assert_eq!(
         antigravity.project_skills_dir.as_deref(),
@@ -897,10 +893,7 @@ fn test_remote_builtin_agents_rewrite_google_platform_paths() {
 
     assert_eq!(grok.global_skills_dir, "/home/alice/.grok/skills");
     assert_eq!(grok.project_skills_dir.as_deref(), Some(".grok/skills"));
-    assert_eq!(
-        antigravity.global_skills_dir,
-        "/home/alice/.gemini/config/skills"
-    );
+    assert_eq!(antigravity.global_skills_dir, "/home/alice/.agents/skills");
     assert_eq!(gemini_cli.global_skills_dir, "/home/alice/.gemini/skills");
     assert_eq!(
         antigravity.project_skills_dir.as_deref(),
@@ -3322,9 +3315,8 @@ async fn transactional_project_delete_uses_per_connection_fk_and_cascade() {
 
 /// Returns the number of *unique* global_skills_dir paths across all
 /// built-in agents. This is the number of rows that seed_builtin_scan_directories
-/// inserts, with global Universal agents sharing ~/.agents/skills,
-/// Antigravity using ~/.gemini/config/skills, and Central using
-/// ~/.skillsmanage/skills.
+/// inserts, with global Universal agents (including Antigravity) sharing
+/// ~/.agents/skills and Central using ~/.skillsmanage/skills.
 fn expected_builtin_scan_dir_count() -> usize {
     let mut paths = std::collections::HashSet::new();
     for agent in builtin_agents() {
@@ -3386,6 +3378,53 @@ async fn test_builtin_scan_dirs_seeded_is_idempotent() {
         dirs.len(),
         builtin_count,
         "Repeated init must not create duplicate scan directory rows"
+    );
+}
+
+#[tokio::test]
+async fn test_builtin_scan_dir_reconciliation_drops_retired_antigravity_root() {
+    let pool = setup_test_db().await;
+    let retired_builtin = crate::paths::resolve_home_dir()
+        .join(".gemini")
+        .join("config")
+        .join("skills")
+        .to_string_lossy()
+        .into_owned();
+    let custom_dir = "/tmp/user-custom-antigravity-skills";
+
+    sqlx::query(
+        "INSERT OR IGNORE INTO scan_directories (path, label, is_active, is_builtin, added_at)
+         VALUES (?, 'Antigravity', 1, 1, '2026-01-01T00:00:00Z'),
+                (?, 'Custom Antigravity', 1, 0, '2026-01-01T00:00:00Z')",
+    )
+    .bind(&retired_builtin)
+    .bind(custom_dir)
+    .execute(&pool)
+    .await
+    .unwrap();
+
+    init_database(&pool).await.unwrap();
+
+    let dirs = get_scan_directories(&pool).await.unwrap();
+    assert!(
+        !dirs.iter().any(|dir| dir.is_builtin
+            && dir
+                .path
+                .replace('\\', "/")
+                .ends_with(".gemini/config/skills")),
+        "retired ~/.gemini/config/skills built-in scan root must be dropped"
+    );
+    let universal_dir = crate::paths::universal_skills_dir();
+    assert!(
+        dirs.iter().any(|dir| dir.is_builtin
+            && dir.is_active
+            && crate::paths::paths_equivalent(Path::new(&dir.path), &universal_dir)),
+        "Universal ~/.agents/skills built-in scan root must remain active"
+    );
+    assert!(
+        dirs.iter()
+            .any(|dir| !dir.is_builtin && dir.path == custom_dir),
+        "user custom scan directories must be preserved"
     );
 }
 

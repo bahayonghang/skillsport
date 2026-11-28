@@ -17,7 +17,7 @@ export interface UniversalPlatformRegistration {
 /** 一行一个 universal 成员，数组顺序即展示顺序（project 场景全集）。 */
 const UNIVERSAL_PLATFORM_REGISTRY_ENTRIES = [
   { id: "amp", globalGroup: true, installPreference: 6 },
-  { id: "antigravity", globalGroup: false, installPreference: 3 },
+  { id: "antigravity", globalGroup: true, installPreference: 3 },
   { id: "cline", globalGroup: true },
   { id: "codex", globalGroup: true, installPreference: 1 },
   { id: "cursor", globalGroup: true, installPreference: 5 },

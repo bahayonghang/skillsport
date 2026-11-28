@@ -73,10 +73,7 @@ async fn test_list_platform_paths_resolves_remote_paths() {
     assert_eq!(claude.project_skills_dir.as_deref(), Some(".claude/skills"));
     assert!(!paths.contains_key("antigravity-cli"));
     let antigravity = paths.get("antigravity").unwrap();
-    assert_eq!(
-        antigravity.global_skills_dir,
-        "/home/alice/.gemini/config/skills"
-    );
+    assert_eq!(antigravity.global_skills_dir, "/home/alice/.agents/skills");
     assert_eq!(
         antigravity.project_skills_dir.as_deref(),
         Some(".agents/skills")
